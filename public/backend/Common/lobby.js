@@ -1171,10 +1171,21 @@ function initMap() {
       maxZoom: 18,
     }).setView([11.0064, 124.6075], 12);
 
-    // Base layer
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors",
-    }).addTo(map);
+    const satellite = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "Tiles © Esri" }
+    ).addTo(map);
+
+
+    const roads = L.tileLayer(
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "© Esri" }
+    ).addTo(map);
+
+    const labels = L.tileLayer(
+      "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+      { attribution: "© Esri" }
+    ).addTo(map);
 
     // Show approved fields from Firestore
     showApprovedFieldsOnMap(map);
