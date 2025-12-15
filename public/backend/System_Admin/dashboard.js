@@ -1644,20 +1644,18 @@ function createUserRoleChart(users) {
         userRoleChartInstance = null;
     }
 
-    // Count users by role (exclude system_admin and handler)
+    // Count users by role (exclude system_admin, handler, worker, and driver)
     const roleCounts = {
         farmer: 0,
-        worker: 0,
-        driver: 0,
         sra: 0
     };
 
     users.forEach(user => {
         const role = user.role || 'farmer';
-        // Only count regular user roles, exclude system_admin and handler
-        if (role !== 'system_admin' && role !== 'handler' && roleCounts.hasOwnProperty(role)) {
+        // Only count farmer and sra roles, exclude system_admin, handler, worker, and driver
+        if (role !== 'system_admin' && role !== 'handler' && role !== 'worker' && role !== 'driver' && roleCounts.hasOwnProperty(role)) {
             roleCounts[role]++;
-        } else if (role !== 'system_admin' && role !== 'handler' && !roleCounts.hasOwnProperty(role)) {
+        } else if (role !== 'system_admin' && role !== 'handler' && role !== 'worker' && role !== 'driver' && !roleCounts.hasOwnProperty(role)) {
             // Log unexpected roles for debugging
             console.warn(`⚠️ Unexpected user role: ${role}`);
         }
@@ -1667,7 +1665,7 @@ function createUserRoleChart(users) {
         role.charAt(0).toUpperCase() + role.slice(1) + 's'
     );
     const data = Object.values(roleCounts);
-    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6']; // green, blue, amber, purple
+    const colors = ['#10b981', '#8b5cf6']; // green, purple
 
     userRoleChartInstance = new Chart(ctx, {
         type: 'doughnut',
