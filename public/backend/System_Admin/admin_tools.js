@@ -77,34 +77,24 @@ async function loadAdminToolsStats() {
         const usersSnapshot = await getDocs(collection(db, 'users'));
         console.log(`📊 Total users loaded: ${usersSnapshot.size}`);
 
-        let farmers = 0, workers = 0, drivers = 0, handlers = 0, sra = 0, system_admin = 0, other = 0;
+        let farmers = 0, handlers = 0, sra = 0, system_admin = 0, other = 0;
         usersSnapshot.forEach(doc => {
             const role = doc.data().role || 'farmer';
             if (role === 'farmer') farmers++;
-            else if (role === 'worker') workers++;
-            else if (role === 'driver') drivers++;
             else if (role === 'handler') handlers++;
             else if (role === 'sra') sra++;
             else if (role === 'system_admin') system_admin++;
             else other++;
         });
 
-        console.log(`📊 Users by role: Farmers=${farmers}, Workers=${workers}, Drivers=${drivers}, Handlers=${handlers}, SRA=${sra}, System Admin=${system_admin}, Other=${other}`);
+        console.log(`📊 Users by role: Farmers=${farmers}, Handlers=${handlers}, SRA=${sra}, System Admin=${system_admin}, Other=${other}`);
 
         const farmersEl = document.getElementById('statsRoleFarmers');
-        const workersEl = document.getElementById('statsRoleWorkers');
-        const driversEl = document.getElementById('statsRoleDrivers');
         const handlersEl = document.getElementById('statsRoleHandlers');
         const sraEl = document.getElementById('statsRoleSRA');
 
         if (farmersEl) farmersEl.textContent = farmers;
         else console.warn('⚠️ Element statsRoleFarmers not found');
-
-        if (workersEl) workersEl.textContent = workers;
-        else console.warn('⚠️ Element statsRoleWorkers not found');
-
-        if (driversEl) driversEl.textContent = drivers;
-        else console.warn('⚠️ Element statsRoleDrivers not found');
 
         if (handlersEl) handlersEl.textContent = handlers;
         else console.warn('⚠️ Element statsRoleHandlers not found');
@@ -234,26 +224,6 @@ window.cleanupOldNotifications = async function() {
     }
 };
 
-// Cleanup rejected badges
-window.cleanupRejectedBadges = async function() {
-    const confirmed = await showConfirm('Delete all rejected driver badge requests?');
-    if (!confirmed) return;
-
-    try {
-        const q = query(collection(db, 'Drivers_Badge'), where('status', '==', 'rejected'));
-        const snapshot = await getDocs(q);
-
-        for (const docSnap of snapshot.docs) {
-            await deleteDoc(doc(db, 'Drivers_Badge', docSnap.id));
-        }
-
-        showPopupMessage(`Deleted ${snapshot.size} rejected badge requests`, 'success');
-        await loadAdminToolsStats();
-    } catch (error) {
-        console.error('Cleanup error:', error);
-        showPopupMessage('Failed to cleanup rejected badges', 'error');
-    }
-};
 
 // Helper function to download CSV
 function downloadCSV(csv, filename) {
