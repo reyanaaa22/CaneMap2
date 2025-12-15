@@ -545,12 +545,6 @@ header nav .flex.items-center.justify-between > div:first-child {
   100% { transform: translateY(0); }
 }
 
-/* hide driver-badge promo section on small screens */
-@media (max-width: 768px) {
-  #driver-badge {
-    display: none !important;
-  }
-}
 
 /* Header icon buttons: transparent background, white icon, subtle hover */
 .header-icon-btn {
@@ -627,7 +621,6 @@ header nav .flex.items-center.justify-between > div:first-child {
 
   /* Remove ALL extra margins around icons */
   #btnRegisterField,
-  #btnDriverBadgeMobile,
   #btnNotifHeader {
     margin: 0 !important;       /* remove margin */
     padding: 0 !important;
@@ -649,19 +642,14 @@ header nav .flex.items-center.justify-between > div:first-child {
     font-size: 21px !important;
     font-weight: 900 !important;
   }
-  #btnDriverBadgeMobile i,
   #btnNotifHeader i {
     color: white !important;
     font-size: 18px !important;
   }
 }
-@media (max-width: 768px) {
-  #btnDriverBadgeMobile { display: none !important; }
-}
 
 /* TOOLTIP (unchanged, still works) */
-#btnRegisterField:hover::after,
-#btnDriverBadgeMobile:hover::after {
+#btnRegisterField:hover::after {
   content: attr(aria-label);
   position: absolute;
   bottom: -32px;
@@ -707,9 +695,6 @@ header nav .flex.items-center.justify-between > div:first-child {
   }
 }
 
-#btnDriverRental[aria-hidden="true"] {
-    display: none !important;
-}
 
 
 /* Desktop: make MAP wider than WEATHER */
@@ -805,7 +790,6 @@ header nav .flex.items-center.justify-between > div:first-child {
                      <div class="flex space-x-8 lg:space-x-12"> <!-- Navigation menu centered with responsive spacing -->
                           <a href="#features" class="text-white hover:text-[var(--cane-100)] hover:underline underline-offset-4 decoration-[var(--cane-300)] transition-colors text-base font-semibold">Features</a>
                           <a href="#about" class="text-white hover:text-[var(--cane-100)] hover:underline underline-offset-4 decoration-[var(--cane-300)] transition-colors text-base font-semibold">About us</a>
-                          <a href="#driver-badge" class="text-white hover:text-[var(--cane-100)] hover:underline underline-offset-4 decoration-[var(--cane-300)] transition-colors text-base font-semibold">Driver Badge</a>
                           <a href="#contact" class="text-white hover:text-[var(--cane-100)] hover:underline underline-offset-4 decoration-[var(--cane-300)] transition-colors text-base font-semibold">Contact</a>
                     </div>
                 </div>
@@ -816,13 +800,6 @@ header nav .flex.items-center.justify-between > div:first-child {
         + Register a Field
     </button>
 </div>
-
-<button id="btnDriverRental"
-    class="bg-white text-[var(--cane-800)] px-4 py-2 text-sm rounded-lg hover:bg-[var(--cane-50)] transition-all duration-300 transform hover:scale-105 shadow-md font-semibold"
-    style="display:none;"
-    aria-hidden="true">
-    🚚 Open for Driver Rental
-</button>
 
 
                  <!-- group ONLY the two small icons here -->
@@ -864,17 +841,6 @@ header nav .flex.items-center.justify-between > div:first-child {
                                         <i class="fas fa-plus mr-3 text-[var(--cane-500)]"></i>
                                         Register a Field
                                     </a>
-                                    <a id="openRentalOption" href="javascript:void(0)"
-                                    class="flex items-center px-4 py-2 text-sm text-[var(--cane-800)] 
-                                            hover:bg-[var(--cane-50)] transition-colors font-medium">
-                                        <i class="fas fa-truck mr-3 text-[var(--cane-500)]"></i>
-                                        Truck Rental
-                                    </a>
-                                    <a id="menuDriverBadge" href="../Driver/Driver_Badge.html" class="flex items-center px-4 py-2 text-sm text-[var(--cane-800)] hover:bg-[var(--cane-50)] transition-colors font-medium">
-                                        <i class="fas fa-id-badge mr-3 text-[var(--cane-500)]"></i>
-                                        Apply Driver's Badge
-                                    </a>
-
                                     <a id="logoutLink" href="#" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
                                          <i class="fas fa-sign-out-alt mr-3"></i>
                                          Logout
@@ -888,69 +854,13 @@ header nav .flex.items-center.justify-between > div:first-child {
         </nav>
     </header>
 
-<!-- RENTAL MODAL -->
-<div id="driverRentalModal"
-     class="fixed inset-0 bg-black/50 flex items-center justify-center 
-            opacity-0 pointer-events-none transition-all duration-300 z-[9999]">
-
-  <div class="bg-white w-[90%] max-w-4xl rounded-xl overflow-hidden shadow-xl relative">
-    
-    <!-- Close button -->
-    <button id="closeDriverRental"
-            class="absolute top-3 right-3 text-gray-700 hover:text-black text-xl">
-      &times;
-    </button>
-
-    <!-- iFrame -->
-    <iframe id="driverRentalFrame"
-            src=""
-            class="w-full h-[80vh] border-0"></iframe>
-  </div>
-</div>
-
     <!-- Main Content Area -->
     <main class="w-full min-h-screen py-4 px-2 mt-8 bg-[#F5F5F0] relative overflow-hidden">
     <div id="mainContent" class="w-full px-4 pb-8 flex flex-col lg:flex-row gap-8">
             <!-- Left Panel - Sugarcane Field Map -->
             <div id="mapPanel" class="flex-1 fade-in-left">
                 <!-- Instruction Box -->
-            <!-- Instruction Box -->
-            <div class="instruction-box
-                        bg-[rgba(173,255,47,0.25)] border border-[rgba(102,153,0,0.8)]
-                        rounded-md px-4 py-2 text-[var(--cane-950)] text-sm
-                        flex items-center gap-2 mb-2
-                        lg:mb-4 lg:order-[-1]
-                        shadow-[0_2px_6px_rgba(0,0,0,0.15)]">
-
-                <div class="flex items-center flex-wrap gap-2">
-                    <span class="font-bold text-[rgba(85,128,0,1)]">
-                        Want to join a field?
-                    </span>
-
-                        Simply tap any field
-                    </span>
-                        <span class="text-[rgba(50,50,0,1)]">
-                        on the map. ex.
-                    </span>
-                    
-            <!-- CaneMap Pin Icon -->
-                    <img src="../img/PIN.png"
-                        alt="Map Pin"
-                        class="w-5 h-5 object-contain drop-shadow-sm">
-                    
-                    
-                </div>
-            </div>
             <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center mb-4">
-                    <h2 class="text-2xl font-extrabold text-[var(--cane-950)] flex items-center gap-2">
-                        JOIN HERE
-                        <i class="fas fa-hand-point-down text-[var(--cane-950)] text-xl"></i>
-                    </h2>
-                </div>
-
-
-                     
                      <div class="flex items-center gap-3 ml-auto">
                          <input id="mapSearchInput" type="text" placeholder="Search for sugarcane fields..." class="w-[500px] px-6 py-3 rounded-full bg-white text-[var(--cane-900)] placeholder-[var(--cane-700)]/70 shadow-[0_4px_12px_rgba(0,0,0,0.10)] border border-[var(--cane-200)] focus:outline-none focus:ring-2 focus:ring-[var(--cane-400)]/40 focus:border-[var(--cane-300)]">
                          <button id="mapSearchBtn" class="px-7 h-[48px] rounded-full bg-[var(--cane-800)] text-white font-semibold shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-[var(--cane-900)] transition-colors shrink-0">Search</button>
@@ -1132,7 +1042,7 @@ header nav .flex.items-center.justify-between > div:first-child {
                             </div>
 
 							<!-- Role-Based Dashboards -->
-                                <div class="swiper-slide relative w-[200px] h-[280px] rounded-xl overflow-hidden shadow-xl backdrop-blur-sm bg-white/10 border border-white/20" data-title="Role-Based Dashboards" data-tags="Farmers,Workers,Drivers,SRA,Admins" data-desc="Separate dashboards tailored for farmers, workers, drivers, SRA officers, and admins for focused workflows.">
+                                <div class="swiper-slide relative w-[200px] h-[280px] rounded-xl overflow-hidden shadow-xl backdrop-blur-sm bg-white/10 border border-white/20" data-title="Role-Based Dashboards" data-tags="Farmers,SRA,Admins" data-desc="Separate dashboards tailored for farmers, SRA officers, and admins for focused workflows.">
                                 <img src="../img/Dashboards.jpg" alt="Role-Based Dashboards" class="w-full h-full object-cover">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                                     <div class="absolute top-3 left-3">
@@ -1162,22 +1072,6 @@ header nav .flex.items-center.justify-between > div:first-child {
 									<p class="text-white/80 text-xs">3-day & weekly, location-based</p>
 								</div>
 							</div>
-
-							<!-- Transport & Logistics Coordination -->
-                                <div class="swiper-slide relative w-[200px] h-[280px] rounded-xl overflow-hidden shadow-xl backdrop-blur-sm bg-white/10 border border-white/20" data-title="Transport & Logistics Coordination" data-tags="Drivers,Truck rental,Deliveries" data-desc="Coordinate drivers, manage truck rentals, and track delivery updates in real-time.">
-								<img src="../img/Transport.jpg" alt="Transport & Logistics Coordination" class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-                                    <div class="absolute top-3 left-3">
-                                        <div class="w-8 h-8 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                                            <i class="fas fa-truck text-white text-sm"></i>
-                                        </div>
-                                    </div>
-								<div class="absolute bottom-0 left-0 right-0 p-4">
-                                        <p class="text-[var(--cane-300)] text-xs font-medium mb-1">Logistics Management</p>
-                                        <h3 class="text-white text-lg font-bold leading-tight mb-1">Transport & Logistics Coordination</h3>
-									<p class="text-white/80 text-xs">Driver module, rentals, updates</p>
-                        </div>
-                    </div>
 
 							<!-- Offline Logging -->
                                 <div class="swiper-slide relative w-[200px] h-[280px] rounded-xl overflow-hidden shadow-xl backdrop-blur-sm bg-white/10 border border-white/20" data-title="Offline Logging" data-tags="No internet,Auto-sync,Background" data-desc="Log activities without internet and automatically sync when back online.">
@@ -1337,7 +1231,7 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
             
             <div class="max-w-4xl mx-auto text-center mb-14 fade-in-up">
                 <p class="text-lg text-white/95 leading-relaxed font-medium">
-                    CaneMap is an agricultural decision-support platform designed to help sugarcane farmers and field workers register land, track field progress, and collaborate with the Sugar Regulatory Administration (SRA) for better transparency and productivity. Developed in collaboration with local stakeholders and SRA Ormoc Mill District, CaneMap empowers farmers through digital mapping, task coordination, and predictive analytics to make informed decisions throughout the crop cycle.
+                    CaneMap is an agricultural decision-support platform designed to help sugarcane farmers register land, track field progress, and collaborate with the Sugar Regulatory Administration (SRA) for better transparency and productivity. Developed in collaboration with local stakeholders and SRA Ormoc Mill District, CaneMap empowers farmers through digital mapping, task coordination, and predictive analytics to make informed decisions throughout the crop cycle.
                 </p>
             </div>
             
@@ -1377,44 +1271,6 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
         </div>
     </section>
     </div>
-    <!-- Driver Badge Promo Section -->
-    <section id="driver-badge" class="relative py-20 bg-gradient-to-br from-white via-[#F8FAFC] to-[#E8F5E9] overflow-hidden">
-        <!-- ambient blobs -->
-        <div class="absolute inset-0 pointer-events-none">
-            <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-[var(--cane-100)]/40 rounded-full blur-3xl -mr-32 -mt-32"></div>
-            <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[var(--cane-50)]/50 rounded-full blur-3xl -ml-24 -mb-24"></div>
-        </div>
-        <div class="container mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16 relative">
-            <!-- Left copy -->
-            <div class="reveal-up">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--cane-100)] text-[var(--cane-700)] text-xs font-bold uppercase tracking-wider mb-6">
-                    <i class="fas fa-shield-alt"></i> Verified Drivers Program
-                </div>
-                <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-[var(--cane-900)] leading-tight mb-2">Be a</h2>
-                <h2 class="text-4xl md:text-5xl lg:text-6xl font-black leading-tight pb-2 mb-2 bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-500)] bg-clip-text text-transparent">Driver Badge</h2>
-                <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-[var(--cane-900)] leading-tight mb-6">Holder</h2>
-                <p class="text-[var(--cane-900)]/80 text-lg max-w-xl mb-8 leading-relaxed font-medium">Get verified, receive tasks faster, and access transport features tailored for professional drivers in CaneMap.</p>
-                <a href="../Driver/Driver_Badge.html" class="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-700)] text-white font-bold shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
-                    Get Driver Badge <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <!-- Right visual: standalone image (no container frame) -->
-            <div class="relative">
-                <div class="absolute inset-0 bg-gradient-to-br from-[var(--cane-400)]/20 to-[var(--cane-600)]/20 rounded-3xl blur-2xl"></div>
-                <img src="../img/Transport.jpg" alt="Driver logistics" class="relative w-full h-[380px] md:h-[450px] lg:h-[520px] object-cover object-center rounded-3xl shadow-2xl transition-transform duration-700 hover:scale-105" />
-                <div class="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/50 via-black/20 to-transparent rounded-3xl"></div>
-                <div class="absolute -top-4 -right-4 bg-white rounded-2xl shadow-xl border-2 border-[var(--cane-100)] px-4 py-3 flex items-center gap-2 float-slow">
-                    <i class="fas fa-check-circle text-[var(--cane-600)] text-lg"></i>
-                    <span class="text-sm font-bold text-[var(--cane-700)]">Verified</span>
-                </div>
-                <div class="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-xl border-2 border-[var(--cane-100)] px-4 py-3 flex items-center gap-2 float-slow" style="animation-delay:1s">
-                    <i class="fas fa-truck text-[var(--cane-600)] text-lg"></i>
-                    <span class="text-sm font-bold text-[var(--cane-700)]">Hauling Ready</span>
-                </div>
-            </div>
-        </div>
-    </section>
     <!-- Contact Section -->
     <section id="contact" class="relative bg-gradient-to-b from-[#F5F5F0] to-white pt-24 pb-12">
         <div class="custom-shape-divider-top-1755503018">
@@ -1579,16 +1435,6 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
                             <p class="mb-2">Your dashboard is currently locked.</p>
                             <p class="text-[var(--cane-700)]">Choose a path below to unlock the right tools for your role.</p>
                         </div>
-                        <!-- Worker Guide -->
-                        <div class="slide text-[var(--cane-900)] font-medium hidden transition-opacity duration-200" data-step="1">
-                            <div class="font-bold mb-1 flex items-center gap-2"><i class="fas fa-user-hard-hat text-[var(--cane-600)]"></i> Unlock as Worker</div>
-                            <ol class="list-decimal ml-5 space-y-1 text-[var(--cane-800)]">
-                                <li>Open the map and find a registered field near you.</li>
-                                <li>Click <span class="px-2 py-0.5 rounded bg-[var(--cane-50)] border border-[var(--cane-200)]">Join Field</span>.</li>
-                                <li>Wait for the Handler to approve your request.</li>
-                                <li>Once approved, the Worker dashboard unlocks automatically.</li>
-                            </ol>
-                        </div>
                         <!-- Handler Guide -->
                         <div class="slide text-[var(--cane-900)] font-medium hidden transition-opacity duration-200" data-step="2">
                             <div class="font-bold mb-1 flex items-center gap-2"><i class="fas fa-map-marked-alt text-[var(--cane-600)]"></i> Unlock as Handler</div>
@@ -1627,11 +1473,6 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
         </div>
     </div>
 
-    <div id="driverRentalModalWrapper"
-        class="fixed inset-0 bg-black/50 z-[12000] hidden items-center justify-center">
-        <iframe id="driverRentalFrame"
-                class="w-[95%] max-w-3xl h-[85vh] bg-white rounded-xl shadow-lg"
-                src=""></iframe>
             <!-- Firebase Configuration -->
             <script type="module" src="../../backend/Common/firebase-config.js"></script>
             <!-- Service Worker Registration for Offline Support -->

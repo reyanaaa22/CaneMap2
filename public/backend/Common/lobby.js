@@ -1322,72 +1322,11 @@ function openFieldDetailsModal(field) {
             <div class="text-[11px] text-[var(--cane-600)] italic text-center mb-4">
                 ⟟ Lat: ${field.lat.toFixed(5)} | Lng: ${field.lng.toFixed(5)}
             </div>
-
-            <button id="joinBtn" class="w-full py-2.5 rounded-md bg-[var(--cane-700)] text-white font-semibold hover:bg-[var(--cane-800)] transition">
-                Join Field
-            </button>
             </div>
         `;
 
   document.body.appendChild(modal);
   document.getElementById("closeFieldModal").onclick = () => modal.remove();
-
-  const joinBtn = document.getElementById("joinBtn");
-  const userId = localStorage.getItem("userId");
-  const userRole = (localStorage.getItem("userRole") || "").toLowerCase();
-
-  // 🟢 If SRA → hide button entirely
-  if (userRole === "sra") {
-    joinBtn.style.display = "none";
-    return;
-  }
-
-  // 🟢 If Handler
-  if (userRole === "handler") {
-    // If the field belongs to this handler
-    if (
-      field.raw?.userId === userId ||
-      field.applicantName === localStorage.getItem("farmerName")
-    ) {
-      joinBtn.textContent = "Check My Field";
-      joinBtn.onclick = () => {
-        window.location.href = "../../frontend/Handler/dashboard.html";
-      };
-    } else {
-      // If handler but not owner → hide
-      joinBtn.style.display = "none";
-    }
-    return;
-  }
-
-  // 🟢 For all other roles, check join status
-  checkJoinStatus(field.id, userId).then((result) => {
-    if (result.status === "approved") {
-      // User is already approved - show as joined
-      joinBtn.disabled = true;
-      joinBtn.textContent = `✓ Joined as ${result.role.charAt(0).toUpperCase() + result.role.slice(1)}`;
-      joinBtn.classList.add("opacity-80", "cursor-default");
-      joinBtn.style.backgroundColor = "#16a34a"; // green tone
-      joinBtn.style.color = "white";
-    } else if (result.status === "pending") {
-      // Request is still pending
-      joinBtn.disabled = true;
-      joinBtn.textContent = "Request Pending";
-      joinBtn.classList.add("opacity-60", "cursor-not-allowed");
-      joinBtn.style.backgroundColor = "#f59e0b"; // orange/amber tone
-      joinBtn.style.color = "white";
-    } else if (result.status === "rejected") {
-      // Request was rejected
-      joinBtn.disabled = true;
-      joinBtn.textContent = "Request Rejected";
-      joinBtn.classList.add("opacity-60", "cursor-not-allowed");
-      joinBtn.style.backgroundColor = "#dc2626"; // red tone
-      joinBtn.style.color = "white";
-    } else {
-      // No request yet - allow joining
-      joinBtn.onclick = () => openJoinModal(field);
-    }
-  });
 }
 
 // ---------- Check for conflicting pending roles ----------
