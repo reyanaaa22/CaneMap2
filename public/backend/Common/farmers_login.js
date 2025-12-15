@@ -186,6 +186,99 @@ function showAlert(message, type, options = {}) {
   }
 }
 
+// ✅ Modern Toast Notification System
+function showToast(message, type = "info", options = {}) {
+  const { duration = 4000, action } = options;
+  
+  // Remove existing toasts
+  const existingToasts = document.querySelectorAll('.toast-notification');
+  existingToasts.forEach(toast => {
+    toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification toast-${type}`;
+  
+  // Icon based on type
+  const icons = {
+    success: '<i class="fas fa-check-circle"></i>',
+    error: '<i class="fas fa-exclamation-circle"></i>',
+    warning: '<i class="fas fa-exclamation-triangle"></i>',
+    info: '<i class="fas fa-info-circle"></i>'
+  };
+
+  const toastContent = document.createElement('div');
+  toastContent.className = 'toast-content';
+  
+  const iconDiv = document.createElement('div');
+  iconDiv.className = 'toast-icon';
+  iconDiv.innerHTML = icons[type] || icons.info;
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'toast-message';
+  messageDiv.textContent = message;
+  
+  toastContent.appendChild(iconDiv);
+  toastContent.appendChild(messageDiv);
+  
+  // Add action button if provided
+  if (action && action.onClick) {
+    const actionBtn = document.createElement('button');
+    actionBtn.className = 'toast-action';
+    actionBtn.textContent = action.label || 'Action';
+    actionBtn.addEventListener('click', async () => {
+      toast.remove();
+      await action.onClick();
+    });
+    toastContent.appendChild(actionBtn);
+  }
+  
+  // Add close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'toast-close';
+  closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+  closeBtn.addEventListener('click', () => toast.remove());
+  toastContent.appendChild(closeBtn);
+  
+  const progressBar = document.createElement('div');
+  progressBar.className = 'toast-progress';
+  
+  toast.appendChild(toastContent);
+  toast.appendChild(progressBar);
+  document.body.appendChild(toast);
+
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  // Auto-hide
+  if (progressBar) {
+    progressBar.style.animation = `toastProgress ${duration}ms linear forwards`;
+  }
+
+  const hideTimeout = setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+
+  // Keep toast visible if hovered
+  toast.addEventListener('mouseenter', () => {
+    clearTimeout(hideTimeout);
+    if (progressBar) progressBar.style.animationPlayState = 'paused';
+  });
+
+  toast.addEventListener('mouseleave', () => {
+    if (progressBar) progressBar.style.animationPlayState = 'running';
+    const newTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+    toast._hideTimeout = newTimeout;
+  });
+}
+
 function disableForm(seconds) {
   emailInput.disabled = true;
   passwordInput.disabled = true;
@@ -211,7 +304,7 @@ function isLocked() {
   const lockUntil = localStorage.getItem("lockUntil");
   if (lockUntil && Date.now() < parseInt(lockUntil)) {
     const remaining = Math.ceil((parseInt(lockUntil) - Date.now()) / 1000);
-    showAlert(`Too many failed attempts. Try again in ${remaining} seconds.`, "error");
+    showToast(`Too many failed attempts. Try again in ${remaining} seconds.`, "error");
     disableForm(remaining);
     return true;
   }
@@ -225,7 +318,7 @@ function recordFailedAttempt() {
   if (attempts >= MAX_ATTEMPTS) {
     localStorage.setItem("lockUntil", Date.now() + LOCK_TIME);
     localStorage.setItem("loginAttempts", 0);
-    showAlert(`Too many failed attempts. Please try again in ${LOCK_TIME / 1000} seconds.`, "error");
+    showToast(`Too many failed attempts. Please try again in ${LOCK_TIME / 1000} seconds.`, "error");
     disableForm(LOCK_TIME / 1000);
   }
 }
@@ -249,128 +342,102 @@ async function login() {
     const user = userCredential.user;
 
     if (!user.emailVerified) {
-      showAlert(
-        'Your email is registered but not yet verified. Please check your inbox for the verification link. ' +
-        '<button id="resendVerifyBtn" style="margin-left:8px;padding:6px 10px;border:none;border-radius:6px;background:#16a34a;color:#fff;cursor:pointer">Resend verification</button>',
-        "warning"
+      const resendVerification = async () => {
+        try {
+          await sendEmailVerification(user);
+          showToast("Verification email sent. Please check your inbox.", "success");
+        } catch (e) {
+          showToast("Could not send verification email. Please try again later.", "error");
+        }
+      };
+      
+      showToast(
+        'Your email is not verified. Please check your inbox for the verification link.',
+        "warning",
+        { action: { label: "Resend", onClick: resendVerification }}
       );
-      const resendBtn = document.getElementById("resendVerifyBtn");
-      if (resendBtn) {
-        resendBtn.addEventListener("click", async () => {
-          try {
-            resendBtn.disabled = true;
-            resendBtn.textContent = "Sending...";
-            await sendEmailVerification(user);
-            showAlert("Verification email sent. Please check your inbox (or Spam).", "success");
-          } catch (e) {
-            showAlert("Could not send verification email. Please try again later.", "error");
-          } finally {
-            resendBtn.disabled = false;
-            resendBtn.textContent = "Resend verification";
-          }
-        });
-      }
       passwordInput.value = "";
       recordFailedAttempt();
+      setButtonState({ loading: false, label: DEFAULT_BUTTON_TEXT, disabled: false });
+      await signOut(auth);
+      return;
+    }
+
+    // ✅ OPTIMIZED: Get user role immediately with single query
+    const userRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(userRef);
+    
+    let userRole = 'farmer';
+    let userData = null;
+    
+    if (docSnap.exists()) {
+      userData = docSnap.data();
+      userRole = (userData.role || 'farmer').toLowerCase();
+    } else {
+      // Fallback: try to find user by email (legacy support)
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', user.email.toLowerCase()));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          userData = snapshot.docs[0].data();
+          userRole = (userData.role || 'farmer').toLowerCase();
+          // Merge into users/{uid} for consistency
+          await setDoc(userRef, { ...userData, uid: user.uid, email: user.email.toLowerCase() }, { merge: true });
+        }
+      } catch (err) {
+        console.warn('Fallback user lookup failed:', err);
+      }
+    }
+
+    // ✅ SECURITY: Only allow Handler and SRA roles to log in
+    if (userRole !== 'handler' && userRole !== 'sra') {
+      await signOut(auth);
+      showToast(
+        `Access denied. This login page is only for Handlers and SRA Officers. Your role: ${userRole || 'none'}`,
+        "error"
+      );
+      passwordInput.value = "";
       setButtonState({ loading: false, label: DEFAULT_BUTTON_TEXT, disabled: false });
       return;
     }
 
-    // --- Save in Firestore ONLY after email verification ---
-    const userRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(userRef);
-    let resolvedDoc = docSnap;
-    if (!docSnap.exists()) {
-      // Fallback: try to find a users doc by email (some older records used random IDs)
-      try {
-  const usersRef = collection(db, 'users');
-  const q = query(usersRef, where('email', '==', user.email.toLowerCase()));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          // use the first matching doc
-          resolvedDoc = snapshot.docs[0];
-          // also copy/merge this doc into users/{uid} so future lookups are consistent
-          try {
-            await setDoc(userRef, { ...resolvedDoc.data(), uid: user.uid, email: user.email.toLowerCase(), lastLogin: serverTimestamp(), status: 'verified' }, { merge: true });
-          } catch (e) { console.warn('Could not copy existing user doc into users/{uid}:', e); }
-        } else {
-          // No existing doc by email — create a fresh farmer doc
-          await setDoc(userRef, {
-            fullname: user.displayName,
-            name: user.displayName,
-            email: user.email.toLowerCase(),
-            role: 'farmer',
-            status: 'verified',
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp(),
-            failedLoginAttempts: 0,
-            uid: user.uid
-          });
-          resolvedDoc = await getDoc(userRef);
-        }
-      } catch (err) {
-        console.warn('Fallback user lookup by email failed:', err);
-        // create minimal doc so app can proceed
-        await setDoc(userRef, {
-          fullname: user.displayName,
-          name: user.displayName,
-          email: user.email.toLowerCase(),
-          role: 'farmer',
-          status: 'verified',
-          createdAt: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-          failedLoginAttempts: 0,
-          uid: user.uid
-        });
-        resolvedDoc = await getDoc(userRef);
-      }
-    } else {
-      await setDoc(userRef, {
-        lastLogin: serverTimestamp(),
-        status: "verified",
-        failedLoginAttempts: 0 // reset failed login count on successful login
-      }, { merge: true });
-    }
+    // ✅ OPTIMIZED: Update last login in background (don't wait)
+    setDoc(userRef, {
+      lastLogin: serverTimestamp(),
+      status: "verified",
+      failedLoginAttempts: 0
+    }, { merge: true }).catch(err => console.warn('Failed to update lastLogin:', err));
 
-  let userRole = resolvedDoc && resolvedDoc.exists() ? (resolvedDoc.data().role || 'farmer') : 'farmer';
-  // normalize role to lowercase for consistent checks
-  if (typeof userRole === 'string') userRole = userRole.toLowerCase();
-    let userName = resolvedDoc && resolvedDoc.exists()
-      ? (resolvedDoc.data().fullname || resolvedDoc.data().name || user.displayName || 'User')
-      : (user.displayName || 'User');
-
+    // Store user data
+    const userName = userData?.fullname || userData?.name || user.displayName || 'User';
     localStorage.setItem("farmerName", userName);
     localStorage.setItem("userRole", userRole);
     localStorage.setItem("userId", user.uid);
 
-    let farmerNickname = docSnap.exists() ? (docSnap.data().nickname || "") : "";
-    if (farmerNickname) localStorage.setItem("farmerNickname", farmerNickname);
+    if (userData?.nickname) localStorage.setItem("farmerNickname", userData.nickname);
     else localStorage.removeItem("farmerNickname");
 
-    let farmerContact = docSnap.exists() ? docSnap.data().contact || "" : "";
-    localStorage.setItem("farmerContact", farmerContact);
+    if (userData?.contact) localStorage.setItem("farmerContact", userData.contact);
 
     resetAttempts();
-    setButtonState({ loading: true, label: "Signing in...", disabled: true });
-    showAlert("Login successful!", "success");
-
+    
     if (rememberCheckbox && rememberCheckbox.checked) {
       saveRememberedCredentials(email, password);
     } else {
       clearRememberedCredentials();
     }
 
-    setTimeout(() => {
-      if (userRole === "handler") {
-        // Handler: go directly to Handler Dashboard (skip lobby)
-        window.location.href = "../../frontend/Handler/dashboard.html";
-      } else if (userRole === "sra") {
-        window.location.href = "../../frontend/SRA/SRA_Dashboard.html";
-      } else {
-        // Farmers and other roles keep using lobby as the landing page
-        window.location.href = "../../frontend/Common/lobby.html";
-      }
-    }, 1500);
+    // ✅ OPTIMIZED: Show success toast and redirect immediately (no delay)
+    showToast("Login successful! Redirecting...", "success");
+    setButtonState({ loading: true, label: "Redirecting...", disabled: true });
+
+    // Redirect immediately based on role
+    if (userRole === "handler") {
+      window.location.href = "../../frontend/Handler/dashboard.html";
+    } else if (userRole === "sra") {
+      window.location.href = "../../frontend/SRA/SRA_Dashboard.html";
+    }
 
     } catch (error) {
     setButtonState({ loading: false, label: DEFAULT_BUTTON_TEXT, disabled: false });
@@ -455,17 +522,17 @@ async function login() {
         console.log(`⚠️ Error code ${code} not tracked for failed login attempts`);
       }
 
-      // --- Friendly error messages ---
+      // --- Friendly error messages with modern toast ---
       if (code === "auth/user-not-found") {
-        showAlert("No account found with this email. Please check your email or sign up first.", "error");
+        showToast("No account found with this email. Please check your email or sign up first.", "error");
       } else if (code === "auth/wrong-password") {
-        showAlert("Incorrect password. Please try again.", "error");
+        showToast("Incorrect password. Please try again.", "error");
       } else if (code === "auth/invalid-credential") {
-        showAlert("Incorrect email or password. Please try again.", "error");
+        showToast("Incorrect email or password. Please try again.", "error");
       } else if (code === "auth/too-many-requests") {
-        showAlert("Too many failed login attempts. Please wait a moment before trying again.", "error");
+        showToast("Too many failed login attempts. Please wait a moment before trying again.", "error");
       } else {
-        showAlert("Login failed. Please try again.", "error");
+        showToast("Login failed. Please try again.", "error");
       }
 
       passwordInput.value = "";
