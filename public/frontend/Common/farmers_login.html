@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Sign in</title>
+<style>
+:root {
+  --cane-50: #f7fee7;
+  --cane-100: #eafdd0;
+  --cane-200: #c9f28b;
+  --cane-300: #a2e059;
+  --cane-500: #5fab00;
+  --cane-600: #4a8a00;
+  --cane-700: #2f5400;
+  --cane-900: #132409;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.main-background {
+  background-image: url('../img/sugarcane.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.green-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(60, 99, 0, 0.48) 0%,
+    rgba(73, 125, 0, 0.38) 35%,
+    rgba(124, 207, 0, 0.18) 70%,
+    rgba(25, 46, 3, 0.45) 100%
+  );
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-sizing: border-box;
+}
+
+.container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 520px;
+  padding: 32px 28px;
+  border-radius: 22px;
+  box-shadow: 0 14px 32px -8px rgba(27, 64, 9, 0.22), 0 8px 20px -10px rgba(27, 64, 9, 0.18);
+  border: 1px solid rgba(188, 244, 129, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+  animation: popIn 0.6s cubic-bezier(.4,2,.6,1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+h2 {
+  text-align: left;
+  width: 100%;
+  margin-bottom: 20px;
+  font-size: 32px;
+  background: linear-gradient(135deg, var(--cane-700), var(--cane-900));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 10px rgba(27, 64, 9, 0.12);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin-top: -6px;
+  margin-bottom: 24px;
+  text-align: left;
+  width: 100%;
+  font-size: 16px;
+  color: rgba(26, 46, 9, 0.7);
+  font-weight: 500;
+}
+
+.form-field {
+  position: relative;
+  width: 100%;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-field label {
+  position: static;
+  transform: none;
+  background: transparent;
+  padding: 0;
+  font-size: 14px;
+  color: rgba(26, 46, 9, 0.7);
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 0;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(152, 214, 78, 0.35);
+  box-sizing: border-box;
+  background-color: #ffffff;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  border-radius: 7px;
+  border: 1.8px solid rgba(152, 214, 78, 0.45);
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+  outline-offset: 2px;
+  background: #ffffff;
+  font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: rgba(188, 244, 129, 0.8);
+  border-width: 1.8px;
+  box-shadow: 0 0 0 3px rgba(188, 244, 129, 0.15);
+  background: #ffffff;
+  outline: none;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 55%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: rgba(26, 46, 9, 0.5);
+  font-size: 16px;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.8;
+  line-height: 1;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  color: var(--cane-600);
+  opacity: 1;
+}
+
+
+
+input::placeholder {
+  color: rgba(26, 46, 9, 0.5);
+  font-weight: 400;
+}
+
+button {
+  width: 100%;
+  background: linear-gradient(135deg, var(--cane-600), var(--cane-700));
+  border: none;
+  color: white;
+  padding: 11px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 6px 18px rgba(30, 68, 9, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+button:hover {
+  background: linear-gradient(135deg, var(--cane-500), var(--cane-600));
+  box-shadow: 0 10px 24px rgba(30, 68, 9, 0.32);
+}
+
+button.loading {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.btn-text {
+  transition: opacity 0.2s ease;
+}
+
+button.loading .btn-text {
+  opacity: 0.85;
+}
+
+.button-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  animation: spin 0.8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+button.loading .button-spinner {
+  opacity: 1;
+}
+
+.alert {
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  text-align: center;
+  font-size: 14px;
+  display: none;
+}
+
+.alert-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(12, 30, 6, 0.35);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.alert-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.alert-overlay .alert {
+  min-width: 280px;
+  max-width: 360px;
+  margin: 0;
+  font-size: 15px;
+  box-shadow: 0 18px 45px rgba(18, 42, 10, 0.25);
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 14px;
+  color: rgba(26, 46, 9, 0.72);
+  padding-top: 4px;
+  border-top: 1px solid rgba(152, 214, 78, 0.2);
+}
+
+.signup-text a {
+  color: var(--cane-600);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
+.forgot-pass {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0 12px;
+  font-size: 13px;
+  color: rgba(26, 46, 9, 0.7);
+}
+
+.forgot-pass a {
+  color: var(--cane-600);
+  text-decoration: none;
+}
+
+.forgot-pass a:hover {
+  text-decoration: underline;
+}
+
+.remember-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(26, 46, 9, 0.75);
+}
+
+.remember-wrapper input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cane-600);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .page-wrapper {
+    padding: 28px 18px;
+  }
+  .container {
+    padding: 24px 22px;
+    border-radius: 16px;
+  }
+  h2 {
+    font-size: 24px;
+  }
+  .form-field {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .form-field label {
+    margin-bottom: 6px;
+  }
+  input {
+    font-size: 15px;
+    padding: 10px;
+  }
+  button {
+    font-size: 0.95rem;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .page-wrapper {
+    padding: 22px 14px;
+  }
+  .container {
+    padding: 18px 16px;
+  }
+  h2 {
+    font-size: 22px;
+  }
+  input {
+    font-size: 14px;
+    padding: 9px;
+  }
+  button {
+    font-size: 0.9rem;
+    padding: 9px 0;
+  }
+}
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="main-background">
+  <div class="green-overlay"></div>
+  <div class="page-wrapper">
+    <div class="container">
+      <h2>Sign in</h2>
+      <p class="subtitle">Enter your credentials to access your account.</p>
+      <form id="loginForm">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Your Email address" required>
+        </div>
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter password" required style="padding-right: 40px;">
+          <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')" style="position: absolute; right: 14px; top: 67%; transform: translateY(-50%);">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <p class="forgot-pass">
+          <span class="remember-wrapper">
+            <input type="checkbox" id="rememberMe">
+            <label for="rememberMe">Remember me</label>
+          </span>
+          <a href="farmers_forgotpass.html">Forgot password?</a>
+        </p>
+        <button type="submit" class="btn btn-primary" id="loginButton">
+          <span class="btn-text">Sign in</span>
+          <span class="button-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p class="signup-text">
+        Don't have an account yet?
+        <a href="signup.html">Sign up</a>
+      </p>
+    </div>
+
+    <div id="alertOverlay" class="alert-overlay" aria-hidden="true">
+      <div id="alertBox" class="alert" role="alert" aria-live="assertive"></div>
+    </div>
+  </div>
+
+  <script type="module" src="../../backend/Common/firebase-config.js?v=2"></script>
+  <script type="module" src="../../backend/Common/farmers_login.js?v=3"></script>
+  <script>
+    function togglePasswordVisibility(fieldId) {
+      const passwordField = document.getElementById(fieldId);
+      const toggleButton = passwordField.nextElementSibling || passwordField.parentElement.querySelector('.password-toggle');
+      const icon = toggleButton.querySelector('i');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        passwordField.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+  </script>
+
+</body>
+</html>

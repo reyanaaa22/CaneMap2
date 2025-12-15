@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CaneMap - Privacy Policy</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --cane-500:#7ccf00; --cane-600:#5ea500; --cane-700:#497d00; --cane-200:#d8f999; --cane-900:#35530e; }
+    .section-card { background:#fff; border:1px solid var(--cane-200); }
+  </style>
+</head>
+<body class="bg-[#F5F5F0] min-h-screen">
+  <header class="bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-600)] shadow">
+    <div class="max-w-6xl mx-auto px-6 py-4 text-white flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="./lobby.html" class="hover:opacity-90"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="text-xl font-bold">Privacy Policy</h1>
+      </div>
+      <div class="text-xs opacity-90">Updated: <span id="updatedDate">2025</span></div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <div class="section-card rounded-xl p-6 space-y-4">
+      <p class="text-sm text-gray-600">This Privacy Policy explains how CaneMap collects, uses, and protects your information.</p>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">1) Information We Collect</h2>
+        <ul class="list-disc ml-5 text-gray-700">
+          <li>Account data: name, email, role (e.g., farmer, worker, SRA officer)</li>
+          <li>Field data: field name, location, size, documents you upload</li>
+          <li>Activity data: task logs, actions taken in the system</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">2) How We Use Your Information</h2>
+        <ul class="list-disc ml-5 text-gray-700">
+          <li>Identify users and manage access to features</li>
+          <li>Show fields and task logs in maps and dashboards</li>
+          <li>Notify you of approvals, remarks, and important updates</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">3) Who Can Access Your Data</h2>
+        <ul class="list-disc ml-5 text-gray-700">
+          <li>You (your own profile and activities)</li>
+          <li>Authorized roles (e.g., field owners, SRA officers) when needed</li>
+          <li>System administrators for support and maintenance</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">4) How We Protect Your Data</h2>
+        <ul class="list-disc ml-5 text-gray-700">
+          <li>Authentication via Firebase (secure login)</li>
+          <li>Role-based access to data</li>
+          <li>Secure storage of documents in the database and cloud storage</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">5) Your Rights</h2>
+        <ul class="list-disc ml-5 text-gray-700">
+          <li>Request correction of incorrect information</li>
+          <li>Request deletion of your data (subject to approvals and records)</li>
+          <li>Ask questions about how we handle your data</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-[var(--cane-900)]">6) Contact</h2>
+        <p class="text-gray-700">For privacy concerns, contact your SRA representative or the system admin.</p>
+      </section>
+    </div>
+  </main>
+  <script>document.getElementById('updatedDate').textContent = new Date().getFullYear();</script>
+</body>
+</html>

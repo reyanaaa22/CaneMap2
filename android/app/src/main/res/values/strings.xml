@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CaneMap</string>
+    <string name="title_activity_main">CaneMap</string>
+    <string name="package_name">com.canemap.app</string>
+    <string name="custom_url_scheme">com.canemap.app</string>
+</resources>

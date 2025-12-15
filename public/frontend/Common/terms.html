@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CaneMap - Terms of Service</title>
+  <link rel="stylesheet" href="/css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --cane-500:#7ccf00; --cane-600:#5ea500; --cane-700:#497d00; --cane-200:#d8f999; --cane-900:#35530e; }
+    .section-card { background:#fff; border:1px solid var(--cane-200); }
+  </style>
+</head>
+<body class="bg-[#F5F5F0] min-h-screen">
+  <header class="bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-600)] shadow">
+    <div class="max-w-6xl mx-auto px-6 py-4 text-white flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="./lobby.html" class="hover:opacity-90"><i class="fas fa-arrow-left"></i></a>
+        <h1 class="text-xl font-bold">Terms of Service</h1>
+      </div>
+      <div class="text-xs opacity-90">Updated: <span id="updatedDate">2025</span></div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <div class="section-card rounded-xl p-6">
+      <p class="text-sm text-gray-600 mb-4">Welcome to CaneMap. By accessing or using CaneMap, you agree to these Terms. If you do not agree, please do not use the service.</p>
+      <ol class="space-y-4 list-decimal ml-5 text-[var(--cane-900)]">
+        <li>
+          <span class="font-semibold">Introduction and Purpose</span>
+          <p class="text-gray-700">CaneMap is an agricultural decision-support platform for field registration, mapping, task logging, and coordination with SRA officers.</p>
+        </li>
+        <li>
+          <span class="font-semibold">Acceptance of Terms</span>
+          <p class="text-gray-700">You acknowledge that using CaneMap means you accept and agree to be bound by these Terms.</p>
+        </li>
+        <li>
+          <span class="font-semibold">User Responsibilities</span>
+          <ul class="list-disc ml-5 text-gray-700">
+            <li>Provide accurate information (e.g., names, field details, documents).</li>
+            <li>Use the platform in compliance with applicable laws.</li>
+            <li>Keep your login credentials secure and confidential.</li>
+          </ul>
+        </li>
+        <li>
+          <span class="font-semibold">Prohibited Actions</span>
+          <ul class="list-disc ml-5 text-gray-700">
+            <li>Attempting to hack, scrape, or disrupt services.</li>
+            <li>Accessing data you are not authorized to view.</li>
+            <li>Uploading malicious or illegal content.</li>
+          </ul>
+        </li>
+        <li>
+          <span class="font-semibold">Data and Availability</span>
+          <p class="text-gray-700">CaneMap is provided “as is.” We strive for reliability but do not guarantee uninterrupted access or error-free operation.</p>
+        </li>
+        <li>
+          <span class="font-semibold">Limitation of Liability</span>
+          <p class="text-gray-700">To the maximum extent permitted by law, CaneMap is not liable for indirect, incidental, or consequential damages arising from use of the service.</p>
+        </li>
+        <li>
+          <span class="font-semibold">Changes to Terms</span>
+          <p class="text-gray-700">We may update these Terms from time to time. Continued use after updates constitutes acceptance of the new Terms.</p>
+        </li>
+        <li>
+          <span class="font-semibold">Contact</span>
+          <p class="text-gray-700">For questions about these Terms, contact the system administrator or your SRA representative.</p>
+        </li>
+      </ol>
+    </div>
+  </main>
+  <script>
+    document.getElementById('updatedDate').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

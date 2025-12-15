@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Verification | CaneMap</title>
+
+  <!-- Tailwind CDN -->
+  <link rel="stylesheet" href="/css/output.css?v=20251124">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fade-in {
+      animation: fadeIn 0.6s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="verifyContainer" class="text-center p-8 bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 fade-in">
+    <div class="loader border-4 border-gray-200 border-t-green-500 rounded-full w-12 h-12 mx-auto animate-spin mb-4"></div>
+    <h2 class="text-xl font-semibold text-gray-800">Verifying your email...</h2>
+    <p class="text-gray-500 mt-2">Please wait a moment.</p>
+  </div>
+
+  <script>
+    const container = document.getElementById("verifyContainer");
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+
+    if (!email) {
+      container.innerHTML = `
+        <div class="text-center p-8 bg-white rounded-2xl shadow-2xl fade-in">
+          <div class="text-5xl mb-3">❌</div>
+          <h2 class="text-xl font-semibold text-gray-800 mb-2">Invalid Verification Link</h2>
+          <p class="text-gray-500 mb-4">This link is missing the email parameter or has expired.</p>
+          <a href="https://canemap-system.web.app/frontend/Common/farmers_login.html"
+             class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition">
+             Go to Login
+          </a>
+        </div>`;
+    } else {
+      const target = `https://us-central1-canemap-system.cloudfunctions.net/verifyEmailLink?email=${encodeURIComponent(email)}`;
+
+      fetch(target)
+        .then(res => res.text())
+        .then(result => {
+          if (result.includes("✅ Email verified successfully")) {
+            container.innerHTML = `
+              <div class="fade-in">
+                <div class="text-6xl mb-4 text-green-500 animate-bounce">✅</div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Email Verified Successfully!</h2>
+                <p class="text-gray-500 mb-6">
+                  Thank you for verifying your account, <b>${email}</b>.<br>
+                  You may now log in to your CaneMap account.
+                </p>
+                <a href="https://canemap-system.web.app/frontend/Common/farmers_login.html"
+                   class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg shadow-md transition">
+                   Proceed to Login
+                </a>
+              </div>`;
+          } else {
+            container.innerHTML = `
+              <div class="fade-in">
+                <div class="text-6xl mb-4 text-red-500">⚠️</div>
+                <h2 class="text-2xl font-semibold text-gray-800 mb-2">Verification Failed</h2>
+                <p class="text-gray-500 mb-6">An error occurred while verifying <b>${email}</b>.<br>
+                Please contact CaneMap support if this issue persists.</p>
+                <a href="https://canemap-system.web.app/frontend/Common/farmers_login.html"
+                   class="inline-block bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-6 rounded-lg shadow-md transition">
+                   Back to Login
+                </a>
+              </div>`;
+          }
+        })
+        .catch(() => {
+          container.innerHTML = `
+            <div class="fade-in">
+              <div class="text-6xl mb-4 text-green-500">✅</div>
+              <h2 class="text-2xl font-semibold text-gray-800 mb-2">Email Verified Successfully!</h2>
+              <p class="text-gray-500 mb-6">Thank you for verifying your account, <b>${email}</b>.<br>You may now log in to your CaneMap account.</p>
+              <a href="https://canemap-system.web.app/frontend/Common/farmers_login.html"
+                 class="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg shadow-md transition">
+                 Proceed to Login
+              </a>
+            </div>`;
+        });
+    }
+  </script>
+</body>
+</html>

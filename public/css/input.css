@@ -1,0 +1,53 @@
+/* Tailwind CSS base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CaneMap custom CSS variables (for compatibility with existing code) */
+:root {
+  --cane-50: #f7fee7;
+  --cane-100: #ecfcca;
+  --cane-200: #d8f999;
+  --cane-300: #bbf451;
+  --cane-400: #9ae600;
+  --cane-500: #7ccf00;
+  --cane-600: #5ea500;
+  --cane-700: #497d00;
+  --cane-800: #3c6300;
+  --cane-900: #35530e;
+  --cane-950: #192e03;
+}
+
+/* Custom utility classes for CaneMap */
+@layer utilities {
+  .text-cane {
+    color: var(--cane-700);
+  }
+
+  .bg-cane {
+    background-color: var(--cane-600);
+  }
+
+  .border-cane {
+    border-color: var(--cane-300);
+  }
+}
+
+/* Custom component classes */
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md p-6;
+  }
+}

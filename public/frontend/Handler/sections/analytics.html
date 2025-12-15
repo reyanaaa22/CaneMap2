@@ -1,0 +1,90 @@
+<!-- Analytics Section -->
+<div class="mt-4">
+<div class="section-card rounded-2xl p-6 shadow-sm">
+    <!-- Header -->
+    <div class="mb-5">
+        <h2 class="text-2xl font-bold text-[var(--cane-950)] mb-1 flex items-center gap-2">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--cane-100)] text-[var(--cane-700)]">
+                <i class="fas fa-chart-line"></i>
+            </span>
+            Analytics Dashboard
+        </h2>
+        <p class="text-[var(--cane-700)] text-sm">Track task completion, field progress, and worker productivity</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-br from-green-50 to-white border border-green-200 rounded-xl p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-green-700">Task Completion Rate</span>
+                <i class="fas fa-percentage text-green-600 text-xl"></i>
+            </div>
+            <p id="analyticsCompletionRate" class="text-3xl font-bold text-green-900">0%</p>
+            <p class="text-xs text-gray-600 mt-1">Completed / Total tasks</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-blue-700">Fields at Harvest</span>
+                <i class="fas fa-tractor text-blue-600 text-xl"></i>
+            </div>
+            <p id="analyticsHarvestReady" class="text-3xl font-bold text-blue-900">0</p>
+            <p class="text-xs text-gray-600 mt-1">Ready to harvest now</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-xl p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-purple-700">Total Area</span>
+                <i class="fas fa-ruler-combined text-purple-600 text-xl"></i>
+            </div>
+            <p id="analyticsTotalArea" class="text-3xl font-bold text-purple-900">0</p>
+            <p class="text-xs text-gray-600 mt-1">Hectares managed</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-amber-50 to-white border border-amber-200 rounded-xl p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-amber-700">Avg Tasks/Worker</span>
+                <i class="fas fa-user-clock text-amber-600 text-xl"></i>
+            </div>
+            <p id="analyticsAvgTasksPerWorker" class="text-3xl font-bold text-amber-900">0</p>
+            <p class="text-xs text-gray-600 mt-1">Worker productivity</p>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Growth Stage Chart -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-seedling text-[var(--cane-600)]"></i>
+                Growth Stage Distribution
+            </h3>
+            <div style="position: relative; height: 300px; max-height: 300px;">
+                <canvas id="growthStageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Task Type Distribution -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-tasks text-[var(--cane-600)]"></i>
+                Task Type Breakdown
+            </h3>
+            <div style="position: relative; height: 300px; max-height: 300px;">
+                <canvas id="taskTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Field Variety Breakdown -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-leaf text-[var(--cane-600)]"></i>
+            Sugarcane Variety Distribution
+        </h3>
+        <div id="varietyBreakdown" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <!-- Will be populated dynamically -->
+        </div>
+    </div>
+</div>
+</div>

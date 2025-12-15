@@ -1,0 +1,62 @@
+<!-- Field Applications Review partial: include inside SRA dashboard main area -->
+<div class="section-card rounded-xl p-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--cane-900)]">Field Applications Review</h2>
+      <p class="text-sm text-[var(--cane-600)]">Review and add comments to registered field documents</p>
+    </div>
+    <div class="w-full sm:w-auto">
+      <select id="fieldDocsStatus" class="w-full sm:w-auto px-3 py-2 border border-[var(--cane-200)] rounded-lg text-sm">
+        <option value="needs_review" selected>Needs Review</option>
+        <option value="pending">Pending Only</option>
+        <option value="to edit">To Edit Only</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="all">All Status</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="inner-content-box rounded-lg overflow-hidden">
+    <div id="fieldDocsSubtitle" class="border-b border-[var(--cane-200)] px-6 py-3 text-[var(--cane-800)] font-semibold bg-[var(--cane-50)]">Applications Needing Review</div>
+    <div id="fieldDocsDynamic" class="min-h-[120px] divide-y divide-[var(--cane-100)]"></div>
+  </div>
+</div>
+
+<script>
+  // Update subtitle based on filter selection
+  (function() {
+    // Wait for DOM to be ready since this is loaded dynamically
+    function initializeSubtitleUpdater() {
+      const filterSelect = document.getElementById('fieldDocsStatus');
+      const subtitle = document.getElementById('fieldDocsSubtitle');
+
+      if (!filterSelect || !subtitle) {
+        // Elements not ready yet, try again
+        setTimeout(initializeSubtitleUpdater, 100);
+        return;
+      }
+
+      const updateSubtitle = () => {
+        const filterValue = filterSelect.value;
+        const subtitleMap = {
+          'needs_review': 'Applications Needing Review',
+          'pending': 'Pending Applications',
+          'to edit': 'Applications To Edit',
+          'reviewed': 'Reviewed Applications',
+          'all': 'All Applications'
+        };
+        subtitle.textContent = subtitleMap[filterValue] || 'All Applications';
+      };
+
+      // Update on filter change
+      filterSelect.addEventListener('change', updateSubtitle);
+
+      // Set initial subtitle based on current filter value
+      updateSubtitle();
+    }
+
+    // Start initialization
+    initializeSubtitleUpdater();
+  })();
+</script>
+

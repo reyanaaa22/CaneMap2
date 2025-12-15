@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>CaneMap - Tasks & Growth Tracker</title>
+  <link rel="stylesheet" href="../../css/output.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --cane-50: #f0f7e9;
+      --cane-100: #d4e8b3;
+      --cane-200: #b8d97d;
+      --cane-300: #9bcb47;
+      --cane-400: #7fbd11;
+      --cane-500: #2c5a0b;
+      --cane-600: #3a7a0f;
+      --cane-700: #2c5a0b;
+      --cane-800: #1e3e08;
+      --cane-900: #1a3607;
+      --cane-950: #0f1f04;
+    }
+
+    .section-card {
+      background: white;
+      border: 1px solid var(--cane-200);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Allow dropdown to overflow */
+    .section-card.field-select-card {
+      overflow: visible !important;
+    }
+
+    .inner-box {
+      background: var(--cane-50);
+      border: 1px solid var(--cane-200);
+    }
+
+    .badge {
+      padding: .15rem .5rem;
+      border-radius: .375rem;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+
+    .badge-done {
+      background: #e6f7e6;
+      color: #0d5a0d;
+      border: 1px solid #b3e6b3;
+    }
+
+    .badge-progress {
+      background: #e6f0ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .badge-not {
+      background: #fff3e6;
+      color: #8c4d00;
+      border: 1px solid #ffd9b3;
+    }
+
+    .badge-delayed {
+      background: #ffe6e6;
+      color: #b30000;
+      border: 1px solid #ffb3b3;
+    }
+
+    .stage-active {
+      border-color: var(--cane-600);
+      box-shadow: 0 0 0 2px rgba(58, 122, 15, 0.5);
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--cane-300);
+      background: rgba(212, 232, 179, 0.2);
+    }
+
+    @media print {
+
+      #btnDownloadPDF,
+      #btnPrint {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* prevent card/page breaks */
+      .section-card,
+      .inner-box {
+        page-break-inside: avoid;
+      }
+    }
+
+    /* Tooltip container */
+    .btn-tooltip {
+      position: relative;
+    }
+
+    /* Tooltip bubble appears BELOW */
+    .btn-tooltip:hover .tooltip-text {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(4px);
+    }
+
+    /* Tooltip bubble BELOW */
+    /* Custom Dropdown Styles - Dropdown from input */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown-trigger {
+      appearance: none;
+      width: 100%;
+      padding: 0.5rem 1rem 0.5rem 1rem;
+      padding-right: 2.5rem;
+      text-align: left;
+      font-size: 0.875rem;
+      background: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      border-radius: 0.375rem;
+    }
+
+    .dropdown-trigger:hover {
+      background-color: var(--cane-50);
+    }
+
+    .dropdown-trigger:focus {
+      outline: none;
+      background-color: var(--cane-50);
+      box-shadow: 0 0 0 2px rgba(58, 122, 15, 0.2);
+    }
+
+    .dropdown-trigger-icon {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: auto;
+      transition: transform 0.3s ease;
+      color: var(--cane-600);
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .dropdown-trigger.open .dropdown-trigger-icon {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--cane-200);
+      border-top: none;
+      border-radius: 0 0 0.5rem 0.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      margin-top: -1px;
+    }
+
+    .dropdown-menu.open {
+      display: block;
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-menu-content {
+      width: 100%;
+    }
+
+    .dropdown-menu-header {
+      display: none;
+    }
+
+    .dropdown-menu-close {
+      display: none;
+    }
+
+    .dropdown-options {
+      padding: 0;
+    }
+
+    .dropdown-option {
+      padding: 0.75rem 1rem;
+      border: none;
+      background: white;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.875rem;
+      color: var(--cane-800);
+      border-bottom: 1px solid var(--cane-100);
+      transition: background-color 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dropdown-option:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-option:hover {
+      background-color: var(--cane-100);
+    }
+
+    .dropdown-option.selected {
+      background-color: var(--cane-200);
+      color: var(--cane-700);
+      font-weight: 600;
+    }
+
+    .dropdown-option.selected::after {
+      content: '✓';
+      color: var(--cane-600);
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+
+    /* Desktop: Use native select */
+    @media (min-width: 768px) {
+      .custom-dropdown {
+        display: none;
+      }
+
+      .native-select-wrapper {
+        display: block;
+      }
+    }
+
+    /* Mobile: Use custom dropdown */
+    @media (max-width: 767px) {
+      .native-select-wrapper {
+        display: none;
+      }
+
+      .custom-dropdown {
+        display: block;
+      }
+    }
+
+    .tooltip-text {
+      transition: all 0.2s ease;
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      top: 100%;
+      /* ⬅ DITO para lumabas SA BABA */
+      left: 50%;
+      transform: translateX(-50%) translateY(0px);
+      background: #000000dd;
+      color: white;
+      padding: 4px 8px;
+      font-size: 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 480px) {
+      header .flex.items-center.gap-2 {
+        margin-left: auto;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-[var(--cane-50)] to-[var(--cane-100)] min-h-screen text-[var(--cane-900)]">
+
+  <header class="bg-white/90 backdrop-blur border-b border-[var(--cane-200)]">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
+
+      <div class="flex items-center justify-between w-full">
+
+        <!-- LEFT: Back + Title -->
+        <div class="flex items-center gap-3">
+          <a href="dashboard.html" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] transition-colors">
+            <i class="fa-solid fa-arrow-left text-lg"></i>
+          </a>
+          <h1
+            class="text-xl md:text-2xl font-bold bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-500)] bg-clip-text text-transparent">
+            Growth Tracker
+          </h1>
+        </div>
+
+        <div class="flex items-center gap-2 print:hidden">
+
+          <div class="btn-tooltip">
+            <button id="btnDownloadPDF" class="px-3 py-2 bg-white border border-gray-300 shadow-md hover:shadow-lg 
+      transition rounded-lg text-xs font-medium flex items-center gap-1">
+              <i class="fa-solid fa-file-pdf text-red-600"></i> PDF
+            </button>
+            <div class="tooltip-text">Download PDF</div>
+          </div>
+
+          <div class="btn-tooltip">
+            <button id="btnPrint" class="px-3 py-2 bg-white border border-gray-300 shadow-md hover:shadow-lg 
+      transition rounded-lg text-xs font-medium flex items-center gap-1">
+              <i class="fa-solid fa-print text-blue-600"></i> Print
+            </button>
+            <div class="tooltip-text">Print Page</div>
+          </div>
+
+        </div>
+
+      </div>
+  </header>
+
+
+  <div id="captureArea">
+    <main class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 space-y-8">
+      <!-- GROWTH TRACKER HEADER + STATUS like in image -->
+      <section class="space-y-4">
+        <div>
+          <h2 class="font-semibold text-lg text-[var(--cane-900)]">Growth Tracker</h2>
+          <p class="text-sm text-[var(--cane-800)]">Monitor sugarcane growth and estimate harvest times with 90%
+            accuracy</p>
+        </div>
+        <!-- Field select -->
+        <div class="section-card field-select-card rounded-xl p-0 overflow-visible">
+          <div
+            class="px-3 py-2 text-sm text-[var(--cane-700)] bg-[var(--cane-100)] border-b border-[var(--cane-200)] font-medium">
+            Select Field</div>
+
+          <!-- Desktop: Native Select -->
+          <div class="native-select-wrapper relative">
+            <select id="gtField" class="appearance-none w-full px-4 py-2 pr-10 text-sm bg-white focus:outline-none">
+              <option>Field A</option>
+              <option>Field B</option>
+              <option>Field C</option>
+            </select>
+            <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[var(--cane-600)] text-base"></i>
+          </div>
+
+          <!-- Mobile: Custom Dropdown -->
+          <div class="custom-dropdown">
+            <button class="dropdown-trigger" id="dropdownTrigger">
+              <span id="dropdownTriggerText">Select a field</span>
+              <i class="fa-solid fa-chevron-down dropdown-trigger-icon"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="dropdownMenu">
+              <div class="dropdown-menu-content">
+                <div class="dropdown-menu-header">
+                  <h3>Select Field</h3>
+                  <button class="dropdown-menu-close" id="dropdownClose">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+                <div class="dropdown-options" id="dropdownOptions"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="font-semibold text-base" id="fieldStatusTitle">Growth Status</p>
+        <div class="section-card rounded-xl p-4 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Crop Variety:</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiVariety">Phil 99-1793</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Days Since Planting:</div>
+              <div class="inner-box rounded px-3 py-1.5"><span id="uiDays">0</span> Days</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Location:</div>
+              <div class="inner-box rounded px-3 py-1.5">Block 7, Section A</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Date Planted:</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiPlanted">—</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Current Growth Stage:</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiStage">—</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Area Size:</div>
+              <div class="inner-box rounded px-3 py-1.5">2.5</div>
+            </div>
+          </div>
+
+          <div class="inner-box rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2 text-base font-semibold"><i
+                  class="fa-solid fa-calendar-check text-[var(--cane-700)] mr-1"></i> Harvest Estimate</div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
+              <div>
+                <div class="text-[var(--cane-800)] text-xs">Estimated Harvest Date</div>
+                <div class="font-semibold" id="uiHarvest">-</div>
+                <div class="text-[10px] text-gray-600">± 5 days variance</div>
+              </div>
+              <div>
+                <div class="text-[var(--cane-800)] text-xs">Days Remaining</div>
+                <div class="font-semibold"><span id="uiRemain">0</span> Days</div>
+                <div class="text-[10px] text-gray-600">Approximately <span id="uiMonths">0</span> months</div>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center gap-2 text-[10px] text-gray-700"><i class="fa-solid fa-circle-info"></i>
+              90% estimate accuracy based on continuous task logs and timestamps</div>
+          </div>
+        </div>
+
+        <div class="section-card rounded-xl p-4">
+          <p class="font-semibold text-base mb-4">Growth Timeline</p>
+          <div class="space-y-3 text-base">
+            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-[var(--cane-600)]"></span>
+              <div>
+                <p class="font-semibold">Germination</p>
+                <p class="text-xs text-gray-700" id="tlGerm">Completed -</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-[var(--cane-400)]"></span>
+              <div>
+                <p class="font-semibold">Tillering Stage</p>
+                <p class="text-xs text-gray-700" id="tlTill">In Progress - <span id="tlPct">0</span>% Complete</p>
+              </div>
+            </div>
+            <div class="w-full h-1 bg-gray-300 rounded relative overflow-hidden">
+              <div id="tlBar" class="absolute left-0 top-0 h-1 bg-[var(--cane-600)]" style="width:0%"></div>
+            </div>
+            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-gray-300"></span>
+              <div>
+                <p class="font-semibold">Grand Growth</p>
+                <p class="text-xs text-gray-700" id="tlGrand">Expected -</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-gray-300"></span>
+              <div>
+                <p class="font-semibold">Maturity</p>
+                <p class="text-xs text-gray-700" id="tlMat">Expected -</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Historical Planting & Harvest Data -->
+        <div id="historicalDataSection" class="section-card rounded-xl p-4" style="display: none;">
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-semibold text-sm flex items-center gap-2">
+              <i class="fas fa-history text-[var(--cane-700)]"></i>
+              Previous Cycles History
+            </p>
+            <button id="toggleHistoryBtn"
+              class="text-xs text-[var(--cane-700)] hover:text-[var(--cane-800)] font-medium">
+              <i class="fas fa-chevron-up"></i> Collapse
+            </button>
+          </div>
+          <div id="historicalDataContent" class="space-y-3">
+            <!-- Historical data will be populated here -->
+          </div>
+        </div>
+      </section>
+      <div id="pdfTimestamp" class="text-[10px] text-gray-600 mt-8 mb-4">
+        Generated on: <span id="generatedStamp"></span>
+      </div>
+
+
+      <script type="module">
+        import { auth, db } from '../../backend/Common/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+        import { collection, query, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS } from '../../backend/Handler/growth-tracker.js';
+
+        let currentUserId = null;
+        let userFields = [];
+        let selectedFieldId = null;
+
+        // Auth state listener
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            currentUserId = user.uid;
+            await loadUserFields();
+          } else {
+            window.location.href = '../Common/farmers_login.html';
+          }
+        });
+
+        // Load user's reviewed and active fields
+        async function loadUserFields() {
+          try {
+            const fieldsQuery = query(
+              collection(db, 'fields'),
+              where('userId', '==', currentUserId),
+              where('status', 'in', ['reviewed', 'active'])
+            );
+
+            const snapshot = await getDocs(fieldsQuery);
+            userFields = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            populateFieldDropdown();
+
+            if (userFields.length > 0) {
+              selectedFieldId = userFields[0].id;
+              await displayFieldGrowthData(selectedFieldId);
+            } else {
+              showNoFieldsMessage();
+            }
+
+          } catch (error) {
+            console.error('Error loading fields:', error);
+            showError('Failed to load fields. Please try again.');
+          }
+        }
+
+        // Populate field dropdown (both native and custom)
+        function populateFieldDropdown() {
+          const fieldSelect = document.getElementById('gtField');
+          const dropdownOptions = document.getElementById('dropdownOptions');
+          const dropdownTrigger = document.getElementById('dropdownTrigger');
+          const dropdownTriggerText = document.getElementById('dropdownTriggerText');
+
+          if (!fieldSelect) return;
+
+          fieldSelect.innerHTML = '';
+          if (dropdownOptions) dropdownOptions.innerHTML = '';
+
+          if (userFields.length === 0) {
+            fieldSelect.innerHTML = '<option>No fields available</option>';
+            fieldSelect.disabled = true;
+            if (dropdownTriggerText) dropdownTriggerText.textContent = 'No fields available';
+            return;
+          }
+
+          // Populate native select
+          userFields.forEach(field => {
+            const option = document.createElement('option');
+            option.value = field.id;
+            option.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+            fieldSelect.appendChild(option);
+          });
+
+          // Populate custom dropdown
+          if (dropdownOptions) {
+            userFields.forEach((field, index) => {
+              const optionBtn = document.createElement('button');
+              optionBtn.type = 'button';
+              optionBtn.className = 'dropdown-option' + (index === 0 ? ' selected' : '');
+              optionBtn.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+              optionBtn.dataset.value = field.id;
+
+              optionBtn.addEventListener('click', async () => {
+                selectedFieldId = field.id;
+                dropdownTriggerText.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+
+                // Update selected state
+                document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+                optionBtn.classList.add('selected');
+
+                // Close dropdown
+                closeDropdown();
+
+                // Load data
+                await displayFieldGrowthData(selectedFieldId);
+              });
+
+              dropdownOptions.appendChild(optionBtn);
+            });
+          }
+
+          // Native select change handler
+          fieldSelect.addEventListener('change', async (e) => {
+            selectedFieldId = e.target.value;
+            const selectedField = userFields.find(f => f.id === selectedFieldId);
+            if (dropdownTriggerText && selectedField) {
+              dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
+            }
+            await displayFieldGrowthData(selectedFieldId);
+          });
+        }
+
+        // Custom dropdown functions
+        function openDropdown() {
+          const dropdownMenu = document.getElementById('dropdownMenu');
+          const dropdownTrigger = document.getElementById('dropdownTrigger');
+          if (dropdownMenu) dropdownMenu.classList.add('open');
+          if (dropdownTrigger) dropdownTrigger.classList.add('open');
+        }
+
+        function closeDropdown() {
+          const dropdownMenu = document.getElementById('dropdownMenu');
+          const dropdownTrigger = document.getElementById('dropdownTrigger');
+          if (dropdownMenu) dropdownMenu.classList.remove('open');
+          if (dropdownTrigger) dropdownTrigger.classList.remove('open');
+        }
+
+        // Dropdown event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+          const dropdownTrigger = document.getElementById('dropdownTrigger');
+          const dropdownMenu = document.getElementById('dropdownMenu');
+
+          if (dropdownTrigger) {
+            dropdownTrigger.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const isOpen = dropdownMenu?.classList.contains('open');
+              if (isOpen) {
+                closeDropdown();
+              } else {
+                openDropdown();
+              }
+            });
+          }
+
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            const dropdown = document.querySelector('.custom-dropdown');
+            if (dropdown && !dropdown.contains(e.target)) {
+              closeDropdown();
+            }
+          });
+
+          // Close dropdown when pressing Escape
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              closeDropdown();
+            }
+          });
+        });
+
+        // Display field growth data
+        async function displayFieldGrowthData(fieldId) {
+          try {
+            const growthData = await getFieldGrowthData(fieldId);
+
+
+            // Update field title
+            const selectedField = userFields.find(f => f.id === fieldId);
+            const fieldName = selectedField?.field_name || selectedField?.fieldName || 'Field';
+
+            window.latestGrowthData = growthData;
+            window.latestFieldName = fieldName;
+
+            document.getElementById('fieldStatusTitle').textContent = `${fieldName} - Growth Status`;
+
+            // Update variety display
+            document.getElementById('uiVariety').textContent = growthData.variety || 'Not specified';
+
+            // Check if field has been planted
+            if (!growthData.plantingDate) {
+              showNotPlantedState();
+              return;
+            }
+
+            // Remove "not planted" message if it exists (when switching from unplanted to planted field)
+            const notPlantedMsg = document.getElementById('notPlantedInfo');
+            if (notPlantedMsg) notPlantedMsg.remove();
+
+            // Update planting date
+            const plantingDate = growthData.plantingDate;
+            document.getElementById('uiPlanted').textContent = plantingDate.toLocaleDateString();
+
+            // Update DAP
+            document.getElementById('uiDays').textContent = growthData.DAP || '0';
+
+            // Update current growth stage
+            document.getElementById('uiStage').textContent = growthData.currentGrowthStage || '—';
+
+            // Update expected harvest date
+            if (growthData.expectedHarvestDate) {
+              document.getElementById('uiHarvest').textContent = growthData.expectedHarvestDate.toLocaleDateString();
+            } else {
+              document.getElementById('uiHarvest').textContent = '—';
+            }
+
+            // Update days remaining
+            if (growthData.daysRemaining !== null) {
+              document.getElementById('uiRemain').textContent = Math.max(0, growthData.daysRemaining).toString();
+              const months = Math.max(0, Math.round(growthData.daysRemaining / 30));
+              document.getElementById('uiMonths').textContent = months.toString();
+            } else {
+              document.getElementById('uiRemain').textContent = '—';
+              document.getElementById('uiMonths').textContent = '—';
+            }
+
+            // Update timeline progress
+            updateTimeline(growthData);
+
+            // Show warnings for delays or overdue harvest
+            showWarnings(growthData);
+
+            // ✅ Display historical planting & harvest data
+            await displayHistoricalData(fieldId);
+
+          } catch (error) {
+            console.error('Error displaying field growth data:', error);
+            showError('Failed to load growth tracking data.');
+          }
+        }
+
+        // Update timeline with progress
+        function updateTimeline(growthData) {
+          const DAP = growthData.DAP || 0;
+          const totalDays = VARIETY_HARVEST_DAYS[growthData.variety] || 365;
+
+          // Update progress bar
+          const progress = Math.min(100, Math.round((DAP / totalDays) * 100));
+          const tlBar = document.getElementById('tlBar');
+          const tlPct = document.getElementById('tlPct');
+
+          if (tlBar) tlBar.style.width = progress + '%';
+          if (tlPct) tlPct.textContent = progress.toString();
+
+          // Update timeline labels
+          const plantingDate = growthData.plantingDate;
+
+          const germEnd = new Date(plantingDate.getTime() + 45 * 24 * 60 * 60 * 1000);
+          const tillEnd = new Date(plantingDate.getTime() + 100 * 24 * 60 * 60 * 1000);
+          const grandEnd = new Date(plantingDate.getTime() + 240 * 24 * 60 * 60 * 1000);
+          const matEnd = new Date(plantingDate.getTime() + 300 * 24 * 60 * 60 * 1000);
+
+          const tlGerm = document.getElementById('tlGerm');
+          const tlTill = document.getElementById('tlTill');
+          const tlGrand = document.getElementById('tlGrand');
+          const tlMat = document.getElementById('tlMat');
+
+          if (tlGerm) tlGerm.textContent = (DAP >= 45 ? 'Completed - ' : 'Expected - ') + germEnd.toLocaleDateString();
+          if (tlTill) tlTill.innerHTML = (DAP >= 100 ? 'Completed - ' : 'In Progress - ') + `<span id="tlPct">${progress}</span>% Complete`;
+          if (tlGrand) tlGrand.textContent = 'Expected - ' + grandEnd.toLocaleDateString();
+          if (tlMat) tlMat.textContent = 'Expected - ' + matEnd.toLocaleDateString();
+        }
+
+        // Show warnings for delays and overdue harvests
+        function showWarnings(growthData) {
+          const warningsContainer = document.createElement('div');
+          warningsContainer.className = 'mt-4 space-y-2';
+          warningsContainer.id = 'growthWarnings';
+
+          // Remove existing warnings
+          const existingWarnings = document.getElementById('growthWarnings');
+          if (existingWarnings) existingWarnings.remove();
+
+          let hasWarnings = false;
+
+          // Check for fertilization delays
+          if (growthData.delayInfo && growthData.delayInfo.isDelayed) {
+            hasWarnings = true;
+            const delayWarning = document.createElement('div');
+            delayWarning.className = 'px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200';
+            delayWarning.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+            <div class="text-sm">
+              <p class="font-semibold text-yellow-800">Fertilization Delayed</p>
+              <p class="text-yellow-700">${growthData.delayInfo.delayType === 'basal' ? 'Basal' : growthData.delayInfo.delayType === 'main' ? 'Main' : 'Both'} fertilization is delayed by ${growthData.delayInfo.delayDays} days. This may affect yield.</p>
+            </div>
+          </div>
+        `;
+            warningsContainer.appendChild(delayWarning);
+          }
+
+          // Check for overdue harvest
+          if (growthData.overdueInfo && growthData.overdueInfo.isOverdue) {
+            hasWarnings = true;
+            const overdueWarning = document.createElement('div');
+            overdueWarning.className = 'px-4 py-3 rounded-lg bg-red-50 border border-red-200';
+            overdueWarning.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i class="fas fa-exclamation-circle text-red-600"></i>
+            <div class="text-sm">
+              <p class="font-semibold text-red-800">Harvest Overdue</p>
+              <p class="text-red-700">This field is ${growthData.overdueInfo.overdueDays} days overdue for harvest. Immediate harvesting recommended.</p>
+            </div>
+          </div>
+        `;
+            warningsContainer.appendChild(overdueWarning);
+          }
+
+          if (hasWarnings) {
+            // Insert warnings after the growth status card
+            const growthCard = document.querySelector('.section-card');
+            if (growthCard && growthCard.parentNode) {
+              growthCard.parentNode.insertBefore(warningsContainer, growthCard.nextSibling);
+            }
+          }
+        }
+
+        // Show not planted state
+        function showNotPlantedState() {
+          document.getElementById('uiDays').textContent = '—';
+          document.getElementById('uiStage').textContent = 'Not Planted';
+          document.getElementById('uiPlanted').textContent = 'Not planted yet';
+          document.getElementById('uiHarvest').textContent = '—';
+          document.getElementById('uiRemain').textContent = '—';
+          document.getElementById('uiMonths').textContent = '—';
+          document.getElementById('tlBar').style.width = '0%';
+          document.getElementById('tlPct').textContent = '0';
+
+          // Show info message
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'mt-4 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200';
+          infoDiv.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="fas fa-info-circle text-blue-600"></i>
+          <p class="text-sm text-blue-800">This field has not been planted yet. Growth tracking will begin once a planting task is completed.</p>
+        </div>
+      `;
+
+          const growthCard = document.querySelector('.section-card');
+          if (growthCard && growthCard.parentNode) {
+            const existing = document.getElementById('notPlantedInfo');
+            if (existing) existing.remove();
+            infoDiv.id = 'notPlantedInfo';
+            growthCard.parentNode.insertBefore(infoDiv, growthCard.nextSibling);
+          }
+        }
+
+        // Show no fields message
+        function showNoFieldsMessage() {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'mt-6 px-4 py-8 rounded-lg bg-gray-50 border border-gray-200 text-center';
+          messageDiv.innerHTML = `
+        <i class="fas fa-map-marker-alt text-4xl text-gray-400 mb-3"></i>
+        <p class="text-gray-600 font-medium">No reviewed fields found</p>
+        <p class="text-sm text-gray-500 mt-2">Please register a field and wait for SRA approval.</p>
+        <a href="Register-field.html" class="mt-4 inline-block px-4 py-2 bg-[var(--cane-700)] text-white rounded-lg hover:bg-[var(--cane-800)] transition">
+          Register a Field
+        </a>
+      `;
+
+          const mainSection = document.querySelector('main section');
+          if (mainSection) {
+            mainSection.appendChild(messageDiv);
+          }
+        }
+
+        // Show error message
+        function showError(message) {
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
+          errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
+          document.body.appendChild(errorDiv);
+
+          setTimeout(() => errorDiv.remove(), 4000);
+        }
+
+        // ✅ Display historical planting & harvest data
+        async function displayHistoricalData(fieldId) {
+          try {
+            const selectedField = userFields.find(f => f.id === fieldId);
+            if (!selectedField) return;
+
+            const growthHistory = selectedField.growthHistory || {};
+            const plantingHistory = selectedField.plantingHistory || {};
+
+            // Combine both histories
+            const allHistory = [];
+
+            // Add ratoon cycles from growthHistory
+            for (const [key, cycleData] of Object.entries(growthHistory)) {
+              if (key.startsWith('cycle')) {
+                allHistory.push({
+                  ...cycleData,
+                  type: 'ratoon',
+                  cycleNumber: cycleData.cycle
+                });
+              }
+            }
+
+            // Add planting cycles from plantingHistory
+            for (const [key, cycleData] of Object.entries(plantingHistory)) {
+              if (key.startsWith('cycle')) {
+                allHistory.push({
+                  ...cycleData,
+                  type: 'replant',
+                  cycleNumber: cycleData.plantingCycle
+                });
+              }
+            }
+
+            // Sort by archived date (most recent first)
+            allHistory.sort((a, b) => {
+              const dateA = a.archivedAt?.toDate?.() || new Date(0);
+              const dateB = b.archivedAt?.toDate?.() || new Date(0);
+              return dateB - dateA;
+            });
+
+            // Show/hide historical section
+            const historicalSection = document.getElementById('historicalDataSection');
+            const historicalContent = document.getElementById('historicalDataContent');
+
+            if (allHistory.length === 0) {
+              historicalSection.style.display = 'none';
+              return;
+            }
+
+            historicalSection.style.display = 'block';
+
+            // Render historical data
+            historicalContent.innerHTML = allHistory.map((cycle, index) => {
+              const plantingDate = cycle.plantingDate?.toDate?.() || cycle.plantingDate;
+              const harvestDate = cycle.actualHarvestDate?.toDate?.() || cycle.actualHarvestDate;
+              const plantingStr = plantingDate ? plantingDate.toLocaleDateString() : '—';
+              const harvestStr = harvestDate ? harvestDate.toLocaleDateString() : 'Not harvested';
+              const dap = cycle.finalDAP || '—';
+              const yield_ = cycle.actualYield ? `${cycle.actualYield} tons` : '—';
+              const variety = cycle.variety || '—';
+              const ratoonNum = cycle.ratoonNumber || 0;
+
+              const typeLabel = cycle.type === 'ratoon' ? `Ratoon Cycle ${ratoonNum}` : `Planting Cycle ${cycle.cycleNumber}`;
+              const typeIcon = cycle.type === 'ratoon' ? 'fa-redo' : 'fa-seedling';
+              const typeColor = cycle.type === 'ratoon' ? 'text-blue-700' : 'text-green-700';
+              const bgColor = cycle.type === 'ratoon' ? 'bg-blue-50' : 'bg-green-50';
+              const borderColor = cycle.type === 'ratoon' ? 'border-blue-200' : 'border-green-200';
+
+              return `
+            <div class="border ${borderColor} ${bgColor} rounded-lg p-3 text-xs">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-semibold ${typeColor} flex items-center gap-1.5">
+                  <i class="fas ${typeIcon}"></i>
+                  ${typeLabel}
+                </h4>
+                <span class="text-[10px] text-gray-600">${cycle.archivedAt?.toDate?.()?.toLocaleDateString() || '—'}</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-gray-700">
+                <div>
+                  <span class="font-medium text-gray-600">Planted:</span>
+                  <span class="block font-semibold">${plantingStr}</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-600">Harvested:</span>
+                  <span class="block font-semibold">${harvestStr}</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-600">Final DAP:</span>
+                  <span class="block font-semibold">${dap} days</span>
+                </div>
+                <div>
+                  <span class="font-medium text-gray-600">Yield:</span>
+                  <span class="block font-semibold">${yield_}</span>
+                </div>
+                <div class="col-span-2">
+                  <span class="font-medium text-gray-600">Variety:</span>
+                  <span class="block font-semibold">${variety}</span>
+                </div>
+              </div>
+            </div>
+          `;
+            }).join('');
+
+            // Setup toggle button
+            const toggleBtn = document.getElementById('toggleHistoryBtn');
+            let isCollapsed = false;
+
+            toggleBtn.addEventListener('click', () => {
+              isCollapsed = !isCollapsed;
+              if (isCollapsed) {
+                historicalContent.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Expand';
+              } else {
+                historicalContent.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-up"></i> Collapse';
+              }
+            });
+
+          } catch (error) {
+            console.error('Error displaying historical data:', error);
+          }
+        }
+      </script>
+
+      <script>
+        // Wait for html2pdf to be available
+        function waitForHtml2pdf() {
+          return new Promise((resolve) => {
+            if (typeof html2pdf !== 'undefined') {
+              resolve();
+            } else {
+              const checkInterval = setInterval(() => {
+                if (typeof html2pdf !== 'undefined') {
+                  clearInterval(checkInterval);
+                  resolve();
+                }
+              }, 100);
+              // Timeout after 5 seconds
+              setTimeout(() => {
+                clearInterval(checkInterval);
+                resolve();
+              }, 5000);
+            }
+          });
+        }
+
+        // Add timestamp on print
+        window.onbeforeprint = () => {
+          document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
+        };
+
+        // PRINT BUTTON
+        document.getElementById("btnPrint").addEventListener("click", () => {
+          document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
+          window.print();
+        });
+
+        // PDF BUTTON (captures the whole UI)
+        document.getElementById("btnDownloadPDF").addEventListener("click", async () => {
+          const btn = document.getElementById("btnDownloadPDF");
+          const originalContent = btn.innerHTML;
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+
+          try {
+            // Ensure html2pdf is loaded
+            await waitForHtml2pdf();
+            
+            if (typeof html2pdf === 'undefined') {
+              throw new Error('html2pdf library failed to load');
+            }
+
+            document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
+
+            const content = document.getElementById("captureArea");
+            const filename = `CaneMap_Growth_Report_${Date.now()}.pdf`;
+            
+            const opt = {
+              margin: 10,
+              filename: filename,
+              html2canvas: { 
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff'
+              },
+              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate PDF - use Android-compatible method if in app, otherwise use standard
+            const { isAndroidApp, downloadFile } = await import('../../backend/Common/android-download.js');
+
+            if (isAndroidApp()) {
+              // For Android: Generate blob and use download utility
+              const pdfBlob = await new Promise((resolve, reject) => {
+                try {
+                  html2pdf()
+                    .set(opt)
+                    .from(content)
+                    .outputPdf('blob')
+                    .then(resolve)
+                    .catch(reject);
+                } catch (e) {
+                  reject(e);
+                }
+              });
+              
+              if (!pdfBlob || pdfBlob.size === 0) {
+                throw new Error('Generated PDF is empty');
+              }
+              
+              await downloadFile(pdfBlob, filename);
+              // Small delay to ensure download starts before hiding animation
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+              // For browser: Use standard save method
+              await html2pdf()
+                .set(opt)
+                .from(content)
+                .save();
+              // Small delay to ensure download starts before hiding animation
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+          } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+          }
+        });
+      </script>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+
+</html>

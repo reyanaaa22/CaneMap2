@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>CaneMap - Field Registration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS -->
+  <link rel="stylesheet" href="../../css/output.css">
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Leaflet.draw for polygon drawing -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --cane-50: #f7fee7;
+      --cane-100: #ecfcca;
+      --cane-200: #d8f999;
+      --cane-300: #bbf451;
+      --cane-400: #9ae600;
+      --cane-500: #7ccf00;
+      --cane-600: #5ea500;
+      --cane-700: #497d00;
+      --cane-800: #3c6300;
+      --cane-900: #35530e;
+      --cane-950: #192e03;
+    }
+
+    /* Darker default text for readability */
+    body {
+      color: var(--cane-900);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      color: var(--cane-950);
+    }
+
+    p,
+    label,
+    li,
+    span {
+      color: var(--cane-900);
+    }
+
+    .form-input {
+      color: var(--cane-900);
+    }
+
+    .form-input::placeholder {
+      color: #374151;
+    }
+
+    .form-input:focus {
+      border-color: var(--cane-500);
+      box-shadow: 0 0 0 3px rgba(124, 207, 0, 0.1);
+    }
+
+    .form-select {
+      color: var(--cane-900);
+    }
+
+    .form-select:focus {
+      border-color: var(--cane-500);
+      box-shadow: 0 0 0 3px rgba(124, 207, 0, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cane-700), var(--cane-800));
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--cane-800), var(--cane-900));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, var(--cane-600), var(--cane-700));
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, var(--cane-700), var(--cane-800));
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .section-card {
+      background: linear-gradient(135deg, white, var(--cane-50));
+      border: 1px solid var(--cane-200);
+      transition: all 0.3s ease;
+    }
+
+    .section-card:hover {
+      box-shadow: 0 8px 25px rgba(94, 165, 0, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, var(--cane-400), var(--cane-500), var(--cane-600));
+    }
+
+    .field-header {
+      text-align: left;
+    }
+
+    /* Crisp fade-in animation for success modal */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+
+    /* Loading spinner animation */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .animate-spin {
+      animation: spin 1s linear infinite;
+    }
+
+    /* Custom Mobile Dropdown Styles */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown-trigger {
+      appearance: none;
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 1rem;
+      padding-right: 2.5rem;
+      text-align: left;
+      font-size: 0.95rem;
+      background: white;
+      border: 2px solid var(--cane-300);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      color: var(--cane-900);
+      font-weight: 500;
+    }
+
+    .dropdown-trigger:hover {
+      border-color: var(--cane-400);
+      background-color: var(--cane-50);
+    }
+
+    .dropdown-trigger:focus {
+      outline: none;
+      border-color: var(--cane-500);
+      box-shadow: 0 0 0 3px rgba(124, 207, 0, 0.1);
+    }
+
+    .dropdown-trigger-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      transition: transform 0.3s ease;
+      color: var(--cane-600);
+    }
+
+    .dropdown-trigger.open .dropdown-trigger-icon {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: none;
+      border-radius: 0 0 0.5rem 0.5rem;
+      max-height: 0;
+      overflow: hidden;
+      z-index: 1000;
+      transition: max-height 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: -2px;
+    }
+
+    .dropdown-menu.open {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .dropdown-menu-content {
+      position: relative;
+      width: 100%;
+    }
+
+    .dropdown-menu-header {
+      display: none;
+    }
+
+    .dropdown-menu-close {
+      display: none;
+    }
+
+    .dropdown-options {
+      padding: 0;
+    }
+
+    .dropdown-option {
+      padding: 0.75rem 1rem;
+      border: none;
+      background: white;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--cane-800);
+      border-bottom: 1px solid var(--cane-100);
+      transition: background-color 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .dropdown-option:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-option:hover {
+      background-color: var(--cane-100);
+    }
+
+    .dropdown-option.selected {
+      background-color: var(--cane-200);
+      color: var(--cane-700);
+      font-weight: 600;
+    }
+
+    .dropdown-option.selected::after {
+      content: '✓';
+      color: var(--cane-600);
+      font-weight: bold;
+    }
+
+    /* Desktop: Use native select */
+    @media (min-width: 768px) {
+      .custom-dropdown {
+        display: none;
+      }
+
+      .native-select-wrapper {
+        display: block;
+      }
+    }
+
+    /* Mobile: Use custom dropdown */
+    @media (max-width: 767px) {
+      .native-select-wrapper {
+        display: none;
+      }
+
+      .custom-dropdown {
+        display: block;
+      }
+    }
+  </style>
+
+</head>
+
+<body class="bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-200)] min-h-screen">
+  <header class="bg-gradient-to-r from-white to-[var(--cane-50)] shadow-lg border-b-2 border-[var(--cane-200)]">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex items-center justify-between">
+
+        <a href="../Common/lobby.html"
+          class="mr-4 text-[var(--cane-600)] hover:text-[var(--cane-700)] transition-colors">
+          <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+
+        <div class="field-header flex-1 text-left">
+          <h2 class="text-xl font-semibold text-[var(--cane-800)]">Field Registration</h2>
+          <p class="text-sm text-[var(--cane-600)]">Sugarcane Field Registration Form</p>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Progress Bar -->
+  <div class="bg-white border-b border-[var(--cane-200)]">
+    <div class="container mx-auto px-6 py-3">
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <div
+            class="w-8 h-8 bg-[var(--cane-500)] text-white rounded-full flex items-center justify-center text-sm font-semibold">
+            1</div>
+          <span class="text-sm font-medium text-[var(--cane-700)]">Field Details</span>
+        </div>
+        <div class="flex-1 h-1 bg-[var(--cane-200)] rounded-full">
+          <div class="progress-bar h-1 rounded-full" style="width: 25%"></div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div
+            class="w-8 h-8 bg-[var(--cane-200)] text-[var(--cane-600)] rounded-full flex items-center justify-center text-sm font-semibold">
+            2</div>
+          <span class="text-sm font-medium text-[var(--cane-600)]">Documents</span>
+        </div>
+        <div class="flex-1 h-1 bg-[var(--cane-200)] rounded-full"></div>
+        <div class="flex items-center space-x-2">
+          <div
+            class="w-8 h-8 bg-[var(--cane-200)] text-[var(--cane-600)] rounded-full flex items-center justify-center text-sm font-semibold">
+            3</div>
+          <span class="text-sm font-medium text-[var(--cane-600)]">Review</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-6 py-8">
+    <div class="max-w-4xl mx-auto">
+      <!-- Form Container -->
+      <form method="POST" enctype="multipart/form-data" class="space-y-8">
+
+        <!-- Field Information Section -->
+        <div class="section-card rounded-xl p-8">
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-[var(--cane-500)] to-[var(--cane-600)] rounded-lg flex items-center justify-center">
+              <i class="fas fa-map-marker-alt text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[var(--cane-900)]">Field Information</h3>
+              <p class="text-[var(--cane-600)]">Provide basic details about your sugarcane field</p>
+            </div>
+          </div>
+
+
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Field Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-leaf text-[var(--cane-500)] mr-2"></i>
+                Field Name *
+              </label>
+              <input type="text" id="field_name" name="field_name" required
+                class="form-input w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300"
+                placeholder="Enter your field name...">
+            </div>
+
+            <!-- City -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-city text-[var(--cane-500)] mr-2"></i>
+                City/Municipality *
+              </label>
+              <input type="text" id="city" name="city" value="Ormoc City" readonly
+                class="w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg bg-[var(--cane-100)] text-[var(--cane-700)] font-medium">
+            </div>
+
+            <!-- Street / Sitio -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-road text-[var(--cane-500)] mr-2"></i>
+                Street / Sitio *
+              </label>
+              <input type="text" id="street" name="street" required
+                class="form-input w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300"
+                placeholder="Enter your street or sitio...">
+            </div>
+
+            <!-- Sugarcane Variety -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-seedling text-[var(--cane-500)] mr-2"></i>
+                Sugarcane Variety *
+              </label>
+              <select id="sugarcane_variety" name="sugarcane_variety" required
+                class="form-select w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select variety...</option>
+                <option value="PSR 07-195">PSR 07-195</option>
+                <option value="PSR 03-171">PSR 03-171</option>
+                <option value="Phil 93-1601">Phil 93-1601</option>
+                <option value="Phil 94-0913">Phil 94-0913</option>
+                <option value="Phil 92-0577">Phil 92-0577</option>
+                <option value="Phil 92-0051">Phil 92-0051</option>
+                <option value="Phil 99-1793">Phil 99-1793</option>
+                <option value="VMC 84-524">VMC 84-524</option>
+                <option value="LCP 85-384">LCP 85-384</option>
+                <option value="BZ 148">BZ 148</option>
+              </select>
+            </div>
+
+            <!-- Field Size -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-ruler-combined text-[var(--cane-500)] mr-2"></i>
+                Field Size (Hectares) *
+              </label>
+              <input type="number" id="field_size" name="field_size" step="0.01" min="0.01" required
+                class="form-input w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300"
+                placeholder="e.g., 2.5">
+            </div>
+
+            <!-- Soil Type -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-mountain text-[var(--cane-500)] mr-2"></i>
+                Soil Type *
+              </label>
+              <select id="soil_type" name="soil_type" required
+                class="form-select w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select soil type...</option>
+                <option value="Clay">Clay (Heavy, holds water, slow drainage)</option>
+                <option value="Loam">Loam (Ideal for sugarcane, balanced drainage)</option>
+                <option value="Sandy Loam">Sandy Loam (Good drainage, needs frequent irrigation)</option>
+                <option value="Silt Loam">Silt Loam (Fertile, moderate drainage)</option>
+                <option value="Sandy">Sandy (Fast drainage, low water retention)</option>
+                <option value="Clay Loam">Clay Loam (Fertile, moderate drainage)</option>
+                <option value="Peat">Peat/Organic (High organic matter)</option>
+              </select>
+            </div>
+
+            <!-- Irrigation Method -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-tint text-[var(--cane-500)] mr-2"></i>
+                Irrigation Method *
+              </label>
+              <select id="irrigation_method" name="irrigation_method" required
+                class="form-select w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select irrigation method...</option>
+                <option value="Rainfed">Rainfed (No irrigation system, depends on rainfall)</option>
+                <option value="Furrow Irrigation">Furrow Irrigation (Water flows between rows)</option>
+                <option value="Drip Irrigation">Drip Irrigation (Water-efficient, direct to roots)</option>
+                <option value="Sprinkler Irrigation">Sprinkler Irrigation (Overhead sprinklers)</option>
+                <option value="Surface Flooding">Surface Flooding (Entire field flooded periodically)</option>
+                <option value="Mixed">Mixed (Combination of methods)</option>
+              </select>
+            </div>
+
+            <!-- Field Terrain/Slope -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-chart-line text-[var(--cane-500)] mr-2"></i>
+                Field Terrain/Slope *
+              </label>
+              <select id="field_terrain" name="field_terrain" required
+                class="form-select w-full px-4 py-3 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select terrain type...</option>
+                <option value="Flat">Flat (0-3% slope, ideal for mechanization)</option>
+                <option value="Gently Sloping">Gently Sloping (3-8% slope, suitable for farming)</option>
+                <option value="Moderately Sloping">Moderately Sloping (8-15% slope, needs terracing)</option>
+                <option value="Steep">Steep (15-30% slope, challenging for machinery)</option>
+                <option value="Very Steep">Very Steep (>30% slope, requires special management)</option>
+                <option value="Undulating">Undulating (Mixed flat and slopes)</option>
+              </select>
+            </div>
+
+            <!-- Previous Crop (Optional) -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-history text-[var(--cane-500)] mr-2"></i>
+                Previous Crop (Optional)
+              </label>
+              <select id="previous_crop" name="previous_crop"
+                class="form-select w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select previous crop...</option>
+                <option value="Sugarcane (Ratoon)">Sugarcane (Ratoon - Previous harvest)</option>
+                <option value="Sugarcane (Plant)">Sugarcane (Plant - New planting)</option>
+                <option value="Rice">Rice</option>
+                <option value="Corn">Corn</option>
+                <option value="Vegetables">Vegetables</option>
+                <option value="Fallow">Fallow (No crop, resting land)</option>
+                <option value="Forest/Virgin">Forest/Virgin Land</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <!-- Barangay Selection (Dropdown + Auto-detect) -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-map-marker-alt text-[var(--cane-500)] mr-2"></i>
+                Barangay *
+              </label>
+              <select id="barangay_select" name="barangay" required
+                class="form-select w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
+                <option value="">Select barangay or pin on map...</option>
+                <!-- Will be populated by JavaScript from barangays array -->
+              </select>
+              <p class="text-xs text-[var(--cane-600)] mt-1">
+                <i class="fas fa-info-circle mr-1"></i>
+                Will auto-fill when you mark the field location on the map below
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Location Mapping Section -->
+        <div class="section-card rounded-xl p-8">
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-[var(--cane-500)] to-[var(--cane-600)] rounded-lg flex items-center justify-center">
+              <i class="fas fa-map text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[var(--cane-900)]">Field Location</h3>
+              <p class="text-[var(--cane-600)]">Pin the exact location of your sugarcane field</p>
+            </div>
+          </div>
+
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <div class="flex-1">
+              <input id="rfSearchInput" type="text" placeholder="Search a place or barangay..."
+                class="w-full px-4 py-2 rounded-md bg-white border border-[var(--cane-300)] focus:outline-none focus:ring-2 focus:ring-[var(--cane-400)]/40">
+            </div>
+            <button id="rfSearchBtn" type="button"
+              class="px-4 py-2 rounded-md bg-[var(--cane-700)] text-white hover:bg-[var(--cane-800)]">Search</button>
+          </div>
+          <div class="mb-6">
+            <div id="locationMap" class="w-full h-80 rounded-xl border-2 border-[var(--cane-300)] shadow-lg"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-latitude text-[var(--cane-500)] mr-2"></i>
+                Latitude *
+              </label>
+              <input type="number" id="latitude" step="any" required
+                class="form-input w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300"
+                placeholder="e.g., 11.0064">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-longitude text-[var(--cane-500)] mr-2"></i>
+                Longitude *
+              </label>
+              <input type="number" id="longitude" step="any" required
+                class="form-input w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300"
+                placeholder="e.g., 124.6075">
+            </div>
+          </div>
+
+          <div class="mt-4 p-4 bg-[var(--cane-50)] border border-[var(--cane-200)] rounded-lg">
+            <div class="flex items-start space-x-3">
+              <i class="fas fa-info-circle text-[var(--cane-600)] mt-1"></i>
+              <div class="text-sm text-[var(--cane-700)]">
+                <p class="font-medium mb-1">How to set field boundary:</p>
+                <ul class="space-y-1">
+                  <li>• Use the drawing tools on the map (top-right corner)</li>
+                  <li>• Draw a <strong>polygon</strong> to mark your field boundaries</li>
+                  <li>• Or use a <strong>rectangle</strong> for rectangular fields</li>
+                  <li>• Or place a <strong>marker</strong> for a single point location</li>
+                  <li>• You can edit/delete the shape using the edit tools</li>
+                  <li>• Coordinates will automatically update</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Required Documents Section -->
+        <div class="section-card rounded-xl p-8">
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-[var(--cane-500)] to-[var(--cane-600)] rounded-lg flex items-center justify-center">
+              <i class="fas fa-file-alt text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[var(--cane-900)]">Required Documents</h3>
+              <p class="text-[var(--cane-600)]">Upload necessary documents for verification</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Barangay Certificate -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-certificate text-[var(--cane-500)] mr-2"></i>
+                Barangay Certificate *
+              </label>
+              <input type="file" id="barangay_certification" name="barangay_certification" accept=".pdf,.jpg,.jpeg,.png"
+                required class="w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg">
+              <input type="hidden" id="barangay_certification_base64">
+              <p id="barangay_certification_name" class="text-sm text-[var(--cane-700)] mt-2 italic"></p>
+              <p class="text-xs text-[var(--cane-600)]">PDF or image file (max 5MB)</p>
+            </div>
+
+            <!-- Land Title -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-home text-[var(--cane-500)] mr-2"></i>
+                Land Title *
+              </label>
+              <input type="file" id="land_title" name="land_title" accept=".pdf,.jpg,.jpeg,.png" required
+                class="w-full px-4 py-3 border-2 border-[var(--cane-300)] rounded-lg">
+              <input type="hidden" id="land_title_base64">
+              <p id="land_title_name" class="text-sm text-[var(--cane-700)] mt-2 italic"></p>
+              <p class="text-xs text-[var(--cane-600)]">PDF or image file (max 5MB)</p>
+            </div>
+          </div>
+
+          <!-- ID Uploads -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Valid ID (Front) -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-id-card text-[var(--cane-500)] mr-2"></i>
+                Valid ID (Front) *
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="takePhotoFront"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                  <i class="fas fa-camera"></i> Take Photo
+                </button>
+                <label for="uploadFrontFile"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium cursor-pointer flex items-center gap-2">
+                  <i class="fas fa-upload"></i> Upload File
+                </label>
+                <input type="file" id="uploadFrontFile" accept="image/*" class="hidden">
+              </div>
+              <p id="valid_id_front_name" class="text-sm text-[var(--cane-700)] mt-2 italic"></p>
+              <input type="hidden" id="valid_id_front" name="valid_id_front" required>
+            </div>
+
+            <!-- Valid ID (Back) -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-id-card text-[var(--cane-500)] mr-2"></i>
+                Valid ID (Back) *
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="takePhotoBack"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                  <i class="fas fa-camera"></i> Take Photo
+                </button>
+                <label for="uploadBackFile"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium cursor-pointer flex items-center gap-2">
+                  <i class="fas fa-upload"></i> Upload File
+                </label>
+                <input type="file" id="uploadBackFile" accept="image/*" class="hidden">
+              </div>
+              <p id="valid_id_back_name" class="text-sm text-[var(--cane-700)] mt-2 italic"></p>
+              <input type="hidden" id="valid_id_back" name="valid_id_back" required>
+            </div>
+
+            <!-- Selfie -->
+            <div>
+              <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">
+                <i class="fas fa-user text-[var(--cane-500)] mr-2"></i>
+                Selfie Holding Your ID *
+              </label>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" id="takePhotoSelfie"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                  <i class="fas fa-camera"></i> Take Selfie
+                </button>
+                <label for="uploadSelfieFile"
+                  class="btn-secondary px-4 py-2 rounded-lg font-medium cursor-pointer flex items-center gap-2">
+                  <i class="fas fa-upload"></i> Upload File
+                </label>
+                <input type="file" id="uploadSelfieFile" accept="image/*" class="hidden">
+              </div>
+              <p id="selfie_with_id_name" class="text-sm text-[var(--cane-700)] mt-2 italic"></p>
+              <input type="hidden" id="selfie_with_id" name="selfie_with_id" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🟩 Information Section -->
+        <div class="bg-[var(--cane-100)] border border-[var(--cane-300)] rounded-lg p-6 mt-6">
+          <div class="flex items-start space-x-4">
+            <div class="w-8 h-8 bg-[var(--cane-600)] rounded-md flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-info text-white text-base"></i>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-[var(--cane-800)] mb-2">What happens after submission?</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <ul class="text-sm text-[var(--cane-800)] space-y-1">
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-check-circle text-[var(--cane-600)] mt-1"></i>
+                    <span>Your field registration will be reviewed by SRA officers</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-clock text-[var(--cane-600)] mt-1"></i>
+                    <span>Review process takes 5–10 working days</span>
+                  </li>
+                </ul>
+                <ul class="text-sm text-[var(--cane-800)] space-y-1">
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-map-marked-alt text-[var(--cane-600)] mt-1"></i>
+                    <span>Once approved, your field will appear on the map</span>
+                  </li>
+                  <li class="flex items-start space-x-2">
+                    <i class="fas fa-users text-[var(--cane-600)] mt-1"></i>
+                    <span>You can then add workers and submit reports</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🧾 Terms and Agreement Section -->
+        <div class="bg-white border border-[var(--cane-200)] rounded-lg p-5 mt-6">
+          <div class="flex items-start space-x-3">
+            <input type="checkbox" id="agree" required
+              class="mt-1 w-5 h-5 text-[var(--cane-600)] border-[var(--cane-300)] rounded focus:ring-[var(--cane-500)]">
+            <label for="agree" class="text-sm text-[var(--cane-700)]">
+              I agree to the
+              <button type="button" id="openTerms"
+                class="text-[var(--cane-600)] hover:text-[var(--cane-700)] underline inline">
+                Terms and Conditions
+              </button>
+              and
+              <button type="button" id="openPrivacy"
+                class="text-[var(--cane-600)] hover:text-[var(--cane-700)] underline inline">
+                Privacy Policy
+              </button>
+              of CaneMap.
+            </label>
+          </div>
+        </div>
+
+        <!-- 🟢 Submit Buttons (outside cards, right aligned) -->
+        <div class="flex justify-end mt-6 space-x-4">
+          <a href="../Common/lobby.html" class="btn-secondary px-8 py-3 rounded-lg font-semibold text-center">
+            <i class="fas fa-times mr-2"></i>Cancel
+          </a>
+          <button type="submit" class="btn-primary px-8 py-3 rounded-lg font-semibold text-white">
+            <i class="fas fa-paper-plane mr-2"></i>Submit Field Registration
+          </button>
+        </div>
+
+    </div>
+
+    </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gradient-to-r from-[var(--cane-800)] to-[var(--cane-900)] text-white py-6 mt-16">
+    <div class="container mx-auto px-6 text-center">
+      <p class="text-sm text-[var(--cane-200)]">© 2025 CaneMap. All rights reserved. Developed by the CaneMap Team in
+        collaboration with SRA Ormoc Mill District.</p>
+    </div>
+  </footer>
+
+  <!-- Unified Terms & Privacy Modal (Slim + Professional Version) -->
+  <div id="legalModal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200">
+    <!-- Dark overlay -->
+    <div id="legalOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+    <!-- Modal container -->
+    <div
+      class="relative z-10 w-full max-w-2xl mx-8 bg-white/95 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col border border-gray-200"
+      style="max-height: 90vh;">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between px-5 py-3 border-b bg-[var(--cane-600)]/90 backdrop-blur-sm text-white">
+        <h2 class="text-base md:text-lg font-semibold tracking-wide">CaneMap Legal Agreement</h2>
+        <button id="closeLegal" class="text-white text-2xl font-light hover:scale-110 transition leading-none"
+          aria-label="Close">&times;</button>
+      </div>
+
+      <!-- Body -->
+      <div id="legalContent" class="px-5 py-4 overflow-y-auto text-[var(--cane-800)] text-sm leading-relaxed space-y-4">
+        <!-- Content filled by JS -->
+      </div>
+
+      <!-- Footer -->
+      <div class="px-5 py-3 border-t bg-gray-50/80 flex justify-end">
+        <button id="legalAccept"
+          class="px-3 py-1.5 bg-[var(--cane-600)] hover:bg-[var(--cane-700)] text-white rounded transition text-sm font-medium">
+          I Understand
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { showPopupMessage } from '../../backend/Common/ui-popup.js';
+    let locationMap, locationMarker, drawnItems, fieldPolygon;
+    let fieldCoordinates = []; // REQ-10: Store polygon coordinates array
+
+    // 🗺️ Barangays of Ormoc City with sample coordinates (approximate)
+    const barangays = [
+      { name: "Airport", coords: [11.0583, 124.5541] },
+      { name: "Alegria", coords: [11.0130, 124.6300] },
+      { name: "Alta Vista", coords: [11.0174, 124.6260] },
+      { name: "Bagong", coords: [11.0230, 124.6000] },
+      { name: "Bagong Buhay", coords: [11.0300, 124.5900] },
+      { name: "Bantigue", coords: [11.0200, 124.5800] },
+      { name: "Batuan", coords: [11.0100, 124.5800] },
+      { name: "Bayog", coords: [11.0400, 124.5900] },
+      { name: "Biliboy", coords: [11.0565, 124.5792] },
+      { name: "Cabaon-an", coords: [11.0333, 124.5458] },
+      { name: "Cabintan", coords: [11.1372, 124.7777] },
+      { name: "Cabulihan", coords: [11.0094, 124.5700] },
+      { name: "Cagbuhangin", coords: [11.0180, 124.5700] },
+      { name: "Camp Downes", coords: [11.0300, 124.6500] },
+      { name: "Can-adieng", coords: [11.0240, 124.5940] },
+      { name: "Can-untog", coords: [11.0320, 124.5880] },
+      { name: "Catmon", coords: [11.0110, 124.6000] },
+      { name: "Cogon Combado", coords: [11.0125, 124.6035] },
+      { name: "Concepcion", coords: [11.0140, 124.6130] },
+      { name: "Curva", coords: [10.9940, 124.6240] },
+      { name: "Danao", coords: [11.072680, 124.701324] },
+      { name: "Danhug", coords: [10.961806, 124.648155] },
+      { name: "Dayhagan", coords: [11.0090, 124.5560] },
+      { name: "Dolores", coords: [11.073484, 124.625336] },
+      { name: "Domonar", coords: [11.063030, 124.533590] },
+      { name: "Don Felipe Larrazabal", coords: [11.0250, 124.6100] },
+      { name: "Don Potenciano Larrazabal", coords: [11.0150, 124.6100] },
+      { name: "Doña Feliza Z. Mejia", coords: [11.0210, 124.6080] },
+      { name: "Don Carlos B. Rivilla Sr. (Boroc)", coords: [11.0400, 124.6050] },
+      { name: "Donghol", coords: [11.0064, 124.6075] },
+      { name: "East (Poblacion)", coords: [11.0110, 124.6075] },
+      { name: "Esperanza", coords: [10.9780, 124.6210] },
+      { name: "Gaas", coords: [11.0750, 124.7000] },
+      { name: "Green Valley", coords: [11.0320, 124.6350] },
+      { name: "Guintigui-an", coords: [11.0010, 124.6210] },
+      { name: "Hibunawon", coords: [11.116922, 124.634636] },
+      { name: "Hugpa", coords: [11.017476, 124.663765] },
+      { name: "Ipil", coords: [11.0190, 124.6220] },
+      { name: "Juaton", coords: [11.073599, 124.593590] },
+      { name: "Kadaohan", coords: [11.110463, 124.573050] },
+      { name: "Labrador", coords: [11.069711, 124.548433] },
+      { name: "Lao", coords: [11.014082, 124.565109] },
+      { name: "Leondoni", coords: [11.093463, 124.525435] },
+      { name: "Libertad", coords: [11.0290, 124.5700] },
+      { name: "Liberty", coords: [11.025092, 124.704627] },
+      { name: "Licuma", coords: [11.039680, 124.528900] },
+      { name: "Liloan", coords: [11.040502, 124.549866] },
+      { name: "Linao", coords: [11.0160, 124.5900] },
+      { name: "Luna", coords: [11.0080, 124.5800] },
+      { name: "Mabato", coords: [11.039920, 124.535580] },
+      { name: "Mabini", coords: [10.993786, 124.678680] },
+      { name: "Macabug", coords: [11.0500, 124.5800] },
+      { name: "Magaswi", coords: [11.048665, 124.612040] },
+      { name: "Mahayag", coords: [11.0400, 124.5700] },
+      { name: "Mahayahay", coords: [10.976500, 124.688850] },
+      { name: "Manlilinao", coords: [11.105776, 124.499760] },
+      { name: "Margen", coords: [11.015798, 124.529884] },
+      { name: "Mas-in", coords: [11.062307, 124.515160] },
+      { name: "Matica-a", coords: [11.0300, 124.5600] },
+      { name: "Milagro", coords: [11.0250, 124.6300] },
+      { name: "Monterico", coords: [11.119205, 124.514590] },
+      { name: "Nasunogan", coords: [11.0100, 124.5800] },
+      { name: "Naungan", coords: [11.0200, 124.6200] },
+      { name: "Nueva Sociedad", coords: [11.0180, 124.6320] },
+      { name: "Nueva Vista", coords: [11.093860, 124.619290] },
+      { name: "Patag", coords: [11.0280, 124.5700] },
+      { name: "Punta", coords: [11.0150, 124.5700] },
+      { name: "Quezon Jr.", coords: [11.005818, 124.667200] },
+      { name: "Rufina M. Tan", coords: [11.085495, 124.525894] },
+      { name: "Sabang Bao", coords: [11.0100, 124.6400] },
+      { name: "Salvacion", coords: [11.059892, 124.583080] },
+      { name: "San Antonio", coords: [10.966187, 124.647060] },
+      { name: "San Isidro", coords: [11.022854, 124.585710] },
+      { name: "San Jose", coords: [11.0064, 124.6075] },
+      { name: "San Juan", coords: [11.0090, 124.6070] },
+      { name: "San Pablo", coords: [11.047495, 124.606026] },
+      { name: "San Vicente", coords: [11.0120, 124.6100] },
+      { name: "Santo Niño", coords: [11.0140, 124.6050] },
+      { name: "South (Poblacion)", coords: [11.0000, 124.6075] },
+      { name: "Sumangga", coords: [10.9900, 124.5600] },
+      { name: "Tambulilid", coords: [11.0470, 124.5960] },
+      { name: "Tongonan", coords: [11.1240, 124.7810] },
+      { name: "Valencia", coords: [11.0140, 124.6250] },
+      { name: "West (Poblacion)", coords: [11.0064, 124.6000] }
+    ];
+
+    function initLocationMap() {
+      try {
+        const ormocCenter = [11.0064, 124.6075];
+        const ormocBounds = L.latLngBounds([10.9500, 124.5300], [11.0500, 124.6700]);
+
+        // Initialize restricted map
+        locationMap = L.map('locationMap', {
+          center: ormocCenter,
+          zoom: 12,
+          minZoom: 12,
+          maxZoom: 16,
+          maxBounds: ormocBounds,
+          maxBoundsViscosity: 1.0
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(locationMap);
+
+        // 🧷 Cane-style pin icon (same as in lobby.js)
+        const caneIcon = L.icon({
+          iconUrl: '../img/PIN.png',
+          iconSize: [40, 40],
+          iconAnchor: [20, 38],
+          popupAnchor: [0, -32]
+        });
+
+        // REQ-10: Add polygon drawing capability
+        drawnItems = new L.FeatureGroup();
+        locationMap.addLayer(drawnItems);
+
+        const drawControl = new L.Control.Draw({
+          position: 'topright',
+          draw: {
+            polygon: {
+              allowIntersection: false,
+              drawError: {
+                color: '#e1e100',
+                message: '<strong>Error:</strong> Polygon edges cannot cross!'
+              },
+              shapeOptions: {
+                color: 'var(--cane-600)',
+                fillColor: 'var(--cane-400)',
+                fillOpacity: 0.3
+              }
+            },
+            polyline: false,
+            rectangle: true,
+            circle: false,
+            marker: {
+              icon: caneIcon
+            },
+            circlemarker: false
+          },
+          edit: {
+            featureGroup: drawnItems,
+            remove: true
+          }
+        });
+
+        locationMap.addControl(drawControl);
+
+        // REQ-10: Handle polygon creation
+        locationMap.on(L.Draw.Event.CREATED, async function (e) {
+          const layer = e.layer;
+          const type = e.layerType;
+
+          // Clear any previous drawings
+          drawnItems.clearLayers();
+          fieldPolygon = null;
+          fieldCoordinates = [];
+
+          if (type === 'polygon' || type === 'rectangle') {
+            // Check if polygon is within Ormoc bounds
+            const bounds = layer.getBounds();
+            if (!ormocBounds.contains(bounds.getNorthEast()) || !ormocBounds.contains(bounds.getSouthWest())) {
+              await showPopupMessage("Field boundary must be within Ormoc City limits.", 'warning');
+              return;
+            }
+
+            drawnItems.addLayer(layer);
+            fieldPolygon = layer;
+
+            // Get polygon coordinates
+            const latlngs = layer.getLatLngs()[0]; // Get first ring for polygon
+            fieldCoordinates = latlngs.map(latlng => [latlng.lat, latlng.lng]);
+
+            // Calculate center point for lat/lng fields
+            const center = bounds.getCenter();
+            document.getElementById('latitude').value = center.lat.toFixed(6);
+            document.getElementById('longitude').value = center.lng.toFixed(6);
+
+            // Auto-detect nearest barangay
+            let nearestBarangay = "";
+            let nearestDist = Infinity;
+            barangays.forEach(b => {
+              if (!b.coords) return;
+              const dist = Math.sqrt(
+                Math.pow(b.coords[0] - center.lat, 2) + Math.pow(b.coords[1] - center.lng, 2)
+              );
+              if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestBarangay = b.name;
+              }
+            });
+            selectedBarangay = nearestBarangay || "Unknown";
+            // ✅ Also set the barangay dropdown
+            const barangaySelect = document.getElementById('barangay_select');
+            if (barangaySelect) barangaySelect.value = selectedBarangay;
+            console.log("📍 Field boundary drawn, barangay:", selectedBarangay);
+            console.log("📍 Field coordinates:", fieldCoordinates);
+
+          } else if (type === 'marker') {
+            const latlng = layer.getLatLng();
+            if (!ormocBounds.contains(latlng)) {
+              await showPopupMessage("Only fields within Ormoc City are allowed.", 'warning');
+              return;
+            }
+
+            drawnItems.addLayer(layer);
+            document.getElementById('latitude').value = latlng.lat.toFixed(6);
+            document.getElementById('longitude').value = latlng.lng.toFixed(6);
+
+            // Auto-detect nearest barangay
+            let nearestBarangay = "";
+            let nearestDist = Infinity;
+            barangays.forEach(b => {
+              if (!b.coords) return;
+              const dist = Math.sqrt(
+                Math.pow(b.coords[0] - latlng.lat, 2) + Math.pow(b.coords[1] - latlng.lng, 2)
+              );
+              if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestBarangay = b.name;
+              }
+            });
+            selectedBarangay = nearestBarangay || "Unknown";
+            // ✅ Also set the barangay dropdown
+            const barangaySelect = document.getElementById('barangay_select');
+            if (barangaySelect) barangaySelect.value = selectedBarangay;
+            console.log("📍 Marker placed, barangay:", selectedBarangay);
+          }
+        });
+
+        // Handle polygon editing
+        locationMap.on(L.Draw.Event.EDITED, function (e) {
+          const layers = e.layers;
+          layers.eachLayer(function (layer) {
+            if (layer instanceof L.Polygon || layer instanceof L.Rectangle) {
+              const latlngs = layer.getLatLngs()[0];
+              fieldCoordinates = latlngs.map(latlng => [latlng.lat, latlng.lng]);
+              const bounds = layer.getBounds();
+              const center = bounds.getCenter();
+              document.getElementById('latitude').value = center.lat.toFixed(6);
+              document.getElementById('longitude').value = center.lng.toFixed(6);
+              console.log("📍 Field boundary edited, coordinates:", fieldCoordinates);
+            }
+          });
+        });
+
+        // Handle polygon deletion
+        locationMap.on(L.Draw.Event.DELETED, function (e) {
+          fieldPolygon = null;
+          fieldCoordinates = [];
+          console.log("📍 Field boundary removed");
+        });
+
+        // 🔍 Local barangay search (no API)
+        const input = document.getElementById('rfSearchInput');
+        const btn = document.getElementById('rfSearchBtn');
+
+        async function searchBarangay() {
+          const q = input.value.trim().toLowerCase();
+          if (!q) return;
+
+          const match = barangays.find(b => b.name.toLowerCase().includes(q));
+          if (!match) {
+            await showPopupMessage("Barangay not found in Ormoc City.", 'warning');
+            return;
+          }
+
+          // 🟢 Skip barangays with missing coordinates
+          if (!match.coords || match.coords[0] == null || match.coords[1] == null) {
+            await showPopupMessage(`Found ${match.name}, but it has no coordinates. Please click the map to pin manually.`, 'info');
+            return;
+          }
+
+          const [lat, lng] = match.coords;
+          // ✅ Only center and zoom to maximum - do NOT place a marker
+          locationMap.setView([lat, lng], 18);
+
+          console.log("Map centered on:", match.name, "- Click 'Draw a Marker' to pin location");
+
+        }
+
+        btn?.addEventListener('click', searchBarangay);
+        input?.addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            searchBarangay();
+          }
+        });
+
+        console.log("✅ Ormoc City map with barangays loaded");
+      } catch (err) {
+        console.error("Map error:", err);
+      }
+    }
+
+    // Load and display user's own reviewed fields as reference
+    async function loadExistingFields() {
+      try {
+        const { auth, db } = await import('../../backend/Common/firebase-config.js');
+        const { collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+
+        // Get current user
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          console.log('⏭️ No user logged in, skipping field reference load');
+          return;
+        }
+
+        // Query only user's own reviewed and active fields
+        const fieldsRef = collection(db, 'fields');
+        const q = query(
+          fieldsRef,
+          where('userId', '==', currentUser.uid),
+          where('status', 'in', ['reviewed', 'active'])
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          console.log('📍 No reviewed or active fields found for reference');
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          const field = doc.data();
+
+          // Display field polygon if coordinates exist (reference fields in blue)
+          if (field.coordinates && field.coordinates.length > 0) {
+            // Convert from Firestore format [{ lat: x, lng: y }] to Leaflet format [[lat, lng]]
+            const leafletCoords = field.coordinates.map(coord => [coord.lat, coord.lng]);
+
+            const polygon = L.polygon(leafletCoords, {
+              color: '#4A90E2',        // Blue border for reference
+              fillColor: '#7AB8F5',    // Light blue fill
+              fillOpacity: 0.15,       // More transparent
+              weight: 2,
+              dashArray: '5, 5'        // Dashed line to indicate reference
+            }).addTo(locationMap);
+
+            polygon.bindPopup(`
+          <div style="font-family: sans-serif;">
+            <h4 style="font-weight: bold; margin: 0 0 8px 0; color: #4A90E2;">📌 Your Field (Reference)</h4>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Name:</strong> ${field.field_name || field.fieldName || 'Unknown'}</p>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Area:</strong> ${field.field_size || field.area || 'N/A'} hectares</p>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Variety:</strong> ${field.sugarcane_variety || field.variety || 'N/A'}</p>
+            <p style="margin: 4px 0; font-size: 12px;"><strong>Barangay:</strong> ${field.barangay || 'N/A'}</p>
+          </div>
+        `);
+          } else if (field.latitude && field.longitude) {
+            // Fallback to marker if no polygon coordinates (use blue icon)
+            const referenceIcon = L.divIcon({
+              className: 'reference-field-marker',
+              html: '<div style="background: #4A90E2; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><i class="fas fa-bookmark" style="color: white; font-size: 14px;"></i></div>',
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+              popupAnchor: [0, -15]
+            });
+
+            L.marker([field.latitude, field.longitude], { icon: referenceIcon })
+              .addTo(locationMap)
+              .bindPopup(`
+            <div style="font-family: sans-serif;">
+              <h4 style="font-weight: bold; margin: 0 0 8px 0; color: #4A90E2;">📌 Your Field (Reference)</h4>
+              <p style="margin: 4px 0; font-size: 12px;"><strong>Name:</strong> ${field.field_name || field.fieldName || 'Unknown'}</p>
+              <p style="margin: 4px 0; font-size: 12px;"><strong>Area:</strong> ${field.field_size || field.area || 'N/A'} hectares</p>
+              <p style="margin: 4px 0; font-size: 12px;"><strong>Variety:</strong> ${field.sugarcane_variety || field.variety || 'N/A'}</p>
+            </div>
+          `);
+          }
+        });
+
+        console.log(`✅ Loaded ${snapshot.size} reviewed field(s) as reference (blue/dashed)`);
+      } catch (error) {
+        console.error('Error loading reference fields:', error);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      setTimeout(() => {
+        initLocationMap();
+        // Load existing fields after map initialization
+        setTimeout(() => loadExistingFields(), 500);
+
+        // ✅ Populate barangay dropdown
+        populateBarangayDropdown();
+      }, 100);
+    });
+
+    // ✅ Populate barangay dropdown from barangays array
+    function populateBarangayDropdown() {
+      const barangaySelect = document.getElementById('barangay_select');
+      if (!barangaySelect) return;
+
+      // Sort barangays alphabetically
+      const sortedBarangays = [...barangays].sort((a, b) => a.name.localeCompare(b.name));
+
+      // Clear existing options (except the first placeholder)
+      while (barangaySelect.options.length > 1) {
+        barangaySelect.remove(1);
+      }
+
+      // Add all barangays
+      sortedBarangays.forEach(brgy => {
+        const option = document.createElement('option');
+        option.value = brgy.name;
+        option.textContent = brgy.name;
+        barangaySelect.appendChild(option);
+      });
+
+      console.log('✅ Populated barangay dropdown with', sortedBarangays.length, 'barangays');
+    }
+
+    // 🟩 Global variables accessible to Register-field.js
+    window.selectedBarangay = "";
+    window.getFieldCoordinates = () => fieldCoordinates;
+
+    // ✅ Initialize custom dropdowns for mobile
+    function initializeCustomDropdowns() {
+      const selectElements = document.querySelectorAll('select.form-select');
+
+      selectElements.forEach((select) => {
+        const selectId = select.id;
+        const selectName = select.getAttribute('data-label') || select.name || 'Select';
+        const parentDiv = select.parentElement;
+
+        // Create wrapper for both native and custom
+        const wrapper = document.createElement('div');
+        wrapper.className = 'dropdown-wrapper';
+
+        // Create native select wrapper
+        const nativeWrapper = document.createElement('div');
+        nativeWrapper.className = 'native-select-wrapper relative';
+        select.classList.add('form-select');
+        const clonedSelect = select.cloneNode(true);
+        nativeWrapper.appendChild(clonedSelect);
+
+        // Create custom dropdown
+        const customDropdown = document.createElement('div');
+        customDropdown.className = 'custom-dropdown';
+        customDropdown.innerHTML = `
+      <button class="dropdown-trigger" type="button">
+        <span class="dropdown-trigger-text">Select...</span>
+        <i class="fa-solid fa-chevron-down dropdown-trigger-icon"></i>
+      </button>
+      <div class="dropdown-menu">
+        <div class="dropdown-menu-content">
+          <div class="dropdown-options"></div>
+        </div>
+      </div>
+    `;
+
+        // Populate custom dropdown options
+        const dropdownOptions = customDropdown.querySelector('.dropdown-options');
+        const originalSelect = select;
+
+        Array.from(clonedSelect.options).forEach((option, index) => {
+          if (option.value === '') return; // Skip placeholder
+
+          const optionBtn = document.createElement('button');
+          optionBtn.type = 'button';
+          optionBtn.className = 'dropdown-option';
+          optionBtn.textContent = option.textContent;
+          optionBtn.dataset.value = option.value;
+
+          optionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Update both original and cloned select
+            originalSelect.value = option.value;
+            clonedSelect.value = option.value;
+            // Update trigger text
+            customDropdown.querySelector('.dropdown-trigger-text').textContent = option.textContent;
+            // Update selected state
+            customDropdown.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+            optionBtn.classList.add('selected');
+            // Close dropdown
+            closeCustomDropdown(customDropdown);
+            // Trigger change event on both
+            originalSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            clonedSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          });
+
+          dropdownOptions.appendChild(optionBtn);
+        });
+
+        // Add event listeners
+        const trigger = customDropdown.querySelector('.dropdown-trigger');
+        const menu = customDropdown.querySelector('.dropdown-menu');
+
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const isOpen = menu.classList.contains('open');
+          if (isOpen) {
+            closeCustomDropdown(customDropdown);
+          } else {
+            openCustomDropdown(customDropdown);
+          }
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+          if (!customDropdown.contains(e.target)) {
+            closeCustomDropdown(customDropdown);
+          }
+        });
+
+        // Hide original select (remove required attribute to prevent validation errors)
+        originalSelect.style.display = 'none';
+        originalSelect.removeAttribute('required');
+
+        // Make the cloned select required instead (for form validation)
+        clonedSelect.required = true;
+
+        // Replace original select with wrapper
+        parentDiv.replaceChild(nativeWrapper, select);
+        nativeWrapper.insertAdjacentElement('afterend', customDropdown);
+      });
+    }
+
+    function openCustomDropdown(dropdown) {
+      const menu = dropdown.querySelector('.dropdown-menu');
+      const trigger = dropdown.querySelector('.dropdown-trigger');
+      if (menu) menu.classList.add('open');
+      if (trigger) trigger.classList.add('open');
+    }
+
+    function closeCustomDropdown(dropdown) {
+      const menu = dropdown.querySelector('.dropdown-menu');
+      const trigger = dropdown.querySelector('.dropdown-trigger');
+      if (menu) menu.classList.remove('open');
+      if (trigger) trigger.classList.remove('open');
+    }
+
+    // Initialize custom dropdowns when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        initializeCustomDropdowns();
+      }, 500);
+    });
+
+  </script>
+
+  <script type="module" src="../../backend/Handler/Register-field.js?v=2"></script>
+</body>
+
+</html>

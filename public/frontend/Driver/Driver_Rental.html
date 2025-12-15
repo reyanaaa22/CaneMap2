@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Driver — Open for Rental</title>
+  <link rel="stylesheet" href="../../css/output.css">
+  <style>
+    /* Small visual tweaks to match your app theme */
+    :root{--cane-700:#166534;--cane-800:#14532d;--cane-900:#052e16;--cane-50:#f8faf9}
+    body{background:transparent;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    .card-shadow{box-shadow:0 8px 26px rgba(4,12,10,0.12)}
+    label{font-size:0.85rem;color:var(--cane-900);font-weight:600}
+    .field-note{font-size:0.82rem;color:#6b7280}
+
+        button[disabled] {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+  </style>
+</head>
+<body class="p-6 bg-[var(--cane-50)]">
+  <main class="max-w-3xl mx-auto">
+<div class="flex flex-col max-h-[90vh]">
+
+    <!-- ⭐ NOT SCROLLING: HEADER -->
+    <header class="flex items-start justify-between gap-4 pb-4 border-b">
+        <div>
+          <h1 class="text-xl font-bold text-[var(--cane-800)]">Open Your Truck(s) for Rental</h1>
+          <p class="text-sm text-[var(--cane-700)] mt-1">
+            Fill and confirm the details below to list your vehicle as available for rental.
+          </p>
+        </div>
+
+        <div class="text-sm">
+          <button id="closeBtn"
+            class="px-3 py-1 rounded-md bg-[var(--cane-700)] text-white hover:bg-[var(--cane-800)]">
+            Close
+          </button>
+        </div>
+    </header>
+
+    <!-- ⭐ NOT SCROLLING: QUICK QUESTION -->
+    <div class="mt-5 bg-[var(--cane-50)] border border-[var(--cane-200)] rounded-lg p-4">
+        <p class="font-semibold text-[var(--cane-800)]">Quick question</p>
+        <p class="text-sm text-[var(--cane-700)] mt-1">
+            Do you want to make your truck(s) available for rental? If yes, confirm the details
+            below and tap <strong>OK, Open for Rental</strong>.
+        </p>
+    </div>
+
+    <!-- ⭐ SCROLLABLE ONLY THIS PART -->
+    <div class="mt-5 flex-1 overflow-y-auto pr-2">
+
+        <form id="rentalForm" class="space-y-4 pb-5">
+
+            <!-- ALL YOUR INPUT FIELDS GO HERE -->
+            <div>
+                <label>Contact Number</label>
+                <input id="contactNumber"
+                    class="mt-2 block w-full rounded-lg border border-[var(--cane-200)] p-3 bg-white" />
+                <p class="text-xs text-gray-500 mt-1">
+                    This number will be used by renters to contact you.
+                </p>
+            </div>
+
+            <div>
+                <label>Address</label>
+                <input id="address" disabled
+                    class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label>Birth date</label>
+                    <input id="birthDate" disabled
+                        class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+                </div>
+
+                <div>
+                    <label>Vehicle type</label>
+                    <input id="vehicleType" disabled
+                        class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label>Model</label>
+                    <input id="vehicleModel" disabled
+                        class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+                </div>
+                <div>
+                    <label>Color</label>
+                    <input id="vehicleColor" disabled
+                        class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+                </div>
+                <div>
+                    <label>Year</label>
+                    <input id="vehicleYear" disabled
+                        class="mt-2 block w-full rounded-lg border border-gray-300 p-3 bg-gray-100" />
+                </div>
+            </div>
+
+            <!-- ⭐ NOT SCROLLING: NOTES + BUTTONS (FIXED BELOW) -->
+        </form>
+    </div>
+
+    <!-- ⭐ FIXED BOTTOM (ALWAYS VISIBLE) -->
+    <div class="pt-4 border-t bg-white">
+        <div class="pt-2">
+            <label class="text-sm font-semibold">Notes</label>
+            <p class="field-note mt-1">
+                All fields above are pulled from your Driver Badge.
+                <button id="editBadgeBtn"
+                    class="underline text-[var(--cane-800)] hover:text-[var(--cane-700)] ml-1">
+                    Click here to edit your profile.
+                </button>
+            </p>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+            <button id="btnOpenRental" type="button"
+                class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white font-semibold hover:bg-[var(--cane-800)] shadow">
+                OK, Open for Rental
+            </button>
+
+            <button id="btnStopRental" type="button"
+                class="hidden px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 shadow">
+                Stop Driver Rental
+            </button>
+
+            <button id="btnCancel" type="button"
+                class="px-4 py-2 rounded-lg border border-[var(--cane-300)] text-[var(--cane-800)] hover:bg-[var(--cane-50)]">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+</div>
+
+
+    <!-- Terms Modal (hidden by default) -->
+    <div id="termsModal" class="fixed inset-0 z-[12000] flex items-center justify-center bg-black/50 opacity-0 pointer-events-none transition-opacity">
+      <div class="bg-white rounded-xl max-w-2xl w-[95%] md:w-3/4 p-6 card-shadow">
+        <h3 class="text-lg font-bold text-[var(--cane-800)]">Short Terms & Privacy</h3>
+        <div class="mt-3 text-sm text-[var(--cane-700)] max-h-64 overflow-auto">
+          <p><strong>1.</strong> You acknowledge you are the owner or authorised operator of the vehicle listed.</p>
+          <p class="mt-2"><strong>2.</strong> Rental transactions, pricing, and insurance are handled outside this platform unless otherwise agreed.</p>
+          <p class="mt-2"><strong>3.</strong> You accept to keep your contact details up-to-date and to respond to rental inquiries promptly.</p>
+          <p class="mt-2"><strong>4.</strong> The platform may show your vehicle to prospective renters; you remain responsible for vetting and agreeing terms.</p>
+        </div>
+        <div class="mt-4 flex items-center space-x-3">
+        <input type="checkbox" id="agreeTerms" />
+        <label for="agreeTerms" class="text-sm text-[var(--cane-800)]">I agree to the terms above.</label>
+        </div>
+        <p id="agreeTermsError" class="text-xs text-red-600 mt-1 hidden">Please agree to the terms first.</p>
+
+        <div class="mt-5 flex justify-end gap-3">
+          <button id="termsCancel" class="px-4 py-2 rounded-lg border">Back</button>
+          <button id="termsConfirm" class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white">Confirm & Publish</button>
+        </div>
+      </div>
+    </div>
+
+        <!-- Stop Rental Reasons Modal (hidden by default) -->
+    <div id="stopModal" class="fixed inset-0 z-[12000] flex items-center justify-center bg-black/50 opacity-0 pointer-events-none transition-opacity">
+      <div class="bg-white rounded-xl max-w-2xl w-[95%] md:w-3/4 p-6 card-shadow">
+        <h3 class="text-lg font-bold text-[var(--cane-800)]">Stop Rental</h3>
+        <p class="text-sm text-[var(--cane-700)] mt-2">Please indicate why you want to stop your rental listing. Select one or more reasons, or choose <strong>Other</strong> and type details.</p>
+
+        <div class="mt-4 text-sm text-[var(--cane-700)]">
+          <ul class="list-disc ml-5 space-y-2">
+            <li><label><input type="checkbox" class="stop-reason" value="Vehicle under maintenance" /> Vehicle under maintenance</label></li>
+            <li><label><input type="checkbox" class="stop-reason" value="Already rented outside platform" /> Already rented outside platform</label></li>
+            <li><label><input type="checkbox" class="stop-reason" value="Personal/unavailable" /> Personal / unavailable</label></li>
+            <li><label><input type="checkbox" class="stop-reason" value="Safety or insurance issue" /> Safety / insurance issue</label></li>
+            <li><label><input type="checkbox" class="stop-reason" value="Other" id="stopReasonOtherChk" /> Other (specify)</label></li>
+          </ul>
+
+          <textarea id="stopReasonOther" placeholder="Describe other reason..." class="mt-3 block w-full rounded-lg border border-gray-300 p-3 hidden"></textarea>
+        </div>
+
+        <div class="mt-5 flex justify-end gap-3">
+          <button id="stopCancel" class="px-4 py-2 rounded-lg border">Back</button>
+          <button id="stopNext" class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="stopConfirmModal" class="fixed inset-0 z-[12500] flex items-center justify-center bg-black/50 opacity-0 pointer-events-none transition-opacity">
+    <div class="bg-white rounded-xl max-w-2xl w-[95%] md:w-3/4 p-6 card-shadow">
+        <h3 class="text-lg font-bold text-[var(--cane-800)]">Confirm Stop Rental</h3>
+        <div class="mt-3 text-sm text-[var(--cane-700)] max-h-64 overflow-auto">
+        <p>You’re about to stop your listing. Once stopped, you will not be able to re-open a rental from this account for <strong>30 days</strong>.</p>
+        <p class="mt-2">Selected reason(s):</p>
+        <div id="stopReasonSummary" class="mt-2 text-sm text-[var(--cane-700)]"></div>
+
+        <div class="mt-4 flex items-center space-x-3">
+            <input type="checkbox" id="stopConfirmAgree" />
+            <label for="stopConfirmAgree" class="text-sm text-[var(--cane-800)]">
+            I understand I cannot reopen rental for 30 days
+            </label>
+        </div>
+
+        <!-- ERROR MESSAGE BELOW CHECKBOX -->
+        <p id="stopReasonError" class="text-xs text-red-600 mt-1 hidden">Please confirm you understand the 30-day lockout.</p>
+        </div>
+
+        <!-- BUTTONS: ONLY BACK + CONFIRM -->
+        <div class="mt-5 flex justify-end gap-3">
+        <button id="stopBack" class="px-4 py-2 rounded-lg border">Back</button>
+        <button id="stopConfirm" class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white">Confirm & Stop</button>
+        </div>
+    </div>
+    </div>
+
+    <!-- Success toast/modal -->
+    <div id="successOverlay" class="fixed inset-0 z-[13000] flex items-center justify-center bg-black/40 opacity-0 pointer-events-none transition-opacity">
+      <div class="bg-white rounded-xl p-6 text-center card-shadow max-w-sm w-[90%]">
+        <h3 class="text-lg font-bold text-[var(--cane-800)]">Your vehicle is now open for rental!</h3>
+        <p class="mt-2 text-sm text-[var(--cane-700)]">Renters can contact you using the details on your profile.</p>
+        <div class="mt-4">
+          <button id="successOk" class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white">Great</button>
+        </div>
+      </div>
+    </div>
+    <!-- Stop rental toast -->
+    <div id="stopToast" 
+        class="fixed top-6 right-6 z-[14000] bg-[var(--cane-700)] text-white px-5 py-3 rounded-2xl shadow-lg opacity-0 pointer-events-none transform translate-y-[-20px] transition-all duration-300">
+    Rental stopped successfully!
+    </div>
+
+  </main>
+
+  <script type="module">
+    // IMPORTANT: adjust the import path to your firebase-config.js as needed
+    import { db } from '../../backend/Common/firebase-config.js';
+    import { doc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+
+    const userId = localStorage.getItem('userId');
+    const contactEl = document.getElementById('contactNumber');
+    const addrEl = document.getElementById('address');
+    const birthEl = document.getElementById('birthDate');
+    const typeEl = document.getElementById('vehicleType');
+    const modelEl = document.getElementById('vehicleModel');
+    const colorEl = document.getElementById('vehicleColor');
+    const yearEl = document.getElementById('vehicleYear');
+
+    const btnOpen = document.getElementById('btnOpenRental');
+    const btnCancel = document.getElementById('btnCancel');
+    const closeBtn = document.getElementById('closeBtn');
+    const btnStop = document.getElementById("btnStopRental");
+
+    const termsModal = document.getElementById('termsModal');
+    const termsConfirm = document.getElementById('termsConfirm');
+    const termsCancel = document.getElementById('termsCancel');
+    const agreeCheckbox = document.getElementById('agreeTerms');
+
+    const stopModal = document.getElementById('stopModal');
+    const stopCancel = document.getElementById('stopCancel');
+    const stopNext = document.getElementById('stopNext');
+    const stopReasonOtherChk = document.getElementById('stopReasonOtherChk');
+    const stopReasonOther = document.getElementById('stopReasonOther');
+    const stopConfirmModal = document.getElementById('stopConfirmModal');
+    const stopBack = document.getElementById('stopBack');
+    const stopConfirm = document.getElementById('stopConfirm');
+    const stopConfirmAgree = document.getElementById('stopConfirmAgree');
+    const stopReasonSummary = document.getElementById('stopReasonSummary');
+
+    const successOverlay = document.getElementById('successOverlay');
+    const successOk = document.getElementById('successOk');
+    let editBadgeBtn = document.getElementById("editBadgeBtn");
+
+    const stopToast = document.getElementById('stopToast');
+
+    function showStopToast() {
+    stopToast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+    setTimeout(() => {
+        stopToast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-[-20px]');
+    }, 3000); // hides after 3 seconds
+    }
+
+    // CONTACT NUMBER LIMITER (11 digits only) 
+    contactEl.addEventListener("input", () => {
+    // Remove non-numeric characters
+    contactEl.value = contactEl.value.replace(/\D/g, "");
+
+    // Limit to 11 digits max
+    if (contactEl.value.length > 11) {
+        contactEl.value = contactEl.value.slice(0, 11);
+    }
+    });
+
+    // utility show/hide
+    function show(el){ el.classList.remove('opacity-0'); el.classList.remove('pointer-events-none'); }
+    function hide(el){ el.classList.add('opacity-0'); el.classList.add('pointer-events-none'); }
+
+    // old helpers (kept for terms and success)
+    function showTerms(){ show(termsModal); }
+    function hideTerms(){ hide(termsModal); }
+    function showSuccess(){ show(successOverlay); }
+    function hideSuccess(){ hide(successOverlay); }
+
+    // stop modal helpers
+    function showStop(){ stopReasonOther.value = ''; stopReasonOther.classList.add('hidden'); document.querySelectorAll('.stop-reason').forEach(ch => ch.checked = false); stopConfirmAgree.checked = false; stopReasonSummary.innerText = ''; show(stopModal); }
+    function hideStop(){ hide(stopModal); }
+    function showStopConfirm(){ show(stopConfirmModal); }
+    function hideStopConfirm(){ hide(stopConfirmModal); }
+
+    // compute 30-day lockout helper
+// 30-day rule DISABLED — always allow reopen
+function canReopen(rentalStoppedAt) {
+  return true;
+}
+
+
+    // Populate UI based on Drivers_Badge
+    let currentBadge = null; // hold doc data for later
+    async function populate() {
+      try {
+        if (!userId) return;
+        const ref = doc(db, 'Drivers_Badge', userId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          console.warn('No Drivers_Badge found for', userId);
+          return;
+        }
+        const d = snap.data();
+        currentBadge = d;
+
+        contactEl.value = d.contact_number || d.contact || '';
+        addrEl.value = d.address || '';
+        birthEl.value = d.birth_date || '';
+        typeEl.value = d.vehicle_type || d.vehicle_types || '';
+        modelEl.value = d.vehicle_model || '';
+        colorEl.value = d.vehicle_color || '';
+        yearEl.value = d.vehicle_year || '';
+
+const isOpen = d.open_for_rental === true; // get the actual status
+
+if (isOpen) {
+    // Rental is open → contact number should NOT be editable
+    btnStop.classList.remove("hidden");
+    btnOpen.classList.add("hidden");
+
+    contactEl.disabled = true; // Contact Number NOT editable
+    addrEl.disabled = true;
+    birthEl.disabled = true;
+    typeEl.disabled = true;
+    modelEl.disabled = true;
+    colorEl.disabled = true;
+    yearEl.disabled = true;
+
+    // Gray background for all fields
+    [contactEl, addrEl, birthEl, typeEl, modelEl, colorEl, yearEl].forEach(el => {
+        el.classList.remove("bg-white");
+        el.classList.add("bg-gray-100");
+    });
+} else {
+    // Rental is closed → contact number editable
+    btnOpen.classList.remove("hidden");
+    btnStop.classList.add("hidden");
+
+    contactEl.disabled = false; // Contact Number editable
+    addrEl.disabled = true;
+    birthEl.disabled = true;
+    typeEl.disabled = true;
+    modelEl.disabled = true;
+    colorEl.disabled = true;
+    yearEl.disabled = true;
+
+    // Background colors
+    [addrEl, birthEl, typeEl, modelEl, colorEl, yearEl].forEach(el => {
+        el.classList.remove("bg-white");
+        el.classList.add("bg-gray-100");
+    });
+    contactEl.classList.remove("bg-gray-100");
+    contactEl.classList.add("bg-white");
+
+    btnOpen.disabled = false;
+    btnOpen.title = "";
+    btnOpen.classList.remove("opacity-60", "cursor-not-allowed");
+}
+
+
+      } catch (err) {
+        console.error('populate failed', err);
+      }
+    }
+
+    // Handle edit profile button click
+    if (editBadgeBtn) {
+        editBadgeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+                // Close the current modal first if in parent
+                if (window.parent && window.parent.closeDriverRentalModal) {
+                    window.parent.closeDriverRentalModal();
+                }
+                // Navigate to profile settings
+                window.location.href = '../Common/profile-settings.html';
+            } catch (err) {
+                console.error("Navigation failed", err);
+            }
+        });
+        
+        // Make sure the button is clickable
+        editBadgeBtn.style.cursor = 'pointer';
+        editBadgeBtn.style.pointerEvents = 'auto';
+    }
+
+    // Make close and cancel buttons clickable
+    function handleClose() {
+        try { 
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({ type: 'driver_rental_cancel' }, '*');
+                if (window.parent.closeDriverRentalModal) {
+                    window.parent.closeDriverRentalModal();
+                }
+            } else {
+                window.close && window.close();
+            }
+        } catch(err) {
+            console.error('Error closing modal:', err);
+            window.close && window.close();
+        }
+    }
+
+    // Add click handlers for both close and cancel buttons
+    if (btnCancel) {
+        btnCancel.addEventListener('click', handleClose);
+        // Ensure button is clickable
+        btnCancel.style.cursor = 'pointer';
+        btnCancel.style.pointerEvents = 'auto';
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', handleClose);
+        // Ensure button is clickable
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.pointerEvents = 'auto';
+    }
+
+    termsCancel.addEventListener('click', hideTerms);
+
+    const agreeTermsError = document.getElementById('agreeTermsError');
+    const stopReasonError = document.getElementById('stopReasonError');
+
+    // Open for Rental terms confirm
+    termsConfirm.addEventListener('click', async function(){
+    if (!agreeCheckbox.checked) { 
+        agreeTermsError.classList.remove('hidden'); 
+        return; 
+    }
+    agreeTermsError.classList.add('hidden'); // hide error once checked
+
+    try {
+        termsConfirm.disabled = true;
+        const ref = doc(db, 'Drivers_Badge', userId);
+        await updateDoc(ref, {
+            contact_number: contactEl.value,
+            open_for_rental: true,
+            rental_published_at: serverTimestamp(),
+            rental_stopped_at: null,
+            rental_stop_reason: null
+        });
+
+        hideTerms();
+        showSuccess();
+        await populate();
+    } catch (err) {
+        console.error('Failed to publish rental', err);
+    } finally {
+        termsConfirm.disabled = false;
+    }
+    });
+
+    // Stop Next -> confirmation modal
+    stopNext.addEventListener('click', () => {
+    const selected = Array.from(document.querySelectorAll('.stop-reason'))
+                        .filter(ch => ch.checked)
+                        .map(ch => ch.value);
+
+    if (stopReasonOtherChk.checked) {
+        const o = (stopReasonOther.value || '').trim();
+        if (o) selected.push('Other: ' + o);
+    }
+
+    if (!selected.length) {
+        stopReasonError.classList.remove('hidden'); // show error below checkbox
+        return;
+    } else {
+        stopReasonError.classList.add('hidden'); // hide error once at least one selected
+    }
+
+    stopReasonSummary.innerHTML = '<ul class="list-disc ml-5">' + selected.map(s => `<li>${escapeHtml(s)}</li>`).join('') + '</ul>';
+    hideStop();
+    stopConfirmAgree.checked = false;
+    showStopConfirm();
+    });
+
+    // Hide errors dynamically when checkbox changes
+    agreeCheckbox.addEventListener('change', () => {
+    if (agreeCheckbox.checked) agreeTermsError.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.stop-reason').forEach(ch => {
+    ch.addEventListener('change', () => {
+        const anyChecked = Array.from(document.querySelectorAll('.stop-reason')).some(c => c.checked);
+        if (anyChecked) stopReasonError.classList.add('hidden');
+    });
+    });
+
+    // Success overlay OK
+    successOk.addEventListener('click', function(){
+      hideSuccess();
+      try { if (window.parent && window.parent !== window) window.parent.postMessage({ type: 'driver_rental_published_close' }, '*'); } catch(_){}
+      window.close && window.close();
+    });
+
+    // ------------------------
+    // STOP flow handlers
+    // ------------------------
+
+    // When Stop checkbox "Other" is toggled, show textarea
+    if (stopReasonOtherChk) {
+      stopReasonOtherChk.addEventListener('change', () => {
+        if (stopReasonOtherChk.checked) stopReasonOther.classList.remove('hidden');
+        else stopReasonOther.classList.add('hidden');
+      });
+    }
+
+    // Stop Next -> open confirmation modal with summary
+    stopNext.addEventListener('click', () => {
+      // collect selected reasons
+      const selected = Array.from(document.querySelectorAll('.stop-reason'))
+                          .filter(ch => ch.checked)
+                          .map(ch => ch.value);
+      if (stopReasonOtherChk && stopReasonOtherChk.checked) {
+        const o = (stopReasonOther.value || '').trim();
+        if (o) selected.push('Other: ' + o);
+        else if (!selected.length) {
+          alert('Please provide a reason or choose one.');
+          return;
+        }
+      }
+      if (!selected.length) {
+        alert('Please choose at least one reason.');
+        return;
+      }
+
+      stopReasonSummary.innerHTML = '<ul class="list-disc ml-5">' + selected.map(s => `<li>${escapeHtml(s)}</li>`).join('') + '</ul>';
+      hideStop();
+      stopConfirmAgree.checked = false;
+      showStopConfirm();
+    });
+
+    stopCancel.addEventListener('click', () => { hideStop(); });
+
+    // STOP Confirm modal handlers
+    stopBack.addEventListener('click', () => { 
+        hideStopConfirm(); 
+        showStop(); 
+    });
+
+    // STOP Confirm click
+    stopConfirm.addEventListener('click', async () => {
+        // Show error if checkbox not checked
+        if (!stopConfirmAgree.checked) { 
+            stopReasonError.classList.remove('hidden'); 
+            return; 
+        } else {
+            stopReasonError.classList.add('hidden'); // hide error if checked
+        }
+
+        try {
+            stopConfirm.disabled = true;
+
+            // collect selected reasons
+            const selected = Array.from(document.querySelectorAll('.stop-reason'))
+                            .filter(ch => ch.checked)
+                            .map(ch => ch.value);
+
+            if (stopReasonOtherChk && stopReasonOtherChk.checked) {
+                const o = (stopReasonOther.value || '').trim();
+                if (o) selected.push('Other: ' + o);
+            }
+
+            const reasonText = selected.join('; ');
+
+            const ref = doc(db, 'Drivers_Badge', userId);
+            await updateDoc(ref, {
+                open_for_rental: false,
+                rental_stopped_at: serverTimestamp(),
+                rental_stop_reason: reasonText
+            });
+
+            // ✅ Hide all modals
+            hideStopConfirm();
+            hideStop();      // hide the first stop modal if somehow still visible
+            hideTerms();     // optional: in case terms modal is still open
+            hideSuccess();   // optional: if success overlay was lingering
+
+            // Show toast
+            showStopToast();
+
+            await populate();
+
+            // Notify parent window
+            try { 
+                if (window.parent && window.parent !== window) 
+                    window.parent.postMessage({ type: 'driver_rental_stopped' }, '*'); 
+            } catch(_) {}
+
+        } catch (err) {
+            console.error('Failed to stop rental', err);
+            alert('Failed to stop rental. Please try again.');
+        } finally {
+            stopConfirm.disabled = false;
+        }
+    });
+
+    // Dynamically hide error when checkbox changes
+    stopConfirmAgree.addEventListener('change', () => {
+        if (stopConfirmAgree.checked) stopReasonError.classList.add('hidden');
+    });
+
+    // Helper to escape HTML in reason summary
+    function escapeHtml(text) {
+      return (text+'').replace(/[&\<\>"]/g, (c) => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+    }
+
+    // btnOpen behavior: either open terms OR stop modal depending on current state
+    btnOpen.addEventListener('click', function () {
+
+        // If disabled due to 30-day lockout
+        if (btnOpen.disabled) {
+            alert('You recently stopped a rental. Please wait 30 days before opening again.');
+            return;
+        }
+
+        // OPEN button should NEVER show STOP logic.
+        // Only show OPEN MODAL.
+        showTerms();
+    });
+
+    
+    // initial populate
+    populate();
+
+    btnStop.addEventListener("click", () => {
+        showStop();
+    });
+
+    // Accept postMessage commands from parent (lobby) to open STOP modal immediately
+window.addEventListener('message', (ev) => {
+  try {
+    if (!ev || !ev.data) return;
+    const t = ev.data.type;
+    if (t === 'show_stop_modal') {
+      // ensure populate has run so currentBadge / stop UI exists
+      (async () => {
+        await populate().catch(()=>{});
+        // open the stop reasons modal
+        try { showStop(); } catch(_) { console.warn('showStop() failed'); }
+      })();
+    }
+    // Optional: parent asks to refresh badge after change
+    if (t === 'refresh_badge') {
+      try { populate(); } catch(_) {}
+    }
+  } catch (err) { console.warn('Driver_Rental message handler error', err); }
+});
+
+
+  </script>
+</body>
+</html>

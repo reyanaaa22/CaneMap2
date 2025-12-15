@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Sync Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .online {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .offline {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .info {
+            background: #dbeafe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2563eb;
+        }
+
+        .success {
+            background: #d1fae5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #10b981;
+        }
+
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .step h3 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>🧪 Offline Sync Test Page</h1>
+
+        <div id="status" class="status online">
+            <strong>Status:</strong> <span id="status-text">Checking...</span>
+        </div>
+
+        <div class="info">
+            <strong>ℹ️ How to Test:</strong>
+            <ol>
+                <li>Open your browser's DevTools (F12 or Cmd+Option+I)</li>
+                <li>Go to the <strong>Network</strong> tab</li>
+                <li>Look for the dropdown that says "No throttling" or "Online"</li>
+                <li>Change it to <strong>"Offline"</strong></li>
+                <li>Watch for the orange banner to appear at the top of this page</li>
+                <li>Change back to "Online" to see the banner disappear</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 1: Check Current Status</h3>
+            <p>Current network status: <strong id="current-status">Online</strong></p>
+            <p>Banner should appear when offline: <strong id="banner-status">Not visible</strong></p>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Test Offline Detection</h3>
+            <button onclick="checkStatus()">🔄 Refresh Status</button>
+            <button onclick="testOfflineBanner()">🧪 Test Banner Manually</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Console Logs</h3>
+            <p>Open DevTools Console to see initialization logs:</p>
+            <ul>
+                <li><code>Initializing offline sync manager...</code></li>
+                <li><code>Offline sync manager initialized</code></li>
+                <li><code>Network status: ONLINE</code> or <code>OFFLINE</code></li>
+            </ul>
+        </div>
+
+        <div class="success" id="success-message" style="display: none;">
+            ✅ <strong>Success!</strong> Offline sync is working correctly. The banner appeared when you went offline.
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📋 Next Steps</h2>
+        <ol>
+            <li>If the banner appears when offline, the feature is working! ✅</li>
+            <li>Navigate to <strong>Workers.html</strong> or <strong>Driver_Dashboard.html</strong></li>
+            <li>Test going offline on those pages too</li>
+            <li>Try creating a work log while offline (go to task-logging.html)</li>
+        </ol>
+    </div>
+
+    <!-- Import offline sync module -->
+    <script type="module">
+        import { initOfflineSync, getOnlineStatus } from '../backend/Common/offline-sync.js';
+
+        // Initialize offline sync
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Test page loaded, initializing offline sync...');
+
+            try {
+                initOfflineSync();
+                console.log('✅ Offline sync initialized successfully on test page');
+                updateStatus();
+            } catch (error) {
+                console.error('❌ Failed to initialize offline sync:', error);
+                document.getElementById('status-text').textContent = 'Error: ' + error.message;
+            }
+
+            // Listen for online/offline events
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+        });
+
+        function updateStatus() {
+            const isOnline = navigator.onLine;
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+            const currentStatus = document.getElementById('current-status');
+            const bannerStatus = document.getElementById('banner-status');
+
+            if (isOnline) {
+                statusDiv.className = 'status online';
+                statusText.textContent = '✅ Online - Banner should be hidden';
+                currentStatus.textContent = 'Online';
+                bannerStatus.textContent = 'Not visible (correct)';
+            } else {
+                statusDiv.className = 'status offline';
+                statusText.textContent = '⚠️ Offline - Banner should be visible at the top';
+                currentStatus.textContent = 'Offline';
+                bannerStatus.textContent = 'Should be visible';
+
+                // Show success message
+                setTimeout(() => {
+                    document.getElementById('success-message').style.display = 'block';
+                }, 1000);
+            }
+
+            console.log(`Network status updated: ${isOnline ? 'ONLINE' : 'OFFLINE'}`);
+        }
+
+        window.checkStatus = function () {
+            updateStatus();
+            console.log('Status refreshed manually');
+        };
+
+        window.testOfflineBanner = function () {
+            alert('To test the offline banner:\n\n1. Open DevTools (F12)\n2. Go to Network tab\n3. Change "No throttling" to "Offline"\n4. Watch for the orange banner at the top\n\nThe banner will automatically appear when you go offline!');
+        };
+    </script>
+</body>
+
+</html>

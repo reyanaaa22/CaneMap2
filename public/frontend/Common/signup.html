@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" >
+<title>Sign Up - CaneMap</title>
+<style>
+:root {
+  --cane-50: #f7fee7;
+  --cane-100: #ecfcca;
+  --cane-200: #d8f999;
+  --cane-300: #bbf451;
+  --cane-400: #9ae600;
+  --cane-500: #7ccf00;
+  --cane-600: #5ea500;
+  --cane-700: #497d00;
+  --cane-800: #3c6300;
+  --cane-900: #35530e;
+  --cane-950: #192e03;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-background {
+  background-image: url('../img/sugarcane.webp');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.green-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(60, 99, 0, 0.48) 0%,
+    rgba(73, 125, 0, 0.38) 35%,
+    rgba(124, 207, 0, 0.18) 70%,
+    rgba(25, 46, 3, 0.45) 100%
+  );
+  mix-blend-mode: multiply;
+  z-index: 0;
+}
+
+.page-wrapper {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  padding: 0 24px; 
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.06) 50%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-sizing: border-box;
+}
+
+
+.container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 520px;
+  padding: 18px 24px 16px;
+  border-radius: 18px;
+  box-shadow: 0 10px 24px -6px rgba(27, 64, 9, 0.18), 0 4px 12px -4px rgba(27, 64, 9, 0.15);
+  border: 1px solid rgba(188, 244, 129, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  margin: 2vh auto;
+  transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+  animation: popIn 0.6s cubic-bezier(.4,2,.6,1);
+  transition: box-shadow 0.3s cubic-bezier(.4,2,.6,1), transform 0.3s cubic-bezier(.4,2,.6,1);
+  animation: popIn 0.6s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+h2 {
+  margin: 0 0 4px 0;
+  text-align: left;
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cane-700), var(--cane-900));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 6px rgba(27, 64, 9, 0.1);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.subtitle {
+  text-align: left;
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: rgba(26, 46, 9, 0.72);
+  line-height: 1.3;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-field {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.form-field label {
+  font-size: 12px;
+  color: rgba(26, 46, 9, 0.9);
+  font-weight: 500;
+  margin-bottom: 3px;
+  display: block;
+  width: 100%;
+  text-align: left;
+  line-height: 1.2;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1.5px solid rgba(152, 214, 78, 0.45);
+  border-radius: 5px;
+  font-size: 14px;
+  transition: all 0.15s ease;
+  background: #fff;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.input-wrapper input:focus {
+  border-color: rgba(188, 244, 129, 0.8);
+  box-shadow: 0 0 0 3px rgba(188, 244, 129, 0.15);
+  outline: none;
+}
+
+.input-wrapper input::placeholder {
+  color: rgba(26, 46, 9, 0.4);
+}
+
+.form-field input {
+  width: 100%;
+  padding: 8px 12px;
+  margin: 0;
+  border-radius: 7px;
+  border: 1.8px solid rgba(152, 214, 78, 0.45);
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+  outline-offset: 2px;
+  background: #ffffff;
+  font-family: inherit;
+  -webkit-font-smoothing: inherit;
+  -moz-osx-font-smoothing: inherit;
+}
+
+.form-field input:focus {
+  border-color: rgba(188, 244, 129, 0.8);
+  border-width: 1.8px;
+  box-shadow: 0 0 0 3px rgba(188, 244, 129, 0.15);
+  background: #ffffff;
+  outline: none;
+}
+
+.error-message {
+  min-height: 18px;
+  font-size: 0.83rem;
+  color: #dc2626;
+  text-align: left;
+  margin: 6px 2px 0;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.83rem;
+  color: rgba(26, 46, 9, 0.72);
+  margin: 2px 0 8px;
+  text-align: left;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  margin-top: 0;
+  accent-color: var(--cane-600);
+}
+
+.checkbox-container a {
+  color: var(--cane-600);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.checkbox-container a:hover {
+  text-decoration: underline;
+}
+
+button,
+.modal-content button {
+  width: 100%;
+  background: linear-gradient(135deg, var(--cane-600), var(--cane-700));
+  border: none;
+  color: white;
+  padding: 12px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 18px rgba(30, 68, 9, 0.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+button:hover,
+.modal-content button:hover {
+  background: linear-gradient(135deg, var(--cane-500), var(--cane-600));
+  box-shadow: 0 10px 24px rgba(30, 68, 9, 0.32);
+}
+
+button.loading {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.btn-text {
+  transition: opacity 0.2s ease;
+}
+
+button.loading .btn-text {
+  opacity: 0.85;
+}
+
+.button-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-top-color: rgba(255, 255, 255, 0.2);
+  animation: spin 0.8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+button.loading .button-spinner {
+  opacity: 1;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#message {
+  min-height: 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #16a34a;
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.account-login {
+  font-size: 0.95rem;
+  color: rgba(26, 46, 9, 0.75);
+}
+
+.account-login a {
+  color: var(--cane-600);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.account-login a:hover {
+  text-decoration: underline;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 30, 6, 0.35);
+  backdrop-filter: blur(4px);
+  z-index: 40;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(235, 252, 207, 0.96));
+  border: 1px solid rgba(188, 244, 129, 0.45);
+  border-radius: 18px;
+  padding: 28px 24px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 18px 45px rgba(18, 42, 10, 0.25);
+}
+
+.modal-content p {
+  margin-bottom: 18px;
+  font-size: 1rem;
+  color: var(--cane-700);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .container {
+    padding: 28px 22px;
+  }
+  h2 {
+    font-size: 26px;
+  }
+  .subtitle {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 460px) {
+  .page-wrapper {
+    padding: 24px 16px;
+  }
+  .container {
+    padding: 22px 16px;
+  }
+}
+
+.form-field input[type="date"] {
+  color-scheme: light;
+}
+
+.form-field input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+.form-field input::placeholder {
+  color: rgba(26, 46, 9, 0.45);
+  font-size: 0.9rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.form-field.half {
+  flex: 1;
+}
+
+.form-field.full-width {
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+.form-field input:focus + label,
+.form-field input:not(:placeholder-shown) + label {
+  top: -8px;
+}
+
+#message {
+  margin-bottom: 4px;
+}
+
+.account-login {
+  margin-top: 4px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.container {
+  padding-bottom: 15px;
+}
+
+.checkbox-container {
+  margin-bottom: 10px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: rgba(26, 46, 9, 0.5);
+  font-size: 16px;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.8;
+  line-height: 1;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2;
+}
+
+.toggle-password:hover {
+  color: var(--cane-600);
+  opacity: 1;
+}
+
+.input-wrapper input[type="password"] {
+  padding-right: 40px !important;
+}
+
+/* Terms & Privacy Modal Styling */
+.terms-modal-content {
+  background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(236,252,215,0.98));
+  border-radius: 20px;
+  padding: 20px 24px 24px;
+  width: 92%;
+  max-width: 650px;
+  box-shadow: 0 20px 60px rgba(30,68,9,0.28);
+  position: relative;
+  overflow: hidden;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid rgba(152,214,78,0.35);
+  text-align: center;
+}
+
+.modal-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--cane-700);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: rgba(26, 46, 9, 0.65);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease, color 0.25s ease;
+  z-index: 10;
+}
+
+.close-btn:hover {
+  transform: scale(1.1);
+  color: rgba(26, 46, 9, 0.9);
+}
+
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 12px 0;
+  }
+
+  .modal-header h2 {
+    font-size: 1.3rem;
+    padding: 0 40px; }
+
+  .close-btn {
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    font-size: 1.3rem;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.terms-nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.tab-btn {
+  background: rgba(152,214,78,0.15);
+  border: 1px solid rgba(152,214,78,0.45);
+  color: var(--cane-700);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--cane-600), var(--cane-700));
+  color: white;
+  box-shadow: 0 4px 14px rgba(73,125,0,0.25);
+}
+
+.tab-btn:hover:not(.active) {
+  background: rgba(188,244,129,0.25);
+}
+
+.terms-body {
+  overflow-y: auto;
+  padding: 8px 4px 10px;
+  scroll-behavior: smooth;
+}
+
+.terms-body section {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.terms-body section.active {
+  display: block;
+}
+
+.terms-body h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--cane-700);
+}
+
+.terms-body p {
+  text-align: justify;
+  color: rgba(26,46,9,0.85);
+  line-height: 1.55;
+  font-size: 0.94rem;
+  margin-bottom: 12px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body class="main-background">
+  <div class="green-overlay"></div>
+  <div class="page-wrapper">
+    <div class="container">
+      <h2 style="margin: 0 0 2px 0; font-size: 28px; font-weight: 800; color: #1a2e09; letter-spacing: -0.3px;">Sign up</h2>
+      <p class="subtitle" style="margin: 0 0 20px 0; font-size: 15px; color: rgba(26, 46, 9, 0.8); line-height: 1.4;">Join CaneMap and start managing your sugarcane fields digitally.</p>
+
+      <form id="signup-form" novalidate>
+        <div class="form-grid" style="margin: 0; gap: 2px;">
+
+          <div class="form-field full-width" style="margin-top: 0;">
+            <label for="fullname">Full name</label>
+            <div class="input-wrapper">
+              <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
+            </div>
+            <div id="error-fullname" class="error-message"></div>
+          </div>
+
+          <div class="form-row" style="gap: 8px; margin: 0;">
+            <div class="form-field half">
+              <label for="email">Email address</label>
+              <div class="input-wrapper">
+                <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+              </div>
+              <div id="error-email" class="error-message"></div>
+            </div>
+            <div class="form-field half">
+              <label for="contact">Contact number</label>
+              <div class="input-wrapper">
+                <input type="text" id="contact" name="contact" placeholder="09123456789" required>
+              </div>
+              <div id="error-contact" class="error-message"></div>
+            </div>
+          </div>
+
+          <div class="form-row" style="gap: 8px; margin: 0;">
+            <div class="form-field half">
+              <label for="address">Address (Street/Brgy/City)</label>
+              <div class="input-wrapper">
+                <input type="text" id="address" name="address" placeholder="Enter your address" required>
+              </div>
+              <div id="error-address" class="error-message"></div>
+            </div>
+            <div class="form-field half">
+              <label for="birthday">Birthday</label>
+              <div class="input-wrapper">
+                <input type="date" id="birthday" name="birthday" required>
+              </div>
+              <div id="error-birthday" class="error-message"></div>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="password">Password</label>
+            <div class="input-wrapper" style="position: relative;">
+              <input type="password" id="password" name="password" minlength="8" placeholder="Create a password" required>
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('password')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div id="error-password" class="error-message"></div>
+          </div>
+
+          <div class="form-field">
+            <label for="confirm-password">Confirm password</label>
+            <div class="input-wrapper" style="position: relative;">
+              <input type="password" id="confirm-password" name="confirm-password" minlength="8" placeholder="Confirm your password" required>
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('confirm-password')">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div id="error-confirm-password" class="error-message"></div>
+          </div>
+
+        </div>
+
+        <input type="hidden" id="role" name="role" value="farmer">
+
+        <div class="checkbox-container" style="margin-bottom: 6px;">
+          <input type="checkbox" id="terms" name="terms" required>
+          <label for="terms">I agree to the <a href="#" target="_blank" rel="noopener">Terms of Service</a> and <a href="#" target="_blank" rel="noopener">Privacy Policy</a></label>
+        </div>
+        <div id="error-terms" class="error-message" style="margin-top: -4px;"></div>
+
+        <div class="form-actions" style="margin-top: 10px;">
+          <button type="submit" class="btn btn-primary" id="signupButton" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 6px;">
+          <span class="btn-text">Sign up</span>
+          <span class="button-spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <div id="message" style="margin: 4px 0;"></div>
+      
+      <div class="login-link" style="margin: 8px 0 4px; font-size: 14px; color: var(--cane-800);">
+        Already have an account?&nbsp;&nbsp;<a href="farmers_login.html" style="color: var(--cane-600); font-weight: 500; text-decoration: none; transition: color 0.2s ease;">Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="successModal" class="modal">
+    <div class="modal-content">
+      <p id="modalMessage">Sign-up successful! Please check your email to verify your account before logging in.</p>
+      <button id="modalOkBtn">OK</button>
+    </div>
+  </div>
+
+<!-- Terms & Privacy Modal -->
+<div id="termsPrivacyModal" class="modal">
+  <div class="terms-modal-content">
+    <div class="modal-header">
+      <h2>CaneMap Legal Policies</h2>
+      <button id="closeTermsModal" class="close-btn" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="terms-nav">
+      <button class="tab-btn active" data-target="terms-section">Terms of Service</button>
+      <button class="tab-btn" data-target="privacy-section">Privacy Policy</button>
+    </div>
+    <div class="terms-body" id="terms-scroll">
+      <section id="terms-section">
+        <h3>Terms of Service</h3>
+        <p>Welcome to CaneMap. By creating an account, you agree to follow these terms. Please read carefully.</p>
+        <p><strong>1. Account Responsibilities</strong><br>
+        You are responsible for maintaining the confidentiality of your login information and for all activities that occur under your account.</p>
+        <p><strong>2. Usage of the Platform</strong><br>
+        CaneMap is designed to assist in digital management of sugarcane operations. Misuse of the platform, including fraudulent activities or unauthorized access, is strictly prohibited.</p>
+        <p><strong>3. Data Accuracy</strong><br>
+        You agree to provide accurate and complete information when registering and updating your account details.</p>
+        <p><strong>4. Service Changes</strong><br>
+        We may update or modify the services to improve performance or security. We will notify you of significant changes.</p>
+        <p><strong>5. Termination</strong><br>
+        Violation of these terms may lead to temporary suspension or permanent termination of your account.</p>
+        <p><strong>6. Limitation of Liability</strong><br>
+        CaneMap is not responsible for indirect losses resulting from the use or inability to use the platform.</p>
+        <p><strong>7. Governing Law</strong><br>
+        These terms are governed by applicable Philippine law.</p>
+      </section>
+
+      <section id="privacy-section">
+        <h3>Privacy Policy</h3>
+        <p>At CaneMap, your privacy is our priority. This policy explains how we handle your data.</p>
+        <p><strong>1. Information We Collect</strong><br>
+        We collect personal information such as your name, email address, contact number, and location to provide better service.</p>
+        <p><strong>2. How We Use Your Data</strong><br>
+        Your information is used to manage your account, provide support, and improve platform efficiency.</p>
+        <p><strong>3. Data Security</strong><br>
+        We employ secure cloud-based technologies and encryption methods to protect your information.</p>
+        <p><strong>4. Data Sharing</strong><br>
+        We do not sell your information. Limited data may be shared only with trusted partners who follow strict confidentiality agreements.</p>
+        <p><strong>5. Data Retention</strong><br>
+        We retain data only as long as necessary to fulfill service or legal obligations.</p>
+        <p><strong>6. Your Rights</strong><br>
+        You may request to access, update, or delete your data at any time by contacting our support.</p>
+        <p><strong>7. Policy Updates</strong><br>
+        We may update this Privacy Policy periodically to reflect system changes. Updates will be posted on this page.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+  <script type="module" src="../../backend/Common/firebase-config.js"></script>
+  <script type="module" src="../../backend/Common/signup.js"></script>
+  <script>
+    function togglePasswordVisibility(fieldId) {
+      const passwordField = document.getElementById(fieldId);
+      const toggleButton = passwordField.nextElementSibling || passwordField.parentElement.querySelector('.toggle-password');
+      const icon = toggleButton.querySelector('i');
+      
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        passwordField.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+  </script>
+</body>
+</html>

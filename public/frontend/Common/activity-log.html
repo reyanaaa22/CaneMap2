@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaneMap - Activity Log</title>
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="../../css/output.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --cane-50: #f7fee7;
+            --cane-100: #ecfcca;
+            --cane-200: #d8f999;
+            --cane-300: #bbf451;
+            --cane-400: #9ae600;
+            --cane-500: #7ccf00;
+            --cane-600: #5ea500;
+            --cane-700: #497d00;
+            --cane-800: #3c6300;
+            --cane-900: #35530e;
+            --cane-950: #192e03;
+        }
+        
+        .section-card { 
+            background: #ffffff; 
+            border: 1px solid var(--cane-200); 
+            transition: all 0.3s ease; 
+        }
+        
+        .section-card:hover {
+            box-shadow: 0 8px 25px rgba(94, 165, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .activity-item {
+            transition: all 0.2s ease;
+        }
+        
+        .activity-item:hover {
+            background-color: var(--cane-50);
+        }
+        
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--cane-300), var(--cane-200));
+        }
+        
+        .activity-dot {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="bg-[#F5F5F0] min-h-screen">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-[var(--cane-800)] to-[var(--cane-700)] shadow-lg">
+        <div class="container mx-auto px-6 py-4 text-white">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <a href="lobby.html" class="hover:opacity-90 transition-opacity">
+                        <i class="fas fa-arrow-left text-xl"></i>
+                    </a>
+                    <h1 class="text-2xl font-bold tracking-tight">Activity Log</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Profile -->
+                    <div class="relative">
+                        <button id="profileBtn" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                            <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center shadow-inner">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <span id="headerUserName" class="font-medium">User Name</span>
+                            <i class="fas fa-chevron-down text-white/80 text-xs"></i>
+                                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-[var(--cane-900)] mb-2">Your Activity History</h2>
+            <p class="text-[var(--cane-600)]">Track all your actions and activities in CaneMap</p>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="section-card rounded-xl p-6 mb-6">
+            <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div class="flex flex-col sm:flex-row gap-4 flex-1">
+                    <div class="relative">
+                        <input id="searchInput" type="text" placeholder="Search activities..." 
+                               class="w-full sm:w-80 px-4 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] focus:border-[var(--cane-500)]">
+                        <i class="fas fa-search absolute right-3 top-3 text-[var(--cane-500)]"></i>
+                    </div>
+                    <select id="activityFilter" class="px-4 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] focus:border-[var(--cane-500)]">
+                        <option value="all">All Activities</option>
+                        <option value="login">Login/Logout</option>
+                        <option value="field">Field Operations</option>
+                        <option value="task">Tasks</option>
+                        <option value="transport">Transport</option>
+                        <option value="profile">Profile Changes</option>
+                        <option value="system">System Actions</option>
+                    </select>
+                    <select id="dateFilter" class="px-4 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] focus:border-[var(--cane-500)]">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="flex gap-2">
+                    <button id="exportBtn" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">
+                        <i class="fas fa-download mr-2"></i>Export
+                    </button>
+                    <button id="clearBtn" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-trash mr-2"></i>Clear Log
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="section-card rounded-xl p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-[var(--cane-900)]">Activity Timeline</h3>
+                <div class="text-sm text-[var(--cane-600)]">
+                    <span id="activityCount">0</span> activities found
+                </div>
+            </div>
+            
+            <div id="activityTimeline" class="activity-timeline relative">
+                <!-- Activities will be loaded here -->
+                <div id="loadingSpinner" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl text-[var(--cane-500)] mb-2"></i>
+                <p class="text-[var(--cane-600)]">Loading activities...</p>
+                </div>
+                    </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-12 hidden">
+                <i class="fas fa-clipboard-list text-4xl text-[var(--cane-300)] mb-4"></i>
+                <h4 class="text-lg font-semibold text-[var(--cane-700)] mb-2">No Activities Found</h4>
+                <p class="text-[var(--cane-600)]">Start using CaneMap to see your activity history here.</p>
+                    </div>
+                </div>
+    </main>
+
+    <!-- Debug panel (visible during development) -->
+    <div id="activityDebug" class="fixed bottom-4 right-4 bg-white border border-[var(--cane-200)] rounded-lg p-3 text-xs shadow-lg w-80 max-w-full z-50">
+        <div class="font-semibold text-[var(--cane-700)] mb-1">Activity Debug</div>
+        <div id="activityDebugText" class="text-[var(--cane-600)]">No status yet</div>
+        <div class="mt-2 text-[var(--cane-600)]">UID: <span id="activityUid">-</span></div>
+        <div class="mt-1 text-[var(--cane-600)]">Session logged: <span id="activitySession">-</span></div>
+        <div class="mt-1 text-[var(--cane-600)]">Last doc id: <span id="activityLastDoc">-</span></div>
+        <div class="mt-2 flex gap-2">
+            <button id="checkAuthBtn" class="px-2 py-1 bg-[var(--cane-100)] text-[var(--cane-700)] rounded text-xs">Check auth</button>
+            <button id="forceLogBtn" class="px-2 py-1 bg-[var(--cane-100)] text-[var(--cane-700)] rounded text-xs">Force log test</button>
+        </div>
+            </div>
+            
+    <!-- Clear Log Confirmation Modal -->
+    <div id="clearModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 opacity-0 invisible transition-opacity duration-200 ease-out z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-[var(--cane-200)] transform transition-all duration-200 ease-out translate-y-2 scale-95 opacity-0 pointer-events-none">
+            <div class="px-6 pt-6 pb-4">
+                <h3 class="text-lg font-bold text-[var(--cane-950)] mb-2">Clear Activity Log</h3>
+                <p class="text-[var(--cane-700)] text-sm">Are you sure you want to clear all your activity history? This action cannot be undone.</p>
+                    </div>
+            <div class="px-6 pb-6 flex justify-end gap-2">
+                <button id="clearCancel" class="px-4 py-2 rounded-lg border border-[var(--cane-300)] text-[var(--cane-900)] bg-white hover:bg-[var(--cane-50)]">Cancel</button>
+                <button id="clearConfirm" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Clear All</button>
+                    </div>
+                </div>
+            </div>
+            
+    <!-- Backend Common scripts -->
+    <script type="module" src="../../backend/Common/firebase-config.js"></script>
+    <script type="module" src="../../backend/Common/activity-logger.js"></script>
+    <script>
+        // Activity Log JavaScript
+        let allActivities = [];
+        let filteredActivities = [];
+
+        // Sample activity data structure
+        const activityTypes = {
+            login: { icon: 'fa-sign-in-alt', color: 'text-green-600', bg: 'bg-green-100' },
+            logout: { icon: 'fa-sign-out-alt', color: 'text-red-600', bg: 'bg-red-100' },
+            field_register: { icon: 'fa-map-marked-alt', color: 'text-blue-600', bg: 'bg-blue-100' },
+            field_join: { icon: 'fa-user-plus', color: 'text-purple-600', bg: 'bg-purple-100' },
+            task_complete: { icon: 'fa-check-circle', color: 'text-green-600', bg: 'bg-green-100' },
+            task_start: { icon: 'fa-play-circle', color: 'text-yellow-600', bg: 'bg-yellow-100' },
+            transport_start: { icon: 'fa-truck', color: 'text-orange-600', bg: 'bg-orange-100' },
+            profile_update: { icon: 'fa-user-edit', color: 'text-indigo-600', bg: 'bg-indigo-100' },
+            system_action: { icon: 'fa-cog', color: 'text-gray-600', bg: 'bg-gray-100' }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserInfo();
+            await loadActivities();
+            setupEventListeners();
+            renderActivities();
+        });
+
+        // Load user information
+        async function loadUserInfo() {
+            try {
+                const { auth } = await import('../../backend/Common/firebase-config.js');
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                
+                // Wait for auth state
+                const user = await new Promise((resolve) => {
+                    onAuthStateChanged(auth, (user) => {
+                        resolve(user);
+                    });
+                });
+
+                if (user) {
+                    const userName = user.displayName || user.email || 'User Name';
+                    const headerNameEl = document.getElementById('headerUserName');
+                    if (headerNameEl) {
+                        headerNameEl.textContent = userName;
+                    }
+                    const dbg = document.getElementById('activityDebugText'); if (dbg) dbg.textContent = `Signed in as ${userName} (${user.uid})`;
+                    const uidEl = document.getElementById('activityUid'); if (uidEl) uidEl.textContent = user.uid;
+                    const sessionEl = document.getElementById('activitySession'); if (sessionEl) sessionEl.textContent = sessionStorage.getItem('canemap_activity_logged') ? 'yes' : 'no';
+                } else {
+                    // Fallback to localStorage
+                    const userName = localStorage.getItem('farmerName') || 'User Name';
+                    const headerNameEl = document.getElementById('headerUserName');
+                    if (headerNameEl) {
+                        headerNameEl.textContent = userName;
+                    }
+                    const dbg = document.getElementById('activityDebugText'); if (dbg) dbg.textContent = `Not signed in (fallback to ${userName})`;
+                    const uidEl = document.getElementById('activityUid'); if (uidEl) uidEl.textContent = '-';
+                    const sessionEl = document.getElementById('activitySession'); if (sessionEl) sessionEl.textContent = '-';
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                // Fallback to localStorage
+                const userName = localStorage.getItem('farmerName') || 'User Name';
+                const headerNameEl = document.getElementById('headerUserName');
+                if (headerNameEl) {
+                    headerNameEl.textContent = userName;
+                }
+            }
+        }
+
+        // Load activities from Firestore
+        async function loadActivities() {
+            try {
+                // Get current user
+                const { auth, db } = await import('../../backend/Common/firebase-config.js');
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                const { collection, getDocs, query, where, orderBy, limit } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                
+                // Wait for auth state
+                const user = await new Promise((resolve) => {
+                    onAuthStateChanged(auth, (user) => {
+                        resolve(user);
+                    });
+                });
+
+                if (!user) {
+                    // Redirect to login if not authenticated
+                    window.location.href = 'farmers_login.html';
+                    return;
+                }
+
+                const userId = user.uid;
+                
+                // Load from Firestore
+                try {
+                    const q = query(
+                        collection(db, 'user_activities'), 
+                        where('userId', '==', userId), 
+                        orderBy('timestamp', 'desc'),
+                        limit(100) // Limit to last 100 activities
+                    );
+                    const snap = await getDocs(q);
+                    allActivities = snap.docs.map(d => ({ 
+                        id: d.id, 
+                        ...d.data(),
+                        timestamp: d.data().timestamp?.toDate ? d.data().timestamp.toDate().toISOString() : d.data().timestamp
+                    }));
+                    const dbg = document.getElementById('activityDebugText'); if (dbg) dbg.textContent = `Loaded ${allActivities.length} activities (indexed query)`;
+                    const lastEl = document.getElementById('activityLastDoc'); if (lastEl) lastEl.textContent = allActivities.length ? allActivities[0].id : '-';
+                } catch (errIndex) {
+                    // Fallback: some projects require composite indexes or rules prevent the ordered query.
+                    // Try a simpler fetch and filter client-side to avoid index errors.
+                    console.warn('Indexed query failed, falling back to client-side filter:', errIndex);
+                    try {
+                        const snap = await getDocs(collection(db, 'user_activities'));
+                        const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        const filtered = items.filter(i => i.userId === userId);
+                        // Sort by timestamp if present
+                        filtered.sort((a,b) => {
+                            const ta = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate().getTime() : (a.timestamp ? new Date(a.timestamp).getTime() : 0);
+                            const tb = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate().getTime() : (b.timestamp ? new Date(b.timestamp).getTime() : 0);
+                            return tb - ta;
+                        });
+                        allActivities = filtered.map(d => ({
+                            id: d.id,
+                            ...d,
+                            timestamp: d.timestamp && d.timestamp.toDate ? d.timestamp.toDate().toISOString() : d.timestamp
+                        }));
+                        const dbg = document.getElementById('activityDebugText'); if (dbg) dbg.textContent = `Loaded ${allActivities.length} activities (fallback)`;
+                        const lastEl = document.getElementById('activityLastDoc'); if (lastEl) lastEl.textContent = allActivities.length ? allActivities[0].id : '-';
+                    } catch (errAll) {
+                        const dbg = document.getElementById('activityDebugText'); if (dbg) dbg.textContent = `Failed to fetch activities: ${errAll.message || errAll}`;
+                        console.error('Failed to fetch activities (fallback) :', errAll);
+                        throw errAll;
+                    }
+                }
+                
+                // If no activities exist, create some sample data for this user
+                if (allActivities.length === 0) {
+                    await createSampleActivities(userId);
+                    // Reload after creating sample data
+                    await loadActivities();
+                    return;
+                }
+                
+                filteredActivities = [...allActivities];
+                
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                // Fallback to localStorage if Firestore fails
+                const localActivities = JSON.parse(localStorage.getItem('userActivities') || '[]');
+                allActivities = localActivities;
+                filteredActivities = [...allActivities];
+            }
+        }
+
+        // Create sample activities for demonstration and save to Firestore
+        async function createSampleActivities(userId) {
+            try {
+                const { db } = await import('../../backend/Common/firebase-config.js');
+                const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                
+                const now = new Date();
+                const sampleActivities = [
+                    {
+                        userId: userId,
+                        type: 'login',
+                        title: 'Logged into CaneMap',
+                        description: 'Successfully logged into your account',
+                        timestamp: serverTimestamp(),
+                        details: { ip: '192.168.1.1', device: 'Desktop' }
+                    },
+                    {
+                        userId: userId,
+                        type: 'field_register',
+                        title: 'Registered New Field',
+                        description: 'Registered "San Jose Field" in Barangay San Jose',
+                        timestamp: serverTimestamp(),
+                        details: { fieldName: 'San Jose Field', barangay: 'San Jose', size: '2.5 ha' }
+                    },
+                    {
+                        userId: userId,
+                        type: 'task_complete',
+                        title: 'Completed Task',
+                        description: 'Finished fertilizer application in Field A',
+                        timestamp: serverTimestamp(),
+                        details: { taskType: 'Fertilizer Application', field: 'Field A', duration: '2 hours' }
+                    },
+                    {
+                        userId: userId,
+                        type: 'profile_update',
+                        title: 'Updated Profile',
+                        description: 'Changed contact information',
+                        timestamp: serverTimestamp(),
+                        details: { changedFields: ['phone', 'email'] }
+                    },
+                    {
+                        userId: userId,
+                        type: 'field_join',
+                        title: 'Joined Field',
+                        description: 'Requested to join "Riverside Field"',
+                        timestamp: serverTimestamp(),
+                        details: { fieldName: 'Riverside Field', status: 'Pending Approval' }
+                    }
+                ];
+                
+                // Add each activity to Firestore
+                for (const activity of sampleActivities) {
+                    await addDoc(collection(db, 'user_activities'), activity);
+                }
+                
+                console.log('Sample activities created for user:', userId);
+                
+            } catch (error) {
+                console.error('Error creating sample activities:', error);
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterActivities);
+            }
+
+            // Filter functionality
+            const activityFilter = document.getElementById('activityFilter');
+            if (activityFilter) {
+                activityFilter.addEventListener('change', filterActivities);
+            }
+
+            const dateFilter = document.getElementById('dateFilter');
+            if (dateFilter) {
+                dateFilter.addEventListener('change', filterActivities);
+            }
+
+            // Export functionality
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportActivities);
+            }
+
+            // Clear functionality
+            const clearBtn = document.getElementById('clearBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', showClearModal);
+            }
+
+            // Clear modal
+            const clearModal = document.getElementById('clearModal');
+            const clearCancel = document.getElementById('clearCancel');
+            const clearConfirm = document.getElementById('clearConfirm');
+
+            if (clearCancel) {
+                clearCancel.addEventListener('click', hideClearModal);
+            }
+
+            if (clearConfirm) {
+                clearConfirm.addEventListener('click', clearAllActivities);
+            }
+
+            if (clearModal) {
+                clearModal.addEventListener('click', function(e) {
+                    if (e.target === clearModal) {
+                        hideClearModal();
+                    }
+                });
+            }
+        }
+
+        // Filter activities based on search and filters
+        function filterActivities() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activityType = document.getElementById('activityFilter').value;
+            const dateRange = document.getElementById('dateFilter').value;
+
+            filteredActivities = allActivities.filter(activity => {
+                // Search filter
+                const matchesSearch = !searchTerm || 
+                    activity.title.toLowerCase().includes(searchTerm) ||
+                    activity.description.toLowerCase().includes(searchTerm);
+
+                // Type filter
+                const matchesType = activityType === 'all' || activity.type === activityType;
+
+                // Date filter
+                let matchesDate = true;
+                if (dateRange !== 'all') {
+                    const activityDate = new Date(activity.timestamp);
+                    const now = new Date();
+                    
+                    switch (dateRange) {
+                        case 'today':
+                            matchesDate = activityDate.toDateString() === now.toDateString();
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            matchesDate = activityDate >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            matchesDate = activityDate >= monthAgo;
+                            break;
+                    }
+                }
+
+                return matchesSearch && matchesType && matchesDate;
+            });
+
+            renderActivities();
+        }
+
+        // Render activities to the timeline
+        function renderActivities() {
+            const timeline = document.getElementById('activityTimeline');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const emptyState = document.getElementById('emptyState');
+            const activityCount = document.getElementById('activityCount');
+
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'none';
+            }
+
+            if (activityCount) {
+                activityCount.textContent = filteredActivities.length;
+            }
+
+            if (filteredActivities.length === 0) {
+                if (emptyState) {
+                    emptyState.classList.remove('hidden');
+                }
+                if (timeline) {
+                    timeline.innerHTML = '';
+                }
+                return;
+            }
+
+            if (emptyState) {
+                emptyState.classList.add('hidden');
+            }
+
+            if (timeline) {
+                timeline.innerHTML = filteredActivities.map(activity => createActivityHTML(activity)).join('');
+            }
+        }
+
+        // Create HTML for a single activity
+        function createActivityHTML(activity) {
+            const activityType = activityTypes[activity.type] || activityTypes.system_action;
+            const timestamp = new Date(activity.timestamp);
+            const timeAgo = getTimeAgo(timestamp);
+            
+            return `
+                <div class="activity-item flex items-start space-x-4 p-4 rounded-lg border border-[var(--cane-200)] mb-4">
+                    <div class="activity-dot w-10 h-10 ${activityType.bg} rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas ${activityType.icon} ${activityType.color}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-semibold text-[var(--cane-900)] mb-1">${activity.title}</h4>
+                                <p class="text-sm text-[var(--cane-600)] mb-2">${activity.description}</p>
+                                ${activity.details ? createDetailsHTML(activity.details) : ''}
+                    </div>
+                            <div class="text-xs text-[var(--cane-500)] ml-4 flex-shrink-0">
+                                ${timeAgo}
+                    </div>
+                </div>
+            </div>
+        </div>
+            `;
+        }
+
+        // Create details HTML for activity
+        function createDetailsHTML(details) {
+            const detailItems = Object.entries(details)
+                .map(([key, value]) => `<span class="inline-block bg-[var(--cane-100)] text-[var(--cane-700)] px-2 py-1 rounded text-xs mr-2 mb-1">${key}: ${value}</span>`)
+                .join('');
+            
+            return detailItems ? `<div class="flex flex-wrap">${detailItems}</div>` : '';
+        }
+
+        // Get time ago string
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        // Export activities to CSV
+        function exportActivities() {
+            const csvContent = [
+                ['Timestamp', 'Type', 'Title', 'Description', 'Details'].join(','),
+                ...filteredActivities.map(activity => [
+                    new Date(activity.timestamp).toLocaleString(),
+                    activity.type,
+                    `"${activity.title}"`,
+                    `"${activity.description}"`,
+                    `"${JSON.stringify(activity.details || {})}"`
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `canemap-activity-log-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Show clear confirmation modal
+        function showClearModal() {
+            const modal = document.getElementById('clearModal');
+            const dialog = modal.querySelector('div');
+            
+            modal.classList.remove('opacity-0', 'invisible');
+            modal.classList.add('opacity-100', 'visible');
+            dialog.classList.remove('translate-y-2', 'scale-95', 'opacity-0', 'pointer-events-none');
+            dialog.classList.add('translate-y-0', 'scale-100', 'opacity-100');
+        }
+
+        // Hide clear confirmation modal
+        function hideClearModal() {
+            const modal = document.getElementById('clearModal');
+            const dialog = modal.querySelector('div');
+            
+            modal.classList.add('opacity-0', 'invisible');
+            modal.classList.remove('opacity-100', 'visible');
+            dialog.classList.add('translate-y-2', 'scale-95', 'opacity-0', 'pointer-events-none');
+            dialog.classList.remove('translate-y-0', 'scale-100', 'opacity-100');
+        }
+
+        // Clear all activities
+        async function clearAllActivities() {
+            try {
+                const { db } = await import('../../backend/Common/firebase-config.js');
+                const { collection, getDocs, query, where, deleteDoc } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                
+                // Get current user
+                const { auth } = await import('../../backend/Common/firebase-config.js');
+                const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                
+                const user = await new Promise((resolve) => {
+                    onAuthStateChanged(auth, (user) => {
+                        resolve(user);
+                    });
+                });
+
+                if (user) {
+                    const userId = user.uid;
+                    
+                    // Get all activities for this user
+                    const q = query(collection(db, 'user_activities'), where('userId', '==', userId));
+                    const snap = await getDocs(q);
+                    
+                    // Delete each activity
+                    const deletePromises = snap.docs.map(doc => deleteDoc(doc.ref));
+                    await Promise.all(deletePromises);
+                    
+                    console.log('All activities cleared for user:', userId);
+                }
+                
+            } catch (error) {
+                console.error('Error clearing activities:', error);
+            }
+            
+            // Clear local data
+            allActivities = [];
+            filteredActivities = [];
+            localStorage.removeItem('userActivities');
+            
+            hideClearModal();
+            renderActivities();
+        }
+
+        // Function to add new activity (can be called from other pages)
+        // This will use the ActivityLogger utility
+        window.addActivity = async function(type, title, description, details = {}) {
+            try {
+                // Use the ActivityLogger utility
+                const { logActivity } = await import('../../backend/Common/activity-logger.js');
+                const activityId = await logActivity(type, title, description, details);
+                
+                if (activityId) {
+                    console.log('Activity added via ActivityLogger:', activityId);
+                }
+                
+            } catch (error) {
+                console.error('Error adding activity:', error);
+            }
+        };
+
+        // Debug helpers
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkBtn = document.getElementById('checkAuthBtn');
+            if (checkBtn) checkBtn.addEventListener('click', async () => {
+                try {
+                    const { auth } = await import('../../backend/Common/firebase-config.js');
+                    const dbg = document.getElementById('activityDebugText');
+                    // Print currentUser
+                    console.log('auth.currentUser =', auth.currentUser);
+                    if (dbg) dbg.textContent = `auth.currentUser = ${auth.currentUser ? auth.currentUser.uid : 'null'}`;
+                    // Also attach listener
+                    const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                    onAuthStateChanged(auth, (u) => { console.log('onAuthStateChanged debug:', u); if (dbg) dbg.textContent = `onAuthStateChanged: ${u ? u.uid : 'null'}`; });
+                } catch (e) {
+                    console.error('Check auth failed', e);
+                }
+            });
+
+            const forceBtn = document.getElementById('forceLogBtn');
+            if (forceBtn) forceBtn.addEventListener('click', async () => {
+                try {
+                    await window.addActivity('login', 'Manual Login Test', 'Manual test by developer', { ip: '127.0.0.1', device: 'dev' });
+                } catch (e) { console.error('Force log failed', e); }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaneMap - SRA Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="../../css/output.css">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <style>
+        :root {
+            --cane-50: #f7fee7;
+            --cane-100: #ecfcca;
+            --cane-200: #d8f999;
+            --cane-300: #bbf451;
+            --cane-400: #9ae600;
+            --cane-500: #7ccf00;
+            --cane-600: #5ea500;
+            --cane-700: #497d00;
+            --cane-800: #3c6300;
+            --cane-900: #35530e;
+            --cane-950: #192e03;
+        }
+        
+        /* App shell styling to match reference UI */
+        .app-header {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, var(--cane-400), var(--cane-600));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .sidebar-surface { background-color: var(--cane-700); }
+        .sidebar-divider { height: 1px; background-color: rgba(255,255,255,0.08); margin: 1rem 0; }
+        .sidebar-section-title { color: #e2e8f0; opacity: 0.8; font-size: 0.95rem; margin-bottom: 0.5rem; }
+        
+        /* Updated sidebar navigation styles */
+        .nav-item {
+            position: relative;
+            margin: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            padding: 0.65rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 1.05rem;
+        }
+        
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(96, 165, 250, 0.1);
+            color: white;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60%;
+            width: 3px;
+            background-color: #ffffff;
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover::before,
+        .nav-item.bg-slate-800::before {
+            opacity: 1;
+            height: 70%;
+        }
+        
+        /* Active state for current page */
+        .nav-item.bg-slate-800 {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05)) !important;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .nav-item.bg-slate-800::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            border-radius: 0.5rem;
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cane-500), var(--cane-600));
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--cane-600), var(--cane-700));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(94, 165, 0, 0.3);
+        }
+        
+        .section-card { background: #ffffff; border: 1px solid var(--cane-200); transition: all 0.3s ease; }
+        
+        .section-card:hover {
+            box-shadow: 0 8px 25px rgba(94, 165, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .metric-card { background: var(--cane-50); border: 1px solid var(--cane-200); transition: all 0.3s ease; }
+        
+        .metric-card:hover {
+            box-shadow: 0 4px 15px rgba(94, 165, 0, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        .inner-content-box { background: #fbfde9; border: 1px solid var(--cane-200); }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+        }
+        
+        .sidebar-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        /* Desktop collapsed sidebar - icon-only mode */
+        @media (min-width: 1024px) {
+            body.sidebar-collapsed #sidebar {
+                width: 5rem;
+            }
+            body.sidebar-collapsed #sidebar .nav-item span {
+                opacity: 0;
+                width: 0;
+                overflow: hidden;
+                display: none;
+            }
+            body.sidebar-collapsed #sidebar .nav-item {
+                justify-content: center;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            body.sidebar-collapsed #sidebar .nav-item i {
+                margin: 0;
+            }
+            body.sidebar-collapsed #sidebar .text-sm.mt-2,
+            body.sidebar-collapsed #sidebar #sidebarUserName,
+            body.sidebar-collapsed #sidebar #sidebarUserType {
+                display: none;
+            }
+            body.sidebar-collapsed #sidebar .space-x-3 {
+                gap: 0;
+            }
+            body.sidebar-collapsed #sidebar .flex.items-center.space-x-3 > div:not(:first-child) {
+                display: none;
+            }
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 1023px) {
+            #sraHeaderContainer {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                margin-left: 0 !important;
+                z-index: 45;
+            }
+            /* Fix notification dropdown on mobile */
+            #notificationDropdown {
+                right: 0 !important;
+                left: auto !important;
+                max-width: calc(100vw - 2rem) !important;
+                width: calc(100vw - 2rem) !important;
+            }
+            /* Fix filter element width in Task/Field Documents section on mobile */
+            #fieldDocsStatus {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            /* Fix any filter select in filter bars on mobile */
+            .bg-white.rounded-xl.p-4.shadow-sm select,
+            .bg-gray-50.rounded-lg select {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #sraMain {
+                margin-left: 0 !important;
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+                width: 100% !important;
+                z-index: 1;
+            }
+            #sidebar {
+                z-index: 50 !important;
+            }
+            #sidebarOverlay {
+                z-index: 49 !important;
+            }
+            /* Fix map height on mobile */
+            #sraFieldsMap, #sraFieldsMapMap {
+                height: 300px !important;
+            }
+            /* Adjust grid for mobile */
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            /* Mobile card adjustments */
+            .min-w-\[280px\] {
+                min-width: 100% !important;
+            }
+            /* Reduce padding on mobile */
+            .p-6 {
+                padding: 1rem !important;
+            }
+            /* Fix metric cards gap */
+            .gap-8 {
+                gap: 1rem !important;
+            }
+            /* Ensure main content takes full width */
+            .flex-1 {
+                width: 100% !important;
+            }
+            /* Adjust welcome header */
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            /* Keep search bar on same line on mobile */
+            .mb-3.flex.flex-col.sm\:flex-row {
+                flex-direction: row !important;
+                gap: 0.5rem !important;
+            }
+            #mapSearchBtn, #mapSearchBtnMap {
+                width: auto !important;
+                flex-shrink: 0;
+                white-space: nowrap;
+            }
+            #mapSearchInput, #mapSearchInputMap {
+                flex: 1;
+                min-width: 0;
+            }
+        }
+        
+        #recentAppsList > :nth-child(n+4) {
+            display: none;
+        }
+
+        /* Print styles for report export */
+        @media print {
+            /* Hide everything except the report modal */
+            body > *:not(#reportDetailsModal) {
+                display: none !important;
+            }
+
+            #reportDetailsModal {
+                position: static !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            #reportDetailsPrintArea {
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                max-width: 100% !important;
+            }
+
+            /* Hide print buttons and close button */
+            .print\\:hidden {
+                display: none !important;
+            }
+
+            /* Ensure photos print properly */
+            img {
+                max-width: 100% !important;
+                page-break-inside: avoid;
+            }
+
+            /* Better page breaks */
+            .divide-y > * {
+                page-break-inside: avoid;
+            }
+
+            /* Print-friendly colors */
+            .bg-gray-50 {
+                background-color: #f9fafb !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .bg-yellow-50 {
+                background-color: #fefce8 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#eef2f7] min-h-screen">
+    <!-- Header -->
+    <header id="sraHeaderContainer" class="app-header shadow-md lg:pl-64">
+        <div class="container mx-auto px-6 py-2 text-gray-800">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <!-- Hamburger Menu (header, left) -->
+                    <button id="sraHeaderHamburger" onclick="toggleSidebar()" class="hamburger-icon text-gray-800 hover:text-gray-600 transition-colors mr-4 lg:hidden">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Notification Bell with Dropdown -->
+                    <div class="relative">
+                        <button id="notificationBellBtn" class="relative text-gray-800 hover:text-gray-600 transition-colors p-2">
+                            <i class="fas fa-bell text-lg"></i>
+                            <!-- Notification Badge -->
+                            <span id="notificationBadge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+
+                        <!-- Notification Dropdown -->
+                        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-[10001] overflow-hidden">
+                            <!-- Dropdown Header -->
+                            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+                                <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
+                                <div class="flex items-center gap-2">
+                                    <button id="notificationMarkAllReadBtn" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs" title="Mark all as read">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    <button id="notificationRefreshBtn" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs" title="Refresh">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                    <button id="notificationCloseBtn" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs" title="Close">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Notifications List -->
+                            <div id="notificationList" class="overflow-y-auto max-h-80">
+                                <div class="p-4 text-sm text-gray-500 text-center">Loading notifications...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile -->
+                    <div class="relative">
+                        <button id="profileBtn" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-inner overflow-hidden relative" id="profileIconContainer">
+                                <i class="fas fa-user text-gray-800 text-sm" id="profileIconDefault"></i>
+                                <img id="profilePhoto" class="w-full h-full object-cover hidden absolute inset-0" alt="Profile" />
+                            </div>
+                            <span id="headerUserName" class="font-medium text-gray-800 uppercase">SRA Officer</span>
+                            <i class="fas fa-chevron-down text-gray-600 text-xs"></i>
+                        </button>
+                        <!-- Dropdown -->
+                        <div id="profileMenu" class="hidden absolute right-0 mt-2 w-44 bg-white text-[var(--cane-900)] rounded-lg shadow-lg ring-1 ring-black/5 py-2 z-50">
+                            <a href="#" id="profileSettings" class="block px-4 py-2 text-sm text-[var(--cane-500)] hover:bg-[var(--cane-50)]">
+                                <i class="fas fa-cog mr-2 text-[var(--cane-500)]"></i>Profile Settings
+                            </a>
+                            <button id="logoutBtn" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-100">
+                                <i class="fas fa-right-from-bracket mr-2 text-red-500"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content with Sidebar -->
+    <div class="flex relative h-[calc(100vh-72px)] overflow-hidden">
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebarOverlay" class="sidebar-overlay fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+        
+        <!-- Left Sidebar -->
+        <div id="sidebar" class="sidebar-transition fixed inset-y-0 left-0 z-50 w-64 min-h-screen shadow-lg transform -translate-x-full lg:translate-x-0" style="background-color: var(--cane-700);">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <button id="sraCollapseSidebarBtn" class="hidden lg:inline-flex items-center justify-center text-slate-300 hover:text-white p-2 rounded" title="Collapse sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="lg:hidden">
+                        <button id="closeSidebarBtn" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Sidebar Profile Block -->
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-10 h-10 bg-[var(--cane-500)] rounded-full flex items-center justify-center text-white shadow overflow-hidden" id="sidebarProfileIconContainer">
+                        <i class="fas fa-user" id="sidebarProfileIconDefault"></i>
+                        <img id="sidebarProfilePhoto" class="w-full h-full object-cover hidden" alt="Profile" />
+                    </div>
+                    <div>
+                        <div id="sidebarUserName" class="text-white font-semibold leading-tight uppercase">SRA Officer</div>
+                        <div class="text-gray-300 text-xs">SRA Officer</div>
+                    </div>
+                </div>
+                <div class="h-px bg-white/10 my-4"></div>
+                
+                
+                
+                <!-- Navigation Menu -->
+                <nav class="space-y-2">
+                    <a href="#dashboard" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl bg-slate-800 text-white font-medium" data-section="dashboard">
+                        <i class="fas fa-gauge"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <div class="text-slate-200/80 text-sm mt-2">Overview</div>
+                    
+                    <a href="#field-documents" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" data-section="field-documents">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Applications</span>
+                    </a>
+                    
+                    <a href="#map" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" data-section="map">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Map</span>
+                    </a>
+
+                    <a href="#reports" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-colors" data-section="reports">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main id="sraMain" class="flex-1 px-4 lg:px-6 py-8 h-full overflow-y-auto lg:ml-64">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section">
+                <!-- Welcome Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-[var(--cane-900)]">Welcome, <span id="userGreeting">SRA Officer</span> 👋</h1>
+                    <p class="text-gray-600 mt-1">You have <span id="pendingReviewsCount" class="font-semibold text-[var(--cane-600)]">0</span> pending reviews today.</p>
+                </div>
+
+                <!-- Key Metrics/Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                    <button class="block group w-full text-left" data-card="total-submissions">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full border border-gray-100 min-w-[280px]" style="cursor: pointer;">
+                            <div class="h-2 bg-gradient-to-r from-[var(--cane-500)] to-[var(--cane-600)]"></div>
+                            <div class="p-6 relative">
+                                <div class="mb-3">
+                                    <div class="pr-16">
+                                        <p class="text-base font-medium text-gray-500">Total Submissions</p>
+                                        <div class="flex flex-col">
+                                            <p id="metricTotalSubmissions" class="text-4xl font-bold text-gray-900">0</p>
+                                            <p class="text-xs text-gray-400 mt-1">All applications received</p>
+                                        </div>
+                                    </div>
+                                    <span class="absolute top-2 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                                        View All
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="block group w-full text-left" data-card="pending-review">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full border border-gray-100 min-w-[280px]" style="cursor: pointer;">
+                            <div class="h-2 bg-gradient-to-r from-[var(--cane-500)] to-[var(--cane-600)]"></div>
+                            <div class="p-6 relative">
+                                <div class="mb-3">
+                                    <div class="pr-16">
+                                        <p class="text-base font-medium text-gray-500">Pending Review</p>
+                                        <div class="flex flex-col">
+                                            <p id="metricPendingReview" class="text-4xl font-bold text-gray-900">0</p>
+                                            <p class="text-xs text-gray-400 mt-1">Applications awaiting review</p>
+                                        </div>
+                                    </div>
+                                    <span class="absolute top-2 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-800">
+                                        Review Now
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="block group w-full text-left" data-card="reviewed-today">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full border border-gray-100 min-w-[280px]" style="cursor: pointer;">
+                            <div class="h-2 bg-gradient-to-r from-[var(--cane-500)] to-[var(--cane-600)]"></div>
+                            <div class="p-6 relative">
+                                <div class="mb-3">
+                                    <div class="pr-16">
+                                        <p class="text-base font-medium text-gray-500">Reviewed Today</p>
+                                        <div class="flex flex-col">
+                                            <p id="metricReviewedToday" class="text-4xl font-bold text-gray-900">0</p>
+                                            <p class="text-xs text-gray-400 mt-1">Completed reviews today</p>
+                                        </div>
+                                    </div>
+                                    <span class="absolute top-2 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-800">
+                                        Today
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="block group w-full text-left" data-card="active-fields">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 h-full border border-gray-100 min-w-[280px]" style="cursor: pointer;">
+                            <div class="h-2 bg-gradient-to-r from-[var(--cane-500)] to-[var(--cane-600)]"></div>
+                            <div class="p-6 relative">
+                                <div class="mb-3">
+                                    <div class="pr-16">
+                                        <p class="text-base font-medium text-gray-500">Active Fields</p>
+                                        <div class="flex flex-col">
+                                            <p id="metricActiveFields" class="text-4xl font-bold text-gray-900">0</p>
+                                            <p class="text-xs text-gray-400 mt-1">Fields currently active</p>
+                                        </div>
+                                    </div>
+                                    <span class="absolute top-2 right-4 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-800">
+                                        View Map
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Main Dashboard Content -->
+                <div class="grid grid-cols-1 gap-8 mb-8">
+                    <!-- Recent Field Applications Section -->
+                    <div id="recentFieldApplicationsCard" class="section-card rounded-xl p-6 cursor-pointer">
+                        <h3 class="text-xl font-bold text-[var(--cane-900)] mb-4 flex items-center">
+                            <i class="fas fa-file-alt text-[var(--cane-500)] mr-3"></i>
+                            Recent Field Applications
+                        </h3>
+                        <div class="inner-content-box rounded-lg p-4">
+                            <div class="bg-[var(--cane-100)] rounded-t-lg p-3 mb-2 border-b border-[var(--cane-200)]">
+                                <h4 class="font-semibold text-[var(--cane-800)]">Field Applications</h4>
+                            </div>
+                            <div id="recentAppsList" class="space-y-2 min-h-[160px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Mapping (Active Fields) -->
+                <div id="dashboardFieldsMapCard" class="section-card rounded-xl p-6 mt-8 cursor-pointer">
+                    <h3 class="text-xl font-bold text-[var(--cane-900)] mb-4 flex items-center">
+                        <i class="fas fa-map text-[var(--cane-500)] mr-3"></i>
+                        Location Mapping — Active Fields
+                    </h3>
+                    <p class="text-sm text-[var(--cane-700)] mb-3">Reviewed/active fields are displayed on the map for SRA officers.</p>
+                    <div class="mb-3 flex flex-col sm:flex-row gap-2">
+                        <input id="mapSearchInput" type="text" placeholder="Search barangay or applicant..." 
+                            class="w-full flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] text-sm">
+                        <button id="mapSearchBtn" class="px-4 py-2 rounded-lg bg-[var(--cane-600)] text-white hover:bg-[var(--cane-700)] text-sm font-semibold">Search</button>
+                    </div>
+                    <div id="sraFieldsMap" class="w-full h-[28rem] rounded-xl border border-[var(--cane-200)] bg-white"></div>
+                </div>
+            </div>
+
+            <!-- Map Section (reuses the same map component) -->
+            <div id="map" class="content-section hidden">
+                <div class="section-card rounded-xl p-6 mt-2">
+                    <h3 class="text-xl font-bold text-[var(--cane-900)] mb-4 flex items-center">
+                        <i class="fas fa-map text-[var(--cane-500)] mr-3"></i>
+                        Location Mapping — Active Fields
+                    </h3>
+                    <p class="text-sm text-[var(--cane-700)] mb-3">Reviewed/active fields are displayed on the map for SRA officers.</p>
+                    <div class="mb-3 flex flex-col sm:flex-row gap-2">
+                        <input id="mapSearchInputMap" type="text" placeholder="Search barangay or applicant..." 
+                            class="w-full flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] text-sm">
+                        <button id="mapSearchBtnMap" class="px-4 py-2 rounded-lg bg-[var(--cane-600)] text-white hover:bg-[var(--cane-700)] text-sm font-semibold">Search</button>
+                    </div>
+                    <div id="sraFieldsMapMap" class="w-full h-[28rem] rounded-xl border border-[var(--cane-200)] bg-white"></div>
+                </div>
+            </div>
+
+            <!-- Other Content Sections (Hidden by default) -->
+            <div id="field-documents" class="content-section hidden">
+                <!-- Load the field documents partial -->
+                <div id="fieldDocsContainer"></div>
+            </div>
+
+
+            <div id="reports" class="content-section hidden">
+                <div class="section-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-[var(--cane-900)]">Handler Reports</h2>
+                            <p class="text-sm text-gray-600 mt-1">Review submitted production reports from handlers</p>
+                        </div>
+                        <button id="requestReportBtn" class="px-4 py-2 bg-[var(--cane-600)] hover:bg-[var(--cane-700)] text-white rounded-lg font-semibold transition flex items-center gap-2">
+                            <i class="fas fa-file-invoice"></i>
+                            Request Report
+                        </button>
+                    </div>
+
+                    <!-- Reports table container - will be populated by renderReportsTable() -->
+                    <div id="sraReportsTableContainer"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="sraLogoutModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 opacity-0 invisible transition-opacity duration-200 ease-out z-[9999]">
+        <div id="sraLogoutDialog" class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-[var(--cane-200)] transform transition-all duration-200 ease-out translate-y-2 scale-95 opacity-0 pointer-events-none z-[10000]">
+            <div class="px-5 pt-5 pb-3">
+                <h3 class="text-lg font-bold text-[var(--cane-950)]">Confirm Logout</h3>
+                <p class="mt-2 text-[var(--cane-900)]/90 text-sm">Are you sure you want to log out?</p>
+            </div>
+            <div class="px-5 pb-5 flex justify-end gap-2">
+                <button id="sraLogoutCancel" class="px-4 py-2 rounded-lg border border-[var(--cane-300)] text-[var(--cane-900)] bg-white hover:bg-[var(--cane-50)]">No</button>
+                <button id="sraLogoutConfirm" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Yes</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module" src="../../backend/Common/activity-logger.js"></script>
+<script type="module" src="../../backend/SRA/dashboard.js?v=1763448000"></script>
+</body>
+</html> 

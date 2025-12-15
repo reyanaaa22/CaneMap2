@@ -1,0 +1,86 @@
+<!-- Settings Section -->
+<h2 class="text-3xl font-extrabold mb-6 text-gray-900">Settings</h2>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  
+
+  <div class="section-card rounded-xl p-6">
+    <h3 class="text-lg font-bold mb-4 text-[var(--cane-950)] flex items-center gap-2">
+      <i class="fas fa-lock text-[var(--cane-700)]"></i>
+      Security
+    </h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">Current Password</label>
+        <input type="password" class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" placeholder="Enter current password">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">New Password</label>
+        <input type="password" class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" placeholder="Enter new password">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">Confirm Password</label>
+        <input type="password" class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" placeholder="Confirm new password">
+      </div>
+      <button class="px-6 py-2 bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white rounded-lg font-semibold transition-colors">
+        Update Password
+      </button>
+    </div>
+  </div>
+
+  <div class="section-card rounded-xl p-6">
+    <h3 class="text-lg font-bold mb-4 text-[var(--cane-950)] flex items-center gap-2">
+      <i class="fas fa-bell text-[var(--cane-700)]"></i>
+      Notifications
+    </h3>
+    <div class="space-y-3">
+      <label class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+        <span class="text-sm text-[var(--cane-800)]">Email notifications</span>
+        <input type="checkbox" class="w-5 h-5 text-[var(--cane-700)] rounded focus:ring-[var(--cane-500)]" checked>
+      </label>
+      <label class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+        <span class="text-sm text-[var(--cane-800)]">Task reminders</span>
+        <input type="checkbox" class="w-5 h-5 text-[var(--cane-700)] rounded focus:ring-[var(--cane-500)]" checked>
+      </label>
+      <label class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+        <span class="text-sm text-[var(--cane-800)]">Worker updates</span>
+        <input type="checkbox" class="w-5 h-5 text-[var(--cane-700)]" rounded focus:ring-[var(--cane-500)]>
+      </label>
+      <label class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+        <span class="text-sm text-[var(--cane-800)]">Field alerts</span>
+        <input type="checkbox" class="w-5 h-5 text-[var(--cane-700)] rounded focus:ring-[var(--cane-500)]" checked>
+      </label>
+    </div>
+  </div>
+
+  <div class="section-card rounded-xl p-6">
+    <h3 class="text-lg font-bold mb-4 text-[var(--cane-950)] flex items-center gap-2">
+      <i class="fas fa-palette text-[var(--cane-700)]"></i>
+      Preferences
+    </h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">Language</label>
+        <select class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+          <option>English</option>
+          <option>Filipino</option>
+          <option>Cebuano</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">Timezone</label>
+        <select class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+          <option>Asia/Manila (GMT+8)</option>
+          <option>Asia/Singapore (GMT+8)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-[var(--cane-800)] mb-2">Date Format</label>
+        <select class="w-full px-4 py-2 border border-[var(--cane-200)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+          <option>MM/DD/YYYY</option>
+          <option>DD/MM/YYYY</option>
+          <option>YYYY-MM-DD</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>

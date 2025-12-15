@@ -1,0 +1,104 @@
+<div class="bg-white rounded-2xl card-shadow p-6">
+    <div class="flex items-start sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Farmers Management</h2>
+            <p class="text-gray-600 text-sm">Manage farmers and their roles</p>
+        </div>
+    </div>
+
+    <!-- Search & Filter Section -->
+    <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 mb-6 border border-gray-200">
+        <!-- Search Bar -->
+        <div class="mb-4">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" id="farmerSearch" placeholder="Search farmers by name, email, or phone..." 
+                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] focus:border-transparent">
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- Filter Controls -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <!-- Role Filter -->
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-filter text-[var(--cane-600)] text-sm"></i>
+                    <span class="text-sm font-semibold text-gray-800">Role:</span>
+                    <select id="roleFilter" class="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                        <option value="all">All Roles</option>
+                        <option value="farmer">Farmers</option>
+                        <option value="worker">Workers</option>
+                        <option value="sra">SRA Officers</option>
+                        <option value="admin">Admins</option>
+                        <option value="Field Handler">Field Handlers</option>
+                        <option value="Field Worker">Field Workers</option>
+                        <option value="driver">Drivers</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-toggle-on text-[var(--cane-600)] text-sm"></i>
+                    <span class="text-sm font-semibold text-gray-800">Status:</span>
+                    <select id="statusFilter" class="px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Active Filters Display -->
+            <div class="flex items-center gap-2 text-xs text-gray-600">
+                <div class="w-2 h-2 bg-[var(--cane-500)] rounded-full animate-pulse"></div>
+                <span>Active filters: <span id="activeFiltersDisplay" class="font-medium text-[var(--cane-700)]">None</span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-hidden border border-gray-200 rounded-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Login</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="farmersTableBody" class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="6" class="px-6 py-10">
+                            <div class="flex flex-col items-center justify-center text-center text-gray-500">
+                                <i class="fas fa-seedling text-2xl mb-2 text-gray-400"></i>
+                                <p>Loading farmers...</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Table footer: show entries and summary -->
+    <div class="flex items-center justify-between flex-wrap gap-3 mt-4 text-sm">
+        <div class="flex items-center gap-2">
+            <label for="farmersPageSize" class="text-gray-600">Show</label>
+            <select id="farmersPageSize" class="border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+            <span class="text-gray-600">entries</span>
+        </div>
+        <div class="text-gray-600">
+            Showing <span id="farmersShowingStart">0</span> to <span id="farmersShowingEnd">0</span> of <span id="farmersTotal">0</span> entries
+        </div>
+    </div>
+</div>

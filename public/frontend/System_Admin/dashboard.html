@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaneMap - System Admin Dashboard</title>
+    
+    <link rel="stylesheet" href="../../css/output.css?v=20251124">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- EmailJS library -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../img/cane.png">
+    
+    <style>
+        :root {
+            --cane-50: #f7fee7;
+            --cane-100: #ecfcca;
+            --cane-200: #d8f999;
+            --cane-300: #bbf451;
+            --cane-400: #9ae600;
+            --cane-500: #7ccf00;
+            --cane-600: #5ea500;
+            --cane-700: #497d00;
+            --cane-800: #3c6300;
+            --cane-900: #35530e;
+            --cane-950: #192e03;
+        }
+        
+        /* Custom animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Status badges (no Tailwind @apply in inline CSS) */
+        .status-active { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .status-inactive { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-pending { background-color: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+        .status-badge { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .status-no-badge { background-color: #f3f4f6; color: #1f2937; border: 1px solid #e5e7eb; }
+        
+        /* Role badges */
+        .role-farmer { background-color: #dcfce7; color: #166534; }
+        .role-worker { background-color: #dbeafe; color: #1e40af; }
+        .role-sra { background-color: #f3e8ff; color: #6b21a8; }
+        .role-admin { background-color: #fee2e2; color: #991b1b; }
+        
+        /* Chevron arrow animations */
+        .fa-chevron-down {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .fa-chevron-down.rotated {
+            transform: rotate(180deg);
+        }
+        
+        /* Professional card shadows */
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .card-shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            header {
+                left: 0 !important;
+                right: 0 !important;
+            }
+            .sidebar-mobile-hidden { display: none; }
+            
+            /* On mobile, sidebar takes controlled width when expanded */
+            .sidebar { 
+                width: 80vw !important;
+                max-width: 320px !important;
+                transform: translateX(-100%);
+                margin-top: 4.5rem;
+                height: calc(100vh - 4.5rem);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Prevent nav from scrolling on mobile */
+            .sidebar nav {
+                overflow: visible !important;
+                flex: 0 1 auto;
+                max-height: none;
+            }
+            
+            .sidebar-footer {
+                flex-shrink: 0;
+            }
+            
+            .sidebar-expanded .sidebar {
+                transform: translateX(0);
+            }
+            .main {
+                margin-left: 0 !important;
+            }
+            
+            /* Hide main content when sidebar is open on mobile */
+            .sidebar-expanded .main {
+                opacity: 0.3;
+                pointer-events: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+        }
+        
+        /* Fixed layout - allow scrolling by default (mobile needs scroll) */
+        body {
+            overflow: auto;
+        }
+        
+        .main {
+            overflow-y: auto;
+        }
+        
+        /* Sidebar toggle animations */
+        .sidebar { 
+            transition: width 0.3s ease, transform 0.3s ease; 
+        }
+        .main { 
+            transition: margin-left 0.3s ease; 
+        }
+        
+        /* Collapsed sidebar styles */
+        .sidebar-collapsed .sidebar { 
+            width: 6.5rem; 
+            overflow: hidden;
+        }
+        .sidebar-collapsed .main { 
+            margin-left: 6.5rem;
+        }
+        .sidebar-collapsed .sidebar-header {
+            padding: 1rem 0.5rem;
+        }
+        .sidebar-collapsed .sidebar-logo {
+            justify-content: center;
+        }
+        .sidebar-collapsed .sidebar-logo h2,
+        .sidebar-collapsed .nav-item-text,
+        .sidebar-collapsed .sidebar-footer span {
+            display: none;
+        }
+        .sidebar-collapsed nav .fa-chevron-down {
+            display: none;
+        }
+        .sidebar-collapsed .nav-item {
+            justify-content: center;
+            padding: 0.75rem 0;
+        }
+        .sidebar-collapsed .nav-item i {
+            margin-right: 0;
+        }
+        .sidebar-collapsed .sidebar nav span { 
+            display: none; 
+        }
+        .sidebar-collapsed .sidebar .sidebar-header-details { 
+            display: none; 
+        }
+        .sidebar-collapsed .sidebar .hamburger-icon {
+            margin-right: 0;
+        }
+        .sidebar-collapsed .sidebar .sidebar-header {
+            justify-content: center;
+        }
+        /* Center hamburger icon when collapsed */
+        .sidebar-collapsed .sidebar .flex.justify-end {
+            justify-content: center !important;
+        }
+        /* Hide footer details when collapsed */
+        .sidebar-collapsed .sidebar .sidebar-footer .flex-1 {
+            display: none;
+        }
+        /* Center icons in collapsed state */
+        .sidebar-collapsed .sidebar nav a {
+            justify-content: center;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .sidebar-collapsed .sidebar nav button {
+            justify-content: center;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Hamburger icon styles */
+        .hamburger-icon {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        .hamburger-icon:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100">
+    
+        <!-- Header -->
+    <header class="fixed top-0 right-0 left-64 bg-white shadow-lg border-b border-gray-200 z-40 transition-all duration-300 ease-in-out" id="mainHeader">
+        <div class="w-full px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <!-- Hamburger Menu -->
+                    <div class="relative">
+                        <button onclick="toggleSidebar()" class="hamburger-icon bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-colors">
+                            <i class="fas fa-bars text-xl text-gray-900"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                        <!-- Activity Log Popup -->
+                        <div id="activityLogPopup" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 fade-in">
+                            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                                <span class="font-semibold text-gray-800">Recent Activity</span>
+                                <button onclick="closeActivityLogPopup()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                                <!-- Placeholder activities -->
+                                <ul class="divide-y divide-gray-100">
+                                    <li class="py-3 px-4 flex items-start space-x-3">
+                                        <span class="bg-blue-100 text-blue-600 rounded-full p-2"><i class="fas fa-user-plus"></i></span>
+                                        <div>
+                                            <p class="text-sm text-gray-700">New user <b>Jane Doe</b> registered.</p>
+                                            <span class="text-xs text-gray-400">2 min ago</span>
+                                        </div>
+                                    </li>
+                                    <li class="py-3 px-4 flex items-start space-x-3">
+                                        <span class="bg-green-100 text-green-600 rounded-full p-2"><i class="fas fa-check-circle"></i></span>
+                                        <div>
+                                            <p class="text-sm text-gray-700">System backup completed.</p>
+                                            <span class="text-xs text-gray-400">10 min ago</span>
+                                        </div>
+                                    </li>
+                                    <li class="py-3 px-4 flex items-start space-x-3">
+                                        <span class="bg-yellow-100 text-yellow-600 rounded-full p-2"><i class="fas fa-exclamation-triangle"></i></span>
+                                        <div>
+                                            <p class="text-sm text-gray-700">Failed login attempt detected.</p>
+                                            <span class="text-xs text-gray-400">30 min ago</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="p-4 border-t border-gray-100 text-center">
+                                <button onclick="showSection('activity-log'); closeActivityLogPopup();" class="w-full px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">View All Activity Logs</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+            <!-- Admin Profile -->
+                    <div class="relative">
+                        <button id="adminProfileBtn" class="flex items-center space-x-2 text-gray-900 hover:text-gray-700 transition-colors">
+                            <div class="w-8 h-8 bg-gradient-to-br from-[var(--cane-400)] to-[var(--cane-500)] rounded-full flex items-center justify-center shadow-md overflow-hidden relative" id="profileIconContainer">
+                                <i class="fas fa-user-shield text-gray-900 text-sm" id="profileIconDefault"></i>
+                                <img id="profilePhoto" class="w-full h-full object-cover absolute inset-0 hidden" alt="Profile" />
+                        </div>
+                            <span class="font-semibold" id="adminName">Admin</span>
+                        </button>
+                        
+                        <!-- Profile Dropdown removed -->
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </header>
+        
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-[var(--cane-800)] to-[var(--cane-700)] shadow-lg z-20 transition-all duration-300 ease-in-out" id="sidebar">
+        <!-- Sidebar Header -->
+        <div class="border-b border-[var(--cane-600)]">
+            <!-- Logo and Title Row -->
+            <div class="sidebar-header px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="sidebar-logo flex items-center space-x-4">
+                    <div class="p-2 bg-white/20 rounded-full border-2 border-white/30">
+                        <img id="adminLogoBtn" src="/frontend/img/Canemap.png" alt="CaneMap Logo" class="h-10 w-10 rounded-full object-cover">
+                    </div>
+                    <h2 class="nav-item-text text-xl font-bold text-white">CaneMap</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    
+        <!-- Sidebar Navigation and Footer -->
+        <div class="flex flex-col h-full" style="height: calc(100vh - 80px);">
+            <!-- Navigation (scrollable on desktop, fixed height on mobile) -->
+            <nav class="flex-1 p-6 pt-8 space-y-4 overflow-y-auto custom-scrollbar">
+                <style>
+                    .nav-item {
+                        padding: 0.5rem 1rem;
+                        font-size: 0.95rem;
+                        border-radius: 0.4rem;
+                        margin-bottom: 0.1rem;
+                        display: flex;
+                        align-items: center;
+                        width: 100%;
+                        transition: all 0.2s ease;
+                    }
+                    .space-y-2 > * + * {
+                        margin-top: 0.1rem;
+                    }
+                    .nav-item i {
+                        font-size: 1.25rem;
+                        width: 1.5rem;
+                        transition: all 0.3s ease;
+                    }
+                    .nav-item .fa-chevron-down {
+                        font-size: 0.75rem;
+                        width: auto;
+                        margin-left: auto;
+                    }
+                    .sidebar {
+                        width: 20rem;
+                        transition: width 0.3s ease;
+                    }
+                    .sidebar-header {
+                        padding: 1.5rem 1.5rem 1rem;
+                        transition: all 0.3s ease;
+                    }
+                    .sidebar-logo {
+                        gap: 0.75rem;
+                        display: flex;
+                        align-items: center;
+                    }
+                    .sidebar-logo h2 {
+                        font-size: 1.35rem;
+                        transition: all 0.3s ease;
+                        white-space: nowrap;
+                    }
+                    .sidebar-collapsed .sidebar-logo h2,
+                    .sidebar-collapsed .nav-item span:not(.badge) {
+                        opacity: 0;
+                        width: 0;
+                        height: 0;
+                        overflow: hidden;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .sidebar-collapsed .nav-item {
+                        padding: 1rem;
+                        justify-content: center;
+                    }
+                    .sidebar-collapsed .nav-item i {
+                        margin: 0;
+                    }
+                    
+                    /* Mobile: prevent sidebar nav from scrolling */
+                    @media (max-width: 768px) {
+                        nav {
+                            overflow-y: visible !important;
+                        }
+                    }
+                </style>
+                <!-- Dashboard -->
+                <div class="space-y-2 mb-4">
+                    <a href="#" onclick="showSection('dashboard')" class="nav-item text-white hover:bg-gray-800/60" id="nav-dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span class="ml-3">Dashboard</span>
+                    </a>
+                </div>
+                
+                <!-- User Management -->
+                <div class="space-y-2 mb-4" data-expanded="false">
+                    <button onclick="toggleSubmenu('users')" class="nav-item text-white hover:bg-gray-800/60 w-full text-left">
+                        <i class="fas fa-users"></i>
+                        <span class="ml-3 flex-1">Accounts</span>
+                        <i class="fas fa-chevron-down transition-transform duration-200" id="users-arrow"></i>
+                    </button>
+                    <div class="ml-2 pl-4 border-l-2 border-gray-600 mt-2 space-y-1 hidden" id="users-submenu">
+                        <a href="#" onclick="showSection('farmers')" class="flex items-center py-2 text-white/80 hover:text-white hover:bg-gray-800/40 rounded-md transition-all duration-300 cursor-pointer text-sm font-normal pl-3">
+                            <i class="fas fa-user w-5 text-center"></i>
+                            <span class="ml-2">Users</span>
+                        </a>
+                        <a href="#" onclick="showSection('sra-officers')" class="flex items-center py-2 text-white/80 hover:text-white hover:bg-gray-800/40 rounded-md transition-all duration-300 cursor-pointer text-sm font-normal pl-3">
+                            <i class="fas fa-user-tie w-5 text-center"></i>
+                            <span class="ml-2">SRA Officers</span>
+                        </a>
+                        <a href="#" onclick="showSection('badge-requests')" class="flex items-center py-2 text-white/80 hover:text-white hover:bg-gray-800/40 rounded-md transition-all duration-300 cursor-pointer text-sm font-normal pl-3">
+                            <i class="fas fa-id-badge w-5 text-center"></i>
+                            <span class="ml-2">Driver Badges</span>
+                        </a>
+                    </div>
+                </div>
+                        
+                <!-- Security -->
+                <div class="space-y-2 mb-1">
+                    <a href="#" onclick="showSection('security-settings')" class="nav-item text-white hover:bg-gray-800/60" id="nav-security">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="ml-3">Security</span>
+                    </a>
+                </div>
+                
+                <!-- Admin Tools -->
+                <div class="space-y-2 mb-4">
+                    <a href="#" onclick="showSection('admin-tools')" class="nav-item text-white hover:bg-gray-800/60" id="nav-admin-tools">
+                        <i class="fas fa-toolbox"></i>
+                        <span class="ml-3">Admin Tools</span>
+                    </a>
+                </div>
+                
+                <!-- Help & Support -->
+                <div class="space-y-2 mb-4">
+                    <a href="#" onclick="showSection('help')" class="nav-item text-white hover:bg-gray-800/60" id="nav-help">
+                        <i class="fas fa-life-ring"></i>
+                        <span class="ml-3">Help & Support</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- Sidebar Footer: Sticky at bottom -->
+            <div class="sidebar-footer px-6 py-4 border-t border-[var(--cane-600)] bg-gradient-to-b from-transparent to-[var(--cane-900)]/20">
+                <!-- Profile Settings -->
+                <div class="space-y-2 mb-3">
+                    <a href="profile_settings.html" class="nav-item text-white hover:bg-gray-800/60 w-full text-left">
+                        <i class="fas fa-user-circle"></i>
+                        <span class="ml-3">Profile Settings</span>
+                    </a>
+                </div>
+                
+                <!-- Logout -->
+                <button onclick="logout()" class="nav-item text-white hover:bg-gray-800/60 w-full text-left">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="ml-3">Logout</span>
+                </button>
+            </div>
+        </div>
+
+                        </div>
+
+    <!-- Main Content -->
+    <main class="main ml-64 pt-20 px-8 pb-8 transition-all duration-300 ease-in-out" id="mainContent">
+        
+        <!-- Dashboard Title -->
+        <div class="mb-6 mt-2">
+            <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+        </div>
+        
+        <!-- Top Row - Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Total Users -->
+            <div class="bg-white rounded-xl p-6 shadow-lg fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                        <p class="text-3xl font-bold text-gray-900" id="totalUsers">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm">
+                    <span id="totalUsersGrowth" class="font-medium">+0%</span>
+                    <span class="text-gray-500 ml-2">from last month</span>
+                </div>
+            </div>
+
+                    <!-- Active Users -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Users</p>
+                                <p class="text-3xl font-bold text-gray-900" id="activeUsers">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span id="activeUsersGrowth" class="font-medium">+0%</span>
+                            <span class="text-gray-500 ml-2">from last month</span>
+                        </div>
+                    </div>
+
+            <!-- Failed Logins -->
+            <div class="bg-white rounded-xl p-6 shadow-lg fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Failed Logins</p>
+                        <p class="text-3xl font-bold text-gray-900" id="failedLogins">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm">
+                    <span id="failedLoginsToday" class="text-red-600 font-medium">+0</span>
+                    <span class="text-gray-500 ml-2">today</span>
+                </div>
+            </div>
+
+            <!-- Driver Badges -->
+            <div class="bg-white rounded-xl p-6 shadow-lg fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Driver Badges</p>
+                        <p class="text-3xl font-bold text-gray-900" id="driverBadges">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-id-badge text-yellow-600 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm">
+                    <span id="driverBadgesThisWeek" class="text-green-600 font-medium">+0</span>
+                    <span class="text-gray-500 ml-2">approved this week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Row - Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- User Growth Chart -->
+            <div class="bg-white rounded-xl shadow-lg fade-in">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">User Growth Over Time</h2>
+                    <p class="text-sm text-gray-600">New users per month</p>
+                </div>
+                <div class="p-4 h-64">
+                    <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            
+            <!-- User Role Distribution -->
+            <div class="bg-white rounded-xl shadow-lg fade-in">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900">User Role Distribution</h2>
+                    <p class="text-sm text-gray-600">Current user roles breakdown</p>
+                </div>
+                <div class="p-4 h-64">
+                    <canvas id="userRoleChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </main>
+    
+    
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-gray-900">Edit User</h3>
+                    <button onclick="closeEditUserModal()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                </button>
+                </div>
+            </div>
+            
+            <form id="editUserForm" class="p-6 space-y-4">
+                <input type="hidden" id="editUserId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input type="text" id="editUserName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="editUserEmail" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select id="editUserRole" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                        <option value="farmer">Farmer</option>
+                        <option value="handler">Handler</option>
+                        <option value="worker">Worker</option>
+                        <option value="driver">Driver</option>
+                        <option value="sra">SRA Officer</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Note: System Admin roles cannot be assigned through this form.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <input type="tel" id="editUserPhone" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Account Status</label>
+                    <div class="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2.5 text-gray-600">
+                        <span id="editUserStatusDisplay" class="font-medium">-</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        ℹ️ Status is automatically managed by the system (email verification). Cannot be edited manually.
+                    </p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Driver Badge</label>
+                    <select id="editUserBadge" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                        <option value="none">No Badge</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeEditUserModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    
+    <!-- Alert Container -->
+    <div id="alertContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 mx-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Confirm Logout</h3>
+            <p class="text-sm text-gray-600 mb-4">You are about to sign out of the System Admin account. Are you sure you want to logout?</p>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeLogoutModal()" class="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100">Cancel</button>
+                <button onclick="proceedLogoutConfirmed()" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)]">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Details Modal -->
+    <div id="feedbackDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 mx-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">Feedback Details</h3>
+                <button onclick="closeFeedbackDetails()" class="px-2 py-1 text-xs rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800">Close</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <div class="text-xs text-gray-500">Type</div>
+                    <div id="fd_type" class="text-sm font-medium text-gray-900">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Email</div>
+                    <div id="fd_email" class="text-sm text-gray-900">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Message</div>
+                    <div id="fd_message" class="text-sm text-gray-900 whitespace-pre-wrap break-words"></div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Submitted</div>
+                    <div id="fd_time" class="text-sm text-gray-900">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log Details Modal -->
+    <div id="activityLogDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 mx-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-gray-800">Activity Details</h3>
+                <button onclick="closeActivityLogDetails()" class="px-2 py-1 text-xs rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800">Close</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <div class="text-xs text-gray-500">Type</div>
+                    <div id="al_type" class="text-sm font-medium text-gray-900">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Actor</div>
+                    <div id="al_actor" class="text-sm text-gray-900">-</div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Message</div>
+                    <div id="al_message" class="text-sm text-gray-900 whitespace-pre-wrap break-words"></div>
+                </div>
+                <div>
+                    <div class="text-xs text-gray-500">Timestamp</div>
+                    <div id="al_time" class="text-sm text-gray-900">-</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script type="module" src="../../backend/Common/firebase-config.js"></script>
+    <script type="module" src="../../backend/System_Admin/dashboard.js"></script>
+    <script>
+        // Initialize sidebar state when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSidebarState();
+            // Sync profile picture and name from localStorage/Firestore
+            if (window.__syncDashboardProfile) {
+                window.__syncDashboardProfile();
+            }
+        });
+    </script>
+
+
+    <script type="module" src="../../backend/System_Admin/add_user_modals.js"></script>
+    <script type="module" src="../../backend/System_Admin/badge_filter.js"></script>
+    <script type="module" src="../../backend/System_Admin/Farmers.js"></script>
+    <script type="module" src="../../backend/System_Admin/security.js"></script>
+    <script type="module" src="../../backend/System_Admin/admin_tools.js"></script>
+    <script>
+    // Activity Log Popup logic
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        const activityLogBtn = document.getElementById('activityLogBtn');
+        const activityLogPopup = document.getElementById('activityLogPopup');
+        let activityLogPopupOpen = false;
+        function closeActivityLogPopup() {
+          if (activityLogPopup) {
+            activityLogPopup.classList.add('hidden');
+            activityLogPopupOpen = false;
+          }
+        }
+        if (activityLogBtn && activityLogPopup) {
+          activityLogBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            activityLogPopup.classList.toggle('hidden');
+            activityLogPopupOpen = !activityLogPopupOpen;
+          });
+          document.addEventListener('click', function(e) {
+            if (activityLogPopupOpen && !activityLogPopup.contains(e.target) && e.target !== activityLogBtn) {
+              closeActivityLogPopup();
+            }
+          });
+        }
+        window.closeActivityLogPopup = closeActivityLogPopup;
+      }, 200);
+    });
+    </script>
+    <!-- Activity Log Popup logic: only one instance, run after DOM is ready -->
+    <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        var activityLogBtn = document.getElementById('activityLogBtn');
+        var activityLogPopup = document.getElementById('activityLogPopup');
+        if (!activityLogBtn || !activityLogPopup) return;
+        var activityLogPopupOpen = false;
+        function closeActivityLogPopup() {
+          activityLogPopup.classList.add('hidden');
+          activityLogPopupOpen = false;
+        }
+        activityLogBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          activityLogPopup.classList.toggle('hidden');
+          activityLogPopupOpen = !activityLogPopupOpen;
+        });
+        document.addEventListener('click', function(e) {
+          if (activityLogPopupOpen && !activityLogPopup.contains(e.target) && e.target !== activityLogBtn) {
+            closeActivityLogPopup();
+          }
+        });
+        window.closeActivityLogPopup = closeActivityLogPopup;
+      }, 200);
+    });
+    </script>
+    <script>
+        // Initialize dashboard
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeDashboard();
+                initializeSidebarState();
+                if (window.wireAddUserModal) window.wireAddUserModal();
+
+                // Profile dropdown disabled
+            });
+        
+        // Enhanced Sidebar functions
+        function toggleSubmenu(menuId) {
+            // Auto-expand sidebar if collapsed
+            const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+            if (isCollapsed) {
+                toggleSidebar();
+                // Wait for sidebar animation before showing submenu
+                setTimeout(() => {
+                    toggleSubmenuInternal(menuId);
+                }, 100);
+            } else {
+                toggleSubmenuInternal(menuId);
+            }
+        }
+
+        function toggleSubmenuInternal(menuId) {
+            const submenu = document.getElementById(menuId + '-submenu');
+            const arrow = document.getElementById(menuId + '-arrow');
+            const group = submenu.closest('div[data-expanded]');
+
+            if (submenu.classList.contains('hidden')) {
+                submenu.classList.remove('hidden');
+                group.setAttribute('data-expanded', 'true');
+
+                // Rotate chevron
+                if (arrow) arrow.classList.add('rotated');
+
+                // Add smooth animation
+                submenu.style.maxHeight = '0';
+                submenu.style.overflow = 'hidden';
+                submenu.style.transition = 'max-height 0.3s ease-out';
+
+                setTimeout(() => {
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                }, 10);
+            } else {
+                submenu.style.maxHeight = '0';
+                group.setAttribute('data-expanded', 'false');
+
+                // Rotate chevron back
+                if (arrow) arrow.classList.remove('rotated');
+
+                setTimeout(() => {
+                    submenu.classList.add('hidden');
+                    submenu.style.maxHeight = '';
+                    submenu.style.transition = '';
+                }, 300);
+            }
+        }
+
+        function toggleInnerSubmenu(menuId) {
+            const submenu = document.getElementById(menuId + '-inner-submenu');
+            const arrow = document.getElementById(menuId + '-inner-arrow');
+            if (submenu.classList.contains('hidden')) {
+                submenu.classList.remove('hidden');
+                arrow.classList.add('rotated');
+                submenu.style.maxHeight = '0';
+                submenu.style.overflow = 'hidden';
+                submenu.style.transition = 'max-height 0.3s ease-out';
+                setTimeout(() => {
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                }, 10);
+            } else {
+                submenu.style.maxHeight = '0';
+                setTimeout(() => {
+                    submenu.classList.add('hidden');
+                    arrow.classList.remove('rotated');
+                    submenu.style.maxHeight = '';
+                    submenu.style.transition = '';
+                }, 300);
+            }
+        }
+        
+        function showSection(sectionId) {
+            // Close sidebar on mobile when navigating to a section
+            if (window.innerWidth <= 768) {
+                const body = document.body;
+                if (body.classList.contains('sidebar-expanded')) {
+                    body.classList.remove('sidebar-expanded');
+                    const sidebar = document.getElementById('sidebar');
+                    const main = document.getElementById('mainContent');
+                    if (sidebar) {
+                        sidebar.style.transform = 'translateX(-100%)';
+                    }
+                    if (main) {
+                        main.style.opacity = '';
+                        main.style.pointerEvents = '';
+                        main.style.position = '';
+                    }
+                    const hamburgerIcon = document.querySelector('.hamburger-icon i');
+                    if (hamburgerIcon) {
+                        hamburgerIcon.className = 'fas fa-bars text-sm';
+                    }
+                }
+            }
+            
+            // Remove active class from all sidebar items
+            document.querySelectorAll('a[onclick^="showSection"]').forEach(item => {
+                item.classList.remove('bg-gray-700', 'shadow-lg');
+                item.classList.add('hover:bg-gray-800/60');
+            });
+                    
+                    // Add active class to clicked item
+            const activeItem = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+            if (activeItem) {
+                activeItem.classList.add('bg-gray-700', 'shadow-lg');
+                activeItem.classList.remove('hover:bg-gray-800/60');
+            }
+            
+            // Handle different sections
+            switch(sectionId) {
+                case 'dashboard':
+                    showDashboardContent();
+                    break;
+                case 'overview':
+                    showOverviewContent();
+                    break;
+                case 'farmers':
+                    showFarmersContent();
+                    break;
+                case 'sra-officers':
+                    showSRAOfficersContent();
+                    break;
+                case 'badge-requests':
+                    showBadgeRequestsContent();
+                    break;
+                case 'approved-badges':
+                    showApprovedBadgesContent();
+                    break;
+                case 'badge-history':
+                    showBadgeHistoryContent();
+                    break;
+                case 'activity-log':
+                    showActivityLogContent();
+                    break;
+                case 'failed-logins':
+                    showFailedLoginsContent();
+                    break;
+                case 'security-settings':
+                    showSecuritySettingsContent();
+                    break;
+                case 'admin-tools':
+                    showAdminToolsContent();
+                    break;
+                case 'help':
+                    showHelpContent();
+                    break;
+                default:
+                    showDashboardContent();
+            }
+        }
+        
+        function showDashboardContent() {
+            // Show the main dashboard content
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <!-- Dashboard Title -->
+                <div class="mb-6 mt-2">
+                    <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                </div>
+
+                <!-- Dashboard Stats (Top Row) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4 mb-6">
+                    <!-- Total Users -->
+                    <div class="bg-white rounded-xl p-6 shadow-lg fade-in">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Users</p>
+                                <p class="text-3xl font-bold text-gray-900" id="totalUsers">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span id="totalUsersGrowth2" class="font-medium">+0%</span>
+                            <span class="text-gray-500 ml-2">from last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Users -->
+                    <div class="bg-white rounded-xl p-6 card-shadow-lg fade-in border border-gray-100">
+                            <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Active Users</p>
+                                <p class="text-3xl font-bold text-gray-900" id="activeUsers">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span id="activeUsersGrowth2" class="font-medium">+0%</span>
+                            <span class="text-gray-500 ml-2">from last month</span>
+                        </div>
+                    </div>
+
+                    <!-- Failed Logins -->
+                    <div class="bg-white rounded-xl p-6 card-shadow-lg fade-in border border-gray-100">
+                            <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Failed Logins</p>
+                                <p class="text-3xl font-bold text-gray-900" id="failedLogins">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span id="failedLoginsToday2" class="text-red-600 font-medium">+0</span>
+                            <span class="text-gray-500 ml-2">today</span>
+                        </div>
+                    </div>
+
+                    <!-- Driver Badges -->
+                    <div class="bg-white rounded-xl p-6 card-shadow-lg fade-in border border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Driver Badges</p>
+                                <p class="text-3xl font-bold text-gray-900" id="driverBadges">0</p>
+                            </div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-id-badge text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center text-sm">
+                            <span id="driverBadgesThisWeek2" class="text-green-600 font-medium">+0</span>
+                            <span class="text-gray-500 ml-2">approved this week</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Charts Section (Bottom Row) -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- User Growth Chart -->
+                    <div class="bg-white rounded-xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-xl font-bold text-gray-900">User Growth Over Time</h2>
+                            <p class="text-sm text-gray-600">New users per month</p>
+                        </div>
+                        <div class="p-4 h-64">
+                            <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- User Role Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-lg fade-in">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-xl font-bold text-gray-900">User Role Distribution</h2>
+                            <p class="text-sm text-gray-600">Current user roles breakdown</p>
+                        </div>
+                        <div class="p-4 h-64">
+                            <canvas id="userRoleChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Logs Section -->
+                <div class="mt-6 bg-white rounded-xl shadow-lg fade-in">
+                    <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-stream text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-900">Activity Logs</h2>
+                                <p class="text-sm text-gray-600">Recent activities from notifications</p>
+                            </div>
+                        </div>
+                        <button id="refreshActivityLogs" class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">Refresh</button>
+                    </div>
+                    <div class="p-4">
+                        <div id="activityLogsList" class="space-y-2" style="max-height: 24rem; overflow-y: auto;"></div>
+                    </div>
+                </div>
+
+            `;
+
+            // Re-initialize the dashboard functionality
+            console.log('📊 Re-initializing dashboard after tab switch...');
+
+            // Load stats first
+            if (typeof loadDashboardStats === 'function') {
+                loadDashboardStats().then(() => {
+                    console.log('✅ Dashboard stats loaded');
+                }).catch(err => {
+                    console.error('❌ Error loading dashboard stats:', err);
+                });
+            }
+
+            // Then load charts (after a small delay to ensure canvas elements are in DOM)
+            setTimeout(() => {
+                if (typeof loadAnalyticsCharts === 'function') {
+                    loadAnalyticsCharts().then(() => {
+                        console.log('✅ Analytics charts loaded');
+                    }).catch(err => {
+                        console.error('❌ Error loading analytics charts:', err);
+                    });
+                } else {
+                    console.warn('⚠️ loadAnalyticsCharts function not found');
+                }
+            }, 100);
+
+            // Load activity logs
+            setTimeout(() => {
+                try {
+                    loadActivityLogs();
+                    const btn = document.getElementById('refreshActivityLogs');
+                    if (btn) btn.onclick = () => loadActivityLogs();
+                } catch (e) { console.error('Activity logs init error', e); }
+            }, 120);
+        }
+
+        async function loadActivityLogs() {
+            const listEl = document.getElementById('activityLogsList');
+            if (!listEl || !window.db || !window.collection || !window.getDocs || !window.query || !window.orderBy) return;
+            listEl.innerHTML = '<p class="text-sm text-gray-500">Loading logs…</p>';
+            try {
+                const q = window.query(window.collection(window.db, 'notifications'), window.orderBy('timestamp', 'desc'));
+                const snap = await window.getDocs(q);
+                if (snap.empty) { listEl.innerHTML = '<p class="text-sm text-gray-600">No activity yet.</p>'; return; }
+                const rows = snap.docs.map(d => {
+                    const n = d.data();
+                    const ts = (n.timestamp && n.timestamp.toDate) ? n.timestamp.toDate() : (n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null);
+                    const when = ts ? ts.toLocaleString() : '';
+                    const who = n.email || n.userEmail || n.userId || n.role || '';
+                    const label = n.type || 'notification';
+                    const msg = (n.message || '').trim();
+                    const preview = msg ? (msg.length > 100 ? msg.slice(0,100)+'…' : msg) : 'No message';
+                    return (
+                        '<button class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition cursor-pointer" data-id="'+d.id+'">'
+                        + '<div class="flex items-start justify-between">'
+                        +   '<div class="flex-1">'
+                        +     '<div class="text-xs text-[var(--cane-700)] mb-1">'+(who ? String(who) : 'Activity')+'</div>'
+                        +     '<p class="text-sm font-semibold text-gray-900">'+label+'</p>'
+                        +     '<p class="text-sm text-gray-700">'+preview+'</p>'
+                        +   '</div>'
+                        +   '<div class="ml-4 text-xs text-gray-500">'+when+'</div>'
+                        + '</div>'
+                        + '</button>'
+                    );
+                }).join('');
+                listEl.innerHTML = rows;
+                listEl.querySelectorAll('button[data-id]').forEach(btn => {
+                    btn.addEventListener('click', () => openActivityLogDetails(btn.getAttribute('data-id')));
+                });
+            } catch (e) {
+                console.error('Failed to load activity logs:', e);
+                listEl.innerHTML = '<p class="text-sm text-red-600">Failed to load activity logs.</p>';
+            }
+        }
+
+        async function openActivityLogDetails(id) {
+            try {
+                const ref = window.doc(window.db, 'notifications', id);
+                const snap = await window.getDoc(ref);
+                if (!snap.exists()) return;
+                const n = snap.data();
+                var modal = document.getElementById('activityLogDetailsModal');
+                if (!modal) return;
+                document.getElementById('al_type').textContent = n.type || 'notification';
+                document.getElementById('al_actor').textContent = n.email || n.userEmail || n.userId || n.role || '-';
+                document.getElementById('al_message').textContent = n.message || '';
+                const ts = (n.timestamp && n.timestamp.toDate) ? n.timestamp.toDate() : (n.createdAt && n.createdAt.toDate ? n.createdAt.toDate() : null);
+                document.getElementById('al_time').textContent = ts ? ts.toLocaleString() : '';
+                modal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }
+
+        function closeActivityLogDetails() {
+            var modal = document.getElementById('activityLogDetailsModal');
+            if (modal) modal.classList.add('hidden');
+        }
+        
+        // Placeholder functions for other sections
+        function showOverviewContent() {
+            showDashboardContent(); // For now, show dashboard content
+        }
+        
+        function showFarmersContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            fetch(`partials/farmers.html?v=${Date.now()}`)
+                .then(r => r.text())
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    // Initialize the farmers management system
+                    if (window.initializeFarmers) {
+                        window.initializeFarmers();
+                    }
+                    // ✅ Refresh users data when switching to this tab
+                    if (typeof loadUsers === 'function') {
+                        loadUsers().then(() => console.log('✅ Users data refreshed')).catch(err => console.error('❌ Error refreshing users:', err));
+                    }
+                })
+                .catch(() => {
+                    const mainContent = document.querySelector('main');
+                    mainContent.style.height = '100vh';
+                    mainContent.style.overflow = 'auto';
+                    mainContent.innerHTML = '<div class="bg-white rounded-xl shadow-lg p-8"><p class="text-red-600">Failed to load section.</p></div>';
+                });
+        }
+
+
+        function showSRAOfficersContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            // Add cache busting to force reload latest version
+            fetch(`partials/sra_officers.html?v=${Date.now()}`)
+                .then(r => r.text())
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    if (window.wireSRAAddForm) { try { window.wireSRAAddForm(); } catch(_){} }
+                    const pageSizeSel = document.getElementById('sraPageSize');
+                    if (pageSizeSel) {
+                        pageSizeSel.addEventListener('change', () => fetchAndRenderSRA());
+                    }
+                    fetchAndRenderSRA();
+                })
+                .catch(() => {
+                    const mainContent = document.querySelector('main');
+                    mainContent.style.height = '100vh';
+                    mainContent.style.overflow = 'auto';
+                    mainContent.innerHTML = '<div class="bg-white rounded-xl shadow-lg p-8"><p class="text-red-600">Failed to load section.</p></div>';
+                });
+        }
+
+        async function fetchAndRenderSRA() {
+            try {
+                const q = window.query(
+                    window.collection(window.db || db, 'users'),
+                    window.where('role', '==', 'sra'),
+                    window.orderBy('createdAt', 'desc')
+                );
+                const snap = await window.getDocs(q);
+                const allRows = [];
+                snap.forEach(doc => {
+                    const u = doc.data();
+                    const status = u.status || 'inactive';
+                    allRows.push({ id: doc.id, html: `
+                        <tr class=\"hover:bg-gray-50\">
+                            <td class=\"px-6 py-4 whitespace-nowrap\"><div class=\"text-sm font-medium text-gray-900\">${u.name || 'N/A'}</div></td>
+                            <td class=\"px-6 py-4 whitespace-nowrap text-sm text-gray-700\">${u.email || 'N/A'}</td>
+                            <td class=\"px-6 py-4 whitespace-nowrap\">
+                                <span class=\"px-2 py-1 text-xs font-semibold rounded-full ${status === 'active' ? 'bg-green-100 text-green-800' : status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}\">${status}</span>
+                            </td>
+                            <td class=\"px-6 py-4 whitespace-nowrap text-sm font-medium\">
+                                <div class=\"flex items-center space-x-2\">
+                                    <button onclick=\"editUser('${doc.id}')\" class=\"text-[var(--cane-600)] hover:text-[var(--cane-700)]\"><i class=\"fas fa-edit\"></i></button>
+                                    <button onclick=\"deleteUser('${doc.id}')\" class=\"text-red-600 hover:text-red-700\"><i class=\"fas fa-trash\"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `});
+                });
+
+                const tableBody = document.getElementById('sraTableBody');
+                const total = allRows.length;
+                const pageSizeEl = document.getElementById('sraPageSize');
+                const pageSize = pageSizeEl ? parseInt(pageSizeEl.value || '10', 10) : 10;
+                const slice = allRows.slice(0, pageSize);
+
+                if (slice.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan=\"4\" class=\"px-6 py-10\"><div class=\"text-center text-gray-500\">No SRA officers found</div></td></tr>`;
+                } else {
+                    tableBody.innerHTML = slice.map(r => r.html).join('');
+                }
+
+                // Update counts
+                const start = total === 0 ? 0 : 1;
+                const end = Math.min(pageSize, total);
+                const totalEl = document.getElementById('sraTotal');
+                const startEl = document.getElementById('sraShowingStart');
+                const endEl = document.getElementById('sraShowingEnd');
+                if (totalEl && startEl && endEl) {
+                    totalEl.textContent = String(total);
+                    startEl.textContent = String(start);
+                    endEl.textContent = String(end);
+                }
+            } catch (e) {
+                const tableBody = document.getElementById('sraTableBody');
+                if (tableBody) tableBody.innerHTML = `<tr><td colspan=\"4\" class=\"px-6 py-10\"><div class=\"text-center text-red-500\">Failed to load SRA officers</div></td></tr>`;
+                console.error(e);
+            }
+        }
+
+        // Open preset modals
+        function openAddSRA(){ if (window.openAddSRAModal) window.openAddSRAModal(); }
+        
+        function showWorkersContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Workers Management</h2>
+                    <p class="text-gray-600">Worker management content will be implemented here.</p>
+                </div>
+            `;
+        }
+        
+        function showAdminsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Admins Management</h2>
+                    <p class="text-gray-600">Admin management content will be implemented here.</p>
+                </div>
+            `;
+        }
+        
+async function showBadgeRequestsContent() {
+  const mainContent = document.querySelector('main');
+  mainContent.style.height = '100vh';
+  mainContent.style.overflow = 'auto';
+
+  try {
+    // Load the HTML content
+    const response = await fetch(`partials/badge_requests.html?v=${Date.now()}`);
+    const html = await response.text();
+    mainContent.innerHTML = html;
+
+    // Dynamically import the badge requests script
+    await import('../../backend/System_Admin/badge_requests.js');
+
+    // ✅ Wait for next tick to ensure module is fully loaded
+    setTimeout(() => {
+      if (typeof window.fetchBadgeRequests === 'function') {
+        console.log('📊 Calling fetchBadgeRequests...');
+        window.fetchBadgeRequests();
+      } else {
+        console.error('❌ window.fetchBadgeRequests not found');
+      }
+    }, 10);
+
+    console.log('✅ Badge Requests page loaded and script executed');
+  } catch (err) {
+    console.error('❌ Failed to load Badge Requests content:', err);
+    mainContent.innerHTML = `
+      <div class="p-6 bg-red-50 text-red-600 rounded-lg">
+        Failed to load Driver Badge Requests.
+      </div>
+    `;
+  }
+}
+
+      
+        function showApprovedBadgesContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Approved Driver Badges</h2>
+                    <p class="text-gray-600">Approved badges content will be implemented here.</p>
+        </div>
+            `;
+        }
+        
+        function showBadgeHistoryContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Driver Badge History</h2>
+                    <p class="text-gray-600">Badge history content will be implemented here.</p>
+    </div>
+            `;
+        }
+        
+        function showActivityLogContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Activity Log</h2>
+                    <p class="text-gray-600">Activity log content will be implemented here.</p>
+            </div>
+            `;
+            // ✅ Refresh activity logs when switching to this tab
+            if (typeof loadActivityLogs === 'function') {
+                loadActivityLogs().then(() => console.log('✅ Activity logs refreshed')).catch(err => console.error('❌ Error refreshing activity logs:', err));
+            }
+        }
+
+        function showFailedLoginsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+
+            fetch(`partials/failed_logins.html?v=${Date.now()}`)
+                .then(r => r.text())
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    // Initialize failed logins table
+                    if (typeof loadFailedLogins === 'function') {
+                        loadFailedLogins();
+                    }
+                    // Set up event listeners for this section
+                    setupFailedLoginsListeners();
+                })
+                .catch(() => {
+                    mainContent.innerHTML = '<div class="bg-white rounded-xl shadow-lg p-8"><p class="text-red-600">Failed to load failed logins section.</p></div>';
+                });
+        }
+        
+        function showSecuritySettingsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            fetch(`partials/security.html?v=${Date.now()}`)
+                .then(r => r.text())
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    // Initialize the security management system
+                    if (window.initializeSecurity) {
+                        window.initializeSecurity();
+                    }
+                })
+                .catch(() => {
+                    const mainContent = document.querySelector('main');
+                    mainContent.style.height = '100vh';
+                    mainContent.style.overflow = 'auto';
+                    mainContent.innerHTML = '<div class="bg-white rounded-xl shadow-lg p-8"><p class="text-red-600">Failed to load security section.</p></div>';
+                });
+        }
+        
+        function showAdminToolsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            fetch(`partials/admin_tools.html?v=${Date.now()}`)
+                .then(r => r.text())
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    // Initialize admin tools
+                    if (window.initializeAdminTools) {
+                        window.initializeAdminTools();
+                    }
+                })
+                .catch(() => {
+                    const mainContent = document.querySelector('main');
+                    mainContent.style.height = '100vh';
+                    mainContent.style.overflow = 'auto';
+                    mainContent.innerHTML = '<div class="bg-white rounded-xl shadow-lg p-8"><p class="text-red-600">Failed to load admin tools section.</p></div>';
+                });
+        }
+        
+        
+        function showBackupRestoreContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Backup & Restore</h2>
+                    <p class="text-gray-600">Backup and restore content will be implemented here.</p>
+                </div>
+            `;
+        }
+        
+        function showSystemLogsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">System Logs</h2>
+                    <p class="text-gray-600">System logs content will be implemented here.</p>
+                </div>
+            `;
+        }
+        
+        function showReportsContent() {
+            if (window.showFeedbackReports) {
+                window.showFeedbackReports();
+            } else {
+                const mainContent = document.querySelector('main');
+                mainContent.style.height = '100vh';
+                mainContent.style.overflow = 'auto';
+                mainContent.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Reports</h2>
+                        <p class="text-gray-600">Reports content will be implemented here.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function showSettingsContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Settings</h2>
+                    <p class="text-gray-600">Settings content will be implemented here.</p>
+                </div>
+            `;
+        }
+
+        function showHelpContent() {
+            const mainContent = document.querySelector('main');
+            mainContent.style.height = '100vh';
+            mainContent.style.overflow = 'auto';
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Help & Support</h2>
+                    <p class="text-gray-600">If you need assistance, please contact the system administrator or email <a href="mailto:support@canemap.example" class="text-[var(--cane-600)] font-medium">support@canemap.example</a>.</p>
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-lg border border-gray-200">
+                            <h3 class="font-semibold text-gray-900 mb-2">Documentation</h3>
+                            <p class="text-gray-600 text-sm">User guides and FAQs coming soon.</p>
+                        </div>
+                        <div class="p-4 rounded-lg border border-gray-200">
+                            <h3 class="font-semibold text-gray-900 mb-2">Report an Issue</h3>
+                            <p class="text-gray-600 text-sm">Describe your issue and steps to reproduce; include screenshots if possible.</p>
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-900">Feedback</h4>
+                                    <span class="text-xs text-gray-500">Latest submissions</span>
+                                </div>
+                                <div id="feedbackList" class="space-y-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fetchAndRenderFeedbacks();
+        }
+
+        async function fetchAndRenderFeedbacks() {
+            const listEl = document.getElementById('feedbackList');
+            if (!listEl || !window.db || !window.collection || !window.getDocs || !window.query || !window.orderBy) return;
+            try {
+                const q = window.query(window.collection(window.db, 'feedbacks'), window.orderBy('createdAt', 'desc'));
+                const snap = await window.getDocs(q);
+                if (snap.empty) {
+                    listEl.innerHTML = '<p class="text-gray-600 text-sm">No feedback yet.</p>';
+                    return;
+                }
+                const rows = snap.docs.map(d => {
+                    const r = d.data();
+                    const typeLabel = r.type === 'like' ? 'I like something' : r.type === 'dislike' ? "I don't like something" : 'I have an idea';
+                    const msgPreview = (r.message || '').slice(0, 80) + ((r.message || '').length > 80 ? '…' : '');
+                    const submitted = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleString() : '';
+                    return (
+                        '<button class="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition cursor-pointer" data-id="'+d.id+'">'
+                        + '<div class="flex items-start justify-between">'
+                        +   '<div class="flex-1">'
+                        +     '<div class="text-xs text-[var(--cane-700)] mb-1">Feedback</div>'
+                        +     '<p class="text-sm font-semibold text-gray-900">'+typeLabel+'</p>'
+                        +     '<p class="text-sm text-gray-700">'+msgPreview+'</p>'
+                        +     (r.email ? '<p class="text-xs text-gray-500 mt-1">'+r.email+'</p>' : '')
+                        +   '</div>'
+                        +   '<div class="ml-4 text-xs text-gray-500">'+submitted+'</div>'
+                        + '</div>'
+                        + '</button>'
+                    );
+                }).join('');
+                listEl.innerHTML = rows;
+                listEl.querySelectorAll('button[data-id]').forEach(btn => {
+                    btn.addEventListener('click', () => openFeedbackDetails(btn.getAttribute('data-id')));
+                });
+            } catch (e) {
+                console.error('Failed to load feedbacks:', e);
+                listEl.innerHTML = '<p class="text-red-600 text-sm">Failed to load feedbacks.</p>';
+            }
+        }
+
+        async function openFeedbackDetails(id) {
+            try {
+                const ref = window.doc(window.db, 'feedbacks', id);
+                const snap = await window.getDoc(ref);
+                if (!snap.exists()) return;
+                const r = snap.data();
+                var modal = document.getElementById('feedbackDetailsModal');
+                if (!modal) return;
+                document.getElementById('fd_type').textContent = r.type === 'like' ? 'I like something' : r.type === 'dislike' ? "I don't like something" : 'I have an idea';
+                document.getElementById('fd_email').textContent = r.email || '-';
+                document.getElementById('fd_message').textContent = r.message || '';
+                document.getElementById('fd_time').textContent = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toLocaleString() : '';
+                modal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }
+
+        function closeFeedbackDetails() {
+            var modal = document.getElementById('feedbackDetailsModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Sidebar toggle function
+        function toggleSidebar() {
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('mainContent');
+            const header = document.getElementById('mainHeader');
+            // Mobile behavior: toggle overlay / expanded state
+            if (window.innerWidth <= 768) {
+                const isNowExpanded = body.classList.toggle('sidebar-expanded');
+                if (sidebar) {
+                    if (isNowExpanded) {
+                        sidebar.style.transform = 'translateX(0)';
+                        sidebar.style.width = '80vw';
+                    } else {
+                        sidebar.style.transform = 'translateX(-100%)';
+                        sidebar.style.width = '';
+                    }
+                }
+                if (main) {
+                    if (isNowExpanded) {
+                        main.style.opacity = '0.3';
+                        main.style.pointerEvents = 'none';
+                        main.style.position = 'fixed';
+                    } else {
+                        main.style.opacity = '';
+                        main.style.pointerEvents = '';
+                        main.style.position = '';
+                    }
+                }
+                // update hamburger icon visual
+                const hamburgerIcon = document.querySelector('.hamburger-icon i');
+                if (hamburgerIcon) hamburgerIcon.className = isNowExpanded ? 'fas fa-times text-sm' : 'fas fa-bars text-sm';
+                return;
+            }
+            
+            // Toggle the collapsed class on the body
+            const isCollapsing = !body.classList.contains('sidebar-collapsed');
+            
+            if (isCollapsing) {
+                // Collapsing the sidebar
+                body.classList.add('sidebar-collapsed');
+                if (sidebar) sidebar.style.width = '5rem';
+                if (main) main.style.marginLeft = '5rem';
+                if (header) header.style.left = '5rem';
+                
+                // Collapse all submenus and reset chevrons
+                document.querySelectorAll('[id$="-submenu"], [id$="-inner-submenu"]').forEach(menu => {
+                    // Don't add hidden, just close with maxHeight
+                    menu.style.maxHeight = '0';
+                    menu.style.transition = 'max-height 0.3s ease-out';
+
+                    setTimeout(() => {
+                        menu.classList.add('hidden');
+                    }, 300);
+
+                    // Reset chevron rotation
+                    const menuId = menu.id.replace('-submenu', '').replace('-inner-submenu', '');
+                    const arrow = document.getElementById(menuId + '-arrow') || document.getElementById(menuId + '-inner-arrow');
+                    if (arrow) arrow.classList.remove('rotated');
+
+                    // Reset data-expanded attribute
+                    const group = menu.closest('div[data-expanded]');
+                    if (group) group.setAttribute('data-expanded', 'false');
+
+                    if (menu.previousElementSibling) {
+                        menu.previousElementSibling.classList.remove('active');
+                    }
+                });
+            } else {
+                // Expanding the sidebar
+                body.classList.remove('sidebar-collapsed');
+                if (sidebar) sidebar.style.width = '16rem';
+                if (main) main.style.marginLeft = '16rem';
+                if (header) header.style.left = '16rem';
+            }
+            
+            // Store the state in localStorage
+            localStorage.setItem('sidebarCollapsed', isCollapsing);
+        }
+        
+        // Initialize sidebar state from localStorage
+        function initializeSidebarState() {
+            const isMobile = window.innerWidth <= 768;
+            const body = document.body;
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('mainContent');
+            const header = document.getElementById('mainHeader');
+            
+            if (!isMobile) {
+                // Only apply localStorage state on desktop
+                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+                
+                if (isCollapsed) {
+                    body.classList.add('sidebar-collapsed');
+                    if (sidebar) sidebar.style.width = '5rem';
+                    if (main) main.style.marginLeft = '5rem';
+                    if (header) header.style.left = '5rem';
+                } else {
+                    body.classList.remove('sidebar-collapsed');
+                    if (sidebar) sidebar.style.width = '16rem';
+                    if (main) main.style.marginLeft = '16rem';
+                    if (header) header.style.left = '16rem';
+                }
+                // Ensure no mobile overlay styles remain
+                if (main) {
+                    main.style.opacity = '';
+                    main.style.pointerEvents = '';
+                    main.style.position = '';
+                }
+            } else {
+                // On mobile, start with sidebar hidden
+                body.classList.remove('sidebar-expanded');
+                if (main) {
+                    main.style.marginLeft = '0';
+                    main.style.opacity = '';
+                    main.style.pointerEvents = '';
+                    main.style.position = '';
+                }
+                if (header) header.style.left = '0';
+                if (sidebar) {
+                    sidebar.style.width = '';
+                    sidebar.style.transform = 'translateX(-100%)';
+                }
+            }
+        }
+        
+        // Handle window resize to reset sidebar state when switching between mobile/desktop
+        window.addEventListener('resize', function() {
+            const isMobile = window.innerWidth <= 768;
+            const body = document.body;
+            const main = document.getElementById('mainContent');
+            const sidebar = document.getElementById('sidebar');
+            
+            // Reset mobile sidebar state when going back to desktop
+            if (!isMobile && body.classList.contains('sidebar-expanded')) {
+                body.classList.remove('sidebar-expanded');
+                if (main) {
+                    main.style.opacity = '';
+                    main.style.pointerEvents = '';
+                    main.style.position = '';
+                }
+                if (sidebar) {
+                    sidebar.style.transform = '';
+                    sidebar.style.width = '';
+                }
+            }
+            
+            initializeSidebarState();
+
+            const hamburgerIcon = document.querySelector('.hamburger-icon i');
+            if (hamburgerIcon) {
+                hamburgerIcon.className = isMobile ? 'fas fa-bars text-sm' : 'fas fa-bars text-sm';
+            }
+        });
+
+        // Profile dropdown toggle with chevron rotation
+        let profileDropdownInitialized = false;
+        function initializeProfileDropdown() {
+            // Prevent double initialization
+            if (profileDropdownInitialized) return;
+            profileDropdownInitialized = true;
+
+            const adminProfileBtn = document.getElementById('adminProfileBtn');
+            const adminProfileDropdown = document.getElementById('adminProfileDropdown');
+            const profileChevron = document.getElementById('profileChevron');
+
+            if (adminProfileBtn && adminProfileDropdown) {
+                console.log('✅ Profile dropdown initialized');
+
+                // Simple toggle - check state at the moment of click
+                adminProfileBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation(); // Prevent duplicate handlers
+
+                    // Use toggle for simplicity
+                    const isCurrentlyOpen = adminProfileDropdown.classList.contains('visible');
+                    console.log('Profile clicked, will ' + (isCurrentlyOpen ? 'close' : 'open'));
+
+                    if (isCurrentlyOpen) {
+                        // Close dropdown
+                        adminProfileDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                        adminProfileDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                        if (profileChevron) profileChevron.classList.remove('rotated');
+                    } else {
+                        // Open dropdown
+                        adminProfileDropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                        adminProfileDropdown.classList.add('opacity-100', 'visible', 'scale-100');
+                        if (profileChevron) profileChevron.classList.add('rotated');
+                    }
+                }, { capture: true }); // Use capture to catch it early
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!adminProfileDropdown.contains(e.target) && !adminProfileBtn.contains(e.target)) {
+                        const isOpen = adminProfileDropdown.classList.contains('visible');
+                        if (isOpen) {
+                            adminProfileDropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+                            adminProfileDropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+                            if (profileChevron) profileChevron.classList.remove('rotated');
+                        }
+                    }
+                });
+            } else {
+                console.error('❌ Profile dropdown elements not found');
+            }
+        }
+        
+        // Close mobile sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            const isMobile = window.innerWidth <= 768;
+            const body = document.body;
+            const sidebar = document.querySelector('.sidebar');
+            const main = document.getElementById('mainContent');
+            const hamburgerBtn = document.querySelector('.hamburger-icon');
+            
+            if (isMobile && body.classList.contains('sidebar-expanded')) {
+                // Check if click is outside sidebar and not on hamburger button
+                if (!sidebar.contains(event.target) && !hamburgerBtn.contains(event.target)) {
+                    body.classList.remove('sidebar-expanded');
+                    if (main) {
+                        main.style.opacity = '';
+                        main.style.pointerEvents = '';
+                        main.style.position = '';
+                    }
+                    const hamburgerIcon = document.querySelector('.hamburger-icon i');
+                    if (hamburgerIcon) {
+                        hamburgerIcon.className = 'fas fa-bars text-sm';
+                    }
+                }
+            }
+        });
+
+        // Utility functions
+        function goBack() {
+            window.history.back();
+        }
+        
+        // Show a custom logout confirmation modal
+        function logout() {
+            openLogoutModal();
+        }
+
+        function openLogoutModal() {
+            const m = document.getElementById('logoutModal');
+            if (!m) return;
+            m.classList.remove('hidden');
+            // prevent background scroll while modal is open
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLogoutModal() {
+            const m = document.getElementById('logoutModal');
+            if (!m) return;
+            m.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Called when user confirms logout in custom modal
+        function proceedLogoutConfirmed() {
+            closeLogoutModal();
+
+            (async () => {
+                try {
+                    if (window.auth) {
+                        if (typeof window.signOut === 'function') {
+                            await window.signOut(window.auth);
+                        } else if (typeof window.auth.signOut === 'function') {
+                            await window.auth.signOut();
+                        } else if (window.firebase && window.firebase.auth && typeof window.firebase.auth === 'function') {
+                            await window.firebase.auth().signOut();
+                        }
+                    } else if (window.firebase && window.firebase.auth && typeof window.firebase.auth === 'function') {
+                        await window.firebase.auth().signOut();
+                    }
+                } catch (e) {
+                    console.error('Error signing out from Firebase:', e);
+                } finally {
+                    try { sessionStorage.clear(); } catch(_) {}
+                    try { localStorage.removeItem('admin_session'); } catch(_) {}
+                    try { localStorage.removeItem('userRole'); } catch(_) {}
+
+                    showAlert('You have been logged out.', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 700);
+                }
+            })();
+        }
+        
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.id = alertId;
+            alertDiv.className = 'p-4 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 translate-x-full';
+            
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'warning' ? 'bg-yellow-500' : 'bg-red-500';
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+            
+            alertDiv.innerHTML = '<div class="flex items-center space-x-3">' +
+                '<i class="fas ' + icon + ' text-white"></i>' +
+                '<p class="text-white font-medium">' + message + '</p>' +
+                '<button onclick="closeAlert(\'' + alertId + '\')" class="text-white/80 hover:text-white ml-auto">' +
+                '<i class="fas fa-times"></i>' +
+                '</button>' +
+                '</div>';
+            
+            alertDiv.classList.add(bgColor);
+            alertContainer.appendChild(alertDiv);
+            
+            // Animate in
+            setTimeout(() => {
+                alertDiv.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                closeAlert(alertId);
+            }, 5000);
+        }
+        
+        function closeAlert(alertId) {
+            const alert = document.getElementById(alertId);
+            if (alert) {
+                alert.classList.add('translate-x-full');
+                setTimeout(() => {
+                    alert.remove();
+                }, 300);
+            }
+        }
+
+        async function viewBadgeDetails(id) {
+            try {
+                window._currentBadgeId = id;
+                const ref = window.doc(window.db || db, 'Drivers_Badge', id);
+                const d = await window.getDoc(ref);
+                if (!d.exists()) return;
+                const r = d.data();
+                const dateStr = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : new Date().toLocaleString();
+                document.getElementById('bd_name').textContent = r.name || '-';
+                document.getElementById('bd_email').textContent = r.email || '-';
+                document.getElementById('bd_phone').textContent = r.phone || '-';
+                document.getElementById('bd_license').textContent = r.licenseNo || '-';
+                document.getElementById('bd_submitted').textContent = dateStr;
+                document.getElementById('bd_status').textContent = r.status || 'pending';
+                document.getElementById('bd_address').textContent = r.address || '-';
+                document.getElementById('bd_notes').textContent = r.notes || '-';
+                const modal = document.getElementById('badgeDetailsModal');
+                if (modal) modal.classList.remove('hidden');
+            } catch (e) { console.error(e); }
+        }
+        function closeBadgeDetails() {
+            const modal = document.getElementById('badgeDetailsModal');
+            if (modal) modal.classList.add('hidden');
+        }
+        window.viewBadgeDetails = viewBadgeDetails;
+        window.closeBadgeDetails = closeBadgeDetails;
+
+        // Sidebar profile dropdown (footer) removed - footer is static now
+    </script>
+
+</body>
+</html>

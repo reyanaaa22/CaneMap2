@@ -1,0 +1,803 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to safely check user role
+    function getUserRole() {
+      return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isAdmin() {
+      return request.auth != null && getUserRole() in ['admin', 'sra', 'system_admin'];
+    }
+
+    // === CONSOLIDATED USERS RULES ===
+    // Order matters: unauthenticated rules first to prevent null errors
+    match /users/{userId} {
+      // 1️⃣ UNAUTHENTICATED: Allow failed login tracking and email verification
+      // SECURITY NOTE: This allows unauthenticated queries to check if emails exist
+      // This is needed for failed login tracking but exposes email existence
+      allow read: if request.auth == null;
+
+      allow update: if request.auth == null && (
+        // Email verification
+        (request.resource.data.emailVerified == true &&
+         resource.data.emailVerified == false &&
+         request.resource.data.status == "verified") ||
+        // Failed login tracking
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['failedLoginAttempts', 'lastFailedLogin']) &&
+         request.resource.data.failedLoginAttempts is int &&
+         request.resource.data.failedLoginAttempts >= 0 &&
+         request.resource.data.failedLoginAttempts >= resource.data.failedLoginAttempts)
+      );
+
+      // 2️⃣ AUTHENTICATED: Read own profile or basic profiles
+      allow get: if request.auth != null;
+
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        // System staff can read all users
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin']) ||
+        // Handler who owns a field that this user joined
+        exists(/databases/$(database)/documents/field_workers/$(request.auth.uid + '_' + userId))
+      );
+
+      // 3️⃣ AUTHENTICATED: Create/update rules
+      allow create: if request.auth != null && (
+        request.auth.uid == userId ||
+        // Allow creating SRA officers
+        (request.resource.data.role == 'sra' &&
+         request.resource.data.email != null &&
+         request.resource.data.name != null)
+      );
+
+      allow update: if request.auth != null && (
+        request.auth.uid == userId ||
+        // System staff can update all users
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin']) ||
+        // ✅ Handlers can update role when approving join requests (only role and roleUpdatedAt fields)
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'handler' &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role', 'roleUpdatedAt']) &&
+         request.resource.data.role in ['worker', 'driver'])
+      );
+
+      allow write: if request.auth != null && (
+        request.auth.uid == userId ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin'])
+      );
+    }
+
+
+    // Allow creation of notifications
+  match /notifications/{notificationId} {
+      // Allow reading single notifications if user is the recipient OR role matches
+      allow get: if request.auth != null && (
+        // Personal notification
+        (resource.data.keys().hasAny(['userId']) && resource.data.userId == request.auth.uid) ||
+        // Broadcast notification - user's role must match the notification's role
+        (resource.data.keys().hasAny(['role']) &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == resource.data.role)
+      );
+
+      // Allow listing notifications for:
+      // 1. Personal notifications (filtered by userId in query)
+      // 2. Broadcast notifications (filtered by role in query)
+      // 3. System admins can list all notifications for statistics
+      allow list: if request.auth != null &&
+        (resource == null || // Allow empty results
+         // System admin can list all
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin']) ||
+         // Personal notification for this user
+         (resource.data.keys().hasAny(['userId']) && resource.data.userId == request.auth.uid) ||
+         // Broadcast notification for user's role
+         (resource.data.keys().hasAny(['role']) &&
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          resource.data.role == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role));
+
+      // Handlers, farmers (aspiring handlers), workers, drivers, and staff can create notifications
+      allow create: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in [
+          'farmer', 'handler', 'worker', 'driver', 'sra', 'admin', 'system_admin'
+        ];
+
+      // Users can mark their own notifications as read
+      // Supports both old (status: "read"/"unread") and new (read: boolean) schemas
+      allow update: if request.auth != null && (
+        // Update own personal notification (old status field OR new read field)
+        (resource.data.userId == request.auth.uid &&
+         (request.resource.data.keys().hasAny(['status']) && request.resource.data.status in ["read", "unread"] ||
+          request.resource.data.keys().hasAny(['read']) && request.resource.data.read is bool)) ||
+        // Update broadcast notification if user's role matches
+        (('role' in resource.data) &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == resource.data.role &&
+         (request.resource.data.keys().hasAny(['status']) && request.resource.data.status in ["read", "unread"] ||
+          request.resource.data.keys().hasAny(['read']) && request.resource.data.read is bool))
+      );
+    }
+    
+    // Allow creation of email_queue
+    match /email_queue/{emailId} {
+      allow create, read, update, delete: if request.auth != null;
+    }
+
+    // Allow public submission of feedbacks; only system_admin can read/manage them
+    match /feedbacks/{feedbackId} {
+      // Allow anyone (even unauthenticated) to create feedback entries so users can send quick feedback.
+      allow create: if true;
+
+      // Only system_admin users can read, update or delete feedback entries
+      allow read, update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system_admin';
+    }
+    
+    match /fields/{fieldId} {
+      // Anyone authenticated can read fields
+      allow read: if request.auth != null;
+
+      // ✅ PRODUCTION-READY: Allow creation with safe role checks
+      // Uses safe pattern that won't cause evaluation errors
+      // ✅ Allows new fields: soilType, irrigationMethod, fieldTerrain, previousCrop (added for better crop management)
+      // Field validation helper (validates optional field properties if they exist)
+      function validateFieldData(data) {
+        return (!('soilType' in data) || data.soilType is string) &&
+               (!('irrigationMethod' in data) || data.irrigationMethod is string) &&
+               (!('fieldTerrain' in data) || data.fieldTerrain is string) &&
+               (!('previousCrop' in data) || data.previousCrop is string) &&
+               (!('variety' in data) || data.variety is string) &&
+               (!('expectedHarvestDAP' in data) || data.expectedHarvestDAP is int);
+      }
+
+      allow create: if request.auth != null && validateFieldData(request.resource.data) && (
+        // Allow if user document exists and has farmer OR handler role
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          ('role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+          (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'farmer' ||
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'handler'
+          )
+        )
+        ||
+        // Allow staff roles (safely check if role field exists first)
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          ('role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin']
+        )
+        ||
+        // FALLBACK for development: allow if user exists but has no role yet
+        // Remove this section when you're ready for strict production security
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          !('role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+        )
+      );
+
+      // ✅ Allow update by owner, staff, or workers/drivers updating growth data
+      allow update: if request.auth != null && validateFieldData(request.resource.data) && (
+        // Owner can update (check both userId and landowner_id if they exist)
+        resource.data.userId == request.auth.uid ||
+        ('landowner_id' in resource.data && resource.data.landowner_id == request.auth.uid) ||
+        // Staff can update (safely check role exists)
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          ('role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin']
+        ) ||
+        // Workers/drivers can update ONLY growth tracking fields (REQ-5)
+        // This allows automated growth tracking to work when workers/drivers mark tasks as done
+        (
+          // Check that ONLY allowed growth fields are being modified
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'plantingDate', 'expectedHarvestDate', 'currentGrowthStage',
+            'delayDays', 'basalFertilizationDate', 'mainFertilizationDate',
+            'sugarcane_variety',  // Growth tracking can update variety
+            'status',  // Can change to 'active' when growth tracking starts, or 'harvested' when harvest completes
+            'updatedAt',  // Growth tracking updates this timestamp
+            // Harvest completion fields
+            'actualHarvestDate', 'finalDAP', 'actualYield',
+            'harvestTiming', 'harvestTimingDays', 'harvestedAt'
+          ]) &&
+          // Ensure critical fields are NOT being changed
+          request.resource.data.userId == resource.data.userId &&
+          (!('landowner_id' in resource.data) || request.resource.data.landowner_id == resource.data.landowner_id)
+        )
+      );
+
+      // ✅ Allow delete by owner or staff (safe pattern)
+      allow delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.landowner_id == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          ('role' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'sra', 'system_admin']
+        )
+      );
+    }
+    
+    // ✅ Removed field_applications subcollection - all fields now in top-level fields collection
+    // Allow reading of subcollections within fields (like remarks)
+    match /fields/{fieldId}/remarks/{remarkId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'];
+    }
+
+    // Harvest notification logs (prevents duplicate notifications)
+    match /harvest_notification_logs/{logId} {
+      // System can create logs (automated notifications)
+      allow create: if request.auth != null;
+
+      // Only system/handlers can read their own logs
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.handlerId ||
+        isAdmin()
+      );
+
+      // No updates or deletes (logs are immutable)
+      allow update, delete: if false;
+    }
+
+    // ✅ Top-level field_joins collection (replaces nested field_joins subcollections)
+    match /field_joins/{joinId} {
+      // Allow handlers to read any field_joins (they'll filter by handlerId in query)
+      // Allow users to read their own join requests
+      // Allow admin to read all
+      allow read: if request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['handler', 'sra', 'admin', 'system_admin', 'farmer', 'worker', 'driver'];
+
+      // Users can create join requests for any field
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.assignedAs in ['worker', 'driver'] &&
+        request.resource.data.status == 'pending';
+
+      // Handler of the field can update (approve/reject) OR user can cancel their own pending request
+      allow update: if request.auth != null && (
+        ('handlerId' in resource.data &&
+         resource.data.handlerId == request.auth.uid &&
+         request.resource.data.status in ['approved', 'rejected']) ||
+        ('userId' in resource.data &&
+         resource.data.userId == request.auth.uid &&
+         resource.data.status == 'pending' &&
+         request.resource.data.status == 'cancelled')
+      );
+
+      // Users can delete their own requests OR handlers can delete requests for their fields
+      allow delete: if request.auth != null && (
+        ('userId' in resource.data && resource.data.userId == request.auth.uid) ||
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin'])
+      );
+    }
+
+    // Driver rentals access rules
+    match /driver_rentals/{rentalId} {
+      // Handlers can read rentals for their fields, drivers can read their own rentals
+      allow read: if request.auth != null && (
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('driverId' in resource.data && resource.data.driverId == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'])
+      );
+
+      // Handlers can create rental requests
+      allow create: if request.auth != null &&
+        request.resource.data.handlerId == request.auth.uid &&
+        request.resource.data.status == 'pending';
+
+      // Handlers or drivers can update (approve/reject/cancel)
+      allow update: if request.auth != null && (
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('driverId' in resource.data && resource.data.driverId == request.auth.uid)
+      );
+
+      // Handlers or drivers can delete their own rentals
+      allow delete: if request.auth != null && (
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('driverId' in resource.data && resource.data.driverId == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin'])
+      );
+    }
+
+    // Field workers (LEGACY - kept for backward compatibility)
+    match /field_workers/{requestId} {
+      // Users can read their own requests
+      allow read: if request.auth != null &&
+        (resource.data.user_uid == request.auth.uid ||
+         get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid);
+
+      // Users can create join requests for any field
+      allow create: if request.auth != null &&
+        request.resource.data.user_uid == request.auth.uid;
+
+      // Only the field owner can update join requests (approve/reject)
+      allow update: if request.auth != null &&
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid;
+
+      // Users can delete their own requests, field owners can delete requests for their fields
+      allow delete: if request.auth != null &&
+        (resource.data.user_uid == request.auth.uid ||
+         get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid);
+
+
+    }
+    
+    // Task logs access rules
+    match /task_logs/{logId} {
+      // Field workers can read logs for fields they're approved to work on
+allow read: if request.auth != null &&
+  (
+    resource.data.user_uid == request.auth.uid ||
+    get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+    (
+      exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+      get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid
+    )
+  );
+
+      // Approved field workers can create task logs
+      allow create: if request.auth != null && 
+        request.resource.data.user_uid == request.auth.uid &&
+        exists(/databases/$(database)/documents/field_workers/$(request.auth.uid + '_' + resource.data.field_id)) &&
+        get(/databases/$(database)/documents/field_workers/$(request.auth.uid + '_' + resource.data.field_id)).data.status == 'approved';
+      
+      // Users can update their own task logs
+      allow update: if request.auth != null && 
+        resource.data.user_uid == request.auth.uid;
+      
+      // Users can delete their own task logs, field owners can delete logs for their fields
+      allow delete: if request.auth != null && 
+        (resource.data.user_uid == request.auth.uid || 
+         get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid);
+    }
+    
+    // Reports access rules
+    match /reports/{reportId} {
+      // Field owners can read reports for their fields, handlers can read their reports, staff can read all
+      allow read: if request.auth != null && (
+        // Check field_id exists and user owns the field
+        ('field_id' in resource.data &&
+         resource.data.field_id != null &&
+         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
+        // User created the report
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
+        // Staff roles
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin', 'handler'])
+      );
+
+      // Field owners can create reports for their fields
+      allow create: if request.auth != null && (
+        ('field_id' in request.resource.data &&
+         request.resource.data.field_id != null &&
+         exists(/databases/$(database)/documents/fields/$(request.resource.data.field_id)) &&
+         (get(/databases/$(database)/documents/fields/$(request.resource.data.field_id)).data.landowner_id == request.auth.uid ||
+          get(/databases/$(database)/documents/fields/$(request.resource.data.field_id)).data.userId == request.auth.uid)) ||
+        // Handlers can create reports
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['handler', 'sra', 'admin', 'system_admin'])
+      );
+
+      // Field owners can update reports for their fields
+      allow update: if request.auth != null && (
+        ('field_id' in resource.data &&
+         resource.data.field_id != null &&
+         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'])
+      );
+
+      // Field owners can delete reports for their fields
+      allow delete: if request.auth != null && (
+        ('field_id' in resource.data &&
+         resource.data.field_id != null &&
+         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'])
+      );
+    }
+
+  // Drivers Badge applications
+  match /Drivers_Badge/{docId} {
+    // Owner can create exactly once; docId must equal uid
+    allow create: if request.auth != null &&
+      docId == request.auth.uid &&
+      request.resource.data.requestedBy == request.auth.uid &&
+      !exists(/databases/$(database)/documents/Drivers_Badge/$(request.auth.uid));
+
+    // Allow unauthenticated admin (PIN login) to view badge data
+    allow read: if true;
+
+    // Owner can update at most once every 30 days; officers/admins/system_admins can always update
+    allow update: if request.auth != null && (
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'] ||
+      (
+        resource.data.requestedBy == request.auth.uid &&
+        (
+          resource.data.status == 'rejected' ||  // ✅ allow immediate resubmit after rejection
+          !resource.data.lastEdit ||
+          (request.time.toMillis() - resource.data.lastEdit.toMillis() >= 30 * 24 * 60 * 60 * 1000)
+        )
+      )
+    );
+
+    // Allow deletes by owner or staff. For full cascade on account deletion, use a Cloud Function.
+    allow delete: if request.auth != null && (
+      resource.data.requestedBy == request.auth.uid ||
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+    );
+  }
+
+    match /admin_settings/{docId} {
+      allow read, write: if request.auth != null &&
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin']);
+    }
+
+    
+    // Allow admin dashboard to fetch Driver Badge requests
+    match /Drivers_Badge/{docId} {
+      // Allow read for your local dashboard (PIN-based admin)
+      allow read: if true;
+      // Keep write actions protected
+      allow write: if request.auth != null;
+    }
+    
+        // === System Admin Login Security Collections ===
+    match /admin_pins/{pinId} {
+      // Allow reading PINs for login (before authentication)
+      allow read: if true;
+
+      // Allow creating default admin PIN only when no users exist (setup stage)
+      allow create: if request.auth != null || true;
+
+      // System Admins can manage PINs - Multiple methods for flexibility:
+      // 1. User has system_admin role in users collection (primary method)
+      // 2. User is updating their own admin_pins record (uid field must match auth uid)
+      // 3. User has super_admin role (absolute authority)
+      allow update: if request.auth != null && (
+        // Method 1: system_admin role in users collection
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system_admin') ||
+        // Method 2: Self-update - user updating their own admin_pins record
+        (resource.data.uid == request.auth.uid) ||
+        // Method 3: super_admin can update any PIN
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin')
+      );
+
+      allow delete: if request.auth != null &&
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['system_admin', 'super_admin']);
+    }
+
+    match /admin_security_logs/{logId} {
+      // ✅ Allow login page to log failed attempts (unauthenticated)
+      allow create: if true;
+
+      // ✅ Allow unauthenticated read of limited recent logs (only specific fields)
+      allow get, list: if request.auth == null;
+
+      // ✅ Full access for authenticated system admins
+      allow read, update, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['system_admin', 'super_admin', 'security_admin'];
+    }
+
+    // Failed login attempts for non-existent users
+    match /failed_logins/{attemptId} {
+      // Allow anyone (including unauthenticated) to create and update failed login records
+      allow create: if true;
+
+      // Allow unauthenticated reads (needed for consolidation - checking if email already exists)
+      // SECURITY NOTE: This exposes failed login emails, but needed for preventing duplicate records
+      allow read: if request.auth == null;
+
+      // Allow unauthenticated updates ONLY to increment attemptCount
+      allow update: if request.auth == null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attemptCount', 'lastAttempt', 'ipAddress']) &&
+        request.resource.data.attemptCount is int &&
+        request.resource.data.attemptCount >= resource.data.attemptCount;
+
+      // System_admin can also read and delete
+      allow read, delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system_admin';
+    }
+
+    // (Failed login tracking rules moved to consolidated users block above)
+
+    // === Field Joins (per user, multiple fields under join_fields) ===
+    match /field_joins/{userId} {
+      // Allow user and SRA/Admins/System Admin to read
+      allow read: if request.auth != null && (
+        request.auth.uid == userId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+      );
+
+      // Allow user to create their join container doc
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Allow user or sysadmin to update/delete their own doc
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == userId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'system_admin'
+      );
+
+      // 🟢 Allow subcollection "join_fields" so each user can join multiple fields
+      match /join_fields/{fieldId} {
+        // User can manage their own join documents
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+// --- Allow collectionGroup queries for join_fields (needed for collectionGroup reads) ---
+match /{path=**}/join_fields/{joinId} {
+  allow read: if request.auth != null && (
+    // 1️⃣ User who created the join request (check both userId and user_uid for compatibility)
+    request.auth.uid == resource.data.user_uid ||
+    request.auth.uid == resource.data.userId ||
+    request.auth.uid == resource.data.user_id ||
+    
+    // 2️⃣ Handler role - allow reading ALL join_fields (client-side filtering will ensure only their fields)
+    // This is necessary for collectionGroup queries to work efficiently
+    // Put this BEFORE field ownership check to avoid nested reads for each document
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'handler'
+    )
+    ||
+    // 3️⃣ Staff roles (SRA/Admin/System Admin) - can read all
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+    )
+    ||
+    // 4️⃣ Handler who owns the field - check field ownership (fallback for non-handlers)
+    (
+      resource.data.fieldId != null &&
+      exists(/databases/$(database)/documents/fields/$(resource.data.fieldId)) &&
+      (
+        // Check userId first (most common based on Register-field.js)
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.userId == request.auth.uid ||
+        // Check landowner_id
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.landowner_id == request.auth.uid ||
+        // Check user_id
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.user_id == request.auth.uid ||
+        // Check registered_by
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.registered_by == request.auth.uid
+      )
+    )
+  );
+
+  // Allow creation of join requests (by the joining user) - check both userId and user_uid
+  allow create: if request.auth != null && (
+    request.resource.data.user_uid == request.auth.uid ||
+    request.resource.data.userId == request.auth.uid ||
+    request.resource.data.user_id == request.auth.uid
+  );
+
+  // Allow update/delete by staff or by field owner
+  allow update, delete: if request.auth != null && (
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+    )
+    ||
+    (
+      resource.data.fieldId != null &&
+      exists(/databases/$(database)/documents/fields/$(resource.data.fieldId)) &&
+      (
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.landowner_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.registered_by == request.auth.uid
+      )
+    )
+  );
+}
+
+
+match /field_workers/{requestId} {
+  // Allow reading join requests if:
+  allow read: if request.auth != null && (
+    // User who created the join request
+    resource.data.user_uid == request.auth.uid ||
+    resource.data.userId == request.auth.uid ||
+    resource.data.user_id == request.auth.uid ||
+
+    // Handler/Landowner who owns the field
+    (
+      resource.data.field_id != null &&
+      exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+      (
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.registered_by == request.auth.uid
+      )
+    )
+    ||
+    // Staff roles can read everything
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+    )
+    ||
+    // Handler role - allow reading (client-side will filter by field ownership)
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'handler'
+    )
+  );
+
+  // Users can create join requests for any field
+  allow create: if request.auth != null && (
+    request.resource.data.user_uid == request.auth.uid ||
+    request.resource.data.userId == request.auth.uid ||
+    request.resource.data.user_id == request.auth.uid
+  );
+
+  // Only the field owner can update join requests (approve/reject) - check multiple owner fields
+  allow update: if request.auth != null && (
+    // Staff can update
+    (
+      exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+    )
+    ||
+    // Field owner can update - check multiple owner fields
+    (
+      resource.data.field_id != null &&
+      exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+      (
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.registered_by == request.auth.uid
+      )
+    )
+  );
+
+  // Users or owners can delete
+  allow delete: if request.auth != null && (
+    resource.data.user_uid == request.auth.uid ||
+    resource.data.userId == request.auth.uid ||
+    resource.data.user_id == request.auth.uid ||
+    (
+      resource.data.field_id != null &&
+      exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
+      (
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.user_id == request.auth.uid ||
+        get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.registered_by == request.auth.uid
+      )
+    )
+  );
+}
+
+    // === Tasks Collection Rules ===
+    match /tasks/{taskId} {
+allow read: if request.auth != null && (
+  ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+  ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
+  ('assignedTo' in resource.data && request.auth.uid in resource.data.assignedTo) ||
+  ('assigned_to' in resource.data && resource.data.assigned_to == request.auth.uid) ||
+  (
+    'fieldId' in resource.data &&
+    exists(/databases/$(database)/documents/fields/$(resource.data.fieldId)) &&
+    get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.userId == request.auth.uid
+  ) ||
+  (
+    exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in [
+      'sra','admin','system_admin','handler','farmer','worker','driver'
+    ]
+  )
+);
+
+
+      // Allow handlers to create tasks (including auto-generated tasks from task-automation.js)
+      // Allow workers/drivers to create task logs
+      allow create: if request.auth != null && (
+        ('handlerId' in request.resource.data && request.resource.data.handlerId == request.auth.uid) ||
+        ('created_by' in request.resource.data && request.resource.data.created_by == request.auth.uid) ||
+        ('createdBy' in request.resource.data && request.resource.data.createdBy == request.auth.uid) ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['handler', 'sra', 'admin', 'system_admin', 'farmer', 'worker', 'driver']
+        )
+      ) &&
+      // ✅ Task automation fields validation (autoGenerated, generatedAt, dapWindow, growthStage, priority, taskType)
+      (!('autoGenerated' in request.resource.data) || request.resource.data.autoGenerated is bool) &&
+      (!('priority' in request.resource.data) || request.resource.data.priority in ['low', 'medium', 'high', 'critical']) &&
+      (!('taskType' in request.resource.data) || request.resource.data.taskType is string) &&
+      (!('dapWindow' in request.resource.data) || request.resource.data.dapWindow is string) &&
+      (!('growthStage' in request.resource.data) || request.resource.data.growthStage is string);
+
+      // Allow handlers to update their own tasks, workers to update status, staff to update all
+      allow update: if request.auth != null && (
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
+        ('assignedTo' in resource.data && resource.data.assignedTo != null && request.auth.uid in resource.data.assignedTo) ||
+        ('assigned_to' in resource.data && resource.data.assigned_to == request.auth.uid) ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      );
+
+      // Allow handlers to delete their own tasks, staff to delete all
+      allow delete: if request.auth != null && (
+        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
+        resource.data.created_by == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      );
+    }
+
+    // === User Activities Collection Rules ===
+    match /user_activities/{activityId} {
+      // Users can read their own activities
+      // System admins can read all activities
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin']
+        )
+      );
+
+      // Users can create their own activities
+      // All authenticated users can log their activities
+      allow create: if request.auth != null &&
+        request.resource.data.userId == request.auth.uid;
+
+      // Users can update their own activities (if needed for corrections)
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin']
+        )
+      );
+
+      // Users can delete their own activities, admins can delete all
+      allow delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'system_admin']
+        )
+      );
+    }
+
+  }
+}

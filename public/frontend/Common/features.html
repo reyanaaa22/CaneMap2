@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaneMap - Features</title>
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/output.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      :root {
+        --cane-50: #f7fee7;
+        --cane-100: #ecfcca;
+        --cane-200: #d8f999;
+        --cane-300: #bbf451;
+        --cane-400: #9ae600;
+        --cane-500: #7ccf00;
+        --cane-600: #5ea500;
+        --cane-700: #497d00;
+        --cane-800: #3c6300;
+        --cane-900: #35530e;
+        --cane-950: #192e03;
+      }
+      .section-card { background: #ffffff; border: 1px solid var(--cane-200); transition: all 0.3s ease; }
+      .section-card:hover { box-shadow: 0 8px 25px rgba(94,165,0,0.15); transform: translateY(-2px); }
+      .btn-primary { background: linear-gradient(135deg, var(--cane-500), var(--cane-600)); color: white; transition: all 0.3s ease; }
+      .btn-primary:hover { background: linear-gradient(135deg, var(--cane-600), var(--cane-700)); transform: translateY(-1px); }
+    </style>
+</head>
+<body class="bg-[#F5F5F0] min-h-screen">
+  <header class="bg-gradient-to-r from-[var(--cane-800)] to-[var(--cane-700)] shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4 text-white">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <a href="./lobby.html" class="hover:opacity-90 transition-opacity"><i class="fas fa-arrow-left text-xl"></i></a>
+          <h1 class="text-2xl font-bold tracking-tight">CaneMap Features</h1>
+        </div>
+        <div class="text-sm opacity-90">Explore what CaneMap can do</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="mb-6">
+      <h2 class="text-3xl font-extrabold text-[var(--cane-950)]">Powerful tools for sugarcane management</h2>
+      <p class="text-[var(--cane-700)] mt-1">Everything you need from field registration to task logging and SRA coordination.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="section-card rounded-xl p-6 bg-cover bg-center min-h-[320px] lg:min-h-[360px]" style="background-image:url('../img/Mapping.webp')">
+        <div class="bg-white/85 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-map-marked-alt"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">Field Registration & Mapping</h3>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3 text-xs">
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Leaflet.js</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">OpenStreetMap</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">GeoJSON</span>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Register sugarcane areas with precise map coordinates using Leaflet.js and OpenStreetMap. Draw plots, save geometry, and manage boundaries easily.</p>
+        <a href="../Handler/Register-field.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Field Registration & Mapping" data-tags="Leaflet.js, OpenStreetMap, GeoJSON" data-description="Register sugarcane areas with precise map coordinates using Leaflet.js and OpenStreetMap. Draw plots, save geometry, and manage boundaries easily." data-image="../img/Mapping.webp">See Details</a>
+        </div>
+      </div>
+
+      <div class="section-card rounded-xl p-6 bg-cover bg-center min-h-[320px] lg:min-h-[360px]" style="background-image:url('../img/Tracker.jpg')">
+        <div class="bg-white/85 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-seedling"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">Growth Tracker & Harvest Timeline</h3>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3 text-xs">
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Planting date</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Variety alerts</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Readiness</span>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Set planting dates and varieties to get automatic growth stage tracking and harvest readiness alerts.</p>
+        <a href="../Worker/Workers.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Growth Tracker & Harvest Timeline" data-tags="Planting date, Variety alerts, Readiness" data-description="Set planting dates and varieties to get automatic growth stage tracking and harvest readiness alerts." data-image="../img/Tracker.jpg">See Details</a>
+        </div>
+      </div>
+
+      <div class="section-card rounded-xl p-6 min-h-[320px] lg:min-h-[360px]">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-clipboard-list"></i></div>
+        <h3 class="text-lg font-bold text-[var(--cane-900)]">Task Logging</h3>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Log daily tasks with photos and statuses. See a chronological history and field-based task summaries.</p>
+        <a href="../Worker/task-logging.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Task Logging" data-tags="Photos, Statuses, History" data-description="Log daily tasks with photos and statuses. See a chronological history and field-based task summaries." data-image="../img/Mapping.webp">See Details</a>
+      </div>
+
+      <div class="section-card rounded-xl p-6 min-h-[320px] lg:min-h-[360px]">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-file-alt"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">SRA Review & Compliance</h3>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Submit field documents and reports for SRA review. Officers can mark applications and documents as reviewed.</p>
+        <a href="../SRA/SRA_Dashboard.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="SRA Review & Compliance" data-tags="Documents, Reports, Review" data-description="Submit field documents and reports for SRA review. Officers can mark applications and documents as reviewed." data-image="../img/Mapping.webp">See Details</a>
+      </div>
+
+      <div class="section-card rounded-xl p-6 bg-cover bg-center min-h-[320px] lg:min-h-[360px]" style="background-image:url('../img/Weather.jpg')">
+        <div class="bg-white/85 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-cloud-sun"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">Weather Forecast Integration</h3>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3 text-xs">
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">3-day</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Weekly</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Location-based</span>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Get location-based 3-day and weekly weather forecasts to plan field work and logistics.</p>
+        <a href="../Common/lobby.html#weatherForecast" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Weather Forecast Integration" data-tags="3-day, Weekly, Location-based" data-description="Get location-based 3-day and weekly weather forecasts to plan field work and logistics." data-image="../img/Weather.jpg">See Details</a>
+        </div>
+      </div>
+
+      <div class="section-card rounded-xl p-6 bg-cover bg-center min-h-[320px] lg:min-h-[360px]" style="background-image:url('../img/Transport.jpg')">
+        <div class="bg-white/85 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-truck"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">Transport & Logistics Coordination</h3>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3 text-xs">
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Drivers</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Truck rental</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Deliveries</span>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Coordinate drivers, manage truck rentals, and track delivery updates in real-time.</p>
+        <a href="../Driver/Driver_Badge.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Transport & Logistics Coordination" data-tags="Drivers, Truck rental, Deliveries" data-description="Coordinate drivers, manage truck rentals, and track delivery updates in real-time." data-image="../img/Transport.jpg">See Details</a>
+        </div>
+      </div>
+
+      <div class="section-card rounded-xl p-6 bg-cover bg-center min-h-[320px] lg:min-h-[360px]" style="background-image:url('../img/Offline.png')">
+        <div class="bg-white/85 rounded-lg p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-[var(--cane-500)] text-white rounded-lg flex items-center justify-center"><i class="fas fa-wifi-slash"></i></div>
+          <h3 class="text-lg font-bold text-[var(--cane-900)]">Offline Logging</h3>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3 text-xs">
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">No internet</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Auto-sync</span>
+          <span class="px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]">Background</span>
+        </div>
+        <p class="text-[var(--cane-700)] text-sm mb-4">Log activities without internet and automatically sync when back online.</p>
+        <a href="../Worker/Workers.html" class="inline-block btn-primary px-4 py-2 rounded-lg text-sm feature-details" data-title="Offline Logging" data-tags="No internet, Auto-sync, Background" data-description="Log activities without internet and automatically sync when back online." data-image="../img/Offline.png">See Details</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Details Modal -->
+  <div id="featureModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-[var(--cane-200)] overflow-hidden">
+      <div id="featureModalHero" class="h-40 bg-cover bg-center"></div>
+      <div class="p-6">
+        <div class="flex items-start justify-between mb-3">
+          <h3 id="featureModalTitle" class="text-xl font-bold text-[var(--cane-950)]">Title</h3>
+          <button id="featureModalClose" class="text-xl leading-none">&times;</button>
+        </div>
+        <div id="featureModalTags" class="flex flex-wrap gap-2 mb-4 text-xs"></div>
+        <p id="featureModalDesc" class="text-[var(--cane-800)] text-sm"></p>
+        <div class="mt-5 text-right">
+          <button id="featureModalOk" class="px-4 py-2 rounded-lg bg-[var(--cane-700)] text-white hover:bg-[var(--cane-800)]">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const modal = document.getElementById('featureModal');
+      const hero = document.getElementById('featureModalHero');
+      const title = document.getElementById('featureModalTitle');
+      const tags = document.getElementById('featureModalTags');
+      const desc = document.getElementById('featureModalDesc');
+      const closeBtn = document.getElementById('featureModalClose');
+      const okBtn = document.getElementById('featureModalOk');
+
+      function openModal(data){
+        if (data.image) hero.style.backgroundImage = `url('${data.image}')`;
+        title.textContent = data.title || '';
+        desc.textContent = data.description || '';
+        tags.innerHTML = '';
+        (data.tags || '').split(',').map(s=>s.trim()).filter(Boolean).forEach(function(t){
+          const span = document.createElement('span');
+          span.className = 'px-2 py-1 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)]';
+          span.textContent = t;
+          tags.appendChild(span);
+        });
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeModal(){
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      document.querySelectorAll('.feature-details').forEach(function(link){
+        link.addEventListener('click', function(e){
+          e.preventDefault();
+          openModal({
+            title: link.getAttribute('data-title'),
+            tags: link.getAttribute('data-tags'),
+            description: link.getAttribute('data-description'),
+            image: link.getAttribute('data-image')
+          });
+        });
+      });
+
+      closeBtn && closeBtn.addEventListener('click', closeModal);
+      okBtn && okBtn.addEventListener('click', closeModal);
+      modal && modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,595 @@
+<div class="space-y-6">
+    <style>
+        /* Prevent Performance Monitor charts from growing vertically */
+        .perf-card { height: 260px; overflow: hidden; }
+        .perf-card canvas { height: 100% !important; width: 100% !important; display: block; }
+    </style>
+    <!-- System Health Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- System Status -->
+        <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">System Status</p>
+                    <p class="text-3xl font-bold text-green-600" id="systemStatus">Healthy</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-heartbeat text-green-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-green-600 font-medium" id="uptime">99.9%</span>
+                <span class="text-gray-500 ml-2">uptime</span>
+            </div>
+        </div>
+
+        <!-- CPU Usage -->
+        <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">CPU Usage</p>
+                    <p class="text-3xl font-bold text-gray-900" id="cpuUsage">45%</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-microchip text-blue-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-blue-600 font-medium" id="cpuTrend">+2%</span>
+                <span class="text-gray-500 ml-2">from last hour</span>
+            </div>
+        </div>
+
+        <!-- Memory Usage -->
+        <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Memory Usage</p>
+                    <p class="text-3xl font-bold text-gray-900" id="memoryUsage">2.1GB</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-memory text-purple-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-purple-600 font-medium" id="memoryTrend">+0.1GB</span>
+                <span class="text-gray-500 ml-2">from last hour</span>
+            </div>
+        </div>
+
+        <!-- Response Time -->
+        <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Response Time</p>
+                    <p class="text-3xl font-bold text-gray-900" id="responseTime">120ms</p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-tachometer-alt text-yellow-600 text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center text-sm">
+                <span class="text-yellow-600 font-medium" id="responseTrend">-5ms</span>
+                <span class="text-gray-500 ml-2">from last hour</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Management Tabs -->
+    <div class="bg-white rounded-xl card-shadow">
+        <div class="border-b border-gray-200">
+            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                <button onclick="showMaintenanceTab('backup')" class="maintenance-tab active py-4 px-1 border-b-2 border-[var(--cane-600)] font-medium text-sm text-[var(--cane-600)]" id="tab-backup">
+                    <i class="fas fa-database mr-2"></i>Backup & Restore
+                </button>
+                <button onclick="showMaintenanceTab('updates')" class="maintenance-tab py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" id="tab-updates">
+                    <i class="fas fa-download mr-2"></i>System Updates
+                </button>
+                <button onclick="showMaintenanceTab('cleanup')" class="maintenance-tab py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" id="tab-cleanup">
+                    <i class="fas fa-broom mr-2"></i>Database Cleanup
+                </button>
+                <button onclick="showMaintenanceTab('performance')" class="maintenance-tab py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" id="tab-performance">
+                    <i class="fas fa-chart-line mr-2"></i>Performance Monitor
+                </button>
+                <button onclick="showMaintenanceTab('errors')" class="maintenance-tab py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" id="tab-errors">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Error Logs
+                </button>
+                <button onclick="showMaintenanceTab('schedule')" class="maintenance-tab py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" id="tab-schedule">
+                    <i class="fas fa-calendar-alt mr-2"></i>Schedule Maintenance
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="p-6">
+            <!-- Backup & Restore Tab -->
+            <div id="content-backup" class="maintenance-tab-content">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Backup & Restore Management</h3>
+                    <div class="flex gap-2">
+                        <button onclick="createBackup()" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Create Backup
+                        </button>
+                        <button onclick="refreshBackups()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Backup Options -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Backup Options</h4>
+                        <div class="space-y-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="backupUsers" checked class="mr-3">
+                                <span class="text-sm text-gray-700">User Data & Profiles</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="backupFields" checked class="mr-3">
+                                <span class="text-sm text-gray-700">Field Data & Records</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="backupLogs" class="mr-3">
+                                <span class="text-sm text-gray-700">System Logs</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="backupSettings" checked class="mr-3">
+                                <span class="text-sm text-gray-700">System Settings</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Backup Schedule</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                                <select id="backupFrequency" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                <input type="time" id="backupTime" value="02:00" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Backup History -->
+                <div class="overflow-hidden border border-gray-200 rounded-xl">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Backup Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Size</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backupsTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="6" class="px-6 py-10">
+                                    <div class="flex flex-col items-center justify-center text-center text-gray-500">
+                                        <i class="fas fa-spinner fa-spin text-2xl mb-2 text-gray-400"></i>
+                                        <p>Loading backups...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- System Updates Tab -->
+            <div id="content-updates" class="maintenance-tab-content hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">System Updates</h3>
+                    <div class="flex gap-2">
+                        <button onclick="checkUpdates()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>Check for Updates
+                        </button>
+                        <button onclick="refreshUpdates()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Current Version Info -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-medium text-gray-900 mb-3">Current System Version</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <span class="text-sm text-gray-600">Version:</span>
+                            <span class="text-sm font-medium text-gray-900 ml-2" id="currentVersion">v2.1.4</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Build:</span>
+                            <span class="text-sm font-medium text-gray-900 ml-2" id="currentBuild">2024.01.15</span>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-600">Last Updated:</span>
+                            <span class="text-sm font-medium text-gray-900 ml-2" id="lastUpdated">Jan 15, 2024</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Available Updates -->
+                <div class="space-y-4">
+                    <h4 class="font-medium text-gray-900">Available Updates</h4>
+                    <div id="updatesList" class="space-y-3">
+                        <!-- Updates will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Cleanup Tab -->
+            <div id="content-cleanup" class="maintenance-tab-content hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Database Cleanup</h3>
+                    <div class="flex gap-2">
+                        <button onclick="runCleanup()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            <i class="fas fa-broom mr-2"></i>Run Cleanup
+                        </button>
+                        <button onclick="refreshCleanup()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Cleanup Options -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Cleanup Options</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="cleanupOldLogs" checked class="mr-3">
+                                    <span class="text-sm text-gray-700">Old Logs (>30 days)</span>
+                                </label>
+                                <span class="text-sm text-gray-500" id="oldLogsCount">1,234 files</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="cleanupTempFiles" checked class="mr-3">
+                                    <span class="text-sm text-gray-700">Temporary Files</span>
+                                </label>
+                                <span class="text-sm text-gray-500" id="tempFilesCount">567 files</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="cleanupCache" class="mr-3">
+                                    <span class="text-sm text-gray-700">Cache Files</span>
+                                </label>
+                                <span class="text-sm text-gray-500" id="cacheFilesCount">89 files</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="cleanupSessions" class="mr-3">
+                                    <span class="text-sm text-gray-700">Expired Sessions</span>
+                                </label>
+                                <span class="text-sm text-gray-500" id="expiredSessionsCount">45 sessions</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Storage Analysis</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Database Size:</span>
+                                <span class="text-sm font-medium text-gray-900" id="databaseSize">2.4 GB</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Logs Size:</span>
+                                <span class="text-sm font-medium text-gray-900" id="logsSize">1.2 GB</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Temp Files:</span>
+                                <span class="text-sm font-medium text-gray-900" id="tempSize">0.3 GB</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Total Reclaimable:</span>
+                                <span class="text-sm font-medium text-green-600" id="reclaimableSize">1.5 GB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cleanup History -->
+                <div class="overflow-hidden border border-gray-200 rounded-xl">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Files Removed</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Space Freed</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cleanupTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="px-6 py-10">
+                                    <div class="flex flex-col items-center justify-center text-center text-gray-500">
+                                        <i class="fas fa-spinner fa-spin text-2xl mb-2 text-gray-400"></i>
+                                        <p>Loading cleanup history...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Performance Monitor Tab -->
+            <div id="content-performance" class="maintenance-tab-content hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Performance Monitor</h3>
+                    <div class="flex gap-2">
+                        <button onclick="startMonitoring()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-play mr-2"></i>Start Monitoring
+                        </button>
+                        <button onclick="stopMonitoring()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            <i class="fas fa-stop mr-2"></i>Stop Monitoring
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Performance Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 perf-card">
+                        <h4 class="font-medium text-gray-900 mb-3">CPU Usage</h4>
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 perf-card">
+                        <h4 class="font-medium text-gray-900 mb-3">Memory Usage</h4>
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Response Times</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Average:</span>
+                                <span class="text-sm font-medium" id="avgResponseTime">120ms</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Min:</span>
+                                <span class="text-sm font-medium" id="minResponseTime">85ms</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Max:</span>
+                                <span class="text-sm font-medium" id="maxResponseTime">450ms</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">Database Performance</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Query Time:</span>
+                                <span class="text-sm font-medium" id="queryTime">15ms</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Connections:</span>
+                                <span class="text-sm font-medium" id="dbConnections">12/50</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Cache Hit:</span>
+                                <span class="text-sm font-medium" id="cacheHit">94%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900 mb-3">System Load</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Load Average:</span>
+                                <span class="text-sm font-medium" id="loadAverage">0.45</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Active Users:</span>
+                                <span class="text-sm font-medium" id="activeUsers">23</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Requests/min:</span>
+                                <span class="text-sm font-medium" id="requestsPerMin">156</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Logs Tab -->
+            <div id="content-errors" class="maintenance-tab-content hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">System Error Logs</h3>
+                    <div class="flex gap-2">
+                        <select id="errorLevelFilter" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                            <option value="all">All Levels</option>
+                            <option value="error">Error</option>
+                            <option value="warning">Warning</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                        <button onclick="refreshErrors()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Error Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-circle text-red-600 text-xl mr-3"></i>
+                            <div>
+                                <p class="text-sm font-medium text-red-800">Critical Errors</p>
+                                <p class="text-2xl font-bold text-red-900" id="criticalErrors">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-orange-600 text-xl mr-3"></i>
+                            <div>
+                                <p class="text-sm font-medium text-orange-800">Errors</p>
+                                <p class="text-2xl font-bold text-orange-900" id="errorCount">3</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3"></i>
+                            <div>
+                                <p class="text-sm font-medium text-yellow-800">Warnings</p>
+                                <p class="text-2xl font-bold text-yellow-900" id="warningCount">12</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-600 text-xl mr-3"></i>
+                            <div>
+                                <p class="text-sm font-medium text-blue-800">Info</p>
+                                <p class="text-2xl font-bold text-blue-900" id="infoCount">45</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error Logs -->
+                <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div id="errorLogs" class="space-y-2">
+                        <!-- Error logs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Maintenance Tab -->
+            <div id="content-schedule" class="maintenance-tab-content hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Schedule Maintenance Mode</h3>
+                    <button onclick="openScheduleModal()" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Schedule Maintenance
+                    </button>
+                </div>
+                
+                <!-- Current Maintenance Status -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                    <h4 class="font-medium text-gray-900 mb-3">Current Status</h4>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                            <span class="text-sm text-gray-700">System is currently online and accessible</span>
+                        </div>
+                        <button onclick="toggleMaintenanceMode()" class="px-3 py-1 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700 transition-colors">
+                            Enable Maintenance Mode
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Scheduled Maintenance -->
+                <div class="space-y-4">
+                    <h4 class="font-medium text-gray-900">Scheduled Maintenance</h4>
+                    <div id="scheduledMaintenance" class="space-y-3">
+                        <!-- Scheduled maintenance will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Maintenance History -->
+                <div class="mt-8">
+                    <h4 class="font-medium text-gray-900 mb-4">Maintenance History</h4>
+                    <div class="overflow-hidden border border-gray-200 rounded-xl">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Duration</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="maintenanceHistoryTableBody" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-10">
+                                        <div class="flex flex-col items-center justify-center text-center text-gray-500">
+                                            <i class="fas fa-spinner fa-spin text-2xl mb-2 text-gray-400"></i>
+                                            <p>Loading maintenance history...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Maintenance Modal -->
+<div id="scheduleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-gray-900">Schedule Maintenance Mode</h3>
+                <button onclick="closeScheduleModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-6">
+            <form id="scheduleForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Maintenance Type</label>
+                    <select id="maintenanceType" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                        <option value="update">System Update</option>
+                        <option value="backup">Database Backup</option>
+                        <option value="cleanup">System Cleanup</option>
+                        <option value="security">Security Patch</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date & Time</label>
+                        <input type="datetime-local" id="startDateTime" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Duration (minutes)</label>
+                        <input type="number" id="duration" required min="1" max="480" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="maintenanceDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" placeholder="Describe what will be done during maintenance..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notify Users</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="notifyUsers" checked class="mr-3">
+                            <span class="text-sm text-gray-700">Send notification to all users</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="notifyAdmins" checked class="mr-3">
+                            <span class="text-sm text-gray-700">Send notification to administrators</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeScheduleModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition-colors">Schedule Maintenance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

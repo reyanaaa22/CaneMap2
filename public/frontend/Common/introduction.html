@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - CaneMap</title>
+    <link rel="stylesheet" href="/css/output.css">
+    <style>
+        :root {
+            --cane-50: #f7fee7;
+            --cane-100: #ecfcca;
+            --cane-200: #d8f999;
+            --cane-300: #bbf451;
+            --cane-400: #9ae600;
+            --cane-500: #7ccf00;
+            --cane-600: #5ea500;
+            --cane-700: #497d00;
+            --cane-800: #3c6300;
+            --cane-900: #35530e;
+            --cane-950: #192e03;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            overflow-x: hidden;
+        }
+        .main-background {
+            background-image: url('../img/sugarcane.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .green-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                135deg,
+                rgba(60, 99, 0, 0.48) 0%,
+                rgba(73, 125, 0, 0.38) 35%,
+                rgba(124, 207, 0, 0.18) 70%,
+                rgba(25, 46, 3, 0.45) 100%
+            );
+            mix-blend-mode: multiply;
+        }
+        .onboarding-overlay {
+            background: linear-gradient(
+                135deg, 
+                rgba(255, 255, 255, 0.10) 0%, 
+                rgba(255, 255, 255, 0.06) 50%, 
+                rgba(255, 255, 255, 0.10) 100%
+            );
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .onboarding-content {
+            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,254,231,0.96));
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            box-shadow: 
+                0 14px 24px -6px rgba(0, 0, 0, 0.12),
+                0 8px 14px -6px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(188, 244, 81, 0.35);
+            max-width: 760px;
+            margin-inline: auto;
+            padding: 28px 28px 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .onboarding-content.standard-body {
+            max-width: 720px;
+        }
+        .floating-shapes {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .floating-shapes span {
+            position: absolute;
+            display: block;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle at 30% 30%, rgba(124, 207, 0, 0.55), rgba(73, 125, 0, 0.22) 65%, rgba(25, 46, 3, 0.0) 100%);
+            border-radius: 9999px;
+            mix-blend-mode: multiply;
+            opacity: 0.6;
+            animation: floating 14s ease-in-out infinite;
+        }
+        .floating-shapes .shape-1 {
+            top: -6%;
+            left: -6%;
+            animation-duration: 16s;
+        }
+        .floating-shapes .shape-2 {
+            top: 6%;
+            right: -12%;
+            width: 160px;
+            height: 160px;
+            animation-duration: 18s;
+            animation-delay: -3s;
+        }
+        .floating-shapes .shape-3 {
+            bottom: -14%;
+            left: 14%;
+            width: 140px;
+            height: 140px;
+            animation-duration: 20s;
+            animation-delay: -6s;
+        }
+        .floating-shapes .shape-4 {
+            bottom: 18%;
+            right: 6%;
+            width: 100px;
+            height: 100px;
+            animation-duration: 17s;
+            animation-delay: -9s;
+        }
+        .floating-shapes .shape-5 {
+            top: 38%;
+            left: -14%;
+            width: 130px;
+            height: 130px;
+            border-radius: 34% 66% 54% 46% / 42% 39% 61% 58%;
+            background: radial-gradient(circle at 70% 30%, rgba(94, 165, 0, 0.6), rgba(53, 83, 14, 0.28) 60%, rgba(25, 46, 3, 0.0) 100%);
+            animation-duration: 19s;
+            animation-delay: -4s;
+        }
+        .floating-shapes .shape-6 {
+            top: 10%;
+            left: 56%;
+            width: 95px;
+            height: 95px;
+            border-radius: 28% 72% 64% 36% / 39% 52% 48% 61%;
+            background: linear-gradient(135deg, rgba(94, 165, 0, 0.65), rgba(25, 46, 3, 0.18));
+            animation-duration: 15s;
+            animation-delay: -11s;
+        }
+        .floating-shapes .shape-7 {
+            bottom: -18%;
+            right: -12%;
+            width: 180px;
+            height: 180px;
+            clip-path: polygon(50% 0%, 90% 20%, 100% 60%, 68% 100%, 28% 100%, 0% 60%, 10% 20%);
+            background: radial-gradient(circle at 40% 40%, rgba(73, 125, 0, 0.6), rgba(25, 46, 3, 0.22) 70%, rgba(25, 46, 3, 0));
+            animation-duration: 21s;
+            animation-delay: -7s;
+        }
+        @keyframes floating {
+            0%, 100% {
+                transform: translate3d(0, 0, 0) scale(1);
+                opacity: 0.6;
+            }
+            40% {
+                transform: translate3d(15px, -12px, 0) scale(1.08);
+                opacity: 0.75;
+            }
+            70% {
+                transform: translate3d(-12px, 10px, 0) scale(0.96);
+                opacity: 0.5;
+            }
+        }
+        .onboarding-content.map-bg::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url('../img/map.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.18;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
+        .placeholder-image {
+            background: linear-gradient(135deg, var(--cane-50) 0%, #e2f7c2 100%);
+            border-radius: 14px;
+            border: 1px solid rgba(92, 163, 0, 0.15);
+            min-height: 160px;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .nav-dot.active {
+            background: linear-gradient(135deg, var(--cane-600) 0%, var(--cane-800) 100%);
+            transform: scale(1.1);
+        }
+        .nav-dot.inactive {
+            background: rgba(209, 213, 219, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .btn-next {
+            background: linear-gradient(135deg, var(--cane-700) 0%, var(--cane-800) 100%);
+            color: white;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .btn-next:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px -3px rgba(60, 99, 0, 0.35);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--cane-100), var(--cane-50));
+            color: var(--cane-900);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(92, 163, 0, 0.25);
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, var(--cane-200), var(--cane-100));
+            transform: translateY(-1px);
+        }
+        .onboarding-screen {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: all 0.45s ease;
+            display: none;
+        }
+        .onboarding-screen.active {
+            opacity: 1;
+            transform: translateX(0);
+            display: block;
+        }
+        .accent-chip {
+            display: inline-block;
+            padding: 3px 10px;
+            font-size: 12px;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, var(--cane-300), var(--cane-400));
+            color: #0b1f01;
+            border: 1px solid rgba(92, 163, 0, 0.25);
+        }
+        @keyframes floatIn {
+            0% { opacity: 0; transform: translateY(14px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .float-in { animation: floatIn 560ms ease forwards; }
+        .skip-btn {
+            color: rgba(17, 24, 39, 0.92);
+            transition: all 0.3s ease;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .skip-btn:hover {
+            color: rgba(17, 24, 39, 1);
+            transform: translateY(-1px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+        .title-text {
+            background: linear-gradient(135deg, var(--cane-700) 0%, var(--cane-900) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            font-weight: 800;
+            font-size: clamp(20px, 2.4vw, 30px);
+            line-height: 1.2;
+        }
+        .title-text.welcome-title {
+            font-size: clamp(24px, 3.2vw, 36px);
+        }
+        .description-text {
+            color: rgba(53, 83, 14, 0.85);
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+            font-size: clamp(14px, 1.6vw, 18px);
+            line-height: 1.55;
+        }
+
+/* MOBILE ONLY – Make buttons smaller */
+@media (max-width: 480px) {
+    #downloadFooter a,
+    #downloadFooter button {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+    }
+
+    #downloadFooter svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    #downloadFooter span {
+        font-size: 13px !important;
+    }
+
+    #downloadFooter {
+        padding: 10px 12px !important;
+    }
+}
+    </style>
+</head>
+<body class="main-background">
+    <div class="green-overlay"></div>
+    <div class="min-h-screen onboarding-overlay">
+        <div class="min-h-screen flex items-center justify-center p-4 lg:p-8">
+            
+            <!-- Screen 1: Welcome -->
+            <div id="screen-1" class="onboarding-screen active max-w-2xl w-full onboarding-content map-bg p-8 lg:p-12 text-center relative">
+                <div class="mb-6">
+                    <!-- Placeholder Image -->
+                    <div class="w-32 h-32 mx-auto mb-5 flex items-center justify-center float-in" style="animation-delay: 50ms;">
+                        <span class="text-4xl"><img src="../img/PIN.png" alt="CaneMap Logo" class="w-full h-full"></span>
+                    </div>
+                    
+                    <div class="flex items-center justify-center mb-3">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 120ms;"></span>
+                        <h1 class="title-text welcome-title">
+                            Welcome to CaneMap
+                        </h1>
+                    </div>
+                    <p class="description-text max-w-2xl mx-auto float-in" style="animation-delay: 180ms;">
+                        Your Smart Sugarcane Field Companion. Designed for Farmers, Sugarcane Handlers, and Agriculture Officers.
+                    </p>
+                </div>
+                
+                <div class="mt-2">
+                    <div class="space-y-3">
+                        <div>
+                            <div class="text-xs text-[rgba(53,83,14,0.85)] mb-1">First time here? Start the walkthrough.</div>
+                            <button onclick="nextScreen(2)" class="w-full btn-next font-semibold">Start Now</button>
+                        </div>
+                        <div>
+                            <div class="text-xs text-[rgba(53,83,14,0.85)] mb-1">Already have an account? Go to Sign In.</div>
+                            <a href="./farmers_login.html" class="w-full btn-secondary font-semibold block text-center">Sign In</a>
+                        </div>
+                                <!-- Download App Button (bottom option) -->
+
+
+                    </div>
+                </div>
+                
+
+                <!-- Navigation Dots -->
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Smart Field Monitoring -->
+            <div id="screen-2" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-2"></span>
+                    <span class="shape-4"></span>
+                    <span class="shape-5"></span>
+                    <span class="shape-7"></span>
+                </div>
+                <button onclick="skipOnboarding()" class="absolute top-6 right-6 skip-btn text-sm font-medium">
+                    Skip
+                </button>
+                
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Track and Manage Sugarcane Fields
+                        </h1>
+                    </div>
+                    <img src="../img/Track.png" alt="Track and manage sugarcane fields" class="mx-auto mb-5 max-h-56 object-contain float-in" style="animation-delay: 120ms;">
+                    <p class="description-text max-w-2xl mx-auto">
+                        CaneMap empowers farmers, handlers, drivers, SRAs, and admins to efficiently manage sugarcane fields, track tasks, log activities, and generate reports in real time.
+                    </p>
+                </div>
+                
+                <button onclick="nextScreen(3)" class="w-full btn-next font-semibold">
+                    Next
+                </button>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                </div>
+            </div>
+
+            <!-- Screen 3: Digital Reporting Made Easy -->
+            <div id="screen-3" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-1"></span>
+                    <span class="shape-3"></span>
+                    <span class="shape-5"></span>
+                    <span class="shape-6"></span>
+                </div>
+                <button onclick="skipOnboarding()" class="absolute top-6 right-6 skip-btn text-sm font-medium">
+                    Skip
+                </button>
+                
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Submit Reports Without the Paperwork
+                        </h1>
+                    </div>
+                    <img src="../img/Reports.png" alt="Submit reports without the paperwork" class="mx-auto mb-5 max-h-56 object-contain float-in" style="animation-delay: 120ms;">
+                    <p class="description-text max-w-2xl mx-auto">
+                        Handlers can submit field reports digitally, while SRAs can request, view, print, and download reports, all in one organized platform.
+                    </p>
+                </div>
+                
+                <button onclick="nextScreen(4)" class="w-full btn-next font-semibold">
+                    Next
+                </button>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                </div>
+            </div>
+
+            <!-- Screen 4: Role-Based Access -->
+            <div id="screen-4" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-1"></span>
+                    <span class="shape-4"></span>
+                    <span class="shape-6"></span>
+                    <span class="shape-7"></span>
+                </div>
+                <button onclick="skipOnboarding()" class="absolute top-6 right-6 skip-btn text-sm font-medium">
+                    Skip
+                </button>
+                
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Custom Dashboards per Role
+                        </h1>
+                    </div>
+                    <img src="../img/Dashboard.png" alt="Custom dashboards per role" class="mx-auto mb-5 max-h-56 object-contain float-in" style="animation-delay: 120ms;">
+                    <p class="description-text max-w-2xl mx-auto">
+                        Handlers, Farmers, SRA officers, and Admins each get personalized access to features relevant to their work.
+                    </p>
+                </div>
+                
+                <button onclick="nextScreen(5)" class="w-full btn-next font-semibold">
+                    Next
+                </button>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot inactive"></div>
+                    <div class="nav-dot inactive"></div>
+                </div>
+            </div>
+
+            <!-- Screen 5: Harvest Prediction -->
+            <div id="screen-5" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-2"></span>
+                    <span class="shape-3"></span>
+                    <span class="shape-5"></span>
+                    <span class="shape-7"></span>
+                </div>
+                <button onclick="skipOnboarding()" class="absolute top-6 right-6 skip-btn text-sm font-medium">
+                    Skip
+                </button>
+                
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Estimate Harvest with Confidence
+                        </h1>
+                    </div>
+                    <img src="../img/Estimate.png" alt="Predict harvest with confidence" class="mx-auto mb-5 max-h-56 object-contain float-in" style="animation-delay: 120ms;">
+                    <p class="description-text max-w-2xl mx-auto">
+                        Know your estimated harvest date based on variety and planting date. Plan ahead for labor, logistics, and reporting.
+                    </p>
+                </div>
+                
+                <button onclick="nextScreen(6)" class="w-full btn-next font-semibold">
+                    Next
+                </button>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot inactive"></div>
+                </div>
+            </div>
+
+            <!-- Screen 6: Interactive Map Views -->
+            <div id="screen-6" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-1"></span>
+                    <span class="shape-2"></span>
+                    <span class="shape-4"></span>
+                    <span class="shape-5"></span>
+                </div>
+                <button onclick="skipOnboarding()" class="absolute top-6 right-6 skip-btn text-sm font-medium">
+                    Skip
+                </button>
+                
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Visual Mapping by Barangay and Field
+                        </h1>
+                    </div>
+                    <img src="../img/mapping.png" alt="Visual mapping by barangay and field" class="mx-auto mb-5 max-h-60 object-contain float-in" style="animation-delay: 120ms;">
+                    <p class="description-text max-w-2xl mx-auto">
+                        See where sugarcane is growing, track progress per barangay, and monitor active fields at a glance all in map view.
+                    </p>
+                </div>
+                
+                <button onclick="nextScreen(7)" class="w-full btn-next font-semibold">
+                    Get Started
+                </button>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                </div>
+            </div>
+
+            <!-- Screen 7: Ready to Start -->
+            <div id="screen-7" class="onboarding-screen hidden max-w-2xl w-full onboarding-content standard-body p-8 lg:p-12 text-center relative">
+                <div class="floating-shapes">
+                    <span class="shape-1"></span>
+                    <span class="shape-2"></span>
+                    <span class="shape-3"></span>
+                    <span class="shape-5"></span>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-center justify-center mb-4">
+                        <span class="feature-icon mr-3 float-in" style="animation-delay: 80ms;"></span>
+                        <h1 class="title-text">
+                            Let's Get Started
+                        </h1>
+                    </div>
+                    <p class="description-text mb-6 max-w-2xl mx-auto">
+                        Register now and digitize your sugarcane farming experience.
+                    </p>
+                    <div class="space-y-3">
+                        <a href="./farmers_login.html" class="w-full btn-secondary font-semibold block text-center">
+                            Sign In
+                        </a>
+                        <a href="./signup.html" class="w-full btn-next font-semibold block text-center">
+                            <span></span> Sign Up →
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center space-x-2 mt-6">
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                    <div class="nav-dot active"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Transparent Glass Footer Download Banner -->
+<div id="downloadFooter"
+     style="
+        position:fixed;
+        bottom:0;
+        right:0;
+        width:100%;
+        backdrop-filter:blur(14px);
+        background:rgba(255,255,255,0.55);
+        border-top-left-radius:18px;
+        border-top-right-radius:18px;
+        padding:14px 16px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        box-shadow:0 -6px 20px rgba(0,0,0,0.28);
+        z-index:9999;
+        animation:slideUp .4s ease-out;
+     "
+>
+    <!-- LEFT: Icon + text -->
+    <div style="display:flex; align-items:center; gap:10px; white-space:nowrap;">
+        <svg width="20" height="20" viewBox="0 0 24 24" 
+            fill="var(--cane-600)"
+            style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.28));">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" 
+                stroke="var(--cane-700)" 
+                stroke-width="2" 
+                stroke-linecap="round" 
+                stroke-linejoin="round"/>
+        </svg>
+
+        <span style="font-size:15px; font-weight:700; color:var(--cane-900);">
+            Download CaneMap App
+        </span>
+    </div>
+
+    <!-- RIGHT: Buttons -->
+    <div style="display:flex; gap:10px; align-items:center;">
+        <a href="/downloads/CaneMap.apk" download
+            onclick="this.href='/downloads/CaneMap.apk?v=' + Date.now(); return true;"
+            style="
+                background:linear-gradient(135deg, var(--cane-600), var(--cane-800));
+                color:white;
+                padding:8px 16px;
+                border-radius:10px;
+                text-decoration:none;
+                font-size:14px;
+                font-weight:600;
+                white-space:nowrap;
+                box-shadow:0 4px 10px rgba(0,0,0,0.25);
+                transition:.25s;
+            "
+            onmouseover="this.style.transform='translateY(-2px)'"
+            onmouseout="this.style.transform='translateY(0)'"
+            onclick="this.href='/downloads/CaneMap.apk?v=' + Date.now(); return true;"
+        >
+            Download
+        </a>
+
+        <button onclick="hideFooter()" 
+            style="
+                background:rgba(255,255,255,0.6);
+                backdrop-filter:blur(8px);
+                padding:8px 14px;
+                border-radius:10px;
+                border:1px solid rgba(0,0,0,0.1);
+                font-size:14px;
+                font-weight:600;
+                white-space:nowrap;
+                cursor:pointer;
+            "
+        >
+            Not now
+        </button>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { transform:translateY(70px); opacity:0; }
+    to   { transform:translateY(0); opacity:1; }
+}
+</style>
+
+<script>
+function hideFooter(){
+    document.getElementById('downloadFooter').style.display = 'none';
+}
+</script>
+
+<!-- APK Download Confirmation Modal -->
+<div id="apkModal" 
+     style="
+        display:none; position:fixed; inset:0; 
+        background:rgba(0,0,0,0.45);
+        backdrop-filter:blur(4px);
+        justify-content:center; align-items:center; z-index:9999;
+     ">
+    <div style="
+        background:white; padding:22px; 
+        border-radius:14px; width:90%; max-width:340px;
+        text-align:center; box-shadow:0 10px 20px rgba(0,0,0,0.25);
+    ">
+        <h3 style="font-size:20px; font-weight:700; margin-bottom:8px; color:var(--cane-900);">
+            Download CaneMap App?
+        </h3>
+        <p style="font-size:14px; color:#444; margin-bottom:20px;">
+            Are you sure you want to download the latest APK?
+        </p>
+
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button onclick="closeApkModal()" 
+                style="
+                    padding:8px 18px; border-radius:8px;
+                    background:#aaa; color:white; border:none;
+                    font-weight:600; width:45%;
+                ">
+                Cancel
+            </button>
+
+            <a href="/downloads/CaneMap.apk" download
+                style="
+                    padding:8px 18px; border-radius:8px;
+                    background:linear-gradient(135deg, var(--cane-700), var(--cane-900));
+                    color:white; border:none; font-weight:600; width:45%; display:block;
+                "
+                onclick="this.href='/downloads/CaneMap.apk?v=' + Date.now(); return true;"
+            >
+                Yes, Download
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function openApkModal() {
+    document.getElementById('apkModal').style.display = 'flex';
+}
+function closeApkModal() {
+    document.getElementById('apkModal').style.display = 'none';
+}
+</script>
+
+<script>
+let currentScreen = 1;
+
+function nextScreen(screenNumber) {
+    if (screenNumber === currentScreen) {
+        return;
+    }
+    // Hide current screen with animation
+    const currentElement = document.getElementById(`screen-${currentScreen}`);
+    currentElement.classList.remove('active');
+    
+    // Wait for animation to complete, then show new screen
+    setTimeout(() => {
+        currentElement.style.display = 'none';
+        
+        // Show new screen
+        const newElement = document.getElementById(`screen-${screenNumber}`);
+        newElement.style.display = 'block';
+        
+        // Trigger animation
+        setTimeout(() => {
+            newElement.classList.add('active');
+        }, 50);
+        
+        currentScreen = screenNumber;
+    }, 400);
+}
+
+function skipOnboarding() {
+    nextScreen(7);
+}
+
+// Initialize first screen
+document.addEventListener('DOMContentLoaded', function() {
+    const firstScreen = document.getElementById('screen-1');
+    firstScreen.style.display = 'block';
+    firstScreen.classList.add('active');
+});
+</script>
+</body>
+</html>

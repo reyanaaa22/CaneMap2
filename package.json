@@ -1,0 +1,57 @@
+{
+  "name": "canemap",
+  "version": "1.0.0",
+  "description": "CaneMap is a comprehensive digital platform designed for managing sugarcane fields, tracking farming activities, and facilitating communication between farmers, landowners, and SRA (Sugar Regulatory Administration) officers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
+    "minify:js": "node scripts/minify-js.js",
+    "optimize:images": "node scripts/optimize-images.js",
+    "watch:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
+    "build": "npm run build:css && npm run minify:js && npm run optimize:images",
+    "clean:android": "cd android && ./gradlew clean",
+    "build:android": "cd android && chmod +x gradlew && ./gradlew assembleDebug && cd .. && npm run copy:apk",
+        "build:android:release": "cd android && chmod +x gradlew && ./gradlew assembleRelease && cd .. && npm run copy:apk",
+        "build:android:signed": "cd android && chmod +x gradlew && ./gradlew assembleRelease && cd .. && npm run copy:apk",
+    "copy:apk": "node scripts/copy-apk.js",
+    "build:full": "npm run build && npm run build:android && npm run copy:apk",
+    "rebuild:android": "npm run clean:android && npm run build:android",
+    "sync:android": "npm run build && npx cap sync android && npm run copy:apk",
+    "setup:android": "bash setup-android-sdk.sh",
+    "setup:android:manual": "echo 'To set up Android SDK manually, run: bash setup-android-sdk.sh'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reyanaaa22/CaneMap.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/reyanaaa22/CaneMap/issues"
+  },
+  "homepage": "https://github.com/reyanaaa22/CaneMap#readme",
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/filesystem": "^7.1.5",
+    "@capacitor/network": "^7.0.2",
+    "@capacitor/preferences": "^7.0.2",
+    "@capacitor/share": "^7.0.2",
+    "firebase": "^12.6.0",
+    "firebase-admin": "^13.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "autoprefixer": "^10.4.22",
+    "imagemin": "^9.0.1",
+    "imagemin-mozjpeg": "^10.0.0",
+    "imagemin-pngquant": "^10.0.0",
+    "postcss": "^8.5.6",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^3.4.18",
+    "terser": "^5.44.1"
+  }
+}

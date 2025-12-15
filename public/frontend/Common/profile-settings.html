@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaneMap - Profile Settings</title>
+    <link rel="stylesheet" href="../../css/output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        :root {
+            --cane-50: #f7fee7;
+            --cane-100: #ecfcca;
+            --cane-200: #d8f999;
+            --cane-300: #bbf451;
+            --cane-400: #9ae600;
+            --cane-500: #7ccf00;
+            --cane-600: #5ea500;
+            --cane-700: #497d00;
+            --cane-800: #3c6300;
+            --cane-900: #35530e;
+            --cane-950: #192e03;
+        }
+        .shadow-green-md { box-shadow: 0 4px 14px rgba(94, 165, 0, 0.35); }
+        .expandable { transition: max-height 400ms ease, opacity 300ms ease, transform 300ms ease; }
+        .expandable.collapsed { max-height: 0; opacity: 0; transform: translateY(-6px); overflow: hidden; }
+        .expandable.expanded { max-height: 1600px; opacity: 1; transform: translateY(0); }
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .animate-slide-in {
+            animation: slide-in 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[var(--cane-50)] via-white to-[var(--cane-100)]">
+    <main class="w-full px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+            <a id="backToDashboard" href="#" class="inline-flex items-center gap-2 text-[var(--cane-800)] hover:text-[var(--cane-900)]">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span class="font-semibold"></span>
+            </a>
+        </div>
+        <div class="w-full mx-auto bg-white/90 backdrop-blur-sm border border-[var(--cane-200)] rounded-2xl shadow-green-md p-4 sm:p-6 md:p-8">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl sm:text-3xl font-bold text-[var(--cane-950)] bg-gradient-to-r from-[var(--cane-50)] to-transparent px-4 py-2 rounded-lg border-l-4 border-[var(--cane-600)]">Profile Information</h1>
+                <div class="flex items-center gap-2">
+                    <button id="updateBtn" class="hidden inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-3 sm:px-4 py-2 rounded-lg">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                        <span>Update Profile</span>
+                    </button>
+                    <button id="editBtn" class="hidden inline-flex items-center gap-2 bg-white text-[var(--cane-800)] border border-[var(--cane-300)] px-3 sm:px-4 py-2 rounded-lg">
+                        <i class="fa-solid fa-pen"></i>
+                        <span>Edit Profile</span>
+                    </button>
+                </div>
+            </div>
+            <div class="mb-4 border-b">
+                <button class="px-3 py-2 text-sm font-semibold text-[var(--cane-800)] border-b-2 border-[var(--cane-700)]">Personal</button>
+            </div>
+
+            <section id="viewPanel" class="bg-gradient-to-br from-white to-[var(--cane-50)] border border-[var(--cane-200)] rounded-2xl p-6 sm:p-8 mb-6 transition-opacity duration-300 shadow-sm">
+              <div class="flex justify-end mb-6 hidden" id="viewUpdateBtnWrapper">
+                <button id="viewUpdateBtn" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-4 py-2 text-sm rounded-lg shadow-md hover:from-[var(--cane-800)] hover:to-[var(--cane-900)] transition-all duration-200">
+                  <i class="fa-solid fa-arrow-rotate-right"></i>
+                  <span>Update Profile Information</span>
+                </button>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Left: Photo (read-only) -->
+                <div class="flex flex-col items-center md:items-start">
+                  <div class="relative flex flex-col items-center w-full">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--cane-100)] border border-[var(--cane-200)] text-[var(--cane-700)] text-xs font-semibold mb-4">
+                      <i class="fa-solid fa-image text-[var(--cane-600)]"></i>
+                      <span>Profile Photo</span>
+                    </div>
+                    <button id="viewPhotoBtn" class="w-48 h-48 rounded-full overflow-hidden border-4 border-[var(--cane-300)] shadow-lg bg-[var(--cane-50)] focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] transition-transform hover:scale-105 flex-shrink-0">
+                      <img id="viewProfilePhoto" alt="Profile Photo" class="w-full h-full rounded-full object-cover" src=""/>
+                    </button>
+                    <p id="viewDisplayName" class="mt-4 text-lg font-bold text-[var(--cane-900)] text-center"></p>
+                  </div>
+                </div>
+
+                <!-- Right: Info -->
+                <div class="md:col-span-2">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Full Name</p>
+                      <p class="text-base font-bold text-[var(--cane-950)]" id="v_fullname">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Email Address</p>
+                      <p class="text-base font-bold text-[var(--cane-950)] break-all" id="v_email">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Contact Number</p>
+                      <p class="text-base font-bold text-[var(--cane-950)]" id="v_contact">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Nickname</p>
+                      <p class="text-base font-bold text-[var(--cane-950)]" id="v_nickname">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Gender</p>
+                      <p class="text-base font-bold text-[var(--cane-950)]" id="v_gender">-</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                      <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Birthday</p>
+                      <p class="text-base font-bold text-[var(--cane-950)]" id="v_birthday">-</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 bg-white rounded-lg p-4 border border-[var(--cane-200)] hover:border-[var(--cane-400)] transition-colors">
+                    <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide mb-1">Complete Address</p>
+                    <p class="text-base font-bold text-[var(--cane-950)]" id="v_address">-</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="documentsPanel" class="bg-white border border-[var(--cane-200)] rounded-xl p-4 sm:p-6 mb-6">
+              <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold text-[var(--cane-900)]">Additional Documents</h2>
+              </div>
+              <div id="documentsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-1 sm:col-span-2 text-sm text-[var(--cane-700)]">No documents uploaded.</div>
+              </div>
+            </section>
+
+            <section id="sensitiveInfoPanel" class="expandable collapsed mt-4 bg-white border border-[var(--cane-200)] rounded-xl p-4 sm:p-6">
+                <h2 class="text-lg font-bold text-[var(--cane-900)] mb-2">Verified Information</h2>
+                <div class="text-[var(--cane-700)] text-sm">You are verified. Additional sensitive details will appear here.</div>
+            </section>
+            
+            <!-- Hidden elements for backward compatibility -->
+            <div class="hidden">
+                <div id="ro_fullname"></div>
+                <div id="ro_email"></div>
+                <div id="ro_contact"></div>
+                <div id="ro_location"></div>
+                <div id="ro_nickname"></div>
+                <div id="ro_gender"></div>
+                <div id="ro_birthday"></div>
+                <div id="ro_address"></div>
+                <img id="profilePhoto" />
+                <input id="photoFileInput" type="file" />
+                <button id="photoUploadBtn"></button>
+                <button id="photoCameraBtn"></button>
+                <div id="displayName"></div>
+                <input id="in_fullname" />
+                <input id="in_email" />
+                <input id="in_contact" />
+                <input id="in_barangay" />
+                <input id="in_municipality" />
+                <input id="in_nickname" />
+                <select id="in_gender"></select>
+                <input id="in_birthday" />
+                <textarea id="in_address"></textarea>
+                <div id="editPanel"></div>
+                <div id="updatePanel"></div>
+                <button id="editSaveBtn"></button>
+                <div id="sensitiveInfoBanner"></div>
+                <button id="showSensitiveBtn"></button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+      (function(){
+        function qs(id){ return document.getElementById(id); }
+        function syncView(){
+          var map = [
+            ['ro_fullname','v_fullname'],
+            ['ro_email','v_email'],
+            ['ro_contact','v_contact'],
+            ['ro_location','v_location'],
+            ['ro_nickname','v_nickname'],
+            ['ro_gender','v_gender'],
+            ['ro_birthday','v_birthday'],
+            ['ro_address','v_address']
+          ];
+          map.forEach(function([from,to]){
+            var src = qs(from); var dst = qs(to);
+            if (src && dst && src.textContent) dst.textContent = src.textContent;
+          });
+          var photo = qs('profilePhoto');
+          var vphoto = qs('viewProfilePhoto');
+          if (photo && vphoto && photo.src) vphoto.src = photo.src;
+          var dn = qs('displayName');
+          var vdn = qs('viewDisplayName');
+          if (dn && vdn) vdn.textContent = dn.textContent || '';
+        }
+
+        function showView(){
+          var v = qs('viewPanel');
+          var ewrap = qs('editPanelWrap');
+          if (v){ v.classList.add('opacity-0'); v.classList.remove('hidden'); requestAnimationFrame(function(){ v.classList.remove('opacity-0'); }); }
+          if (ewrap) ewrap.classList.add('hidden');
+        }
+        function showEdit(){
+          var v = qs('viewPanel');
+          var ewrap = qs('editPanelWrap');
+          if (v) v.classList.add('hidden');
+          if (ewrap){ ewrap.classList.add('opacity-0'); ewrap.classList.remove('hidden'); requestAnimationFrame(function(){ ewrap.classList.remove('opacity-0'); }); }
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+          // Default to view mode
+          showView();
+          syncView();
+          var seeMoreBtn = qs('viewSeeMoreBtn');
+          if (seeMoreBtn) seeMoreBtn.addEventListener('click', function(e){ e.preventDefault(); var em = document.getElementById('editProfileModal'); if(em){ em.classList.remove('hidden'); em.classList.add('flex'); } });
+          var pbtn = qs('viewPhotoBtn');
+          if (pbtn) pbtn.addEventListener('click', function(e){ e.preventDefault(); var pm = document.getElementById('photoModal'); var img = document.getElementById('photoModalImg'); var vimg = document.getElementById('viewProfilePhoto'); if (img && vimg) img.src = vimg.src; if(pm){ pm.classList.remove('hidden'); pm.classList.add('flex'); } });
+        });
+        // Also expose for future use if needed
+        window.__profileViewSync = syncView;
+      })();
+    </script>
+
+    <div id="confirmModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md border border-[var(--cane-200)]">
+            <h3 class="text-lg font-bold text-[var(--cane-900)] mb-2">Confirm Changes</h3>
+            <p class="text-sm text-[var(--cane-700)] mb-4">Are you sure you want to save these changes?</p>
+            <div class="flex justify-end gap-2">
+                <button id="confirmNo" class="px-4 py-2 rounded-lg border border-[var(--cane-300)]">No</button>
+                <button id="confirmYes" class="px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="verifyModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md border border-[var(--cane-200)]">
+            <div class="flex items-start justify-between mb-2">
+                <h3 class="text-lg font-bold text-[var(--cane-900)]">Verify your Identity</h3>
+                <span id="attemptsLabel" class="text-xs text-[var(--cane-700)] font-semibold">Attempts: 3</span>
+            </div>
+            <p class="text-sm text-[var(--cane-700)] mb-4">Please enter your password to view this information.</p>
+            <input id="verifyPassword" type="password" placeholder="Enter password" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] mb-3" />
+            <div id="verifyError" class="text-xs text-red-600 min-h-4 mb-2"></div>
+            <div class="flex justify-end gap-2">
+                <button id="verifyCancel" class="px-4 py-2 rounded-lg border border-[var(--cane-300)]">Cancel</button>
+                <button id="verifyConfirm" class="px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal for Edit Save -->
+    <div id="successModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md border border-[var(--cane-200)] text-center">
+            <h3 class="text-lg font-bold text-[var(--cane-900)] mb-2">Edit Successful</h3>
+            <p class="text-sm text-[var(--cane-700)] mb-4">Your profile changes have been saved.</p>
+            <button id="successOk" class="px-6 py-2 rounded-lg bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white">OK</button>
+        </div>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md border border-[var(--cane-200)]">
+            <h3 class="text-lg font-bold text-[var(--cane-900)] mb-2">Discard Changes?</h3>
+            <p class="text-sm text-[var(--cane-700)] mb-4">Unsaved changes will be lost. Continue?</p>
+            <div class="flex justify-end gap-2">
+                <button id="cancelNo" class="px-4 py-2 rounded-lg border border-[var(--cane-300)]">Stay</button>
+                <button id="cancelYes" class="px-4 py-2 rounded-lg bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white">Discard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Photo Preview Modal -->
+    <div id="photoModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-4 w-full max-w-2xl border border-[var(--cane-200)]">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-bold text-[var(--cane-900)]">Profile Photo</h3>
+                <button id="photoModalClose" class="text-[var(--cane-800)]"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <img id="photoModalImg" alt="Full Photo" class="w-full max-h-[70vh] object-contain rounded-xl" />
+        </div>
+    </div>
+
+    <!-- Camera Modal -->
+    <div id="cameraModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-4 w-full max-w-xl border border-[var(--cane-200)]">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-lg font-bold text-[var(--cane-900)]">Take a Selfie</h3>
+                <button id="cameraClose" class="text-[var(--cane-800)]"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <video id="cameraVideo" autoplay playsinline class="w-full rounded-xl bg-black"></video>
+                <div class="flex justify-end gap-2">
+                    <button id="cameraCapture" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-4 py-2 rounded-lg"><i class="fa-solid fa-camera"></i><span>Capture</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Profile Information Modal -->
+    <div id="updateInfoModal" class="fixed inset-0 hidden items-center justify-center p-4 z-50 bg-black/50 backdrop-blur-sm">
+      <div class="w-full max-w-4xl bg-white/95 border border-[var(--cane-200)] rounded-3xl shadow-green-md max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="px-6 sm:px-8 pt-6 sm:pt-8">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)] text-xs font-semibold">
+                <i class="fa-solid fa-user-check"></i>
+                <span>Profile Completion</span>
+              </div>
+              <h3 class="mt-3 text-xl sm:text-2xl font-bold text-[var(--cane-900)]">Profile Information</h3>
+              <p class="text-sm text-[var(--cane-700)] mt-1">Update your personal information and account settings.</p>
+            </div>
+            <button id="updateModalCancelBtn" class="text-[var(--cane-800)] hover:text-[var(--cane-900)] bg-[var(--cane-100)] hover:bg-[var(--cane-200)] w-9 h-9 rounded-full flex items-center justify-center border border-[var(--cane-200)]">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="px-6 sm:px-8 pb-6 sm:pb-8 overflow-y-auto flex-1">
+          <!-- Profile Photo Section -->
+          <div class="mb-6">
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-camera text-[var(--cane-600)]"></i>
+              Profile Photo
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] bg-gradient-to-br from-[var(--cane-50)] to-white p-4 sm:p-5">
+              <div class="flex flex-col items-center gap-3">
+                <div class="relative">
+                  <img id="updateModalPhotoPreview" alt="Profile Photo Preview" class="w-32 h-32 rounded-full object-cover border-4 border-[var(--cane-200)] shadow-md bg-white" src=""/>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="updateModalPhotoUploadBtn" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-3 py-2 rounded-lg text-sm shadow-md hover:from-[var(--cane-800)] hover:to-[var(--cane-900)]">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Upload File</span>
+                  </button>
+                  <button id="updateModalPhotoCameraBtn" class="inline-flex items-center gap-2 bg-white text-[var(--cane-800)] border border-[var(--cane-300)] px-3 py-2 rounded-lg text-sm shadow-md hover:bg-[var(--cane-50)]">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Take Selfie</span>
+                  </button>
+                </div>
+                <input id="updateModalPhotoFileInput" type="file" accept="image/*" class="hidden" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Existing Information Section -->
+          <div class="mb-6">
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-[var(--cane-600)]"></i>
+              Existing Information
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] bg-gradient-to-br from-[var(--cane-50)] to-white p-4 sm:p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Full Name</label>
+                  <input id="update_fullname" type="text" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Email Address</label>
+                  <input id="update_email" type="email" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Contact Number</label>
+                  <input id="update_contact" type="text" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">City/Municipality</label>
+                  <input id="update_municipality" type="text" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Barangay</label>
+                  <input id="update_barangay" type="text" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Nickname</label>
+                  <input id="update_nickname" type="text" placeholder="Enter nickname" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Gender</label>
+                  <select id="update_gender" class="w-full px-3 py-2.5 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] appearance-none bg-white">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Birthday</label>
+                  <input id="update_birthday" type="date" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+              </div>
+              <div class="mt-4">
+                <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Complete Address</label>
+                <textarea id="update_address" rows="3" placeholder="Enter complete address" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information Section (Dynamically Populated) -->
+          <div class="mb-6" id="additionalInfoSection" style="display: none;">
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-circle-exclamation text-orange-600"></i>
+              Missing Information
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] p-4 sm:p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="updateModalFields"></div>
+            </div>
+          </div>
+
+          <!-- Change Password Section -->
+          <div>
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-lock text-[var(--cane-600)]"></i>
+              Change Password (Optional)
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] p-4 sm:p-5">
+              <div class="grid grid-cols-1 gap-4">
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Current Password</label>
+                  <input id="update_currentPassword" type="password" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">New Password</label>
+                  <input id="update_newPassword" type="password" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Confirm Password</label>
+                  <input id="update_confirmPassword" type="password" class="w-full px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 sm:px-8 pb-6 border-t border-[var(--cane-200)] pt-4 bg-white">
+          <div class="flex items-center justify-end gap-3">
+            <button id="updateModalCancelSecondaryBtn" class="px-4 py-2 rounded-lg border border-[var(--cane-300)] bg-white text-[var(--cane-800)] hover:bg-[var(--cane-50)]">Cancel</button>
+            <button id="updateModalSaveBtn" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-5 py-2.5 rounded-xl shadow-green-md hover:from-[var(--cane-800)] hover:to-[var(--cane-900)] transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed">
+              <i id="updateSaveIcon" class="fa-solid fa-floppy-disk"></i>
+              <span id="updateSaveText">Save Changes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 hidden items-center justify-center p-4 z-50 bg-black/50 backdrop-blur-sm">
+      <div class="w-full max-w-4xl bg-white/95 border border-[var(--cane-200)] rounded-3xl shadow-green-md max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="px-6 sm:px-8 pt-6 sm:pt-8">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--cane-50)] border border-[var(--cane-200)] text-[var(--cane-800)] text-xs font-semibold">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Edit Profile</span>
+              </div>
+              <h3 class="mt-3 text-xl sm:text-2xl font-bold text-[var(--cane-900)]">Edit Your Profile</h3>
+              <p class="text-sm text-[var(--cane-700)] mt-1">Update your personal information and profile photo.</p>
+            </div>
+            <button id="editModalCancelBtn" class="text-[var(--cane-800)] hover:text-[var(--cane-900)] bg-[var(--cane-100)] hover:bg-[var(--cane-200)] w-9 h-9 rounded-full flex items-center justify-center border border-[var(--cane-200)]">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="px-6 sm:px-8 pb-6 sm:pb-8 overflow-y-auto flex-1">
+          <!-- Profile Photo Section -->
+          <div class="mb-6">
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-camera text-[var(--cane-600)]"></i>
+              Profile Photo
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] bg-gradient-to-br from-[var(--cane-50)] to-white p-4 sm:p-5">
+              <div class="flex flex-col items-center gap-3">
+                <div class="relative">
+                  <img id="editModalPhotoPreview" alt="Profile Photo Preview" class="w-32 h-32 rounded-full object-cover border-4 border-[var(--cane-200)] shadow-md bg-white" src=""/>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="editModalPhotoUploadBtn" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-3 py-2 rounded-lg text-sm shadow-md hover:from-[var(--cane-800)] hover:to-[var(--cane-900)]">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Upload File</span>
+                  </button>
+                  <button id="editModalPhotoCameraBtn" class="inline-flex items-center gap-2 bg-white text-[var(--cane-800)] border border-[var(--cane-300)] px-3 py-2 rounded-lg text-sm shadow-md hover:bg-[var(--cane-50)]">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Take Selfie</span>
+                  </button>
+                </div>
+                <input id="editModalPhotoFileInput" type="file" accept="image/*" class="hidden" />
+              </div>
+            </div>
+          </div>
+          <!-- Profile Information Section -->
+          <div>
+            <h4 class="text-base font-bold text-[var(--cane-900)] mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-user-pen text-[var(--cane-600)]"></i>
+              Personal Information
+            </h4>
+            <div class="rounded-2xl border border-[var(--cane-200)] p-4 sm:p-5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Full Name</label>
+                  <input id="edit_fullname" type="text" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Email Address</label>
+                  <input id="edit_email" type="email" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Contact Number</label>
+                  <input id="edit_contact" type="text" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Barangay</label>
+                  <input id="edit_barangay" type="text" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Municipality</label>
+                  <input id="edit_municipality" type="text" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div>
+                  <label class="text-xs text-[var(--cane-700)] font-semibold">Nickname</label>
+                  <input id="edit_nickname" type="text" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]" />
+                </div>
+                <div class="relative pb-2">
+                  <label class="text-xs text-[var(--cane-700)] font-semibold block mb-1">Gender</label>
+                  <div class="relative">
+                    <select id="edit_gender" class="w-full px-3 py-2.5 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] appearance-none bg-white pr-8">
+                  <textarea id="edit_address" rows="3" class="w-full mt-1 px-3 py-2 border border-[var(--cane-300)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 sm:px-8 pb-6 border-t border-[var(--cane-200)] pt-4 bg-white">
+          <div class="flex items-center justify-end gap-3">
+            <button id="editModalCancelSecondaryBtn" class="px-4 py-2 rounded-lg border border-[var(--cane-300)] bg-white text-[var(--cane-800)] hover:bg-[var(--cane-50)]">Cancel</button>
+            <button id="editModalSaveBtn" class="inline-flex items-center gap-2 bg-gradient-to-r from-[var(--cane-700)] to-[var(--cane-800)] text-white px-5 py-2.5 rounded-xl shadow-green-md hover:from-[var(--cane-800)] hover:to-[var(--cane-900)]">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/backend/Common/firebase-config.js?v=20251116"></script>
+    <script type="module" src="/backend/Common/profile-settings.js?v=20251116"></script>
+    <script>
+      (function(){
+        function qs(id){ return document.getElementById(id); }
+        function openM(el){ if(!el) return; el.classList.remove('hidden'); el.classList.add('flex'); }
+        function closeM(el){ if(!el) return; el.classList.add('hidden'); el.classList.remove('flex'); }
+        function showView(){ var v=document.getElementById('viewPanel'); var e=document.getElementById('editPanelWrap'); if(v) v.classList.remove('hidden'); if(e) e.classList.add('hidden'); }
+        document.addEventListener('DOMContentLoaded', function(){
+          var closePhoto = qs('photoModalClose'); if (closePhoto) closePhoto.addEventListener('click', function(){ closeM(qs('photoModal')); });
+          var cancelBtn = qs('editCancelBtn'); if (cancelBtn) cancelBtn.addEventListener('click', function(){ openM(qs('cancelModal')); });
+          var cancelNo = qs('cancelNo'); if (cancelNo) cancelNo.addEventListener('click', function(){ closeM(qs('cancelModal')); });
+          var cancelYes = qs('cancelYes'); if (cancelYes) cancelYes.addEventListener('click', function(){ closeM(qs('cancelModal')); showView(); });
+          var camBtn = qs('photoCameraBtn'); var streamRef = null;
+          function stopStream(){ try { streamRef?.getTracks()?.forEach(function(t){ t.stop(); }); } catch(e){} }
+          if (camBtn) camBtn.addEventListener('click', async function(){
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+              streamRef = stream;
+              qs('cameraVideo').srcObject = stream;
+              openM(qs('cameraModal'));
+            } catch (e) {
+              alert('Camera access denied or unavailable');
+            }
+          });
+          var camClose = qs('cameraClose'); if (camClose) camClose.addEventListener('click', function(){ closeM(qs('cameraModal')); stopStream(); });
+          var camCap = qs('cameraCapture'); if (camCap) camCap.addEventListener('click', function(){
+            var video = qs('cameraVideo'); if (!video) return;
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
+            var ctx = canvas.getContext('2d'); ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var dataUrl = canvas.toDataURL('image/png');
+            var byteString = atob(dataUrl.split(',')[1]); var mimeString = 'image/png';
+            var ab = new ArrayBuffer(byteString.length); var ia = new Uint8Array(ab);
+            for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+            var blob = new Blob([ab], { type: mimeString });
+            var file = new File([blob], 'selfie.png', { type: 'image/png' });
+            var dt = new DataTransfer(); dt.items.add(file);
+            var fileInput = qs('photoFileInput'); if (fileInput) fileInput.files = dt.files;
+            var img = qs('profilePhoto'); if (img) img.src = dataUrl;
+            closeM(qs('cameraModal')); stopStream();
+          });
+        });
+      })();
+    </script>
+</body>
+</html>
+
+

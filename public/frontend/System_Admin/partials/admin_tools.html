@@ -1,0 +1,166 @@
+<div class="space-y-6">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Admin Tools</h2>
+            <p class="text-sm text-gray-600 mt-1">System management and data export utilities</p>
+        </div>
+    </div>
+
+    <!-- System Statistics -->
+    <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-chart-pie text-[var(--cane-600)] mr-2"></i>
+            System Statistics
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-700">Total Fields</p>
+                        <p class="text-2xl font-bold text-blue-900" id="adminToolsTotalFields">0</p>
+                    </div>
+                    <i class="fas fa-map-marked-alt text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-700">Total Tasks</p>
+                        <p class="text-2xl font-bold text-green-900" id="adminToolsTotalTasks">0</p>
+                    </div>
+                    <i class="fas fa-tasks text-green-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-700">Join Requests</p>
+                        <p class="text-2xl font-bold text-purple-900" id="adminToolsJoinRequests">0</p>
+                    </div>
+                    <i class="fas fa-user-plus text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-4 border border-amber-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-700">Notifications</p>
+                        <p class="text-2xl font-bold text-amber-900" id="adminToolsNotifications">0</p>
+                    </div>
+                    <i class="fas fa-bell text-amber-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Export Tools -->
+    <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-download text-[var(--cane-600)] mr-2"></i>
+            Export Data
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button onclick="exportUsersToCSV()" class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <div class="text-left">
+                    <p class="font-semibold">Export Users</p>
+                    <p class="text-xs text-blue-100">Download user list as CSV</p>
+                </div>
+                <i class="fas fa-users text-2xl"></i>
+            </button>
+            <button onclick="exportFieldsToCSV()" class="flex items-center justify-between p-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <div class="text-left">
+                    <p class="font-semibold">Export Fields</p>
+                    <p class="text-xs text-green-100">Download field list as CSV</p>
+                </div>
+                <i class="fas fa-map-marked-alt text-2xl"></i>
+            </button>
+            <button onclick="exportTasksToCSV()" class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all shadow-md hover:shadow-lg">
+                <div class="text-left">
+                    <p class="font-semibold">Export Tasks</p>
+                    <p class="text-xs text-purple-100">Download task list as CSV</p>
+                </div>
+                <i class="fas fa-tasks text-2xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Cleanup Tools -->
+    <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-broom text-[var(--cane-600)] mr-2"></i>
+            Cleanup Tools
+        </h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                    <p class="font-medium text-gray-900">Delete Old Notifications</p>
+                    <p class="text-sm text-gray-600">Remove read notifications older than 30 days</p>
+                </div>
+                <button onclick="cleanupOldNotifications()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Clean Up
+                </button>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div>
+                    <p class="font-medium text-gray-900">Delete Rejected Badge Requests</p>
+                    <p class="text-sm text-gray-600">Remove driver badge requests that were rejected</p>
+                </div>
+                <button onclick="cleanupRejectedBadges()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Clean Up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="bg-white rounded-xl p-6 card-shadow border border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-info-circle text-[var(--cane-600)] mr-2"></i>
+            Quick Statistics
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-sm font-medium text-gray-700 mb-2">Users by Role</p>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Farmers:</span>
+                        <span class="font-semibold" id="statsRoleFarmers">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Workers:</span>
+                        <span class="font-semibold" id="statsRoleWorkers">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Drivers:</span>
+                        <span class="font-semibold" id="statsRoleDrivers">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Handlers:</span>
+                        <span class="font-semibold" id="statsRoleHandlers">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">SRA Officers:</span>
+                        <span class="font-semibold" id="statsRoleSRA">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p class="text-sm font-medium text-gray-700 mb-2">Field Status</p>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Pending:</span>
+                        <span class="font-semibold text-yellow-600" id="statsFieldsPending">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Reviewed:</span>
+                        <span class="font-semibold text-blue-600" id="statsFieldsReviewed">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Active:</span>
+                        <span class="font-semibold text-green-600" id="statsFieldsActive">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
