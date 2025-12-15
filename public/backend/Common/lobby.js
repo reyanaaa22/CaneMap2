@@ -992,40 +992,68 @@ async function showApprovedFieldsOnMap(map) {
       return;
     }
 
-    window.__caneMarkers = []; // store markers for searching later
+    window.__caneMarkers = []; 
 
-    fields.forEach((f) => {
-      if (!f.lat || !f.lng) return;
+fields.forEach((f) => {
 
-      const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(
-        markerGroup
-      );
 
-      // ✨ Tooltip content
-      const tooltipHtml = `
-  <div style="font-size:12px; line-height:1.4; max-width:250px; width:max-content; color:#14532d;">
-    <b style="font-size:14px; color:#166534;">${f.fieldName}</b>
-    <br><span style="font-size:10px; color:#15803d;">🏠︎ <i>${f.street}, Brgy. ${f.barangay},<br>Ormoc City, Leyte 6541</i></span>
-    <br><a href="#" class="seeFieldDetails" 
-       style="font-size:10px; color:gray; font-weight:500; display:inline-block; margin-top:3px;">
-       Click to see more details.
-    </a>
-  </div>
-`;
+  const coords = Array.isArray(f.raw?.coordinates)
+    ? f.raw.coordinates
+    : null;
 
-      marker.bindTooltip(tooltipHtml, {
-        permanent: false,
-        direction: "top",
-        offset: [0, -25],
-        opacity: 0.9,
-      });
+  if (coords && coords.length >= 3) {
+    const polygonCoords = coords.map(c => [c.lat, c.lng]);
 
-      marker.on("mouseover", () => marker.openTooltip());
-      marker.on("mouseout", () => marker.closeTooltip());
-      marker.on("click", () => openFieldDetailsModal(f));
+    const polygon = L.polygon(polygonCoords, {
+      color: "#16a34a",
+      fillColor: "#22c55e",
+      fillOpacity: 0.25,
+      weight: 2,
+    }).addTo(map);
 
-      window.__caneMarkers.push({ marker, data: f });
-    });
+    polygon.bindPopup(`
+      <div style="font-size:12px; line-height:1.4; color:#14532d;">
+        <b style="font-size:14px;">${f.fieldName}</b><br/>
+        Brgy. ${f.barangay}<br/>
+        Ormoc City
+      </div>
+    `);
+
+
+    polygon.on("click", () => openFieldDetailsModal(f));
+  }
+
+  if (!f.lat || !f.lng) return;
+
+  const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(
+    markerGroup
+  );
+
+  const tooltipHtml = `
+    <div style="font-size:12px; line-height:1.4; max-width:250px; width:max-content; color:#14532d;">
+      <b style="font-size:14px; color:#166534;">${f.fieldName}</b>
+      <br><span style="font-size:10px; color:#15803d;">🏠︎ <i>${f.street}, Brgy. ${f.barangay},<br>Ormoc City, Leyte 6541</i></span>
+      <br><a href="#" class="seeFieldDetails" 
+         style="font-size:10px; color:gray; font-weight:500; display:inline-block; margin-top:3px;">
+         Click to see more details.
+      </a>
+    </div>
+  `;
+
+  marker.bindTooltip(tooltipHtml, {
+    permanent: false,
+    direction: "top",
+    offset: [0, -25],
+    opacity: 0.9,
+  });
+
+  marker.on("mouseover", () => marker.openTooltip());
+  marker.on("mouseout", () => marker.closeTooltip());
+  marker.on("click", () => openFieldDetailsModal(f));
+
+  window.__caneMarkers.push({ marker, data: f });
+});
+
 
     console.info(
       `✅ Displayed ${fields.length} reviewed field markers on map.`

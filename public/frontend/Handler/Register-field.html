@@ -908,16 +908,27 @@
         // Initialize restricted map
         locationMap = L.map('locationMap', {
           center: ormocCenter,
-          zoom: 12,
+          zoom: 20,
           minZoom: 12,
-          maxZoom: 16,
+          maxZoom: 20,
           maxBounds: ormocBounds,
           maxBoundsViscosity: 1.0
         });
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors'
-        }).addTo(locationMap);
+        const satellite = L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+          { attribution: "Tiles © Esri" }
+        ).addTo(locationMap);
+
+        const roads = L.tileLayer(
+          "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",
+          { attribution: "© Esri" }
+        ).addTo(locationMap);
+
+        const labels = L.tileLayer(
+          "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+          { attribution: "© Esri" }
+        ).addTo(locationMap);
 
         // 🧷 Cane-style pin icon (same as in lobby.js)
         const caneIcon = L.icon({
@@ -972,25 +983,33 @@
           fieldPolygon = null;
           fieldCoordinates = [];
 
-          if (type === 'polygon' || type === 'rectangle') {
-            // Check if polygon is within Ormoc bounds
-            const bounds = layer.getBounds();
-            if (!ormocBounds.contains(bounds.getNorthEast()) || !ormocBounds.contains(bounds.getSouthWest())) {
-              await showPopupMessage("Field boundary must be within Ormoc City limits.", 'warning');
-              return;
-            }
+if (type === 'polygon' || type === 'rectangle') {
+  const bounds = layer.getBounds();
 
-            drawnItems.addLayer(layer);
-            fieldPolygon = layer;
+  if (!ormocBounds.contains(bounds.getNorthEast()) || !ormocBounds.contains(bounds.getSouthWest())) {
+    await showPopupMessage("Field boundary must be within Ormoc City limits.", 'warning');
+    return;
+  }
 
-            // Get polygon coordinates
-            const latlngs = layer.getLatLngs()[0]; // Get first ring for polygon
-            fieldCoordinates = latlngs.map(latlng => [latlng.lat, latlng.lng]);
+  drawnItems.addLayer(layer);
+  fieldPolygon = layer;
 
-            // Calculate center point for lat/lng fields
-            const center = bounds.getCenter();
-            document.getElementById('latitude').value = center.lat.toFixed(6);
-            document.getElementById('longitude').value = center.lng.toFixed(6);
+  // 🔹 Save coordinates
+  const latlngs = layer.getLatLngs()[0];
+  fieldCoordinates = latlngs.map(latlng => [latlng.lat, latlng.lng]);
+
+  // 🔹 Center point
+  const center = bounds.getCenter();
+
+  // 🔹 AUTO PLACE / MOVE PIN SA GITNA
+  if (locationMarker) {
+    locationMap.removeLayer(locationMarker);
+  }
+
+  locationMarker = L.marker(center, { icon: caneIcon }).addTo(locationMap);
+
+  document.getElementById('latitude').value = center.lat.toFixed(6);
+  document.getElementById('longitude').value = center.lng.toFixed(6);
 
             // Auto-detect nearest barangay
             let nearestBarangay = "";
