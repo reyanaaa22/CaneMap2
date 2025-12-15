@@ -54,21 +54,30 @@ This file handles ALL functionalities described in the PDF:
 <!-- FORM CARD -->
 <div class="card rounded-xl p-5 space-y-4 fade">
 
-  <!-- FIELD -->
+  <!-- STATUS / GROWTH STAGE (FIRST FIELD) -->
   <div>
+    <label class="text-sm font-medium">Growth Stage / Status <span class="text-red-500">*</span></label>
+    <select id="statusSelect" class="w-full mt-1 px-3 py-2 border rounded" required>
+      <option value="">Select Growth Stage</option>
+      <option value="Germination">Germination</option>
+      <option value="Tillering">Tillering</option>
+      <option value="Grand Growth">Grand Growth</option>
+      <option value="Maturing / Ripening">Maturing / Ripening</option>
+      <option value="Harvest">Harvest</option>
+    </select>
+  </div>
+
+  <!-- FIELD -->
+  <div id="fieldWrap" class="hidden">
     <label class="text-sm font-medium">Select a Field</label>
     <select id="fieldSelect" class="w-full mt-1 px-3 py-2 border rounded"></select>
   </div>
 
   <!-- OPERATION -->
-  <div>
+  <div id="operationWrap" class="hidden">
     <label class="text-sm font-medium">Field Operation</label>
     <select id="operationSelect" class="w-full mt-1 px-3 py-2 border rounded">
       <option value="">Select</option>
-      <option>Pre-Planting</option>
-      <option>Planting</option>
-      <option>Post-Planting</option>
-      <option>Vehicle Updates</option>
     </select>
   </div>
 
@@ -79,7 +88,70 @@ This file handles ALL functionalities described in the PDF:
   </div>
 
   <!-- DYNAMIC FORM -->
-  <div id="dynamicForm" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+  <div id="dynamicForm" class="grid grid-cols-1 md:grid-cols-2 gap-3 hidden"></div>
+
+  <!-- OPTIONAL SUPPORTING SECTIONS -->
+  
+  <!-- Bought Items Section -->
+  <div id="boughtItemsSection" class="hidden">
+    <div class="border-t pt-4 mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Bought Items (Optional)</h3>
+        <button type="button" id="toggleBoughtItems" class="text-xs text-[var(--cane-700)] hover:underline">
+          Show Section
+        </button>
+      </div>
+      <div id="boughtItemsContent" class="hidden space-y-3">
+        <div id="boughtItemsList"></div>
+        <button type="button" id="addBoughtItemBtn" class="text-sm text-[var(--cane-700)] hover:underline">
+          + Add Item
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vehicle Updates Section -->
+  <div id="vehicleUpdatesSection" class="hidden">
+    <div class="border-t pt-4 mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Vehicle / Transport Updates (Optional)</h3>
+        <button type="button" id="toggleVehicleUpdates" class="text-xs text-[var(--cane-700)] hover:underline">
+          Show Section
+        </button>
+      </div>
+      <div id="vehicleUpdatesContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium">Vehicle Type</label>
+          <select id="vehicleType" class="w-full mt-1 px-3 py-2 border rounded">
+            <option value="">Select</option>
+            <option>Truck</option>
+            <option>Tractor</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-medium">Trips/Boxes</label>
+          <input type="number" id="tripsBoxes" class="w-full mt-1 px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="text-xs font-medium">Fuel Cost</label>
+          <input type="number" step="0.01" id="vehicleFuelCost" class="w-full mt-1 px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="text-xs font-medium">Labor Cost</label>
+          <input type="number" step="0.01" id="vehicleLaborCost" class="w-full mt-1 px-3 py-2 border rounded" />
+        </div>
+        <div>
+          <label class="text-xs font-medium">Total Cost</label>
+          <input type="number" step="0.01" id="vehicleTotalCost" class="w-full mt-1 px-3 py-2 border rounded" readonly />
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs font-medium">Route / Field</label>
+          <input type="text" id="vehicleRoute" class="w-full mt-1 px-3 py-2 border rounded" />
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- SUBMIT -->
   <div class="pt-4 flex justify-end">
@@ -132,13 +204,54 @@ function showCenterMessage(msg) {
   document.getElementById('closeCenterMsg').onclick = () => modal.remove();
 }
 
-const operationMap={
-  'Pre-Planting':['Land Assessment','Land Clearing', 'Sub-Soiling','Soil Analysis','Plowing','Harrowing','Furrow Making','Lime Application','Pre-Planting Fertilization (basal)','Seed Cane Preparation'],
-  'Planting':['Planting Operation','Replanting Operation'],
-  'Post-Planting':['Germination Monitoring','Post-Planting Fertilization', 'Cultivation', 'Weeding','Drainage', 'Irrigation', 'Side Cleaning', 'Control of Pest & Diseases','Earthing-Up','Growth Monitoring','Pre-Harvest Assessment','Harvesting', 'Hauling', 'Ratooning'],
+// Status → Field Operations mapping
+const statusToOperations = {
+  'Germination': ['Pre-Planting', 'Planting', 'Post-Planting'],
+  'Tillering': ['Post-Planting'],
+  'Grand Growth': ['Post-Planting'],
+  'Maturing / Ripening': ['Post-Planting', 'Harvesting'],
+  'Harvest': ['Harvesting']
+};
 
-   'Vehicle Updates': ['Vehicle Updates']
-}
+// Status + Field Operation → Task Types mapping
+const statusOperationToTasks = {
+  'Germination': {
+    'Pre-Planting': ['Land Clearing', 'Plowing', 'Harrowing', 'Furrow Making', 'Seed Cane Preparation'],
+    'Planting': ['Planting Operation', 'Replanting / Gap Filling'],
+    'Post-Planting': ['Germination Monitoring']
+  },
+  'Tillering': {
+    'Post-Planting': ['Weed Management', 'Fertilizer Application (Top Dressing)', 'Irrigation', 'Pest Control', 'Disease Control', 'Earthing-Up']
+  },
+  'Grand Growth': {
+    'Post-Planting': ['Fertilizer Application', 'Irrigation', 'Growth Monitoring', 'Pest Control', 'Disease Control']
+  },
+  'Maturing / Ripening': {
+    'Post-Planting': ['Growth Monitoring', 'Pre-Harvest Assessment'],
+    'Harvesting': ['Harvesting']
+  },
+  'Harvest': {
+    'Harvesting': ['Harvesting']
+  }
+};
+
+// Task name aliases mapping (display name → taskFieldMap key)
+const taskNameAliases = {
+  'Replanting / Gap Filling': 'Replanting Operation',
+  'Weed Management': 'Weeding',
+  'Fertilizer Application (Top Dressing)': 'Post-Planting Fertilization',
+  'Fertilizer Application': 'Post-Planting Fertilization',
+  'Pest Control': 'Control of Pest & Diseases',
+  'Disease Control': 'Control of Pest & Diseases'
+};
+
+// Legacy operationMap for backward compatibility with taskFieldMap
+const operationMap = {
+  'Pre-Planting': ['Land Assessment', 'Land Clearing', 'Sub-Soiling', 'Soil Analysis', 'Plowing', 'Harrowing', 'Furrow Making', 'Lime Application', 'Pre-Planting Fertilization (basal)', 'Seed Cane Preparation'],
+  'Planting': ['Planting Operation', 'Replanting Operation'],
+  'Post-Planting': ['Germination Monitoring', 'Post-Planting Fertilization', 'Cultivation', 'Weeding', 'Drainage', 'Irrigation', 'Side Cleaning', 'Control of Pest & Diseases', 'Earthing-Up', 'Growth Monitoring', 'Pre-Harvest Assessment', 'Harvesting', 'Hauling', 'Ratooning'],
+  'Vehicle Updates': ['Vehicle Updates']
+};
 
 // FULL TASK → INPUT FIELD MAP (from PDF)
 const taskFieldMap = {
@@ -498,6 +611,37 @@ const taskFieldMap = {
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
+"Germination Monitoring": [
+  { id:'observationDate', label:'Observation Date', type:'date' },
+  { id:'germinationRate', label:'Germination Rate (%)', type:'number', step:'0.01' },
+  { id:'cropAge', label:'Crop Age (days)', type:'number' },
+  { id:'workers', label:'Number of Workers / Observers', type:'number' },
+  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+],
+
+"Growth Monitoring": [
+  { id:'observationDate', label:'Observation Date', type:'date' },
+  { id:'cropAge', label:'Crop Age (days)', type:'number' },
+  { id:'growthStage', label:'Current Growth Stage', type:'select',
+    options:['Germination', 'Tillering', 'Grand Growth', 'Maturing / Ripening', 'Harvest']
+  },
+  { id:'height', label:'Average Height (cm)', type:'number', step:'0.01' },
+  { id:'tillersPerHill', label:'Tillers per Hill', type:'number', step:'0.01' },
+  { id:'workers', label:'Number of Workers / Observers', type:'number' },
+  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+],
+
+"Pre-Harvest Assessment": [
+  { id:'assessmentDate', label:'Assessment Date', type:'date' },
+  { id:'cropAge', label:'Crop Age (days)', type:'number' },
+  { id:'maturityLevel', label:'Maturity Level', type:'select',
+    options:['Early Mature', 'Mature', 'Over Mature']
+  },
+  { id:'estimatedYield', label:'Estimated Yield (tc/ha)', type:'number', step:'0.01' },
+  { id:'brix', label:'Brix (%)', type:'number', step:'0.01' },
+  { id:'workers', label:'Number of Workers / Assessors', type:'number' },
+  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+],
 
 "Post-Planting Fertilization": [
   { id:'date', label:'Date', type:'date' },
@@ -1134,34 +1278,108 @@ async function loadFields(){
     snap.docs.map(d => `<option value="${d.id}">${d.data().field_name}</option>`).join('');
 }
 
-operationSelect.onchange = () => {
-  const operation = operationSelect.value;
-  const tasks = operationMap[operation] || [];
-
+// Status selection handler
+statusSelect.onchange = () => {
+  const status = statusSelect.value;
+  
+  // Reset all dependent fields
+  operationSelect.value = '';
+  taskType.value = '';
   dynamicForm.innerHTML = '';
-
-  if (!tasks.length) return;
-
-  // If only one task → auto render (e.g. Vehicle Updates)
-  if (tasks.length === 1) {
+  
+  // Hide all fields until status is selected
+  if (!status) {
+    fieldWrap.classList.add('hidden');
+    operationWrap.classList.add('hidden');
     taskTypeWrap.classList.add('hidden');
-    taskType.value = tasks[0];
-    renderForm(tasks[0]);
-  } 
-  // If multiple tasks → ask task type
-  else {
-    taskTypeWrap.classList.remove('hidden');
-    taskType.innerHTML =
-      '<option value="">Select</option>' +
-      tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    return;
   }
+  
+  // Show field selection
+  fieldWrap.classList.remove('hidden');
+  
+  // Show and populate Field Operations based on Status
+  const allowedOperations = statusToOperations[status] || [];
+  operationSelect.innerHTML = '<option value="">Select</option>' +
+    allowedOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+  
+  operationWrap.classList.remove('hidden');
+  taskTypeWrap.classList.add('hidden');
+  dynamicForm.classList.add('hidden');
+  boughtItemsSection.classList.add('hidden');
+  vehicleUpdatesSection.classList.add('hidden');
 };
 
-taskType.onchange=()=>renderForm(taskType.value)
+// Field Operation selection handler
+operationSelect.onchange = () => {
+  const status = statusSelect.value;
+  const operation = operationSelect.value;
+  
+  taskType.value = '';
+  dynamicForm.innerHTML = '';
+  
+  if (!status || !operation) {
+    taskTypeWrap.classList.add('hidden');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    return;
+  }
+  
+  // Get Task Types based on Status + Field Operation
+  const tasks = statusOperationToTasks[status]?.[operation] || [];
+  
+  if (!tasks.length) {
+    taskTypeWrap.classList.add('hidden');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    return;
+  }
+  
+  // Show Task Type dropdown
+  taskTypeWrap.classList.remove('hidden');
+  taskType.innerHTML = '<option value="">Select</option>' +
+    tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+  
+  dynamicForm.classList.add('hidden');
+  boughtItemsSection.classList.add('hidden');
+  vehicleUpdatesSection.classList.add('hidden');
+};
+
+// Task Type selection handler
+taskType.onchange = () => {
+  const taskDisplayName = taskType.value;
+  
+  if (!taskDisplayName) {
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    return;
+  }
+  
+  // Map display name to taskFieldMap key
+  const taskKey = taskNameAliases[taskDisplayName] || taskDisplayName;
+  renderForm(taskKey);
+  
+  // Show optional sections after task fields
+  boughtItemsSection.classList.remove('hidden');
+  vehicleUpdatesSection.classList.remove('hidden');
+}
 
 function renderForm(type){
   dynamicForm.innerHTML = '';
   const fields = taskFieldMap[type] || [];
+  
+  if (!fields.length) {
+    dynamicForm.classList.add('hidden');
+    return;
+  }
+  
+  dynamicForm.classList.remove('hidden');
 
   fields.forEach(f => {
     let inputHTML = '';
@@ -1212,6 +1430,11 @@ function renderForm(type){
           <div id="fuelSum" class="font-bold">Total Fuel Cost: 0</div>
         </div>
       `;
+    }
+
+    // 📝 TEXTAREA (for notes/remarks)
+    else if(f.type === 'textarea'){
+      inputHTML = `<textarea id="${f.id}" class="w-full border rounded px-3 py-2" rows="3" required></textarea>`;
     }
 
     // ✏️ TEXT (DEFAULT)
@@ -1305,8 +1528,124 @@ function handleOtherSelect(id){
 }
 
 
-submitBtn.onclick = () => {
-  const requiredFields = [fieldSelect, operationSelect, taskType];
+// Optional sections handlers
+let boughtItemsCount = 0;
+
+const toggleBoughtItemsBtn = document.getElementById('toggleBoughtItems');
+const boughtItemsContent = document.getElementById('boughtItemsContent');
+const boughtItemsList = document.getElementById('boughtItemsList');
+const addBoughtItemBtn = document.getElementById('addBoughtItemBtn');
+
+if (toggleBoughtItemsBtn && boughtItemsContent) {
+  toggleBoughtItemsBtn.onclick = () => {
+    const isHidden = boughtItemsContent.classList.contains('hidden');
+    if (isHidden) {
+      boughtItemsContent.classList.remove('hidden');
+      toggleBoughtItemsBtn.textContent = 'Hide Section';
+    } else {
+      boughtItemsContent.classList.add('hidden');
+      toggleBoughtItemsBtn.textContent = 'Show Section';
+    }
+  };
+}
+
+if (addBoughtItemBtn && boughtItemsList) {
+  addBoughtItemBtn.onclick = () => {
+    boughtItemsCount++;
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'border rounded p-3 space-y-2';
+    itemDiv.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-xs font-medium">Item ${boughtItemsCount}</span>
+        <button type="button" class="text-red-500 text-xs" onclick="this.closest('.border').remove()">Remove</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div>
+          <label class="text-xs">Item Name</label>
+          <input type="text" class="bought-item-name w-full px-2 py-1 border rounded text-sm" />
+        </div>
+        <div>
+          <label class="text-xs">Quantity</label>
+          <input type="number" step="0.01" class="bought-item-qty w-full px-2 py-1 border rounded text-sm" />
+        </div>
+        <div>
+          <label class="text-xs">Unit</label>
+          <input type="text" class="bought-item-unit w-full px-2 py-1 border rounded text-sm" />
+        </div>
+        <div>
+          <label class="text-xs">Price</label>
+          <input type="number" step="0.01" class="bought-item-price w-full px-2 py-1 border rounded text-sm" />
+        </div>
+        <div>
+          <label class="text-xs">Total</label>
+          <input type="number" step="0.01" class="bought-item-total w-full px-2 py-1 border rounded text-sm" readonly />
+        </div>
+        <div>
+          <label class="text-xs">Supplier</label>
+          <input type="text" class="bought-item-supplier w-full px-2 py-1 border rounded text-sm" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs">Notes</label>
+          <input type="text" class="bought-item-notes w-full px-2 py-1 border rounded text-sm" />
+        </div>
+      </div>
+    `;
+    
+    // Auto-calculate total
+    const qtyInput = itemDiv.querySelector('.bought-item-qty');
+    const priceInput = itemDiv.querySelector('.bought-item-price');
+    const totalInput = itemDiv.querySelector('.bought-item-total');
+    
+    const updateTotal = () => {
+      const qty = parseFloat(qtyInput.value) || 0;
+      const price = parseFloat(priceInput.value) || 0;
+      totalInput.value = (qty * price).toFixed(2);
+    };
+    
+    qtyInput.addEventListener('input', updateTotal);
+    priceInput.addEventListener('input', updateTotal);
+    
+    boughtItemsList.appendChild(itemDiv);
+  };
+}
+
+const toggleVehicleUpdatesBtn = document.getElementById('toggleVehicleUpdates');
+if (toggleVehicleUpdatesBtn) {
+  toggleVehicleUpdatesBtn.onclick = () => {
+    const content = document.getElementById('vehicleUpdatesContent');
+    if (!content) return;
+    const isHidden = content.classList.contains('hidden');
+    if (isHidden) {
+      content.classList.remove('hidden');
+      toggleVehicleUpdatesBtn.textContent = 'Hide Section';
+    } else {
+      content.classList.add('hidden');
+      toggleVehicleUpdatesBtn.textContent = 'Show Section';
+    }
+  };
+}
+
+// Auto-calculate vehicle total cost
+function updateVehicleTotalCost() {
+  const vehicleFuelCostEl = document.getElementById('vehicleFuelCost');
+  const vehicleLaborCostEl = document.getElementById('vehicleLaborCost');
+  const vehicleTotalCostEl = document.getElementById('vehicleTotalCost');
+  
+  if (!vehicleFuelCostEl || !vehicleLaborCostEl || !vehicleTotalCostEl) return;
+  
+  const fuel = parseFloat(vehicleFuelCostEl.value) || 0;
+  const labor = parseFloat(vehicleLaborCostEl.value) || 0;
+  vehicleTotalCostEl.value = (fuel + labor).toFixed(2);
+}
+
+// Attach event listeners when elements exist
+const vehicleFuelCostEl = document.getElementById('vehicleFuelCost');
+const vehicleLaborCostEl = document.getElementById('vehicleLaborCost');
+if (vehicleFuelCostEl) vehicleFuelCostEl.addEventListener('input', updateVehicleTotalCost);
+if (vehicleLaborCostEl) vehicleLaborCostEl.addEventListener('input', updateVehicleTotalCost);
+
+submitBtn.onclick = async () => {
+  const requiredFields = [statusSelect, fieldSelect, operationSelect, taskType];
   let hasEmpty = false;
 
   requiredFields.forEach(el => {
@@ -1355,12 +1694,92 @@ for(const f of fields){
   recordData[f.id] = value;
 }
 
+  // Collect optional bought items
+  const boughtItems = [];
+  const boughtItemsListEl = document.getElementById('boughtItemsList');
+  if (boughtItemsListEl) {
+    const boughtItemElements = boughtItemsListEl.querySelectorAll('.border.rounded');
+    boughtItemElements.forEach(itemEl => {
+    const itemName = itemEl.querySelector('.bought-item-name')?.value?.trim();
+    const quantity = parseFloat(itemEl.querySelector('.bought-item-qty')?.value) || 0;
+    const unit = itemEl.querySelector('.bought-item-unit')?.value?.trim();
+    const price = parseFloat(itemEl.querySelector('.bought-item-price')?.value) || 0;
+    const total = parseFloat(itemEl.querySelector('.bought-item-total')?.value) || 0;
+    const supplier = itemEl.querySelector('.bought-item-supplier')?.value?.trim();
+    const notes = itemEl.querySelector('.bought-item-notes')?.value?.trim();
+    
+    if (itemName || quantity > 0 || price > 0) {
+      boughtItems.push({
+        itemName: itemName || '',
+        quantity: quantity,
+        unit: unit || '',
+        price: price,
+        total: total,
+        supplier: supplier || '',
+        notes: notes || ''
+      });
+    }
+    });
+  }
+
+  // Collect optional vehicle updates
+  let vehicleUpdates = null;
+  const vehicleUpdatesContentEl = document.getElementById('vehicleUpdatesContent');
+  if (vehicleUpdatesContentEl) {
+    const vehicleType = vehicleUpdatesContentEl.querySelector('#vehicleType')?.value?.trim();
+    const tripsBoxes = parseFloat(vehicleUpdatesContentEl.querySelector('#tripsBoxes')?.value) || 0;
+    const vehicleFuelCost = parseFloat(vehicleUpdatesContentEl.querySelector('#vehicleFuelCost')?.value) || 0;
+    const vehicleLaborCost = parseFloat(vehicleUpdatesContentEl.querySelector('#vehicleLaborCost')?.value) || 0;
+    const vehicleTotalCost = parseFloat(vehicleUpdatesContentEl.querySelector('#vehicleTotalCost')?.value) || 0;
+    const vehicleRoute = vehicleUpdatesContentEl.querySelector('#vehicleRoute')?.value?.trim();
+    
+    if (vehicleType || tripsBoxes > 0 || vehicleFuelCost > 0 || vehicleLaborCost > 0) {
+      vehicleUpdates = {
+        vehicleType: vehicleType || '',
+        tripsBoxes: tripsBoxes,
+        fuelCost: vehicleFuelCost,
+        laborCost: vehicleLaborCost,
+        totalCost: vehicleTotalCost,
+        route: vehicleRoute || ''
+      };
+    }
+  }
+
+  // Extract date from record data for timeline sorting
+  let recordDate = null;
+  const dateFields = ['date', 'observationDate', 'assessmentDate', 'plantingDate', 'harvestDate', 'startDate', 'replantingDate', 'harvestDate'];
+  for (const dateField of dateFields) {
+    if (recordData[dateField]) {
+      const dateValue = recordData[dateField];
+      // Handle both Date objects and date strings
+      if (dateValue instanceof Date) {
+        recordDate = dateValue;
+      } else if (typeof dateValue === 'string') {
+        recordDate = new Date(dateValue);
+      } else {
+        recordDate = dateValue;
+      }
+      break;
+    }
+  }
+  if (!recordDate) {
+    recordDate = new Date(); // Use current date if no date field found
+  }
+
+  // Convert to Timestamp for Firestore
+  const { Timestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+  const recordDateTimestamp = recordDate instanceof Date ? Timestamp.fromDate(recordDate) : Timestamp.fromDate(new Date(recordDate));
+
   pendingPayload = {
     userId: uid,
     fieldId: fieldSelect.value,
+    status: statusSelect.value,
     operation: operationSelect.value,
     taskType: taskType.value,
     data: recordData,
+    boughtItems: boughtItems.length > 0 ? boughtItems : null,
+    vehicleUpdates: vehicleUpdates,
+    recordDate: recordDateTimestamp,
     createdAt: serverTimestamp()
   };
 
@@ -1383,20 +1802,82 @@ window.confirmSave = async () => {
   document.body.appendChild(successModal);
 
   try {
-    await addDoc(collection(db, 'records'), pendingPayload)
+    // Prepare main record payload (without subcollections)
+    const { boughtItems, vehicleUpdates, ...mainPayload } = pendingPayload;
+    
+    // Save main record
+    const recordRef = await addDoc(collection(db, 'records'), mainPayload);
+    const recordId = recordRef.id;
+
+    // Save bought items as subcollection if present
+    if (boughtItems && boughtItems.length > 0) {
+      const boughtItemsCollection = collection(db, 'records', recordId, 'bought_items');
+      for (const item of boughtItems) {
+        await addDoc(boughtItemsCollection, {
+          ...item,
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+
+    // Save vehicle updates as subcollection if present
+    if (vehicleUpdates) {
+      const vehicleUpdatesCollection = collection(db, 'records', recordId, 'vehicle_updates');
+      await addDoc(vehicleUpdatesCollection, {
+        ...vehicleUpdates,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // Handle predicted harvest logic for planting operations
+    if (pendingPayload.status === 'Germination' && 
+        (pendingPayload.taskType === 'Planting Operation' || pendingPayload.taskType === 'Replanting / Gap Filling')) {
+      try {
+        const plantingDate = pendingPayload.data.plantingDate || pendingPayload.data.date;
+        const variety = pendingPayload.data.variety;
+        
+        if (plantingDate && variety) {
+          // Import growth tracker functions
+          const { calculateExpectedHarvestDate, VARIETY_HARVEST_DAYS } = await import('../../backend/Handler/growth-tracker.js');
+          
+          const harvestDays = VARIETY_HARVEST_DAYS[variety] || 365;
+          const plantingDateObj = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
+          const predictedHarvestDate = new Date(plantingDateObj.getTime() + harvestDays * 24 * 60 * 60 * 1000);
+          
+          // Update field with predicted harvest date
+          const { updateDoc, doc, Timestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+          const fieldRef = doc(db, 'fields', pendingPayload.fieldId);
+          
+          await updateDoc(fieldRef, {
+            plantingDate: Timestamp.fromDate(plantingDateObj),
+            sugarcane_variety: variety,
+            expectedHarvestDate: Timestamp.fromDate(predictedHarvestDate),
+            currentGrowthStage: 'Germination',
+            status: 'active'
+          });
+          
+          console.log('✅ Predicted harvest date updated:', predictedHarvestDate.toLocaleDateString());
+        }
+      } catch (error) {
+        console.error('Error updating predicted harvest:', error);
+        // Don't fail the whole submission if harvest prediction fails
+      }
+    }
+
+    toast('Record saved successfully!', false);
   } catch(e) {
-    console.error(e)
-    toast('Failed to save record', true)
-    successModal.remove()
-    return
+    console.error('Error saving record:', e);
+    toast('Failed to save record', true);
+    successModal.remove();
+    return;
   }
 
   document.getElementById('okBtn').onclick = () => {
-    successModal.remove()
-    location.reload()  // ✅ refresh page after user clicks Okay
-  }
+    successModal.remove();
+    location.reload();  // ✅ refresh page after user clicks Okay
+  };
 
-  closeConfirm()
+  closeConfirm();
 }
 
 
@@ -1416,7 +1897,7 @@ window.handleOthers = (id) => {
 
   if(!select || !otherInput) return;
 
-  if(select.value === 'Others'){
+  if(select.value === 'Others' || select.value === 'Other'){
     otherInput.classList.remove('hidden');
     otherInput.required = true;
   } else {
@@ -1426,17 +1907,23 @@ window.handleOthers = (id) => {
   }
 };
 
+// Also make handleOtherSelect available (for inline handlers)
+window.handleOtherSelect = handleOtherSelect;
+
 function getFinalValue(id){
   const el = document.getElementById(id);
   const other = document.getElementById(id + '_other');
   if(!el) return null;
 
-  if(el.tagName === 'SELECT' && el.value === 'Others'){
+  if(el.tagName === 'SELECT' && (el.value === 'Others' || el.value === 'Other')){
     return other?.value || '';
   }
 
   // ✅ Convert number inputs to number type
   if(el.type === 'number') return parseFloat(el.value) || 0;
+  
+  // ✅ Handle textarea
+  if(el.tagName === 'TEXTAREA') return el.value;
 
   return el.value;
 }

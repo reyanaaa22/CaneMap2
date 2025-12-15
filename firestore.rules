@@ -799,5 +799,113 @@ allow read: if request.auth != null && (
       );
     }
 
+    // === Input Records Collection Rules ===
+    match /records/{recordId} {
+      // Allow list queries (for onSnapshot with where clauses)
+      // Simplified rule: allow authenticated users to list records
+      // Individual document access is protected by the get rule below
+      allow list: if request.auth != null;
+
+      // Users can read their own records
+      // Field owners can read records for their fields
+      // Handlers can read records for fields they manage
+      // Staff can read all records
+      allow get: if request.auth != null && (
+        // User created the record
+        resource.data.userId == request.auth.uid ||
+        // Field owner - check multiple possible field owner fields
+        (
+          'fieldId' in resource.data &&
+          exists(/databases/$(database)/documents/fields/$(resource.data.fieldId)) &&
+          (
+            get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.userId == request.auth.uid ||
+            get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.landowner_id == request.auth.uid ||
+            get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.user_id == request.auth.uid ||
+            get(/databases/$(database)/documents/fields/$(resource.data.fieldId)).data.registered_by == request.auth.uid
+          )
+        ) ||
+        // Staff roles
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['handler', 'sra', 'admin', 'system_admin']
+        )
+      );
+
+      // Users can create records for their own fields
+      // Handlers can create records for fields they manage
+      allow create: if request.auth != null && (
+        // User must own the field or be a handler
+        (
+          'fieldId' in request.resource.data &&
+          exists(/databases/$(database)/documents/fields/$(request.resource.data.fieldId)) &&
+          (
+            get(/databases/$(database)/documents/fields/$(request.resource.data.fieldId)).data.userId == request.auth.uid ||
+            get(/databases/$(database)/documents/fields/$(request.resource.data.fieldId)).data.landowner_id == request.auth.uid ||
+            (
+              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'handler'
+            )
+          )
+        ) ||
+        // Staff can create records
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      ) &&
+      // Validate required fields
+      request.resource.data.userId == request.auth.uid &&
+      'fieldId' in request.resource.data &&
+      'status' in request.resource.data &&
+      'operation' in request.resource.data &&
+      'taskType' in request.resource.data &&
+      'data' in request.resource.data;
+
+      // Users can update their own records
+      // Staff can update all records
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      );
+
+      // Users can delete their own records
+      // Staff can delete all records
+      allow delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      );
+
+      // Subcollections for optional sections
+      match /bought_items/{itemId} {
+        allow read, write: if request.auth != null && (
+          // User owns the parent record
+          get(/databases/$(database)/documents/records/$(recordId)).data.userId == request.auth.uid ||
+          // Staff can access
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+          )
+        );
+      }
+
+      match /vehicle_updates/{updateId} {
+        allow read, write: if request.auth != null && (
+          // User owns the parent record
+          get(/databases/$(database)/documents/records/$(recordId)).data.userId == request.auth.uid ||
+          // Staff can access
+          (
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+          )
+        );
+      }
+    }
+
   }
 }

@@ -82,6 +82,75 @@
       background: rgba(212, 232, 179, 0.2);
     }
 
+    /* Unified Timeline Styles */
+    .timeline-stage {
+      position: relative;
+    }
+
+    .stage-indicator {
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .stage-indicator.active {
+      transform: scale(1.2);
+      box-shadow: 0 0 0 4px rgba(58, 122, 15, 0.2);
+    }
+
+    .stage-indicator.completed {
+      background: var(--cane-600);
+    }
+
+    .stage-indicator.in-progress {
+      background: var(--cane-400);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .activity-node {
+      background: white;
+      border: 1px solid var(--cane-200);
+      border-left: 3px solid var(--cane-600);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-left: 1.5rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .activity-node:hover {
+      background: var(--cane-50);
+      border-left-color: var(--cane-700);
+      transform: translateX(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .activity-node button {
+      background: none;
+      border: none;
+      padding: 0;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .activity-node.empty-state {
+      border-left-color: var(--cane-200);
+      background: var(--cane-50);
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    .activity-node.empty-state:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
     @media print {
 
       #btnDownloadPDF,
@@ -429,36 +498,149 @@
           </div>
         </div>
 
+        <!-- Unified Growth & Activity Timeline -->
         <div class="section-card rounded-xl p-4">
-          <p class="font-semibold text-base mb-4">Growth Timeline</p>
-          <div class="space-y-3 text-base">
-            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-[var(--cane-600)]"></span>
-              <div>
-                <p class="font-semibold">Germination</p>
-                <p class="text-xs text-gray-700" id="tlGerm">Completed -</p>
+          <div class="flex items-center justify-between mb-4">
+            <p class="font-semibold text-base">Growth & Activity Timeline</p>
+            <div class="w-full max-w-xs h-1 bg-gray-200 rounded-full relative overflow-hidden ml-4">
+              <div id="tlBar" class="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-400)] transition-all duration-500" style="width:0%"></div>
+            </div>
+          </div>
+          
+          <!-- Unified Timeline Container -->
+          <div id="unifiedTimelineContainer" class="space-y-0">
+            <!-- Growth stages with integrated activity records will be rendered here -->
+            
+            <!-- Germination Stage -->
+            <div class="timeline-stage" data-stage="Germination">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-[var(--cane-600)] border-2 border-white shadow-md stage-indicator" id="stage-germination"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]" id="connector-germination"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Germination</p>
+                      <p class="text-xs text-gray-600" id="tlGerm">Status: -</p>
+                    </div>
+                    <span class="badge badge-done text-xs" id="badge-germination" style="display: none;">Active</span>
+                  </div>
+                  <div id="activities-germination" class="mt-3 space-y-2">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-[var(--cane-400)]"></span>
-              <div>
-                <p class="font-semibold">Tillering Stage</p>
-                <p class="text-xs text-gray-700" id="tlTill">In Progress - <span id="tlPct">0</span>% Complete</p>
+
+            <!-- Tillering Stage -->
+            <div class="timeline-stage" data-stage="Tillering">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-[var(--cane-400)] border-2 border-white shadow-md stage-indicator" id="stage-tillering"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-[var(--cane-400)] to-gray-300 mt-2 min-h-[40px]" id="connector-tillering"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Tillering</p>
+                      <p class="text-xs text-gray-600" id="tlTill">Status: - <span id="tlPct">0</span>% Complete</p>
+                    </div>
+                    <span class="badge badge-progress text-xs" id="badge-tillering" style="display: none;">In Progress</span>
+                  </div>
+                  <div id="activities-tillering" class="mt-3 space-y-2">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="w-full h-1 bg-gray-300 rounded relative overflow-hidden">
-              <div id="tlBar" class="absolute left-0 top-0 h-1 bg-[var(--cane-600)]" style="width:0%"></div>
-            </div>
-            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-gray-300"></span>
-              <div>
-                <p class="font-semibold">Grand Growth</p>
-                <p class="text-xs text-gray-700" id="tlGrand">Expected -</p>
+
+            <!-- Grand Growth Stage -->
+            <div class="timeline-stage" data-stage="Grand Growth">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow-md stage-indicator" id="stage-grand"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]" id="connector-grand"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Grand Growth</p>
+                      <p class="text-xs text-gray-600" id="tlGrand">Status: -</p>
+                    </div>
+                    <span class="badge badge-not text-xs" id="badge-grand" style="display: none;">Expected</span>
+                  </div>
+                  <div id="activities-grand" class="mt-3 space-y-2">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="flex items-start gap-2"><span class="mt-1 w-3 h-3 rounded-full bg-gray-300"></span>
-              <div>
-                <p class="font-semibold">Maturity</p>
-                <p class="text-xs text-gray-700" id="tlMat">Expected -</p>
+
+            <!-- Maturing / Ripening Stage -->
+            <div class="timeline-stage" data-stage="Maturing / Ripening">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow-md stage-indicator" id="stage-maturing"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]" id="connector-maturing"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Maturing / Ripening</p>
+                      <p class="text-xs text-gray-600" id="tlMat">Status: -</p>
+                    </div>
+                    <span class="badge badge-not text-xs" id="badge-maturing" style="display: none;">Expected</span>
+                  </div>
+                  <div id="activities-maturing" class="mt-3 space-y-2">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Harvest Stage -->
+            <div class="timeline-stage" data-stage="Harvest">
+              <div class="flex items-start gap-3">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow-md stage-indicator" id="stage-harvest"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Harvest</p>
+                      <p class="text-xs text-gray-600">Final Stage</p>
+                    </div>
+                    <span class="badge badge-not text-xs" id="badge-harvest" style="display: none;">Expected</span>
+                  </div>
+                  <div id="activities-harvest" class="mt-3 space-y-2">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty state message -->
+          <div id="timelineEmptyState" class="hidden text-center py-8">
+            <i class="fas fa-seedling text-4xl text-gray-300 mb-3"></i>
+            <p class="text-sm text-gray-500">No activity records yet. Submit your first input record to see it here.</p>
+          </div>
+        </div>
+
+        <!-- Predicted Harvest Modal (floating) -->
+        <div id="predictedHarvestModal" class="section-card rounded-xl p-4 hidden" style="position: sticky; top: 20px;">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-sm flex items-center gap-2">
+              <i class="fas fa-calendar-alt text-[var(--cane-700)]"></i>
+              Predicted Harvest
+            </h3>
+            <button id="closePredictedHarvest" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div id="predictedHarvestContent" class="text-sm space-y-2">
+            <!-- Predicted harvest info will be displayed here -->
           </div>
         </div>
 
@@ -483,16 +665,32 @@
         Generated on: <span id="generatedStamp"></span>
       </div>
 
+      <!-- Record Detail Modal -->
+      <div id="recordDetailModal" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50 p-4">
+        <div class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div class="px-6 py-4 border-b flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Record Details</h3>
+            <button id="closeRecordModal" class="text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times text-xl"></i>
+            </button>
+          </div>
+          <div id="recordDetailContent" class="px-6 py-4 overflow-y-auto flex-1">
+            <!-- Record details will be rendered here -->
+          </div>
+        </div>
+      </div>
+
 
       <script type="module">
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
-        import { collection, query, where, getDocs, onSnapshot } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+        import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
         import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS } from '../../backend/Handler/growth-tracker.js';
 
         let currentUserId = null;
         let userFields = [];
         let selectedFieldId = null;
+        let recordsUnsubscribe = null; // Store unsubscribe function for real-time listener
 
         // Auth state listener
         onAuthStateChanged(auth, async (user) => {
@@ -504,17 +702,19 @@
           }
         });
 
-        // Load user's reviewed and active fields
+        // Load user's fields (all fields, same as Input Records)
         async function loadUserFields() {
           try {
+            // Load all fields for the user (no status filter, same as Input Records)
             const fieldsQuery = query(
               collection(db, 'fields'),
-              where('userId', '==', currentUserId),
-              where('status', 'in', ['reviewed', 'active'])
+              where('userId', '==', currentUserId)
             );
 
             const snapshot = await getDocs(fieldsQuery);
             userFields = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            console.log(`📋 Loaded ${userFields.length} fields for user`);
 
             populateFieldDropdown();
 
@@ -568,18 +768,31 @@
               optionBtn.dataset.value = field.id;
 
               optionBtn.addEventListener('click', async () => {
-                selectedFieldId = field.id;
-                dropdownTriggerText.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+                try {
+                  selectedFieldId = field.id;
+                  if (dropdownTriggerText) {
+                    dropdownTriggerText.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+                  }
 
-                // Update selected state
-                document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                optionBtn.classList.add('selected');
+                  // Update selected state
+                  document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+                  optionBtn.classList.add('selected');
 
-                // Close dropdown
-                closeDropdown();
+                  // Close dropdown
+                  closeDropdown();
 
-                // Load data
-                await displayFieldGrowthData(selectedFieldId);
+                  // Unsubscribe from previous field's listener
+                  if (recordsUnsubscribe) {
+                    recordsUnsubscribe();
+                    recordsUnsubscribe = null;
+                  }
+
+                  // Load data
+                  await displayFieldGrowthData(selectedFieldId);
+                } catch (error) {
+                  console.error('Error selecting field:', error);
+                  showError('Failed to load field data. Please try again.');
+                }
               });
 
               dropdownOptions.appendChild(optionBtn);
@@ -588,12 +801,26 @@
 
           // Native select change handler
           fieldSelect.addEventListener('change', async (e) => {
-            selectedFieldId = e.target.value;
-            const selectedField = userFields.find(f => f.id === selectedFieldId);
-            if (dropdownTriggerText && selectedField) {
-              dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
+            try {
+              selectedFieldId = e.target.value;
+              if (!selectedFieldId) return;
+              
+              const selectedField = userFields.find(f => f.id === selectedFieldId);
+              if (dropdownTriggerText && selectedField) {
+                dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
+              }
+              
+              // Unsubscribe from previous field's listener
+              if (recordsUnsubscribe) {
+                recordsUnsubscribe();
+                recordsUnsubscribe = null;
+              }
+              
+              await displayFieldGrowthData(selectedFieldId);
+            } catch (error) {
+              console.error('Error changing field:', error);
+              showError('Failed to load field data. Please try again.');
             }
-            await displayFieldGrowthData(selectedFieldId);
           });
         }
 
@@ -647,6 +874,11 @@
 
         // Display field growth data
         async function displayFieldGrowthData(fieldId) {
+          if (!fieldId) {
+            console.error('No fieldId provided to displayFieldGrowthData');
+            return;
+          }
+
           try {
             const growthData = await getFieldGrowthData(fieldId);
 
@@ -658,14 +890,22 @@
             window.latestGrowthData = growthData;
             window.latestFieldName = fieldName;
 
-            document.getElementById('fieldStatusTitle').textContent = `${fieldName} - Growth Status`;
+            const fieldStatusTitle = document.getElementById('fieldStatusTitle');
+            if (fieldStatusTitle) {
+              fieldStatusTitle.textContent = `${fieldName} - Growth Status`;
+            }
 
             // Update variety display
-            document.getElementById('uiVariety').textContent = growthData.variety || 'Not specified';
+            const uiVariety = document.getElementById('uiVariety');
+            if (uiVariety) {
+              uiVariety.textContent = growthData.variety || 'Not specified';
+            }
 
             // Check if field has been planted
             if (!growthData.plantingDate) {
               showNotPlantedState();
+              // Still load timeline nodes even if not planted (records might exist)
+              await loadTimelineNodes(fieldId);
               return;
             }
 
@@ -675,32 +915,47 @@
 
             // Update planting date
             const plantingDate = growthData.plantingDate;
-            document.getElementById('uiPlanted').textContent = plantingDate.toLocaleDateString();
+            const uiPlanted = document.getElementById('uiPlanted');
+            if (uiPlanted) {
+              uiPlanted.textContent = plantingDate.toLocaleDateString();
+            }
 
             // Update DAP
-            document.getElementById('uiDays').textContent = growthData.DAP || '0';
+            const uiDays = document.getElementById('uiDays');
+            if (uiDays) {
+              uiDays.textContent = growthData.DAP || '0';
+            }
 
             // Update current growth stage
-            document.getElementById('uiStage').textContent = growthData.currentGrowthStage || '—';
+            const uiStage = document.getElementById('uiStage');
+            if (uiStage) {
+              uiStage.textContent = growthData.currentGrowthStage || '—';
+            }
 
             // Update expected harvest date
-            if (growthData.expectedHarvestDate) {
-              document.getElementById('uiHarvest').textContent = growthData.expectedHarvestDate.toLocaleDateString();
-            } else {
-              document.getElementById('uiHarvest').textContent = '—';
+            const uiHarvest = document.getElementById('uiHarvest');
+            if (uiHarvest) {
+              if (growthData.expectedHarvestDate) {
+                uiHarvest.textContent = growthData.expectedHarvestDate.toLocaleDateString();
+              } else {
+                uiHarvest.textContent = '—';
+              }
             }
 
             // Update days remaining
-            if (growthData.daysRemaining !== null) {
-              document.getElementById('uiRemain').textContent = Math.max(0, growthData.daysRemaining).toString();
-              const months = Math.max(0, Math.round(growthData.daysRemaining / 30));
-              document.getElementById('uiMonths').textContent = months.toString();
-            } else {
-              document.getElementById('uiRemain').textContent = '—';
-              document.getElementById('uiMonths').textContent = '—';
+            const uiRemain = document.getElementById('uiRemain');
+            const uiMonths = document.getElementById('uiMonths');
+            if (uiRemain && uiMonths) {
+              if (growthData.daysRemaining !== null) {
+                uiRemain.textContent = Math.max(0, growthData.daysRemaining).toString();
+                uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30)).toString();
+              } else {
+                uiRemain.textContent = '—';
+                uiMonths.textContent = '—';
+              }
             }
 
-            // Update timeline progress
+            // Update timeline progress (this will update stage indicators)
             updateTimeline(growthData);
 
             // Show warnings for delays or overdue harvest
@@ -708,6 +963,12 @@
 
             // ✅ Display historical planting & harvest data
             await displayHistoricalData(fieldId);
+
+            // ✅ Load and display timeline nodes (integrated into stages)
+            await loadTimelineNodes(fieldId);
+
+            // ✅ Check and display predicted harvest
+            await checkPredictedHarvest(fieldId);
 
           } catch (error) {
             console.error('Error displaying field growth data:', error);
@@ -728,23 +989,118 @@
           if (tlBar) tlBar.style.width = progress + '%';
           if (tlPct) tlPct.textContent = progress.toString();
 
-          // Update timeline labels
+          // Update timeline labels and stage indicators
           const plantingDate = growthData.plantingDate;
+          const currentStage = growthData.currentGrowthStage || 'Not Planted';
 
           const germEnd = new Date(plantingDate.getTime() + 45 * 24 * 60 * 60 * 1000);
           const tillEnd = new Date(plantingDate.getTime() + 100 * 24 * 60 * 60 * 1000);
           const grandEnd = new Date(plantingDate.getTime() + 240 * 24 * 60 * 60 * 1000);
           const matEnd = new Date(plantingDate.getTime() + 300 * 24 * 60 * 60 * 1000);
 
+          // Update status text
           const tlGerm = document.getElementById('tlGerm');
           const tlTill = document.getElementById('tlTill');
           const tlGrand = document.getElementById('tlGrand');
           const tlMat = document.getElementById('tlMat');
 
-          if (tlGerm) tlGerm.textContent = (DAP >= 45 ? 'Completed - ' : 'Expected - ') + germEnd.toLocaleDateString();
-          if (tlTill) tlTill.innerHTML = (DAP >= 100 ? 'Completed - ' : 'In Progress - ') + `<span id="tlPct">${progress}</span>% Complete`;
-          if (tlGrand) tlGrand.textContent = 'Expected - ' + grandEnd.toLocaleDateString();
-          if (tlMat) tlMat.textContent = 'Expected - ' + matEnd.toLocaleDateString();
+          if (tlGerm) {
+            const status = DAP >= 45 ? 'Completed' : (DAP >= 0 ? 'Active' : 'Expected');
+            tlGerm.textContent = `Status: ${status} - ${germEnd.toLocaleDateString()}`;
+          }
+          if (tlTill) {
+            const status = DAP >= 100 ? 'Completed' : (DAP >= 45 ? 'In Progress' : 'Expected');
+            tlTill.innerHTML = `Status: ${status} - <span id="tlPct">${progress}</span>% Complete`;
+          }
+          if (tlGrand) {
+            const status = DAP >= 240 ? 'Active' : (DAP >= 100 ? 'Starting Soon' : 'Expected');
+            tlGrand.textContent = `Status: ${status} - ${grandEnd.toLocaleDateString()}`;
+          }
+          if (tlMat) {
+            const status = DAP >= 300 ? 'Active' : (DAP >= 240 ? 'Starting Soon' : 'Expected');
+            tlMat.textContent = `Status: ${status} - ${matEnd.toLocaleDateString()}`;
+          }
+
+          // Update stage indicators and badges
+          updateStageIndicators(DAP, currentStage);
+        }
+
+        // Update stage visual indicators based on DAP and current stage
+        function updateStageIndicators(DAP, currentStage) {
+          // Normalize current stage name
+          const normalizedStage = currentStage?.replace('Stage', '').trim() || '';
+          
+          const stages = [
+            { name: 'Germination', threshold: 45, element: 'germination', startDAP: 0 },
+            { name: 'Tillering', threshold: 100, element: 'tillering', startDAP: 45 },
+            { name: 'Grand Growth', threshold: 240, element: 'grand', startDAP: 100 },
+            { name: 'Maturing / Ripening', threshold: 300, element: 'maturing', startDAP: 240 },
+            { name: 'Harvest', threshold: 365, element: 'harvest', startDAP: 300 }
+          ];
+
+          stages.forEach((stage, index) => {
+            const indicator = document.getElementById(`stage-${stage.element}`);
+            const badge = document.getElementById(`badge-${stage.element}`);
+            const connector = document.getElementById(`connector-${stage.element}`);
+
+            if (!indicator) return;
+
+            // Reset classes
+            indicator.classList.remove('active', 'completed', 'in-progress');
+            if (badge) badge.style.display = 'none';
+
+            // Determine stage state based on DAP ranges
+            const isCompleted = DAP >= stage.threshold;
+            const isCurrent = (DAP >= stage.startDAP && DAP < stage.threshold) || 
+                             normalizedStage.toLowerCase().includes(stage.name.toLowerCase()) ||
+                             (stage.name === 'Germination' && (normalizedStage === 'Germination' || DAP < 45)) ||
+                             (stage.name === 'Tillering' && (normalizedStage === 'Tillering' || (DAP >= 45 && DAP < 100))) ||
+                             (stage.name === 'Grand Growth' && (normalizedStage.includes('Grand') || (DAP >= 100 && DAP < 240))) ||
+                             (stage.name === 'Maturing / Ripening' && (normalizedStage.includes('Matur') || normalizedStage.includes('Ripen') || (DAP >= 240 && DAP < 300))) ||
+                             (stage.name === 'Harvest' && (normalizedStage.includes('Harvest') || DAP >= 300));
+
+            // Update previous stages to completed
+            if (index > 0) {
+              const prevStage = stages[index - 1];
+              if (DAP >= prevStage.threshold) {
+                const prevIndicator = document.getElementById(`stage-${prevStage.element}`);
+                const prevBadge = document.getElementById(`badge-${prevStage.element}`);
+                const prevConnector = document.getElementById(`connector-${prevStage.element}`);
+                
+                if (prevIndicator) prevIndicator.classList.add('completed');
+                if (prevBadge) {
+                  prevBadge.textContent = 'Completed';
+                  prevBadge.className = 'badge badge-done text-xs';
+                  prevBadge.style.display = 'inline-block';
+                }
+                if (prevConnector) {
+                  prevConnector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
+                }
+              }
+            }
+
+            if (isCompleted) {
+              indicator.classList.add('completed');
+              if (badge) {
+                badge.textContent = 'Completed';
+                badge.className = 'badge badge-done text-xs';
+                badge.style.display = 'inline-block';
+              }
+              if (connector) {
+                connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
+              }
+            } else if (isCurrent) {
+              indicator.classList.add('active', 'in-progress');
+              if (badge) {
+                badge.textContent = 'In Progress';
+                badge.className = 'badge badge-progress text-xs';
+                badge.style.display = 'inline-block';
+              }
+              if (connector && index < stages.length - 1) {
+                connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-400)] to-gray-300 mt-2 min-h-[40px]';
+              }
+            }
+          });
         }
 
         // Show warnings for delays and overdue harvests
@@ -804,16 +1160,28 @@
 
         // Show not planted state
         function showNotPlantedState() {
-          document.getElementById('uiDays').textContent = '—';
-          document.getElementById('uiStage').textContent = 'Not Planted';
-          document.getElementById('uiPlanted').textContent = 'Not planted yet';
-          document.getElementById('uiHarvest').textContent = '—';
-          document.getElementById('uiRemain').textContent = '—';
-          document.getElementById('uiMonths').textContent = '—';
-          document.getElementById('tlBar').style.width = '0%';
-          document.getElementById('tlPct').textContent = '0';
+          const uiDays = document.getElementById('uiDays');
+          const uiStage = document.getElementById('uiStage');
+          const uiPlanted = document.getElementById('uiPlanted');
+          const uiHarvest = document.getElementById('uiHarvest');
+          const uiRemain = document.getElementById('uiRemain');
+          const uiMonths = document.getElementById('uiMonths');
+          const tlBar = document.getElementById('tlBar');
+          const tlPct = document.getElementById('tlPct');
+
+          if (uiDays) uiDays.textContent = '—';
+          if (uiStage) uiStage.textContent = 'Not Planted';
+          if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
+          if (uiHarvest) uiHarvest.textContent = '—';
+          if (uiRemain) uiRemain.textContent = '—';
+          if (uiMonths) uiMonths.textContent = '—';
+          if (tlBar) tlBar.style.width = '0%';
+          if (tlPct) tlPct.textContent = '0';
 
           // Show info message
+          const existing = document.getElementById('notPlantedInfo');
+          if (existing) existing.remove();
+
           const infoDiv = document.createElement('div');
           infoDiv.className = 'mt-4 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200';
           infoDiv.innerHTML = `
@@ -822,12 +1190,10 @@
           <p class="text-sm text-blue-800">This field has not been planted yet. Growth tracking will begin once a planting task is completed.</p>
         </div>
       `;
+          infoDiv.id = 'notPlantedInfo';
 
           const growthCard = document.querySelector('.section-card');
           if (growthCard && growthCard.parentNode) {
-            const existing = document.getElementById('notPlantedInfo');
-            if (existing) existing.remove();
-            infoDiv.id = 'notPlantedInfo';
             growthCard.parentNode.insertBefore(infoDiv, growthCard.nextSibling);
           }
         }
@@ -984,6 +1350,594 @@
             console.error('Error displaying historical data:', error);
           }
         }
+
+        // Load timeline nodes for a field with real-time updates
+        async function loadTimelineNodes(fieldId) {
+          // Unsubscribe from previous listener if exists
+          if (recordsUnsubscribe) {
+            recordsUnsubscribe();
+            recordsUnsubscribe = null;
+          }
+
+          if (!fieldId) {
+            console.warn('No fieldId provided to loadTimelineNodes');
+            return;
+          }
+
+          console.log(`🔍 Setting up real-time listener for fieldId: ${fieldId}`);
+
+          try {
+            // Try ordering by recordDate first, fallback to createdAt
+            let recordsQuery;
+            try {
+              recordsQuery = query(
+                collection(db, 'records'),
+                where('fieldId', '==', fieldId),
+                orderBy('recordDate', 'desc')
+              );
+              console.log('✅ Using recordDate ordering');
+            } catch (e) {
+              console.log('⚠️ Falling back to createdAt ordering:', e.message);
+              // Fallback to createdAt if recordDate index doesn't exist
+              recordsQuery = query(
+                collection(db, 'records'),
+                where('fieldId', '==', fieldId),
+                orderBy('createdAt', 'desc')
+              );
+            }
+
+            // Set up real-time listener with error handling
+            recordsUnsubscribe = onSnapshot(
+              recordsQuery,
+              async (recordsSnapshot) => {
+                console.log(`📊 Timeline updated: ${recordsSnapshot.docs.length} records found for field ${fieldId}`);
+                const records = [];
+
+                // Process all records
+                for (const recordDoc of recordsSnapshot.docs) {
+                  const recordData = recordDoc.data();
+                  
+                  // Load bought items subcollection
+                  let boughtItems = [];
+                  try {
+                    const boughtItemsSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'bought_items'));
+                    boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+                  } catch (e) {
+                    console.debug('No bought items subcollection:', e);
+                  }
+                  
+                  // Load vehicle updates subcollection
+                  let vehicleUpdates = null;
+                  try {
+                    const vehicleUpdatesSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates'));
+                    vehicleUpdates = vehicleUpdatesSnapshot.docs.length > 0 ? vehicleUpdatesSnapshot.docs[0].data() : null;
+                  } catch (e) {
+                    console.debug('No vehicle updates subcollection:', e);
+                  }
+
+                  records.push({
+                    id: recordDoc.id,
+                    ...recordData,
+                    boughtItems,
+                    vehicleUpdates
+                  });
+                }
+
+                // Debug: Log record count and statuses
+                console.log(`📊 Rendering ${records.length} records:`, records.map(r => ({ 
+                  id: r.id, 
+                  status: r.status, 
+                  taskType: r.taskType,
+                  fieldId: r.fieldId 
+                })));
+
+                // Render timeline with updated records
+                renderTimelineNodes(records);
+              },
+              async (error) => {
+                console.error('Error in timeline listener:', error);
+                
+                // If query fails due to permissions, try loading without orderBy
+                if (error.code === 'permission-denied' || (error.message && error.message.includes('permission'))) {
+                  console.log('⚠️ Permission error detected, trying query without orderBy...');
+                  try {
+                    // Try query without orderBy (less secure but might work)
+                    const simpleQuery = query(
+                      collection(db, 'records'),
+                      where('fieldId', '==', fieldId)
+                    );
+                    
+                    recordsUnsubscribe = onSnapshot(
+                      simpleQuery,
+                      async (snapshot) => {
+                        const records = [];
+                        for (const recordDoc of snapshot.docs) {
+                          try {
+                            const recordData = recordDoc.data();
+                            
+                            // Load bought items subcollection
+                            let boughtItems = [];
+                            try {
+                              const boughtItemsSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'bought_items'));
+                              boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+                            } catch (e) {
+                              console.debug('No bought items:', e);
+                            }
+                            
+                            // Load vehicle updates subcollection
+                            let vehicleUpdates = null;
+                            try {
+                              const vehicleUpdatesSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates'));
+                              vehicleUpdates = vehicleUpdatesSnapshot.docs.length > 0 ? vehicleUpdatesSnapshot.docs[0].data() : null;
+                            } catch (e) {
+                              console.debug('No vehicle updates:', e);
+                            }
+                            
+                            records.push({
+                              id: recordDoc.id,
+                              ...recordData,
+                              boughtItems,
+                              vehicleUpdates
+                            });
+                          } catch (docError) {
+                            console.warn('Error processing record:', docError);
+                          }
+                        }
+                        
+                        // Sort client-side by recordDate or createdAt
+                        records.sort((a, b) => {
+                          const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+                          const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+                          return dateB - dateA;
+                        });
+                        
+                        console.log(`📊 Loaded ${records.length} records (without orderBy)`);
+                        renderTimelineNodes(records);
+                      },
+                      (fallbackError) => {
+                        console.error('Fallback query also failed:', fallbackError);
+                        const emptyState = document.getElementById('timelineEmptyState');
+                        if (emptyState) emptyState.classList.remove('hidden');
+                      }
+                    );
+                    return; // Exit early if fallback succeeds
+                  } catch (fallbackError) {
+                    console.error('Fallback query setup failed:', fallbackError);
+                  }
+                }
+                
+                // If query fails due to missing index, try fallback
+                if (error.message && error.message.includes('index')) {
+                  console.log('Trying fallback query with createdAt...');
+                  try {
+                    const fallbackQuery = query(
+                      collection(db, 'records'),
+                      where('fieldId', '==', fieldId),
+                      orderBy('createdAt', 'desc')
+                    );
+                    
+                    recordsUnsubscribe = onSnapshot(fallbackQuery, async (snapshot) => {
+                      const records = [];
+                      for (const recordDoc of snapshot.docs) {
+                        const recordData = recordDoc.data();
+                        records.push({
+                          id: recordDoc.id,
+                          ...recordData,
+                          boughtItems: [],
+                          vehicleUpdates: null
+                        });
+                      }
+                      renderTimelineNodes(records);
+                    });
+                  } catch (fallbackError) {
+                    console.error('Fallback query also failed:', fallbackError);
+                    const emptyState = document.getElementById('timelineEmptyState');
+                    if (emptyState) emptyState.classList.remove('hidden');
+                  }
+                } else {
+                  const emptyState = document.getElementById('timelineEmptyState');
+                  if (emptyState) emptyState.classList.remove('hidden');
+                }
+              }
+            );
+          } catch (error) {
+            console.error('Error setting up timeline listener:', error);
+            const emptyState = document.getElementById('timelineEmptyState');
+            if (emptyState) emptyState.classList.remove('hidden');
+          }
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+          if (!text) return '';
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        // Render timeline nodes integrated into growth stages
+        function renderTimelineNodes(records) {
+          console.log(`🎨 Rendering ${records.length} records into timeline`);
+          const emptyState = document.getElementById('timelineEmptyState');
+          
+          if (records.length === 0) {
+            console.log('No records found, showing empty state');
+            if (emptyState) emptyState.classList.remove('hidden');
+            // Clear all activity containers
+            ['germination', 'tillering', 'grand', 'maturing', 'harvest'].forEach(stage => {
+              const container = document.getElementById(`activities-${stage}`);
+              if (container) {
+                container.innerHTML = `
+                  <div class="activity-node empty-state">
+                    <p class="text-xs text-gray-500 italic">No activities recorded yet</p>
+                  </div>
+                `;
+              }
+            });
+            return;
+          }
+
+          // Hide empty state if we have records
+          if (emptyState) emptyState.classList.add('hidden');
+
+          // Group records by status
+          const groupedByStatus = {
+            'Germination': [],
+            'Tillering': [],
+            'Grand Growth': [],
+            'Maturing / Ripening': [],
+            'Harvest': []
+          };
+
+          records.forEach(record => {
+            const status = record.status || 'Unknown';
+            // Normalize status names to match our stage names
+            let normalizedStatus = status;
+            
+            // Handle variations in status names
+            if (status === 'Maturing / Ripening' || status === 'Maturing/Ripening' || status === 'Maturation' || status === 'Ripening') {
+              normalizedStatus = 'Maturing / Ripening';
+            } else if (status === 'Grand Growth' || status === 'GrandGrowth') {
+              normalizedStatus = 'Grand Growth';
+            }
+            
+            if (groupedByStatus[normalizedStatus]) {
+              groupedByStatus[normalizedStatus].push(record);
+            } else {
+              console.warn(`Unknown status "${status}" for record ${record.id}, taskType: ${record.taskType}`);
+            }
+          });
+
+          // Map status names to container IDs
+          const statusToContainer = {
+            'Germination': 'germination',
+            'Tillering': 'tillering',
+            'Grand Growth': 'grand',
+            'Maturing / Ripening': 'maturing',
+            'Harvest': 'harvest'
+          };
+
+          // Render activities into each stage container
+          Object.entries(groupedByStatus).forEach(([status, statusRecords]) => {
+            const containerId = statusToContainer[status];
+            const container = document.getElementById(`activities-${containerId}`);
+            
+            if (!container) {
+              console.warn(`Container not found for stage: ${status} (${containerId})`);
+              return;
+            }
+
+            console.log(`📝 Rendering ${statusRecords.length} records for ${status} stage`);
+
+            if (statusRecords.length === 0) {
+              container.innerHTML = `
+                <div class="activity-node empty-state">
+                  <p class="text-xs text-gray-500 italic">No activities recorded yet</p>
+                </div>
+              `;
+              return;
+            }
+
+            // Sort records by date (most recent first)
+            statusRecords.sort((a, b) => {
+              const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+              const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+              return dateB - dateA;
+            });
+
+            let html = '';
+            statusRecords.forEach(record => {
+              const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+              const dateStr = recordDate.toLocaleDateString();
+              const taskType = record.taskType || 'Unknown Task';
+              
+              // Get brief summary from data
+              let summary = '';
+              if (record.data) {
+                const notes = record.data.notes || record.data.remarks || '';
+                summary = notes.length > 40 ? notes.substring(0, 40) + '...' : notes;
+              }
+
+              // Escape HTML to prevent XSS
+              const safeTaskType = escapeHtml(taskType);
+              const safeDateStr = escapeHtml(dateStr);
+              const safeSummary = escapeHtml(summary);
+
+              html += `
+                <div class="activity-node" 
+                     data-record-id="${record.id}"
+                     onclick="window.openRecordModal('${record.id}')"
+                     role="button"
+                     tabindex="0"
+                     onkeypress="if(event.key==='Enter') window.openRecordModal('${record.id}')"
+                     title="Click to preview record details">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 mb-1">
+                        <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1">${safeTaskType}</p>
+                        <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap">Preview</span>
+                      </div>
+                      <div class="flex items-center gap-2 mt-1">
+                        <i class="fas fa-calendar text-xs text-gray-400"></i>
+                        <p class="text-xs text-gray-600">${safeDateStr}</p>
+                      </div>
+                      ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate">${safeSummary}</p>` : ''}
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400 text-xs mt-1 flex-shrink-0"></i>
+                  </div>
+                </div>
+              `;
+            });
+
+            container.innerHTML = html;
+          });
+        }
+
+        // Open record detail modal
+        async function openRecordModal(recordId) {
+          try {
+            const { getDoc, doc, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+            
+            const recordRef = doc(db, 'records', recordId);
+            const recordSnap = await getDoc(recordRef);
+            
+            if (!recordSnap.exists()) {
+              showError('Record not found');
+              return;
+            }
+
+            const recordData = recordSnap.data();
+            
+            // Load bought items
+            const boughtItemsSnapshot = await getDocs(collection(db, 'records', recordId, 'bought_items'));
+            const boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+            
+            // Load vehicle updates
+            const vehicleUpdatesSnapshot = await getDocs(collection(db, 'records', recordId, 'vehicle_updates'));
+            const vehicleUpdates = vehicleUpdatesSnapshot.docs.length > 0 ? vehicleUpdatesSnapshot.docs[0].data() : null;
+
+            // Get field name
+            const fieldRef = doc(db, 'fields', recordData.fieldId);
+            const fieldSnap = await getDoc(fieldRef);
+            const fieldName = fieldSnap.exists() ? (fieldSnap.data().field_name || 'Unknown Field') : 'Unknown Field';
+
+            // Render modal content
+            renderRecordModal({
+              ...recordData,
+              id: recordId,
+              fieldName,
+              boughtItems,
+              vehicleUpdates
+            });
+
+            // Show modal
+            const modal = document.getElementById('recordDetailModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+            } else {
+              console.error('Record detail modal not found');
+            }
+          } catch (error) {
+            console.error('Error opening record modal:', error);
+            showError('Failed to load record details');
+          }
+        }
+
+        // Render record modal content
+        function renderRecordModal(record) {
+          const content = document.getElementById('recordDetailContent');
+          if (!content) {
+            console.error('Record detail content container not found');
+            return;
+          }
+          
+          const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+          
+          let html = `
+            <div class="space-y-4">
+              <!-- Basic Info -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Field</label>
+                  <p class="text-sm font-semibold">${record.fieldName}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Date Submitted</label>
+                  <p class="text-sm font-semibold">${recordDate.toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Status</label>
+                  <p class="text-sm font-semibold">${record.status}</p>
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Field Operation</label>
+                  <p class="text-sm font-semibold">${record.operation}</p>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="text-xs font-medium text-gray-600">Task Type</label>
+                  <p class="text-sm font-semibold">${record.taskType}</p>
+                </div>
+              </div>
+
+              <!-- Task-specific fields -->
+              <div class="border-t pt-4">
+                <h4 class="font-semibold text-sm mb-3">Task Details</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          `;
+
+          // Render task-specific data fields
+          if (record.data) {
+            Object.entries(record.data).forEach(([key, value]) => {
+              if (value !== null && value !== undefined && value !== '') {
+                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                html += `
+                  <div>
+                    <label class="text-xs font-medium text-gray-600">${label}</label>
+                    <p class="text-sm">${value}</p>
+                  </div>
+                `;
+              }
+            });
+          }
+
+          html += `
+                </div>
+              </div>
+          `;
+
+          // Bought Items section
+          if (record.boughtItems && record.boughtItems.length > 0) {
+            html += `
+              <div class="border-t pt-4">
+                <h4 class="font-semibold text-sm mb-3">Bought Items</h4>
+                <div class="space-y-2">
+            `;
+            
+            record.boughtItems.forEach((item, index) => {
+              html += `
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="font-medium text-sm mb-2">Item ${index + 1}: ${item.itemName || 'N/A'}</p>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-600">Quantity:</span> ${item.quantity} ${item.unit}</div>
+                    <div><span class="text-gray-600">Price:</span> ₱${item.price.toFixed(2)}</div>
+                    <div><span class="text-gray-600">Total:</span> ₱${item.total.toFixed(2)}</div>
+                    <div><span class="text-gray-600">Supplier:</span> ${item.supplier || 'N/A'}</div>
+                    ${item.notes ? `<div class="col-span-2"><span class="text-gray-600">Notes:</span> ${item.notes}</div>` : ''}
+                  </div>
+                </div>
+              `;
+            });
+            
+            html += `
+                </div>
+              </div>
+            `;
+          }
+
+          // Vehicle Updates section
+          if (record.vehicleUpdates) {
+            const vu = record.vehicleUpdates;
+            html += `
+              <div class="border-t pt-4">
+                <h4 class="font-semibold text-sm mb-3">Vehicle / Transport Updates</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label class="text-xs font-medium text-gray-600">Vehicle Type</label><p class="text-sm">${vu.vehicleType || 'N/A'}</p></div>
+                  <div><label class="text-xs font-medium text-gray-600">Trips/Boxes</label><p class="text-sm">${vu.tripsBoxes || 0}</p></div>
+                  <div><label class="text-xs font-medium text-gray-600">Fuel Cost</label><p class="text-sm">₱${vu.fuelCost?.toFixed(2) || '0.00'}</p></div>
+                  <div><label class="text-xs font-medium text-gray-600">Labor Cost</label><p class="text-sm">₱${vu.laborCost?.toFixed(2) || '0.00'}</p></div>
+                  <div><label class="text-xs font-medium text-gray-600">Total Cost</label><p class="text-sm font-semibold">₱${vu.totalCost?.toFixed(2) || '0.00'}</p></div>
+                  ${vu.route ? `<div class="md:col-span-2"><label class="text-xs font-medium text-gray-600">Route / Field</label><p class="text-sm">${vu.route}</p></div>` : ''}
+                </div>
+              </div>
+            `;
+          }
+
+          html += `
+            </div>
+          `;
+
+          content.innerHTML = html;
+        }
+
+        // Close record modal (wait for DOM to be ready)
+        const closeRecordModalBtn = document.getElementById('closeRecordModal');
+        const recordDetailModalEl = document.getElementById('recordDetailModal');
+        
+        if (closeRecordModalBtn) {
+          closeRecordModalBtn.addEventListener('click', () => {
+            if (recordDetailModalEl) recordDetailModalEl.classList.add('hidden');
+          });
+        }
+
+        // Close modal on backdrop click
+        if (recordDetailModalEl) {
+          recordDetailModalEl.addEventListener('click', (e) => {
+            if (e.target.id === 'recordDetailModal') {
+              recordDetailModalEl.classList.add('hidden');
+            }
+          });
+        }
+
+        // Check and display predicted harvest
+        async function checkPredictedHarvest(fieldId) {
+          try {
+            const fieldRef = doc(db, 'fields', fieldId);
+            const fieldSnap = await getDoc(fieldRef);
+            
+            if (!fieldSnap.exists()) return;
+            
+            const fieldData = fieldSnap.data();
+            const expectedHarvestDate = fieldData.expectedHarvestDate?.toDate?.() || fieldData.expectedHarvestDate;
+            const variety = fieldData.sugarcane_variety || fieldData.variety;
+            const currentStatus = fieldData.currentGrowthStage || fieldData.status;
+            
+            // Only show if not yet harvested and has expected harvest date
+            if (expectedHarvestDate && currentStatus !== 'Harvested' && currentStatus !== 'harvested') {
+              const modal = document.getElementById('predictedHarvestModal');
+              const content = document.getElementById('predictedHarvestContent');
+              
+              const harvestDateStr = expectedHarvestDate instanceof Date 
+                ? expectedHarvestDate.toLocaleDateString() 
+                : new Date(expectedHarvestDate).toLocaleDateString();
+              
+              content.innerHTML = `
+                <div class="space-y-2">
+                  <div><span class="font-medium">Variety:</span> ${variety || 'Not specified'}</div>
+                  <div><span class="font-medium">Predicted Harvest Date:</span> ${harvestDateStr}</div>
+                  <div class="text-xs text-gray-600 mt-2">
+                    <i class="fas fa-info-circle"></i> Based on planting date and variety growth cycle
+                  </div>
+                </div>
+              `;
+              
+              modal.classList.remove('hidden');
+            } else {
+              document.getElementById('predictedHarvestModal').classList.add('hidden');
+            }
+          } catch (error) {
+            console.error('Error checking predicted harvest:', error);
+          }
+        }
+
+        // Close predicted harvest modal
+        const closePredictedHarvestBtn = document.getElementById('closePredictedHarvest');
+        if (closePredictedHarvestBtn) {
+          closePredictedHarvestBtn.addEventListener('click', () => {
+            const modal = document.getElementById('predictedHarvestModal');
+            if (modal) modal.classList.add('hidden');
+          });
+        }
+
+        // Make openRecordModal available globally
+        window.openRecordModal = openRecordModal;
+
+        // Cleanup listener on page unload
+        window.addEventListener('beforeunload', () => {
+          if (recordsUnsubscribe) {
+            recordsUnsubscribe();
+            recordsUnsubscribe = null;
+          }
+        });
       </script>
 
       <script>
