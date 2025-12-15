@@ -1658,22 +1658,7 @@ Please register a field and wait for SRA approval to become a Handler.`);
     return;
   }
 
-  loadUserProfile(user);
-  loadJoinRequests(user.uid);
-  loadRecentTaskActivity(user.uid);
-  setupRecentTaskActivityListener(user.uid);
-  setupJoinRequestsListener(user.uid);
-  initNotifications(user.uid);
-  loadActivityLogs(user.uid);
-  setupActivityLogsListener(user.uid);
-
-  // REQ-3: Initialize dashboard statistics with realtime listeners
-  initActiveWorkersMetric(user.uid);
-  initPendingTasksMetric(user.uid);
-  initUnreadNotificationsMetric(user.uid);
-
-  // Initialize task warnings system
-  initTaskWarningsSystem(user.uid);
+  // Dashboard content removed - leaving blank
 
 
   // ✅ Mark as initialized
@@ -1681,51 +1666,7 @@ Please register a field and wait for SRA approval to become a Handler.`);
   console.log('✅ Dashboard fully initialized');
 });
 
-// Add refresh button event listener for join requests
-document.addEventListener("DOMContentLoaded", () => {
-  const refreshBtn = document.getElementById("refreshJoinRequests");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      refreshBtn.disabled = true;
-      const icon = refreshBtn.querySelector("i");
-      if (icon) icon.classList.add("fa-spin");
-
-      try {
-        await loadJoinRequests(user.uid);
-      } catch (err) {
-        console.error("Error refreshing join requests:", err);
-      } finally {
-        refreshBtn.disabled = false;
-        if (icon) icon.classList.remove("fa-spin");
-      }
-    });
-  }
-
-  // Add refresh button event listener for recent task activity
-  const refreshTaskActivityBtn = document.getElementById("refreshTaskActivity");
-  if (refreshTaskActivityBtn) {
-    refreshTaskActivityBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      refreshTaskActivityBtn.disabled = true;
-      const icon = refreshTaskActivityBtn.querySelector("i");
-      if (icon) icon.classList.add("fa-spin");
-
-      try {
-        await loadRecentTaskActivity(user.uid);
-      } catch (err) {
-        console.error("Error refreshing task activity:", err);
-      } finally {
-        refreshTaskActivityBtn.disabled = false;
-        if (icon) icon.classList.remove("fa-spin");
-      }
-    });
-  }
-});
+// Dashboard refresh buttons removed - dashboard content is blank
 
 /* =========
    Dashboard quick-navigation (attach after DOMContentLoaded listeners)
@@ -1780,52 +1721,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // TOTAL FIELDS -> My Fields section
-  // Attach to the numeric element (mFields) and also attempt to attach to a containing card with id/class commonly used.
-  attachIfExists('#mFields', () => navigateToSection('fields', 'My Fields'));
-  attachIfExists('#cardTotalFields, .card-total-fields, [data-card="total-fields"]', () => navigateToSection('fields', 'My Fields'));
-
-  // PENDING REVIEW (pending fields) -> Team (your ask: Pending Review goes to Team)
-  attachIfExists('#mPendingFields', () => navigateToSection('team', 'Team'));
-  attachIfExists('#cardPendingReview, .card-pending-review, [data-card="pending-review"]', () => navigateToSection('team', 'Team'));
-
-  // ACTIVE WORKERS -> Team
-  attachIfExists('#mWorkers', () => navigateToSection('team', 'Team'));
-  attachIfExists('#cardActiveWorkers, .card-active-workers, [data-card="active-workers"]', () => navigateToSection('team', 'Team'));
-
-  // PENDING TASK -> Tasks
-
-  // JOIN REQUESTS metric card -> Team section
-  attachIfExists('#mRequests', () => navigateToSection('team', 'Team'));
-  attachIfExists('#cardJoinRequests, .card-join-requests, [data-card="join-requests"]', () => navigateToSection('team', 'Team'));
+  // Dashboard metric click handlers removed - dashboard is blank
   
-// JOIN REQUESTS container -> Team
-  const joinRequestsContainer = document.getElementById('joinRequestsList');
-  if (joinRequestsContainer) {
-    joinRequestsContainer.style.cursor = 'pointer';
-    joinRequestsContainer.addEventListener('click', (e) => {
-      // ignore clicks on approve/reject/see-details buttons inside join requests cards
-      if (e.target.closest('button, a, [data-join-action], [data-request-id], [data-action]')) return;
-      // if clicked on a specific request item, we still navigate to Team
-      navigateToSection('team', 'Team');
-    });
-  }
-
-  // RECENT TASK ACTIVITY container -> Activity Logs
-  const recentActivityContainer = document.getElementById('recentTaskActivityList');
-  if (recentActivityContainer) {
-    recentActivityContainer.style.cursor = 'pointer';
-    recentActivityContainer.addEventListener('click', (e) => {
-      // Do not trigger navigation when clicking buttons inside
-      if (e.target.closest('button, a, [data-action]')) return;
-
-      // Correct destination
-      navigateToSection('activityLogs', 'Activity Logs');
-    });
-  }
+  // Dashboard containers removed - dashboard is blank
 
   // Small accessibility: allow keyboard navigation (Enter) on focused metric elements
-  ['#mFields', '#mPendingFields', '#mWorkers', '#mTasks', '#joinRequestsList', '#recentTaskActivityList']
+  [] // Dashboard elements removed - dashboard is blank
     .forEach(sel => {
       const el = document.querySelector(sel);
       if (el) {
