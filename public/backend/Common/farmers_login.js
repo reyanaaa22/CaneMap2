@@ -361,9 +361,13 @@ async function login() {
     }
 
     setTimeout(() => {
-      if (userRole === "sra") {
+      if (userRole === "handler") {
+        // Handler: go directly to Handler Dashboard (skip lobby)
+        window.location.href = "../../frontend/Handler/dashboard.html";
+      } else if (userRole === "sra") {
         window.location.href = "../../frontend/SRA/SRA_Dashboard.html";
       } else {
+        // Farmers and other roles keep using lobby as the landing page
         window.location.href = "../../frontend/Common/lobby.html";
       }
     }, 1500);
