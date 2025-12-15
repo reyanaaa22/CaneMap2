@@ -91,6 +91,11 @@
 #weatherForecast {
     max-height: none !important;
     overflow: visible !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 1.25rem; /* p-5 equivalent */
 }
 
         /* Inner content area fills available space and becomes column on small screens */
@@ -100,6 +105,15 @@
             align-items: flex-start;
             flex: 1 1 auto;
             padding: 4px 0;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* Ensure weather forecast container uses full width and centers content */
+        #weatherForecast {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         /* Right-side compact forecast becomes a vertical scroll area when content is large */
@@ -114,7 +128,50 @@
         #weatherForecast #wxCompact #wxCompactFooter { position: sticky; bottom: 0; padding-top: 6px; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.06)); }
 
         /* Make sure the main 'Today' block doesn't overflow its column */
-        #weatherForecast .flex-1 { overflow: hidden; min-width: 0; }
+        #weatherForecast .flex-1 { 
+            overflow: hidden; 
+            min-width: 0; 
+            flex: 1 1 auto;
+            max-width: 100%;
+        }
+        
+        /* Remove unnecessary spacing and ensure proper centering */
+        #weatherForecast > .relative > .flex {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Ensure compact section doesn't create extra space */
+        #weatherForecast #wxCompact {
+            margin-left: 0;
+            margin-right: 0;
+            flex-shrink: 0;
+        }
+        
+        /* Center the weather forecast content properly */
+        #weatherForecast .relative {
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* When not expanded, hide compact section completely to avoid space */
+        #weatherForecast:not(.expanded) #wxCompact {
+            display: none !important;
+            width: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Ensure today main section takes appropriate space when compact is hidden */
+        #weatherForecast:not(.expanded) #wxTodayMain {
+            width: 100%;
+            max-width: 100%;
+        }
 
         /* On narrow screens stack the two areas vertically and reduce max-height */
         @media (max-width: 768px) {
@@ -137,8 +194,9 @@
         /* hide compact right-side summary until user expands the forecast */
         #weatherForecast:not(.expanded) #wxCompact { display: none; }
         #weatherForecast.expanded > .relative { width: 100%; align-items: stretch; }
-        #weatherForecast.expanded #wxCompact { display: flex; width: 100% !important; flex: 1 1 auto !important; max-width: 100% !important; align-self: stretch; margin-left: 0; margin-right: 0; }
+        #weatherForecast.expanded #wxCompact { display: flex; width: 100% !important; flex: 1 1 auto !important; max-width: 100% !important; align-self: stretch; margin-left: 0; margin-right: 0; padding: 0; }
         #weatherForecast.expanded .w-48 { width: 100% !important; }
+        #weatherForecast.expanded > .relative > .flex { width: 100%; justify-content: flex-start; }
         #weatherForecast.expanded #wxTodayMain { display: none; }
         #weatherForecast.expanded #wxCompact { max-height: 320px; }
         #weatherForecast.expanded #wxDaily {
@@ -191,7 +249,7 @@
         }
         .wx-mini-bar { width: 6px; border-radius: 9999px; background: rgba(255,255,255,0.45); }
         .wx-mini-bar.highlight { background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6)); }
-        .wx-day-list { display: flex; flex-direction: column; gap: 8px; }
+        .wx-day-list { display: flex; flex-direction: column; gap: 12px; }
     .wx-day { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: 8px; }
     /* subtle fade/slide in for daily rows when expanded */
     .wx-day { opacity: 0; transform: translateY(-6px); transition: opacity 260ms ease, transform 260ms ease; }
@@ -705,7 +763,9 @@ header nav .flex.items-center.justify-between > div:first-child {
 
   #weatherForecast {
     flex: 1;     /* half width of map */
-    max-width: 420px; /* optional: limit width */
+    max-width: 100%; /* Use full available width */
+    width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -740,11 +800,13 @@ header nav .flex.items-center.justify-between > div:first-child {
 
 @media (min-width: 1024px) {
     #weatherForecast {
-        height: 90rem !important; 
-        max-height: 30rem !important;
+        height: auto !important; 
+        max-height: none !important;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     #map {
@@ -919,26 +981,26 @@ header nav .flex.items-center.justify-between > div:first-child {
                                  <!-- Weather Now (glassy dark) -->
                   <div id="weatherForecast" class="weather-card p-5 text-white">
                       <div class="relative z-[1]">
-                          <div class="flex items-start justify-between gap-4">
+                          <div class="flex items-start gap-4 w-full">
                               <!-- Left: Today big -->
                               <div id="wxTodayMain" class="flex-1 min-w-0">
                                   <div id="wxTodayContainer">
                                       <div id="wxTodayContent">
-                                          <p class="text-white/80 text-sm">Today</p>
-                                          <h3 class="text-3xl font-extrabold tracking-tight">Weather Now</h3>
-                                          <p class="text-white/70 text-xs max-w-xs">Condition for today.</p>
+                                          <p class="text-white/90 text-base font-medium mb-1">Today</p>
+                                          <h3 class="text-3xl font-extrabold tracking-tight mb-2">Weather Now</h3>
+                                          <p class="text-white/80 text-sm font-medium max-w-xs mb-4">Condition for today.</p>
                                           <div class="flex items-end gap-2 mt-3">
                                               <span id="wxTemp" class="text-6xl leading-none font-extrabold">--</span>
                                               <span class="text-3xl">°C</span>
-                                              <div class="ml-3 glass px-3 py-2 text-sm">Wind: <span id="wxWind">-- km/h</span></div>
+                                              <div class="ml-3 glass px-4 py-2.5 text-sm font-semibold">Wind: <span id="wxWind" class="font-bold">-- km/h</span></div>
                                           </div>
-                                          <div class="mt-3 glass p-3 w-full max-w-sm">
-                                              <p class="text-xs text-white/80 mb-2">UV Index</p>
-                                              <div class="flex items-center justify-between">
-                                                  <div class="w-full h-2 bg-white/20 rounded-full overflow-hidden mr-3">
+                                          <div class="mt-4 glass p-4 w-full max-w-sm">
+                                              <p class="text-sm text-white/90 font-semibold mb-3">UV Index</p>
+                                              <div class="flex items-center justify-between gap-3">
+                                                  <div class="w-full h-2.5 bg-white/20 rounded-full overflow-hidden">
                                                       <div id="wxUvBar" class="h-full bg-gradient-to-r from-yellow-300 to-orange-400" style="width: 0%"></div>
                                                   </div>
-                                                  <span id="wxUv" class="text-sm font-semibold">--</span>
+                                                  <span id="wxUv" class="text-base font-bold min-w-[2.5rem] text-right">--</span>
                                              </div>
                                              </div>
                                       </div>
@@ -953,12 +1015,10 @@ header nav .flex.items-center.justify-between > div:first-child {
                                   </div>
                               </div>
                               <!-- Right: Upcoming compact -->
-                              <div id="wxCompact" class="w-48 glass p-3 self-stretch" aria-hidden="true">
-                                  <p class="text-xs text-white/80 mb-2">Predicted Forecast</p>
+                              <div id="wxCompact" class="w-48 glass p-4 self-stretch flex-shrink-0" aria-hidden="true">
+                                  <p class="text-base text-white/95 font-bold mb-4 pt-1">Predicted Forecast</p>
                                   <div id="wxDaily" style="max-height: 540px; overflow-y: auto;" class="wx-day-list" aria-hidden="true">
-                                <!-- JS will fill this automatically -->
-<div id="wxDaily" class="wx-day-list"></div>
-
+                                      <!-- JS will fill this automatically -->
                                   </div>
                                   <div id="wxCompactFooter" class="mt-2"></div>
                               </div>

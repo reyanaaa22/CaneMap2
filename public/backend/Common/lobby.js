@@ -298,27 +298,102 @@ async function getWeather() {
           if (!verdictWrap) {
             verdictWrap = document.createElement("div");
             verdictWrap.id = todayVerdictWrapperId;
-            verdictWrap.className = "mt-2 text-sm";
+            verdictWrap.className = "mt-4 text-sm";
             if (wxTodayContainer) wxTodayContainer.appendChild(verdictWrap);
           }
 
-          // Evaluate safety: simple rules
+          // Get comprehensive weather data
           const windKmh = typeof cur.wind?.speed === "number" ? cur.wind.speed * 3.6 : 0;
-          const rain = (onecall && onecall.daily && onecall.daily[0] && (onecall.daily[0].pop || 0)) || 0;
+          
+          // Try to get rain probability from onecall first, then fallback to forecast
+          let rainPop = 0;
+          if (onecall && onecall.daily && onecall.daily[0] && typeof onecall.daily[0].pop === "number") {
+            rainPop = onecall.daily[0].pop;
+          } else if (fdata && Array.isArray(fdata.list) && fdata.list.length > 0) {
+            // Get today's forecast entries and average the pop
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const todayForecasts = fdata.list.filter(item => {
+              const itemDate = new Date(item.dt * 1000);
+              return itemDate.toISOString().split('T')[0] === todayStr;
+            });
+            if (todayForecasts.length > 0) {
+              const avgPop = todayForecasts.reduce((sum, item) => sum + (item.pop || 0), 0) / todayForecasts.length;
+              rainPop = avgPop;
+            }
+          }
+          
+          const rainPercent = Math.round(rainPop * 100);
           const uvi = onecall && onecall.current && typeof onecall.current.uvi === "number" ? onecall.current.uvi : null;
           const hasStorm = (onecall && Array.isArray(onecall.alerts) && onecall.alerts.length > 0) || false;
-
+          
+          // Get current weather condition
+          const weatherCondition = cur.weather?.[0]?.description || "No data";
+          const weatherMain = cur.weather?.[0]?.main || "";
+          const weatherIcon = cur.weather?.[0]?.icon ? `https://openweathermap.org/img/wn/${cur.weather[0].icon}.png` : "";
+          
+          // Check if it's currently raining (from current weather condition)
+          const isRaining = weatherMain.toLowerCase().includes('rain') || 
+                           weatherMain.toLowerCase().includes('drizzle') ||
+                           weatherMain.toLowerCase().includes('shower') ||
+                           weatherCondition.toLowerCase().includes('rain') ||
+                           weatherCondition.toLowerCase().includes('drizzle') ||
+                           weatherCondition.toLowerCase().includes('shower');
+          
+          // Improved safety evaluation with better thresholds
           let safe = true;
           let reasons = [];
+          let advisoryItems = [];
 
-          if (hasStorm) { safe = false; reasons.push("storm/advisory"); }
-          if (windKmh >= 50) { safe = false; reasons.push("strong winds"); }
-          if (rain >= 0.6) { safe = false; reasons.push("heavy chance of rain"); }
-          if (uvi !== null && uvi >= 8) { reasons.push("very high UV"); }
+          // Check for storms/alerts
+          if (hasStorm) { 
+            safe = false; 
+            reasons.push("Storm advisory active");
+            advisoryItems.push({ icon: "⛈️", label: "Storm", value: "Active advisory" });
+          }
+          
+          // Check for current rain
+          if (isRaining) {
+            safe = false;
+            reasons.push("Currently raining");
+            advisoryItems.push({ icon: "🌧️", label: "Rain", value: "Active" });
+          } else if (rainPop > 0) {
+            // Always show rain probability if available
+            if (rainPop >= 0.4) { // 40% chance threshold (lowered from 60%)
+              safe = false;
+              reasons.push(`High rain chance (${rainPercent}%)`);
+            }
+            advisoryItems.push({ icon: "🌧️", label: "Rain", value: `${rainPercent}%` });
+          }
+          
+          // Always show wind speed
+          if (windKmh >= 30) {
+            safe = false;
+            reasons.push(`Strong winds (${windKmh.toFixed(1)} km/h)`);
+            advisoryItems.push({ icon: "💨", label: "Wind", value: `${windKmh.toFixed(1)} km/h` });
+          } else {
+            advisoryItems.push({ icon: "💨", label: "Wind", value: `${windKmh.toFixed(1)} km/h` });
+          }
+          
+          // Always show UV index if available
+          if (uvi !== null) {
+            if (uvi >= 8) {
+              reasons.push(`Very high UV (${uvi.toFixed(1)})`);
+            }
+            advisoryItems.push({ icon: "🔆", label: "UV Index", value: uvi.toFixed(1) });
+          }
+          
+          // Always add weather condition (should always be available)
+          if (weatherCondition && weatherCondition !== "No data") {
+            advisoryItems.push({ icon: weatherIcon || "☁️", label: "Condition", value: weatherCondition });
+          } else {
+            // Fallback if no condition data
+            advisoryItems.push({ icon: "☁️", label: "Condition", value: "Unknown" });
+          }
 
           verdictWrap.innerHTML = `
   <div 
-    class="rounded-2xl p-4 shadow-sm border backdrop-blur-xl transition-all"
+    class="rounded-2xl p-5 shadow-sm border backdrop-blur-xl transition-all mt-4"
     style="
       background: ${safe ? 'rgba(22,163,74,0.12)' : 'rgba(220,38,38,0.15)'};
       border-color: ${safe ? 'rgba(22,163,74,0.35)' : 'rgba(220,38,38,0.35)'};
@@ -326,18 +401,18 @@ async function getWeather() {
   >
 
     <!-- Header line -->
-    <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center justify-between mb-4">
 
       <div class="flex flex-col">
-        <span class="text-sm font-semibold text-white/90">
+        <span class="text-base font-bold text-white/95">
           Work Advisory
-          <span class="text-white/60">(Today)</span>
+          <span class="text-white/70 font-semibold">(Today)</span>
         </span>
       </div>
 
       <!-- Status Pill -->
       <div 
-        class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm"
+        class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm"
         style="
           background: ${safe ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'};
           color: white;
@@ -348,16 +423,16 @@ async function getWeather() {
         <span 
           class="flex items-center justify-center rounded-full"
           style="
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             background: ${safe ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,1)'};
           "
         >
           ${safe
-              ? `<svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5 text-white' viewBox='0 0 20 20' fill='currentColor'>
+              ? `<svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4 text-white' viewBox='0 0 20 20' fill='currentColor'>
                    <path fill-rule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z' clip-rule='evenodd'/>
                  </svg>`
-              : `<svg xmlns='http://www.w3.org/2000/svg' class='w-3.5 h-3.5 text-white' viewBox='0 0 20 20' fill='currentColor'>
+              : `<svg xmlns='http://www.w3.org/2000/svg' class='w-4 h-4 text-white' viewBox='0 0 20 20' fill='currentColor'>
                    <path fill-rule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.536-10.95a1 1 0 00-1.414-1.414L10 7.586 7.879 5.464A1 1 0 106.464 6.88L8.586 9l-2.122 2.121a1 1 0 101.415 1.415L10 10.414l2.121 2.122a1 1 0 101.415-1.415L11.414 9l2.122-2.121z' clip-rule='evenodd'/>
                  </svg>`
             }
@@ -366,20 +441,36 @@ async function getWeather() {
 
     </div>
 
+    <!-- Weather Data with Icons -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      ${advisoryItems.map(item => `
+        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10">
+          ${item.icon.startsWith('http') 
+            ? `<img src="${item.icon}" class="w-6 h-6" alt="${item.label}" />`
+            : `<span class="text-lg">${item.icon}</span>`
+          }
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs text-white/70 font-medium">${item.label}</span>
+            <span class="text-sm text-white/95 font-semibold truncate">${item.value}</span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
     <!-- Reason List -->
-    <div class="mt-2 space-y-1">
+    <div class="mt-3 pt-3 border-t border-white/10 space-y-2">
       ${reasons.length === 0
               ? `
-            <div class="flex items-start gap-2 text-xs text-white/80">
-              <span class="mt-1 w-1.5 h-1.5 rounded-full bg-white/70"></span>
-              Conditions acceptable
+            <div class="flex items-start gap-2 text-sm text-white/90 font-medium">
+              <span class="mt-1.5 w-2 h-2 rounded-full bg-white/80"></span>
+              <span>Conditions acceptable for work</span>
             </div>`
               : reasons
                 .map(
                   (r) => `
-              <div class="flex items-start gap-2 text-xs text-white/85">
-                <span class="mt-1 w-1.5 h-1.5 rounded-full bg-white/70"></span>
-                ${r}
+              <div class="flex items-start gap-2 text-sm text-white/95 font-semibold">
+                <span class="mt-1.5 w-2 h-2 rounded-full bg-white/90"></span>
+                <span>${r}</span>
               </div>
             `
                 )
@@ -467,7 +558,7 @@ async function getWeather() {
 
       // --- NEW PROFESSIONAL WEEKLY CARDS LAYOUT ---
       const weeklyList = document.createElement("div");
-      weeklyList.className = "space-y-3 mt-3";
+      weeklyList.className = "space-y-4 mt-2";
 
       // Build vertical cards for each day
       daysData.forEach((day, idx) => {
@@ -507,7 +598,7 @@ async function getWeather() {
 
         const card = document.createElement("div");
         card.className = `
-    p-2 rounded-2xl border shadow-md backdrop-blur-xl transition-all
+    p-4 rounded-2xl border shadow-md backdrop-blur-xl transition-all
     hover:scale-[1.01] hover:shadow-lg
     cursor-pointer
   `;
@@ -519,25 +610,25 @@ async function getWeather() {
           : "rgba(239,68,68,0.35)";
 
         card.innerHTML = `
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-3">
       <div>
-        <div class="text-sm font-semibold text-white">${label}</div>
-        <div class="text-[11px] text-white/60">${date.toDateString()}</div>
+        <div class="text-base font-bold text-white">${label}</div>
+        <div class="text-xs text-white/75 font-medium mt-0.5">${date.toDateString()}</div>
       </div>
 
-      <img src="${icon}" class="w-10 h-10" />
+      <img src="${icon}" class="w-12 h-12" />
     </div>
 
-    <div class="mt-2 text-white/90 text-sm capitalize">${desc}</div>
+    <div class="mb-3 text-white/95 text-sm font-semibold capitalize">${desc}</div>
 
-    <div class="flex items-center gap-5 mt-3 text-xs text-white/80">
-      <div>🌡️ ${lo}° / ${hi}°</div>
-      <div>🌧️ ${pop}%</div>
-      <div>💨 ${wind} km/h</div>
-      <div>🔆 ${uv ?? "--"}</div>
+    <div class="flex items-center gap-4 mb-4 text-sm text-white/90 font-medium">
+      <div class="flex items-center gap-1.5">🌡️ <span class="font-semibold">${lo}° / ${hi}°</span></div>
+      <div class="flex items-center gap-1.5">🌧️ <span class="font-semibold">${pop}%</span></div>
+      <div class="flex items-center gap-1.5">💨 <span class="font-semibold">${wind} km/h</span></div>
+      <div class="flex items-center gap-1.5">🔆 <span class="font-semibold">${uv ?? "--"}</span></div>
     </div>
 
-    <div class="mt-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm"
+    <div class="mb-3 flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold shadow-sm"
       style="
         width: fit-content;
         color: white;
@@ -551,21 +642,21 @@ async function getWeather() {
           }
     </div>
 
-    <div class="mt-2 space-y-1">
+    <div class="mt-3 pt-3 border-t border-white/10 space-y-1.5">
       ${reasons.length
             ? reasons
               .map(
                 (r) => `
-          <div class="flex items-start gap-2 text-[11px] text-white/75">
-            <span class="mt-1 w-1.5 h-1.5 rounded-full bg-white/70"></span> 
+          <div class="flex items-start gap-2 text-xs text-white/90 font-semibold">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/80"></span> 
             ${r}
           </div>
         `
               )
               .join("")
             : `
-          <div class="flex items-start gap-2 text-[11px] text-white/70">
-            <span class="mt-1 w-1.5 h-1.5 rounded-full bg-white/60"></span>
+          <div class="flex items-start gap-2 text-xs text-white/80 font-medium">
+            <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-white/70"></span>
             Conditions acceptable
           </div>
         `
