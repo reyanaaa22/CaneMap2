@@ -6,7 +6,6 @@ import {
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import { handlePlantingCompletion, handleBasalFertilizationCompletion, handleMainFertilizationCompletion } from './growth-tracker.js';
 import { notifyTaskAssignment } from '../Common/notifications.js';
-import { getApprovedRentedDrivers } from './driver-rental.js';
 import { getRecommendedTasksForDAP } from './task-automation.js';
 import { calculateDAP } from './growth-tracker.js';
 
@@ -16,7 +15,7 @@ onAuthStateChanged(auth, user => { currentUserId = user ? user.uid : null; });
 // Helper to escape html
 function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-// Helper function to get display name for task (supports both worker and driver tasks)
+// Helper function to get display name for task (worker tasks only)
 function getTaskDisplayName(taskValue) {
   const taskMap = {
     // Worker tasks
@@ -32,27 +31,6 @@ function getTaskDisplayName(taskValue) {
     'harvesting': 'Harvesting',
     'field_cleanup': 'Field Cleanup (Post-Harvest)',
     'ratoon_management': 'Ratoon Management',
-
-    // Driver tasks - Pre-harvest transport
-    'transport_materials': 'Transport Materials to Field',
-    'transport_fertilizer': 'Transport Fertilizer to Field',
-    'transport_equipment': 'Transport Equipment to Field',
-
-    // Driver tasks - Harvest-related
-    'pickup_harvested_cane': 'Pickup Harvested Sugarcane from Field',
-    'transport_cane_to_mill': 'Transport Cane from Field to Mill',
-    'deliver_to_collection': 'Deliver Cane to Collection Points',
-    'assist_loading_unloading': 'Assist in Loading/Unloading Sugarcane',
-    'coordinate_harvest_crew': 'Coordinate with Harvest Crew for Timing',
-    'check_cane_weight': 'Check Cane Weight at Weighbridge',
-    'return_empty_truck': 'Bring Empty Trucks Back to Fields',
-
-    // Driver tasks - General
-    'vehicle_maintenance': 'Vehicle Maintenance/Inspection',
-    'fuel_refill': 'Fuel Refill',
-    'driver_others': 'Others',
-
-    // Generic
     'others': 'Others'
   };
   return taskMap[taskValue.toLowerCase()] || taskValue;
