@@ -1,0 +1,1449 @@
+<!-- COMPLETE INPUT RECORD MODULE
+This file handles ALL functionalities described in the PDF:
+- Field dropdown fetched same way as GrowthTracker
+- Dynamic Field Operation → Task Type → Dynamic Form
+- Validation + confirmation modal
+- Firebase save with success & error UI
+- Structured data for easy filtering (operation, cost, date)
+- Responsive, animated, themed UI
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CaneMap | Input Record</title>
+
+  <!-- Icons & Tailwind -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../css/output.css" />
+
+  <style>
+    :root {
+      --cane-50:#f0f7e9;--cane-100:#d4e8b3;--cane-200:#b8d97d;
+      --cane-500:#2c5a0b;--cane-600:#3a7a0f;--cane-700:#2c5a0b;
+    }
+
+    .card{background:#fff;border:1px solid var(--cane-200);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .fade{animation:fade .25s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+    .btn{transition:.2s}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(0,0,0,.15)}
+    
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-[var(--cane-50)] to-[var(--cane-100)] min-h-screen text-gray-800">
+
+<header class="bg-white border-b">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center gap-3">
+    <a href="dashboard.html" class="text-[var(--cane-700)]"><i class="fa fa-arrow-left"></i></a>
+    <h1 class="text-xl font-bold text-[var(--cane-700)]">Input Record</h1>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto p-4 space-y-6">
+
+<!-- INFO -->
+<div class="card rounded-xl p-4 text-sm">
+  <i class="fa fa-circle-info text-[var(--cane-600)]"></i>
+  All fields are required. Please input <b>N/A</b> or <b>0</b> if not applicable.
+</div>
+
+<!-- FORM CARD -->
+<div class="card rounded-xl p-5 space-y-4 fade">
+
+  <!-- FIELD -->
+  <div>
+    <label class="text-sm font-medium">Select a Field</label>
+    <select id="fieldSelect" class="w-full mt-1 px-3 py-2 border rounded"></select>
+  </div>
+
+  <!-- OPERATION -->
+  <div>
+    <label class="text-sm font-medium">Field Operation</label>
+    <select id="operationSelect" class="w-full mt-1 px-3 py-2 border rounded">
+      <option value="">Select</option>
+      <option>Pre-Planting</option>
+      <option>Planting</option>
+      <option>Post-Planting</option>
+      <option>Bought Item</option>
+      <option>Vehicle Updates</option>
+    </select>
+  </div>
+
+  <!-- TASK TYPE -->
+  <div id="taskTypeWrap" class="hidden">
+    <label class="text-sm font-medium">Task Type</label>
+    <select id="taskType" class="w-full mt-1 px-3 py-2 border rounded"></select>
+  </div>
+
+  <!-- DYNAMIC FORM -->
+  <div id="dynamicForm" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+
+  <!-- SUBMIT -->
+  <div class="pt-4 flex justify-end">
+    <button id="submitBtn" class="btn bg-[var(--cane-700)] text-white px-6 py-2 rounded-lg">
+      Save Record
+    </button>
+  </div>
+</div>
+
+</main>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50">
+  <div class="bg-white rounded-xl p-6 w-[90%] max-w-md fade">
+    <h3 class="font-semibold mb-2">Confirm Submission</h3>
+    <p class="text-sm mb-4">Are all details correct?</p>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeConfirm()" class="px-4 py-2 border rounded">Cancel</button>
+      <button onclick="confirmSave()" class="px-4 py-2 bg-[var(--cane-700)] text-white rounded">Okay</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-lg text-white shadow-lg"></div>
+
+<script type="module">
+import { auth, db } from '../../backend/Common/firebase-config.js'
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js'
+import { collection, getDocs, addDoc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
+
+let uid=null
+let pendingPayload=null
+
+function showCenterMessage(msg) {
+  const existing = document.getElementById('centerMsgModal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'centerMsgModal';
+  modal.className = 'fixed inset-0 flex items-center justify-center bg-black/40 z-50';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl p-6 w-[90%] max-w-sm text-center">
+      <h3 class="font-semibold mb-4 text-lg">${msg}</h3>
+      <button id="closeCenterMsg" class="px-4 py-2 bg-[var(--cane-700)] text-white rounded">Okay</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('closeCenterMsg').onclick = () => modal.remove();
+}
+
+const operationMap={
+  'Pre-Planting':['Land Assessment','Land Clearing', 'Sub-Soiling','Soil Analysis','Plowing','Harrowing','Furrow Making','Lime Application','Pre-Planting Fertilization (basal)','Seed Cane Preparation'],
+  'Planting':['Planting Operation','Replanting Operation'],
+  'Post-Planting':['Germination Monitoring','Post-Planting Fertilization', 'Cultivation', 'Weeding','Drainage', 'Irrigation', 'Side Cleaning', 'Control of Pest & Diseases','Earthing-Up','Growth Monitoring','Pre-Harvest Assessment','Harvesting', 'Hauling', 'Ratooning'],
+
+   'Vehicle Updates': ['Vehicle Updates']
+}
+
+// FULL TASK → INPUT FIELD MAP (from PDF)
+const taskFieldMap = {
+"Land Assessment": [
+  { id:'assessmentDate', label:'Assessment Date', type:'date' },
+
+  { id:'fieldArea', label:'Field Area (hectare)', type:'number', step:'0.01' },
+
+  { id:'soilType', label:'Soil Type', type:'select',
+    options:[
+      'Clay',
+      'Loam',
+      'Sandy',
+      'Silty',
+      'Clay Loam',
+      'Sandy Loam',
+      'Peat',
+      'Others'
+    ] 
+  },
+
+{ 
+  id:'drainage', 
+  label:'Drainage Condition', 
+  type:'select',
+  options:[
+    'Well Drained: Roots healthy, max growth and yield',
+    'Moderately Drained: Growth okay but slower sometimes',
+    'Poorly Drained: Roots suffocate, yield drops'
+  ] 
+},
+
+  { id:'previousCrop', label:'Previous Crop', type:'select',
+    options:[
+      'Sugarcane',
+      'Rice',
+      'Corn',
+      'Vegetables',
+      'Fallow',
+      'Others'
+    ] 
+  },
+
+],
+
+
+  "Land Clearing": [
+    { id:'startDate', label:'Start Date', type:'date' },
+    { id:'endDate', label:'End Date', type:'date' },
+
+    { id:'method', label:'Clearing Method', type:'select',
+      options:['Manual','Mechanical','Animal-Drawn','Herbicide'] },
+
+    { id:'equipment', label:'Equipment Used', type:'text' },
+    { id:'workers', label:'Number of Workers', type:'number' },
+    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+    { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+  ],
+
+
+"Sub-Soiling": [
+  { id:'date', label:'Date', type:'date' },
+  { id:'depth', label:'Depth (cm)', type:'number' },
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select',
+    options:[
+      'Tractor with Subsoiler/Shank',
+      'Animal-Drawn',
+      'Ripper/Chisel Plow',
+      'Manual Tools',
+      'Others'
+    ]
+  },
+  { id:'operators', label:'Number of Operators', type:'number' },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+"Soil Analysis": [
+  { id:'samplingDate', label:'Sampling Date', type:'date' },
+  { id:'samplingDepth', label:'Sampling Depth (cm)', type:'number', step:'0.01' },
+  { 
+    id:'soilTexture', 
+    label:'Soil Texture', 
+    type:'select',
+    options:[
+      'Clay',
+      'Silt',
+      'Sand',
+      'Loam',
+      'Sandy Loam',
+      'Clay Loam',
+      'Silty Clay',
+      'Peat / Organic',
+      'Others'
+    ]
+  },
+  { id:'pH', label:'Soil pH', type:'number', step:'0.01' },
+  { id:'organicMatter', label:'Organic Matter (%)', type:'number', step:'0.01' },
+  { id:'nitrogen', label:'Nitrogen (N) ppm', type:'number', step:'0.01' },
+  { id:'phosphorus', label:'Phosphorus (P) ppm', type:'number', step:'0.01' },
+  { id:'potassium', label:'Potassium (K) ppm', type:'number', step:'0.01' },
+  { id:'calcium', label:'Calcium (Ca) ppm', type:'number', step:'0.01' },
+  { id:'magnesium', label:'Magnesium (Mg) ppm', type:'number', step:'0.01' },
+
+],
+
+
+"Plowing": [
+    { id:'date', label:'Date', type:'date' },
+    { id:'depth', label:'Depth (cm)', type:'number' },
+    { 
+      id:'equipment', 
+      label:'Equipment / Method', 
+      type:'select', 
+      options:['Manual','Animal-Drawn','Mechanical','Others'] 
+    },
+    { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+    { id:'operators', label:'Number of Operators', type:'number' },
+    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+    { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+  ],
+
+"Harrowing": [
+    { id:'date', label:'Date', type:'date' },
+    { id:'passes', label:'Passes (No. of times harrowed)', type:'number' },
+    { 
+      id:'equipment', 
+      label:'Equipment / Method', 
+      type:'select', 
+      options:['Manual','Animal-Drawn','Mechanical','Others'] 
+    },
+    { id:'operator', label:'Number of Operators', type:'number' },
+    { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+    { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+  ],
+
+"Furrow Making": [
+  { id:'date', label:'Date', type:'date' },
+  { id:'rowSpacing', label:'Row Spacing (cm)', type:'number' },
+  { id:'furrowDepth', label:'Furrow Depth (cm)', type:'number' },
+  { 
+    id:'method', 
+    label:'Method', 
+    type:'select', 
+    options:['Manual', 'Animal-Drawn', 'Mechanical', 'Others'] 
+  },
+    { id:'workers', label:'Number of Workers', type:'number' },
+    { id:'cost', label:'Cost', type:'number', step:'0.01' }
+  ],
+
+"Lime Application": [
+  { id:'applicationDate', label:'Application Date', type:'date' },
+
+  { 
+    id:'limeType', 
+    label:'Lime Type', 
+    type:'select', 
+    options:[
+      'Agricultural Lime (Calcitic)',
+      'Dolomitic Lime',
+      'Pelletized Lime',
+      'Others'
+    ] 
+  },
+
+  { id:'amountApplied', label:'Amount Applied (kg/ha)', type:'number', step:'0.01' },
+
+  { 
+    id:'applicationMethod', 
+    label:'Application Method', 
+    type:'select', 
+    options:[
+      'Broadcast', 
+      'Banded', 
+      'Incorporated', 
+      'Others'
+    ] 
+  },
+
+  { id:'operators', label:'Number of Operators', type:'number' },
+
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:[
+      'Tractor with Spreader', 
+      'Manual Spreading', 
+      'Animal-Drawn', 
+      'Others'
+    ] 
+  },
+
+  { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+
+"Pre-Planting Fertilization (basal)": [
+  { id:'date', label:'Date', type:'date' },
+
+  { id:'fertilizerType', label:'Fertilizer Type', type:'select',
+    options:[
+      'Urea (46-0-0)',
+      'Ammonium Sulfate (21-0-0)',
+      'Complete (14-14-14)',
+      'DAP (18-46-0)',
+      'MOP (0-0-60)',
+      '16-20-20',
+      'Organic Fertilizer',
+      'Liquid Fertilizer/BMOs',
+      'Mudpress',
+      'Rock Phosphate',
+      'Others'
+    ] 
+  },
+
+  { id:'amount', label:'Amount Applied (kg)', type:'number', step:'0.01' },
+
+  { id:'applicationMethod', label:'Application Method', type:'select',
+    options:[
+      'Broadcasting',
+      'Banding',
+      'Side Dressing',
+      'Foliar Spray',
+      'Mudpress Application',
+      'Others'
+    ] 
+  },
+
+  // New fields for hauling & mixing, and spraying
+  { id:'haulingMixingCost', label:'Hauling & Mixing Cost', type:'number', step:'0.01' },
+  { id:'sprayingCost', label:'Spraying Cost', type:'number', step:'0.01' },
+
+  { id:'workers', label:'Number of Workers', type:'number' },
+  { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+],
+
+
+"Seed Cane Preparation": [
+  { id:'date', label:'Date', type:'date' },
+
+  { id:'variety', label:'Variety', type:'text' },
+  { id:'workers', label:'Number of Workers', type:'number' },
+  { id:'seedSource', label:'Seed Source', type:'text' },
+  { id:'seedAge', label:'Seed Age (months)', type:'number' },
+
+  { 
+    id:'treatment', 
+    label:'Treatment', 
+    type:'select', 
+    options:[
+      'None',
+      'Fungicide',
+      'Insecticide',
+      'Hot Water Treatment',
+      'Biological Treatment',
+      'Others'
+    ]
+  },
+
+  { id:'quantity', label:'Quantity Prepared', type:'number' },
+  { id:'cost', label:'Cost', type:'number', step:'0.01' }
+],
+
+"Planting Operation": [
+  { id:'plantingDate', label:'Planting Date', type:'date' },
+  { id:'variety', label:'Variety', type:'text' },
+  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
+
+  // Cost of cane points
+  { id:'canePointsCost', label:'Cost of Cane Points', type:'number', step:'0.01' },
+
+  // Labor for preparation of cane points
+  { id:'prepLabor', label:'Labor for Preparation of Cane Points', type:'number', step:'0.01' },
+
+  // Hauling of cane points
+  { id:'haulingCost', label:'Hauling of Cane Points', type:'number', step:'0.01' },
+
+  // Detrashing
+  { id:'detrashingCost', label:'Detrashing Cost', type:'number', step:'0.01' },
+
+  // Selection & counting of cane points
+  { id:'selectionCountingCost', label:'Selection & Counting of Cane Points', type:'number', step:'0.01' },
+
+  // Cane points treatment
+  { 
+    id:'caneTreatment', 
+    label:'Cane Points Treatment', 
+    type:'select',
+    options:[
+      'None',
+      'Fungicide',
+      'Insecticide',
+      'Hot Water',
+      'Biological',
+      'Others'
+    ]
+  },
+  { id:'treatmentCost', label:'Treatment Cost (Labor, Chemicals etc.)', type:'number', step:'0.01' },
+
+  // Planting of cane points
+  { 
+    id:'plantingMethod', 
+    label:'Planting Method', 
+    type:'select', 
+    options:['Manual','Mechanical','Others'] 
+  },
+
+    // Number of workers
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  { id:'plantingLaborCost', label:'Labor Cost for Planting', type:'number', step:'0.01' },
+
+  // Total cost
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+],
+
+"Replanting Operation": [
+  { id:'replantingDate', label:'Replanting Date', type:'date' },
+  { id:'variety', label:'Variety', type:'text' },
+  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
+
+  // Cost of materials
+  { id:'canePointsCost', label:'Cost of Cane Points', type:'number', step:'0.01' },
+  { id:'chippedTillersCost', label:'Cost of Chipped Tillers', type:'number', step:'0.01' },
+
+  // Labor for preparation of materials
+  { id:'prepLabor', label:'Labor for Preparation of Materials', type:'number', step:'0.01' },
+
+  // Planting method
+  { 
+    id:'plantingMethod', 
+    label:'Planting Method', 
+    type:'select', 
+    options:['Manual','Mechanical','Others'] 
+  },
+
+  // Number of workers
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  // Labor cost for planting
+  { id:'plantingLaborCost', label:'Labor Cost for Planting', type:'number', step:'0.01' },
+
+  // Total cost
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+],
+
+
+"Post-Planting Fertilization": [
+  { id:'date', label:'Date', type:'date' },
+
+  { id:'fertilizerType', label:'Fertilizer Type', type:'select',
+    options:[
+      'Urea (46-0-0)',
+      'Ammonium Sulfate (21-0-0)',
+      'Complete (14-14-14)',
+      'DAP (18-46-0)',
+      'MOP (0-0-60)',
+      '16-20-20',
+      'Organic Fertilizer',
+      'Liquid Fertilizer/BMOs',
+      'Mudpress',
+      'Rock Phosphate',
+      'Others'
+    ] 
+  },
+
+  { id:'amount', label:'Amount Applied (kg)', type:'number', step:'0.01' },
+
+  { id:'applicationMethod', label:'Application Method', type:'select',
+    options:[
+      'Broadcasting',
+      'Banding',
+      'Side Dressing',
+      'Foliar Spray',
+      'Mudpress Application',
+      'Others'
+    ] 
+  },
+
+  // New fields for hauling & mixing, and spraying
+  { id:'haulingMixingCost', label:'Hauling & Mixing Cost', type:'number', step:'0.01' },
+  { id:'sprayingCost', label:'Spraying Cost', type:'number', step:'0.01' },
+
+  { id:'workers', label:'Number of Workers', type:'number' },
+  { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+],
+
+"Cultivation": [
+  { id:'date', label:'Date', type:'date' },
+
+  { 
+    id:'method', 
+    label:'Method', 
+    type:'select', 
+    options:['Manual','Animal-Drawn','Tractor/Mechanical','Others'] 
+  },
+
+  { 
+    id:'cultivationOperation', 
+    label:'Cultivation Operation', 
+    type:'select', 
+    options:[
+      'Ridge-Busting',
+      '1st Off-Barring',
+      '2nd Off-Barring',
+      'On-Barring / Barring',
+      'Hilling-Up',
+      'Off-Barring',
+      'Middle Ridge',
+      'Cut-Away',
+      'Chipper',
+      'Chisel',
+      'Others'
+    ]
+  },
+
+  { id:'workers', label:'Number of Workers', type:'number' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+"Weeding": [
+  { id:'date', label:'Date', type:'date' },
+
+  { 
+    id:'method', 
+    label:'Weeding Method', 
+    type:'select', 
+    options:['Manual Weeding','Chemical Weeding','Others'] 
+  },
+
+  // Only shown if Chemical Weeding is selected
+  { 
+    id:'herbicide', 
+    label:'Herbicide / Chemical Name', 
+    type:'select',
+    options:[
+      'Glyphosate',
+      'Paraquat',
+      '2,4-D',
+      'Atrazine',
+      'Simazine',
+      'Others'
+    ],
+    dependsOn:{ field:'method', values:['Chemical Weeding'] } 
+  },
+
+  { id:'dosage', label:'Dosage (kg or L per ha)', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+
+  { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01' },
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  // Costs
+  { id:'chemicalCost', label:'Chemical Cost', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+
+"Drainage": [
+  { id:'drainageDate', label:'Date', type:'date' },
+  
+  { 
+    id:'drainageType', 
+    label:'Type of Drainage', 
+    type:'select',
+    options:[
+      'Open Ditch',
+      'Subsurface / Tile',
+      'Contour Drain',
+      'Raised Bed',
+      'Others'
+    ]
+  },
+
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select',
+    options:[
+      'Excavator',
+      'Backhoe',
+      'Tractor',
+      'Manual Tools',
+      'Others'
+    ]
+  },
+
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'materialCost', label:'Material / Construction Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+
+"Irrigation": [
+  { id:'irrigationDate', label:'Date', type:'date' },
+
+  { 
+    id:'irrigationMethod', 
+    label:'Irrigation Method', 
+    type:'select',
+    options:[
+      'Flooding',
+      'Furrow',
+      'Sprinkler',
+      'Drip',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'waterSource', 
+    label:'Water Source', 
+    type:'select',
+    options:[
+      'Canal',
+      'Well / Pump',
+      'Rainfed',
+      'River / Stream',
+      'Others'
+    ]
+  },
+
+  { id:'duration', label:'Duration (hours)', type:'number', step:'0.01' },
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select',
+    options:[
+      'Pump',
+      'Sprinkler System',
+      'Irrigation Canal Tools',
+      'Manual Tools',
+      'Others'
+    ]
+  },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'materialCost', label:'Material / Pump Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+
+"Side Cleaning": [
+  { id:'cleaningDate', label:'Date', type:'date' },
+
+  { 
+    id:'cleaningMethod', 
+    label:'Cleaning Method', 
+    type:'select',
+    options:[
+      'Manual',
+      'Mechanical',
+      'Herbicide / Chemical',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'chemicalUsed', 
+    label:'Herbicide / Chemical Name', 
+    type:'select',
+    options:[
+      'Glyphosate',
+      'Paraquat',
+      '2,4-D',
+      'Atrazine',
+      'Others'
+    ],
+    dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] }
+  },
+
+  { id:'dosage', label:'Dosage (L or kg)', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
+  { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01' },
+  { id:'workers', label:'Number of Workers', type:'number' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'chemicalCost', label:'Chemical Cost', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+"Control of Pest & Diseases": [
+  { id:'cpdDate', label:'Date', type:'date' },
+  { id:'workers', label:'Number of Workers', type:'number' },
+
+  { 
+    id:'pestDisease', 
+    label:'Pest / Disease Identified', 
+    type:'select', 
+    options:[
+      'Borer',
+      'Rodents',
+      'Others'
+    ]
+  },
+
+  { id:'affectedArea', label:'Affected Area (ha)', type:'number', step:'0.01' },
+
+  { 
+    id:'severity', 
+    label:'Severity', 
+    type:'select', 
+    options:['Low','Medium','High'] 
+  },
+
+  { 
+    id:'controlMethod', 
+    label:'Control Method', 
+    type:'select',
+    options:[
+      'Trichogramma Release',
+      'Rodent Control',
+      'Chemical Spray',
+      'Others'
+    ]
+  },
+{ 
+  id:'chemical', 
+  label:'Chemical Used', 
+  type:'select',
+  options:[
+    'Glyphosate',
+    'Chlorpyrifos',
+    'Carbofuran',
+    'Imidacloprid',
+    'Thiamethoxam',
+    'Mancozeb',
+    'Others'
+  ],
+  dependsOn:{ field:'controlMethod', values:['Chemical Spray'] }
+},
+
+  { 
+    id:'dosage', 
+    label:'Dosage (kg/L per ha)', 
+    type:'number',
+    step:'0.01',
+    dependsOn:{ field:'controlMethod', values:['Chemical Spray'] }
+  },
+
+
+  { id:'areaTreated', label:'Area Treated (ha)', type:'number', step:'0.01' },
+  { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
+
+],
+
+"Earthing-Up": [
+  { id:'earthingDate', label:'Date of Earthing-Up', type:'date' },
+
+  { 
+    id:'method', 
+    label:'Method Used', 
+    type:'select',
+    options:[
+      'Manual',
+      'Animal-Drawn',
+      'Mechanical (Tractor)',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'depth', 
+    label:'Soil Heaping Depth (cm)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'rowCoverage', 
+    label:'Rows Covered', 
+    type:'number'
+  },
+
+  { 
+    id:'workers', 
+    label:'Number of Workers', 
+    type:'number'
+  },
+
+  { 
+    id:'laborCost', 
+    label:'Labor Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'fuelCost', 
+    label:'Fuel Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'totalCost', 
+    label:'Total Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+],
+
+"Harvesting": [
+  { id:'harvestDate', label:'Harvest Date', type:'date' },
+
+  { 
+    id:'harvestMethod', 
+    label:'Harvesting Method', 
+    type:'select',
+    options:[
+      'Manual',
+      'Mechanical',
+      'Manual + Mechanical',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'caneType', 
+    label:'Cane Type', 
+    type:'select',
+    options:[
+      'Plant Cane',
+      'Ratoon Cane'
+    ]
+  },
+
+  { 
+    id:'yieldTcHa', 
+    label:'Yield (tc/ha)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'areaHarvested', 
+    label:'Area Harvested (ha)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'totalCaneYield', 
+    label:'Total Cane Yield (tons)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'workers', 
+    label:'Number of Workers', 
+    type:'number'
+  },
+
+  { 
+    id:'transportUsed', 
+    label:'Transport Used', 
+    type:'select',
+    options:[
+      'Truck',
+      'Tractor + Trailer',
+      'Animal-Drawn Cart',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'harvestCost', 
+    label:'Harvest Cost (Cutting & Loading)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'transportCost', 
+    label:'Transport Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'totalCost', 
+    label:'Total Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+
+], 
+
+"Hauling": [
+  { id:'haulingDate', label:'Hauling Date', type:'date' },
+
+  { 
+    id:'caneType', 
+    label:'Cane Type', 
+    type:'select',
+    options:[
+      'Plant Cane',
+      'Ratoon Cane'
+    ]
+  },
+
+  { 
+    id:'haulingType', 
+    label:'Hauling Type', 
+    type:'select',
+    options:[
+      'Infield Hauling',
+      'Mill / Outfield Hauling'
+    ]
+  },
+
+  { 
+    id:'transportUsed', 
+    label:'Transport Used', 
+    type:'select',
+    options:[
+      'Truck',
+      'Tractor + Trailer',
+      'Animal-Drawn Cart',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'distance', 
+    label:'Distance Covered (km)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'caneLoaded', 
+    label:'Cane Loaded (tons)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'fuelCost', 
+    label:'Fuel Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'laborCost', 
+    label:'Labor Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'haulingExpense', 
+    label:'Total Hauling Expense', 
+    type:'number',
+    step:'0.01'
+  },
+
+
+],
+
+"Ratooning": [
+  { id:'ratoonDate', label:'Ratooning Date', type:'date' },
+
+  { 
+    id:'ratoonOperation', 
+    label:'Ratooning Operation', 
+    type:'select',
+    options:[
+      'Trash Mulching',
+      'Trash Burning',
+      'Trash Clearing',
+      'Stubble Shaving',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'method', 
+    label:'Method Used', 
+    type:'select',
+    options:[
+      'Manual',
+      'Mechanical',
+      'Manual + Mechanical',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'areaCovered', 
+    label:'Area Covered (ha)', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'workers', 
+    label:'Number of Workers', 
+    type:'number'
+  },
+
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select',
+    options:[
+      'Trash Shredder',
+      'Mower',
+      'Tractor',
+      'Manual Tools',
+      'Others'
+    ]
+  },
+
+  { 
+    id:'laborCost', 
+    label:'Labor Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'fuelCost', 
+    label:'Fuel Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+  { 
+    id:'totalCost', 
+    label:'Total Cost', 
+    type:'number',
+    step:'0.01'
+  },
+
+
+],
+
+ "Vehicle Updates": [
+    {id:'date', label:'Date', type:'date'},
+    {id:'activeDrivers', label:'Active Drivers', type:'number'},
+    {id:'returningDrivers', label:'Returning Drivers', type:'number'},
+    {id:'boxes', label:'Boxes Transported', type:'number'},
+    {id:'weight', label:'Total Cane Weight', type:'number'},
+    {id:'fuelCost', label:'Fuel Cost', type:'fuel'}, 
+    {id:'laborCost', label:'Labor Cost', type:'number'},
+    {id:'totalCost', label:'Total Cost', type:'number', readonly: true},
+    {id:'vehicleType', label:'Vehicle Type', type:'select', options:['Truck', 'Tractor', 'Other']},
+    {id:'driverRent', label:'Is Driver/Worker Rented?', type:'select', options:['Yes','No','Other']},
+  ]
+};
+
+onAuthStateChanged(auth,async user=>{
+  if(!user)return location.href='../Common/farmers_login.html'
+  uid=user.uid
+  loadFields()
+})
+
+async function loadFields(){
+  const q = query(collection(db,'fields'), where('userId','==',uid));
+  const snap = await getDocs(q);
+
+  // Add default "Select" option first
+  fieldSelect.innerHTML = '<option value="">Select</option>' + 
+    snap.docs.map(d => `<option value="${d.id}">${d.data().field_name}</option>`).join('');
+}
+
+operationSelect.onchange = () => {
+  const operation = operationSelect.value;
+  const tasks = operationMap[operation] || [];
+
+  dynamicForm.innerHTML = '';
+
+  if (!tasks.length) return;
+
+  // If only one task → auto render (e.g. Vehicle Updates)
+  if (tasks.length === 1) {
+    taskTypeWrap.classList.add('hidden');
+    taskType.value = tasks[0];
+    renderForm(tasks[0]);
+  } 
+  // If multiple tasks → ask task type
+  else {
+    taskTypeWrap.classList.remove('hidden');
+    taskType.innerHTML =
+      '<option value="">Select</option>' +
+      tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+  }
+};
+
+taskType.onchange=()=>renderForm(taskType.value)
+
+function renderForm(type){
+  dynamicForm.innerHTML = '';
+  const fields = taskFieldMap[type] || [];
+
+  fields.forEach(f => {
+    let inputHTML = '';
+
+    // 🔽 SELECT WITH "Other" OPTION
+    if(f.type === 'select'){
+      inputHTML = `
+        <select id="${f.id}" class="w-full border rounded px-3 py-2" onchange="handleOtherSelect('${f.id}')" required>
+          <option value="">Select</option>
+          ${f.options.map(opt=>`<option value="${opt}">${opt}</option>`).join('')}
+        </select>
+        <input type="text" id="${f.id}_other" placeholder="Please specify" class="w-full border rounded px-3 py-2 mt-2 hidden" />
+      `;
+    } 
+
+    // 🔢 NUMBER INPUT (regular)
+    else if(f.type === 'number'){
+      // check kung weight or laborCost
+      if(f.id === 'weight' || f.id === 'laborCost'){
+        inputHTML = `
+          <div id="${f.id}Container">
+            <div class="flex mb-2">
+              <input type="number" class="${f.id}Input border rounded px-3 py-2 mr-2" value="0" />
+              <button type="button" id="add${f.id}Btn" class="border rounded px-3 py-2">+</button>
+            </div>
+            <div id="${f.id}Sum" class="font-bold">Total ${f.label}: 0</div>
+            <input type="hidden" id="${f.id}" />
+          </div>
+        `;
+      } else {
+        inputHTML = `<input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+      }
+    }
+
+    // 📅 DATE
+    else if(f.type === 'date'){
+      inputHTML = `<input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+    }
+
+    // 💰 FUEL COST DYNAMIC INPUTS
+    else if(f.type === 'fuel'){
+      inputHTML = `
+        <div id="fuelContainer">
+          <div class="flex mb-2">
+            <input type="number" class="fuelInput border rounded px-3 py-2 mr-2" value="0" />
+            <button type="button" id="addFuelBtn" class="border rounded px-3 py-2">+</button>
+          </div>
+          <div id="fuelSum" class="font-bold">Total Fuel Cost: 0</div>
+        </div>
+      `;
+    }
+
+    // ✏️ TEXT (DEFAULT)
+    else {
+      inputHTML = `<input type="text" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+    }
+
+    // Append field
+    dynamicForm.innerHTML += `
+      <div class="mb-4">
+        <label class="text-xs font-medium">${f.label}</label>
+        ${inputHTML}
+      </div>
+    `;
+  });
+
+  // --- SPECIAL HANDLING ---
+
+  // 1️⃣ Dynamic inputs handler (weight, laborCost, fuel)
+  ['weight','laborCost','fuel'].forEach(field => {
+    const container = document.getElementById(field + 'Container');
+    if(!container) return;
+
+    let count = 1;
+    const maxInputs = 5;
+
+    const addBtn = document.getElementById('add' + field + 'Btn');
+    if(addBtn){
+      addBtn.addEventListener('click', () => {
+        if(count >= maxInputs) return;
+        const newDiv = document.createElement('div');
+        newDiv.classList.add('flex','mb-2');
+        newDiv.innerHTML = `<input type="number" class="${field}Input border rounded px-3 py-2 mr-2" value="0" />`;
+        container.insertBefore(newDiv, document.getElementById(field + 'Sum'));
+        count++;
+        newDiv.querySelector('input').addEventListener('input', updateSum);
+        updateSum();
+      });
+    }
+
+    function updateSum(){
+      const inputs = container.querySelectorAll('.' + field + 'Input');
+      let sum = 0;
+      inputs.forEach(i => sum += Number(i.value) || 0);
+      document.getElementById(field + 'Sum').innerText = `Total ${field === 'weight' ? 'Cane Weight' : field==='laborCost' ? 'Labor Cost' : 'Fuel Cost'}: ${sum}`;
+      const hiddenInput = document.getElementById(field);
+      if(hiddenInput) hiddenInput.value = sum;
+    }
+
+    // Initial attach
+    container.querySelectorAll('input').forEach(i => i.addEventListener('input', updateSum));
+    updateSum();
+  });
+
+  // --- 3️Auto-calculate Total Cost ---
+    function updateTotalCost(){
+    const fuel = Number(document.getElementById('fuel')?.value) || 0;
+    const labor = Number(document.getElementById('laborCost')?.value) || 0;
+    const totalCostInput = document.getElementById('totalCost');
+    if(totalCostInput){
+        totalCostInput.value = fuel + labor;
+    }
+    }
+
+    // Call updateTotalCost whenever fuel or laborCost changes
+    ['fuel','laborCost'].forEach(field => {
+    const container = document.getElementById(field + 'Container');
+    if(container){
+        container.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', updateTotalCost);
+        });
+    }
+    });
+
+    // Also update once initially in case of prefilled values
+    updateTotalCost();
+
+}
+
+// Handle “Other” input for selects
+function handleOtherSelect(id){
+  const select = document.getElementById(id);
+  const otherInput = document.getElementById(`${id}_other`);
+  if(select.value === 'Other'){
+    otherInput.classList.remove('hidden');
+    otherInput.required = true;
+  } else {
+    otherInput.classList.add('hidden');
+    otherInput.required = false;
+  }
+}
+
+
+submitBtn.onclick = () => {
+  const requiredFields = [fieldSelect, operationSelect, taskType];
+  let hasEmpty = false;
+
+  requiredFields.forEach(el => {
+    if(!el.value){
+      el.classList.add('border-red-500');
+      el.focus();
+      const removeRed = () => {
+        el.classList.remove('border-red-500');
+        el.removeEventListener('input', removeRed);
+        el.removeEventListener('change', removeRed);
+      };
+      el.addEventListener('input', removeRed);
+      el.addEventListener('change', removeRed);
+      hasEmpty = true;
+    }
+  });
+
+  if(hasEmpty) return;
+
+  const fields = taskFieldMap[taskType.value] || [];
+  const recordData = {};
+
+for(const f of fields){
+  const value = getFinalValue(f.id);
+
+  // allow 0 for numbers, but not empty string for text
+  if(value === '' || value === null){
+    const el = document.getElementById(f.id);
+    const other = document.getElementById(f.id + '_other');
+    el?.classList.add('border-red-500');
+    other?.classList.add('border-red-500');
+    el?.focus();
+
+    const removeRed = () => {
+      el?.classList.remove('border-red-500');
+      other?.classList.remove('border-red-500');
+      el?.removeEventListener('input', removeRed);
+      el?.removeEventListener('change', removeRed);
+    };
+    el?.addEventListener('input', removeRed);
+    el?.addEventListener('change', removeRed);
+
+    return;
+  }
+
+  recordData[f.id] = value;
+}
+
+  pendingPayload = {
+    userId: uid,
+    fieldId: fieldSelect.value,
+    operation: operationSelect.value,
+    taskType: taskType.value,
+    data: recordData,
+    createdAt: serverTimestamp()
+  };
+
+  confirmModal.classList.remove('hidden');
+};
+
+
+window.confirmSave = async () => {
+  console.log('Saving...', pendingPayload);
+
+  // Create a centered success modal
+  const successModal = document.createElement('div');
+  successModal.className = 'fixed inset-0 flex items-center justify-center bg-black/40 z-50';
+  successModal.innerHTML = `
+    <div class="bg-white rounded-xl p-6 w-[90%] max-w-sm text-center">
+      <h3 class="font-semibold mb-4 text-lg">Record saved successfully!</h3>
+      <button id="okBtn" class="px-4 py-2 bg-[var(--cane-700)] text-white rounded">Okay</button>
+    </div>
+  `;
+  document.body.appendChild(successModal);
+
+  try {
+    await addDoc(collection(db, 'records'), pendingPayload)
+  } catch(e) {
+    console.error(e)
+    toast('Failed to save record', true)
+    successModal.remove()
+    return
+  }
+
+  document.getElementById('okBtn').onclick = () => {
+    successModal.remove()
+    location.reload()  // ✅ refresh page after user clicks Okay
+  }
+
+  closeConfirm()
+}
+
+
+window.closeConfirm=()=>confirmModal.classList.add('hidden')
+
+function toast(msg,err=false){
+  toastEl.className=`fixed bottom-5 right-5 px-4 py-3 rounded-lg text-white ${err?'bg-red-600':'bg-green-600'}`
+  toastEl.textContent=msg
+  toastEl.classList.remove('hidden')
+  setTimeout(()=>toastEl.classList.add('hidden'),3000)
+}
+
+
+window.handleOthers = (id) => {
+  const select = document.getElementById(id);
+  const otherInput = document.getElementById(id + '_other');
+
+  if(!select || !otherInput) return;
+
+  if(select.value === 'Others'){
+    otherInput.classList.remove('hidden');
+    otherInput.required = true;
+  } else {
+    otherInput.classList.add('hidden');
+    otherInput.required = false;
+    otherInput.value = '';
+  }
+};
+
+function getFinalValue(id){
+  const el = document.getElementById(id);
+  const other = document.getElementById(id + '_other');
+  if(!el) return null;
+
+  if(el.tagName === 'SELECT' && el.value === 'Others'){
+    return other?.value || '';
+  }
+
+  // ✅ Convert number inputs to number type
+  if(el.type === 'number') return parseFloat(el.value) || 0;
+
+  return el.value;
+}
+
+const toastEl=document.getElementById('toast')
+</script>
+
+</body>
+</html>
