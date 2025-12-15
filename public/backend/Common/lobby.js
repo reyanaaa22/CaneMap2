@@ -1406,42 +1406,22 @@ function openJoinModal(field) {
   modal.querySelector("#closeJoinModal").onclick = () => modal.remove();
 
   const userId = localStorage.getItem("userId");
-  checkPendingRoles(userId).then(({ hasPendingWorker, hasPendingDriver }) => {
-    const joinWorker = modal.querySelector("#joinWorker");
+  checkPendingRoles(userId).then(({ hasPendingDriver }) => {
     const joinDriver = modal.querySelector("#joinDriver");
     const notice = modal.querySelector("#pendingNotice");
+    if (!joinDriver || !notice) return;
 
-    // 🔹 CASE 1: Has pending DRIVER badge → both disabled
-    if (hasPendingDriver && !hasPendingWorker) {
-      joinWorker.disabled = true;
+    // If user already has a pending driver badge/join, disable button
+    if (hasPendingDriver) {
       joinDriver.disabled = true;
-      joinWorker.classList.add("opacity-60", "cursor-not-allowed");
       joinDriver.classList.add("opacity-60", "cursor-not-allowed");
       notice.textContent =
-        "You can’t join as a worker because you already have a pending driver's badge request. Please wait until it’s approved.";
+        "You already have a pending driver's badge request. Please wait until it’s approved.";
       notice.classList.remove("hidden");
       return;
     }
 
-    // 🔹 CASE 2: Has pending WORKER join → only disable Driver
-    if (hasPendingWorker && !hasPendingDriver) {
-      joinDriver.disabled = true;
-      joinDriver.classList.add("opacity-60", "cursor-not-allowed");
-      notice.textContent =
-        "You can’t join as a driver because you already have a pending join request. You can only join as a worker.";
-      notice.classList.remove("hidden");
-      joinWorker.onclick = () => {
-        modal.remove();
-        openConfirmJoinModal(field, "worker");
-      };
-      return;
-    }
-
-    // 🔹 CASE 3: No conflicts → both open normally
-    joinWorker.onclick = () => {
-      modal.remove();
-      openConfirmJoinModal(field, "worker");
-    };
+    // No conflicts → allow normal join
     joinDriver.onclick = () => {
       modal.remove();
       openDriverBadgeModal();
@@ -1613,9 +1593,7 @@ async function confirmJoin(field, role) {
     );
 
     // ✅ Optimistic update: immediately set pending flag in localStorage
-    // Worker role removed
-      localStorage.setItem("pendingWorker", "true");
-    } else if (role === "driver") {
+    if (role === "driver") {
       localStorage.setItem("pendingDriver", "true");
     }
 
@@ -2783,18 +2761,6 @@ document.addEventListener("DOMContentLoaded", function () {
           pendingDriverBadge ||
           pendingJoinField;
 
-        // 🔥 If should be hidden (same logic as your dropdown)
-        const shouldHide =
-          role === "handler" ||
-          (role === "farmer" && farmerHasPending);
-
-        // 🔥 Override ALL icon visibility BEFORE viewport rules run
-        if (shouldHide) {
-          if (regBtn) regBtn.style.display = "none";
-          if (mobileDriverBtn) mobileDriverBtn.style.display = "none";
-        }
-
-
         // 🔽 Elements
         const headerDriverLink = document.querySelector('a[href="#driver-badge"]');
         const promoSection = document.getElementById("driver-badge");
@@ -2807,6 +2773,11 @@ document.addEventListener("DOMContentLoaded", function () {
           '#profileDropdown a[href*="Register-field.html"]'
         );
         const regBtn = document.getElementById("btnRegisterField");
+
+        // 🔥 If should be hidden (same logic as your dropdown)
+        const shouldHide =
+          role === "handler" ||
+          (role === "farmer" && farmerHasPending);
 
         // 🔥 APPLY HIDING LOGIC
         if (headerDriverLink) headerDriverLink.style.display = shouldHide ? "none" : "";
@@ -2833,9 +2804,14 @@ document.addEventListener("DOMContentLoaded", function () {
             a.style.pointerEvents = '';
           } catch (_) { }
         }
-        // Worker role removed
-          if (dropdownDriverLink) { if (shouldHide) disableLink(dropdownDriverLink); else enableLink(dropdownDriverLink); }
-          if (regFieldDropdown) { if (shouldHide) disableLink(regFieldDropdown); else enableLink(regFieldDropdown); }
+        // Apply disabling for dropdown/register links when hidden
+        if (dropdownDriverLink) {
+          if (shouldHide) disableLink(dropdownDriverLink);
+          else enableLink(dropdownDriverLink);
+        }
+        if (regFieldDropdown) {
+          if (shouldHide) disableLink(regFieldDropdown);
+          else enableLink(regFieldDropdown);
         }
 
       } catch (err) {

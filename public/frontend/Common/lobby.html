@@ -1553,67 +1553,9 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
         const id = setInterval(() => { update(); if (++checks > 15) clearInterval(id); }, 2000);
       })();
 
-      // Transform any list-based weather widget into: Big Today + compact side list
-      (function(){
-        const container = document.getElementById('weatherForecast');
-        if (!container) return;
- 
-        function parseItemText(txt){
-          const t = (txt||'').trim();
-          const nameMatch = t.match(/(Today|Tomorrow|Mon|Tue|Wed|Thu|Fri|Sat|Sun|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i);
-          const temps = t.match(/-?\d+\s*°?\s*C?/gi) || [];
-          const tempPair = temps.slice(0,2).map(s=>s.replace(/[^-\d]/g,'')).filter(Boolean);
-          const condMatch = t.match(/(thunderstorm|drizzle|rain|clear|clouds|overcast|broken clouds|few clouds|light rain|moderate rain)/i);
-          return {
-            name: nameMatch ? nameMatch[0] : '',
-            tempHi: tempPair[0] ? tempPair[0] : '',
-            tempLo: tempPair[1] ? tempPair[1] : '',
-            cond: condMatch ? condMatch[0] : ''
-          };
-        }
- 
-        function collectRows(){
-          const all = Array.from(container.querySelectorAll('*')).filter(el=>/today|tomorrow|mon|tue|wed|thu|fri|sat|sun/i.test(el.textContent||''));
-          const uniqueBlocks = [];
-          const seen = new Set();
-          for (const el of all){
-            const block = (el.closest('div')) || el;
-            if (!block) continue;
-            const key = (block.innerText||'').slice(0,120);
-            if (!key || seen.has(key)) continue;
-            seen.add(key);
-            uniqueBlocks.push(block);
-            if (uniqueBlocks.length>=4) break;
-          }
-          return uniqueBlocks.map(b=>parseItemText(b.innerText)).filter(x=>x.name);
-        }
- 
-        let mo; let scheduled = false; let rebuildCount = 0;
-        function rebuild(){
-          if (scheduled) return;
-          scheduled = true;
-          requestAnimationFrame(() => {
-            scheduled = false;
-            try {
-              if (mo) mo.disconnect();
-              rebuild();
-            } catch(e) { /* ignore */ }
-            finally {
-              rebuildCount++;
-              if (rebuildCount < 10) { // avoid observing forever
-                if (mo) mo.observe(container, { childList: true, subtree: true });
-              }
-            }
-          });
-        }
- 
-        // Initial and delayed attempts (widget may render late)
-        mo = new MutationObserver(() => { tryRebuild(); });
-        tryRebuild();
-        setTimeout(tryRebuild, 800);
-        setTimeout(tryRebuild, 1600);
-        mo.observe(container, { childList: true, subtree: true });
-      })();
+      // NOTE: Weather widget layout enhancer temporarily disabled to avoid JS errors.
+      // The underlying weather content still renders; this block only handled cosmetic
+      // transformation and is safe to disable while keeping lobby fully functional.
     </script>
 
 <!-- APK Download Confirmation Modal -->
