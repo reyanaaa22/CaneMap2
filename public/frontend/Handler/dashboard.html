@@ -84,9 +84,9 @@
 
                 const ov = ensureOverlay();
                 if (sidebar.classList.contains('closed')) {
-                    // Bring the sidebar above overlay before showing
-                    // use z-index 90 to be below header (z-100) but above overlay (z-80) and dropdowns (z-70)
-                    sidebar.style.zIndex = '90';
+                    // Bring the sidebar above everything (header, overlay, dropdowns)
+                    // Sidebar is topmost with z-index 110
+                    sidebar.style.zIndex = '110';
                     // show it
                     sidebar.classList.remove('closed');
                     ov.style.display = 'block';
@@ -921,36 +921,40 @@
             /* normal stacking context */
         }
 
-        /* --- Sidebar stacking fixes for mobile so sidebar always appears above header/dropdowns --- */
+        /* --- Sidebar stacking fixes - Sidebar should be on top of everything including header --- */
         #sidebar {
-            /* ensure it floats above header menus and other overlays when opened on mobile */
-            /* Header is z-[100], sidebar should be below header but above content */
-            z-index: 90 !important;
+            /* Sidebar is the topmost element - above header and all content */
+            z-index: 110 !important;
             /* keep the slide/transform behavior but allow z-index to control stacking */
             transition: transform 300ms ease, opacity 300ms ease;
-            /* Position sidebar below header */
-            top: 3.5rem !important; /* Header height: py-1 (0.25rem) + h-12 (3rem) + py-1 (0.25rem) = 3.5rem */
-            /* Adjust sidebar height to account for header */
-            height: calc(100vh - 3.5rem) !important;
+            /* Sidebar starts from top (not below header) */
+            top: 0 !important;
+            /* Full height sidebar */
+            height: 100vh !important;
         }
 
-        /* overlay below sidebar but above main content */
+        /* overlay below sidebar but above header and main content */
         #handlerSidebarOverlay {
-            z-index: 80 !important;
+            z-index: 105 !important;
         }
 
-        /* keep header menus (profile dropdown) below the sidebar but above content */
-        #handlerHeaderMenu {
-            z-index: 70;
-            /* preserve existing dropdown stacking */
-        }
-        
-        /* Ensure header stays on top of everything */
+        /* Header is below sidebar but above main content */
         header {
             z-index: 100 !important;
             position: sticky !important;
             top: 0 !important;
             background-color: white !important;
+        }
+
+        /* keep header menus (profile dropdown) below the sidebar but above content */
+        #handlerHeaderMenu {
+            z-index: 95;
+            /* preserve existing dropdown stacking */
+        }
+        
+        /* Notification dropdown below sidebar but above header */
+        #notificationDropdown {
+            z-index: 95;
         }
 
         /* main content should stay lower than overlay/sidebar */
@@ -1169,7 +1173,7 @@
 
 <body class="min-h-screen bg-gray-100">
 
-    <header class="sticky top-0 z-[100] shadow-lg bg-white py-1">
+    <header class="sticky top-0 z-[100] shadow-lg bg-white py-1" style="z-index: 100;">
         <div id="handlerHeaderContainer" class="container mx-auto px-2 sm:px-4 py-1 lg:pl-64">
             <div class="flex items-center justify-between h-12">
                 <div class="flex items-center space-x-2 sm:space-x-4">
@@ -1240,7 +1244,7 @@
                             <i class="fas fa-chevron-down text-xs text-gray-800 transition-transform duration-200"></i>
                         </button>
                         <div id="handlerHeaderMenu"
-                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible transition-all duration-200 transform scale-95 origin-top-right z-[95]">
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible transition-all duration-200 transform scale-95 origin-top-right z-[95]"
                             <button id="handlerGoProfile"
                                 class="flex items-center space-x-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 <i class="fas fa-user w-4 text-center"></i>
@@ -1273,7 +1277,7 @@
 
     <div class="flex relative">
         <!-- Sidebar (fixed overlay) -->
-        <aside id="sidebar" class="fixed left-0 top-14 w-64 h-[calc(100vh-3.5rem)] shadow-lg z-50"
+        <aside id="sidebar" class="fixed left-0 top-0 w-64 h-screen shadow-lg z-[110]"
             style="background: linear-gradient(180deg, #2c5a0b 0%, #3a7a0f 100%);">
             <!-- Profile Section -->
             <div class="p-6 border-b border-white/10">
