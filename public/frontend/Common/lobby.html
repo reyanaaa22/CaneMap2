@@ -1445,16 +1445,6 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
                                 <li>Once approved, your Handler tools and dashboard unlock.</li>
                             </ol>
                         </div>
-                        <!-- Driver Guide -->
-                        <div class="slide text-[var(--cane-900)] font-medium hidden transition-opacity duration-200" data-step="3">
-                            <div class="font-bold mb-1 flex items-center gap-2"><i class="fas fa-truck text-[var(--cane-600)]"></i> Unlock as Driver</div>
-                            <ol class="list-decimal ml-5 space-y-1 text-[var(--cane-800)]">
-                                <li>Apply for a <span class="px-2 py-0.5 rounded bg-[var(--cane-50)] border border-[var(--cane-200)]">Driver Badge</span>.</li>
-                                <li>Provide your transport details and required documents.</li>
-                                <li>Wait for SRA review and approval.</li>
-                                <li>Once approved, the Driver dashboard unlocks.</li>
-                            </ol>
-                        </div>
                         <!-- Closing Slide -->
                         <div class="slide text-[var(--cane-900)] font-medium hidden transition-opacity duration-200" data-step="4">
                             <div class="space-y-2">
@@ -1475,7 +1465,7 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
 
             <!-- Firebase Configuration -->
             <script type="module" src="../../backend/Common/firebase-config.js"></script>
-            <!-- Service Worker Registration for Offline Support -->
+           
             <script type="module" src="../../backend/Common/sw-register.js"></script>
             <!-- Load lobby.js after firebase-config; cache-bust for development -->
             <script src="../../backend/Common/lobby.js?v=20251015.1"></script>
