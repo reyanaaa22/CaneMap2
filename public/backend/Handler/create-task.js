@@ -15,10 +15,9 @@ onAuthStateChanged(auth, user => { currentUserId = user ? user.uid : null; });
 // Helper to escape html
 function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
 
-// Helper function to get display name for task (worker tasks only)
+// Helper function to get display name for task
 function getTaskDisplayName(taskValue) {
   const taskMap = {
-    // Worker tasks
     'plowing': 'Plowing',
     'harrowing': 'Harrowing',
     'furrowing': 'Furrowing',
@@ -134,35 +133,6 @@ async function fetchDriversForField(fieldId) {
   return drivers;
 }
 
-// Fetch workers joined for this field
-async function fetchWorkersForField(fieldId) {
-  const workers = [];
-  try {
-    console.log(`🔍 Fetching workers for field: ${fieldId}`);
-    const q = query(
-      collection(db, 'field_joins'),
-      where('fieldId', '==', fieldId),
-      where('assignedAs', '==', 'worker'),
-      where('status', '==', 'approved')
-    );
-    const snap = await getDocs(q);
-    console.log(`📋 Found ${snap.docs.length} approved worker join requests`);
-    const seenIds = new Set();
-
-    for (const docSnap of snap.docs) {
-      const data = docSnap.data();
-      console.log(`  - Join request data:`, data);
-      const userId = data.userId || data.user_uid || data.user_id;
-      if (!userId || seenIds.has(userId)) continue;
-      seenIds.add(userId);
-      workers.push({ id: userId });
-    }
-    console.log(`✅ Returning ${workers.length} unique workers:`, workers);
-  } catch (err) {
-    console.error('❌ Error fetching workers for field:', err);
-  }
-  return workers;
-}
 
 // Get field name by ID
 async function getFieldName(fieldId) {
@@ -647,9 +617,9 @@ function getAvailableTasksForHandler(fieldData) {
  * ✅ Populate task dropdown with filtered tasks based on field status and assignment type
  * @param {HTMLElement} dropdown - The task dropdown element
  * @param {string} fieldId - The field ID
- * @param {string} assignType - 'worker' or 'driver'
+ * @param {string} assignType - 'driver' only
  */
-async function populateFilteredTaskDropdown(dropdown, fieldId, assignType = 'worker') {
+async function populateFilteredTaskDropdown(dropdown, fieldId, assignType = 'driver') {
   try {
     // Fetch field data
     const fieldRef = doc(db, 'fields', fieldId);
@@ -663,10 +633,8 @@ async function populateFilteredTaskDropdown(dropdown, fieldId, assignType = 'wor
 
     const fieldData = fieldSnap.data();
 
-    // Get appropriate task list based on assignment type
-    const availableTasks = assignType === 'driver'
-      ? getAvailableDriverTasks(fieldData)
-      : getAvailableTasksForHandler(fieldData);
+    // Get appropriate task list for driver
+    const availableTasks = getAvailableDriverTasks(fieldData);
 
     // Clear and populate dropdown
     dropdown.innerHTML = '<option value="">Select task...</option>';
@@ -740,20 +708,7 @@ export async function openCreateTaskModal(fieldId) {
         <div>
           <label id="ct_assign_label" class="text-[var(--cane-700)] font-semibold text-[15px] block mb-2">Assign to:</label>
           <div class="flex gap-3 mb-3">
-            <button id="ct_btn_worker" class="flex-1 border border-[var(--cane-600)] text-[var(--cane-700)] rounded-md px-3 py-2 font-medium transition">Worker</button>
             <button id="ct_btn_driver" class="flex-1 border border-[var(--cane-600)] text-[var(--cane-700)] rounded-md px-3 py-2 font-medium transition">Driver</button>
-          </div>
-
-          <div id="ct_worker_options" class="hidden space-y-2 mt-2 border-t pt-3">
-            <label class="text-sm font-medium text-[var(--cane-700)] block mb-2">Select Workers:</label>
-            <div id="ct_worker_list" class="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3 bg-gray-50">
-              <div class="text-xs text-gray-500">Loading workers...</div>
-            </div>
-            <div class="flex items-center gap-2 mt-2">
-              <input id="ct_select_all_workers" type="checkbox" class="accent-[var(--cane-700)]" />
-              <label for="ct_select_all_workers" class="text-sm text-[var(--cane-700)]">Select all workers</label>
-            </div>
-            <div id="ct_worker_error" class="text-xs text-red-500 mt-1 hidden"></div>
           </div>
 
           <div id="ct_driver_options" class="hidden space-y-2 mt-2 border-t pt-3">
@@ -918,12 +873,8 @@ export async function openCreateTaskModal(fieldId) {
   });
 
   // --- Variables ---
-  const btnWorker = el('#ct_btn_worker');
   const btnDriver = el('#ct_btn_driver');
-  const workerOpts = el('#ct_worker_options');
   const driverOpts = el('#ct_driver_options');
-  const selectAllWorkersCheck = el('#ct_select_all_workers');
-  const workerListContainer = el('#ct_worker_list');
   const dateInput = el('#ct_date');
   const timeInput = el('#ct_time');
   const weekCheck = el('#ct_this_week');
@@ -954,116 +905,22 @@ export async function openCreateTaskModal(fieldId) {
   }
 
 function updateAssignUI() {
-    // Reset both buttons
-    [btnWorker, btnDriver].forEach(btn => {
-        btn.classList.remove('bg-green-700','text-white','shadow-inner');
-        btn.classList.add('bg-white','text-gray-700');
-    });
-
-    workerOpts.classList.add('hidden');
+    // Reset button
+    btnDriver.classList.remove('bg-green-700','text-white','shadow-inner');
+    btnDriver.classList.add('bg-white','text-gray-700');
     driverOpts.classList.add('hidden');
 
-    // Apply active styles
-    if(assignType === 'worker') {
-        btnWorker.classList.remove('bg-white','text-gray-700');
-        btnWorker.classList.add('bg-green-700','text-white','shadow-inner');
-        workerOpts.classList.remove('hidden');
-
-        // Force inline text color
-        btnWorker.style.color = '#ffffff';
-        btnDriver.style.color = '#4b5563'; // gray-700
-    }
+    // Apply active styles for driver
     if(assignType === 'driver') {
         btnDriver.classList.remove('bg-white','text-gray-700');
         btnDriver.classList.add('bg-green-700','text-white','shadow-inner');
         driverOpts.classList.remove('hidden');
-
         btnDriver.style.color = '#ffffff';
-        btnWorker.style.color = '#4b5563'; // gray-700
     }
 }
 
 
-  // Populate worker list with checkboxes
-  async function populateWorkerList() {
-    workerListContainer.innerHTML = '<div class="text-xs text-gray-500">Loading workers...</div>';
-
-    const workers = await fetchWorkersForField(fieldId);
-
-    if (workers.length === 0) {
-      workerListContainer.innerHTML = '<div class="text-xs text-gray-500">No workers available for this field</div>';
-      return;
-    }
-
-    // Fetch worker details
-    const workerDetails = [];
-    for (const worker of workers) {
-      try {
-        const userDoc = await getDoc(doc(db, 'users', worker.id));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          workerDetails.push({
-            id: worker.id,
-            name: userData.name || userData.email || 'Unknown Worker',
-            email: userData.email || ''
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching worker:', err);
-      }
-    }
-
-    // Render checkboxes
-    workerListContainer.innerHTML = workerDetails.map(worker => `
-      <div class="flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition">
-        <input type="checkbox" class="worker-checkbox accent-[var(--cane-700)]" value="${worker.id}" id="worker_${worker.id}" />
-        <label for="worker_${worker.id}" class="text-sm text-gray-700 cursor-pointer flex-1">
-          ${escapeHtml(worker.name)}
-          <span class="text-xs text-gray-500 block">${escapeHtml(worker.email)}</span>
-        </label>
-      </div>
-    `).join('');
-
-    // Select all handler
-    selectAllWorkersCheck.addEventListener('change', () => {
-      const checkboxes = workerListContainer.querySelectorAll('.worker-checkbox');
-      checkboxes.forEach(cb => cb.checked = selectAllWorkersCheck.checked);
-
-      // Clear error when selecting workers
-      const errorEl = el('#ct_worker_error');
-      if (selectAllWorkersCheck.checked) {
-        errorEl.textContent = '';
-        errorEl.classList.add('hidden');
-      }
-    });
-
-    // Individual checkbox handlers
-    workerListContainer.querySelectorAll('.worker-checkbox').forEach(cb => {
-      cb.addEventListener('change', () => {
-        const errorEl = el('#ct_worker_error');
-        const anyChecked = workerListContainer.querySelectorAll('.worker-checkbox:checked').length > 0;
-        if (anyChecked) {
-          errorEl.textContent = '';
-          errorEl.classList.add('hidden');
-        }
-
-        // Update "select all" checkbox state
-        const allChecked = workerListContainer.querySelectorAll('.worker-checkbox').length ===
-                          workerListContainer.querySelectorAll('.worker-checkbox:checked').length;
-        selectAllWorkersCheck.checked = allChecked;
-      });
-    });
-  }
-
-  // --- Worker / Driver button events ---
-  btnWorker.addEventListener('click', async () => {
-    assignType='worker';
-    updateAssignUI();
-    clearAssignError();
-    await populateWorkerList();
-    // Update task dropdown to show worker-specific tasks
-    await populateFilteredTaskDropdown(taskTitle, fieldId, 'worker');
-  });
+  // --- Driver button event ---
   btnDriver.addEventListener('click', async () => {
     assignType='driver';
     updateAssignUI();
@@ -1341,18 +1198,8 @@ el('#ct_save').addEventListener('click', async () => {
     return;
   }
 
-  if (!assignType) { showAssignError('Please select Worker or Driver.'); return; }
+  if (!assignType) { showAssignError('Please select Driver.'); return; }
 
-  // Validate worker selection
-  if (assignType === 'worker') {
-    const selectedWorkersCount = workerListContainer.querySelectorAll('.worker-checkbox:checked').length;
-    if (selectedWorkersCount === 0) {
-      const errorEl = el('#ct_worker_error');
-      errorEl.textContent = 'Please select at least one worker.';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-  }
   if (assignType === 'driver' && !el('#ct_driver_dropdown_btn').dataset.driverId) {
     const driverErrorEl = el('#ct_driver_error');
     driverErrorEl.textContent = 'Please select a driver.';
@@ -1431,17 +1278,6 @@ el('#ct_save').addEventListener('click', async () => {
 
 
     // Collect assignedTo array per REQUIREMENTS.md (array<userId>)
-    if (assignType === 'worker') {
-      const selectedWorkers = [];
-      workerListContainer.querySelectorAll('.worker-checkbox:checked').forEach(cb => {
-        selectedWorkers.push(cb.value);
-      });
-      payload.assignedTo = selectedWorkers;
-
-      // Keep metadata for backward compatibility if needed
-      payload.metadata.workers_count = selectedWorkers.length;
-    }
-
     if (assignType === 'driver') {
       // Get selected driver
       const driverId = el('#ct_driver_dropdown_btn').dataset.driverId;
@@ -1474,12 +1310,7 @@ el('#ct_save').addEventListener('click', async () => {
         let assignedUserIds = [];
 
         // Collect user IDs based on assignment type
-        if (assignType === 'worker') {
-          // Get selected workers from checkboxes (this is already in payload.assignedTo)
-          if (payload.assignedTo && Array.isArray(payload.assignedTo)) {
-            assignedUserIds = payload.assignedTo;
-          }
-        } else if (assignType === 'driver') {
+        if (assignType === 'driver') {
           // Notify the selected driver (already in payload.assignedTo)
           if (payload.assignedTo && Array.isArray(payload.assignedTo)) {
             assignedUserIds = payload.assignedTo;

@@ -1869,16 +1869,6 @@
                         </a>
                     </div>
 
-                    <!-- Workers -->
-                    <div class="mb-4">
-                        <a href="#"
-                            class="nav-item flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white rounded-lg transition-colors"
-                            data-section="workers">
-                            <i class="fas fa-users w-5 h-5"></i>
-                            <span>Team</span>
-                        </a>
-                    </div>
-
                     <!-- Tasks -->
                     <div class="mb-4">
                         <a href="#"
@@ -1939,12 +1929,12 @@
                 <!-- Page Title (simple, since global header exists) -->
                 <div class="px-4 lg:px-0 py-4 mb-2">
                     <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Dashboard</h2>
-                    <p class="text-gray-600 mt-1">Manage your fields and workers</p>
+                    <p class="text-gray-600 mt-1">Manage your fields and tasks</p>
                     <div class="w-16 h-0.5 bg-[var(--cane-700)] my-3"></div>
                 </div>
 
-                <!-- Metrics row (Total Fields, Pending Review, Active Workers, Pending Task, Join Request) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mb-10">
+                <!-- Metrics row (Total Fields, Pending Review, Pending Task, Join Request) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-10">
                     <div class="metric-card rounded-xl">
                         <span class="metric-badge" style="background-color: #4CAF50;">Fields</span>
                         <div class="w-full">
@@ -1966,16 +1956,6 @@
                         </div>
                     </div>
                     <div class="metric-card rounded-xl">
-                        <span class="metric-badge" style="background-color: #2196F3;">Workers</span>
-                        <div class="w-full">
-                            <div>
-                                <p class="text-lg font-semibold text-gray-800 mb-2">Active Workers</p>
-                                <p id="mWorkers" class="text-4xl font-bold text-[var(--cane-900)] mb-2">0</p>
-                                <p class="text-xs text-gray-500 mt-1">Currently active</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="metric-card rounded-xl">
                         <span class="metric-badge" style="background-color: #FF9800;">Tasks</span>
                         <div class="w-full">
                             <div>
@@ -1991,7 +1971,7 @@
                             <div>
                                 <p class="text-lg font-semibold text-gray-800 mb-2">Join Request</p>
                                 <p id="mRequests" class="text-4xl font-bold text-[var(--cane-900)] mb-2">0</p>
-                                <p class="text-xs text-gray-500 mt-1">Worker applications</p>
+                                <p class="text-xs text-gray-500 mt-1">Join applications</p>
                             </div>
                         </div>
                     </div>

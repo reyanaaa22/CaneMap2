@@ -84,7 +84,7 @@ const ui = {
 };
 
 let userDocCache = null;
-let role = 'worker';
+let role = 'farmer';
 let remainingAttempts = 3;
 let currentCameraStream = null;
 let currentPhotoContext = null; // 'update' or 'edit'
@@ -92,10 +92,8 @@ let currentPhotoContext = null; // 'update' or 'edit'
 function normalizeRole(r){
   const s = (r || '').toLowerCase();
   switch (s) {
-    case 'field worker':
     case 'farmer':
-    case 'worker':
-      return 'worker';
+      return 'farmer';
     case 'field handler':
     case 'handler':
       return 'handler';
@@ -112,12 +110,12 @@ function normalizeRole(r){
     case 'system admin':
       return 'admin';
     default:
-      return 'worker';
+      return 'farmer';
   }
 }
 
 const DASHBOARD_PATH = {
-  worker: '/frontend/Worker/Workers.html',
+  farmer: '/frontend/Common/lobby.html',
   handler: '/frontend/Handler/dashboard.html',
   driver: '/frontend/Driver/Driver_Dashboard.html',
   sra: '/frontend/SRA/SRA_Dashboard.html',
@@ -127,7 +125,7 @@ const DASHBOARD_PATH = {
 function setBackLink(roleName){
   try {
     const a = document.getElementById('backToDashboard');
-    const p = DASHBOARD_PATH[normalizeRole(roleName)] || DASHBOARD_PATH.worker;
+    const p = DASHBOARD_PATH[normalizeRole(roleName)] || DASHBOARD_PATH.farmer;
     if (a) a.href = p;
   } catch(_) {}
 }
@@ -275,7 +273,7 @@ async function ensureUserDoc(uid, base) {
 function getRoleFromDoc(docData) {
   const fromDoc = docData?.role;
   const fromStorage = localStorage.getItem('userRole');
-  return normalizeRole(fromDoc || fromStorage || 'worker');
+  return normalizeRole(fromDoc || fromStorage || 'farmer');
 }
 
 function showSensitiveForRole(roleName) {

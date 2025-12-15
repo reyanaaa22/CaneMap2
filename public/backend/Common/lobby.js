@@ -1273,7 +1273,7 @@ async function checkJoinStatus(fieldId, userId) {
     const data = snap.docs[0].data();
     return {
       status: data.status || "pending",
-      role: data.assignedAs || data.joinAs || data.role || "worker"
+      role: data.assignedAs || data.joinAs || data.role || "driver"
     };
   } catch (err) {
     console.error("Error checking join status:", err);
@@ -1336,11 +1336,10 @@ async function checkPendingRoles(userId) {
     "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js"
   );
 
-  let hasPendingWorker = false;
   let hasPendingDriver = false;
 
   try {
-    // 🔹 Check field_joins for pending worker/driver
+    // 🔹 Check field_joins for pending driver
     const joinsQuery = query(
       collection(db, "field_joins"),
       where("userId", "==", userId),
@@ -1350,7 +1349,6 @@ async function checkPendingRoles(userId) {
     joinsSnap.forEach((doc) => {
       const data = doc.data();
       const assignedAs = data.assignedAs || data.joinAs || data.role;
-      if (assignedAs === "worker") hasPendingWorker = true;
       if (assignedAs === "driver") hasPendingDriver = true;
     });
 
@@ -1367,85 +1365,27 @@ async function checkPendingRoles(userId) {
     console.warn("⚠️ Error checking pending roles:", err);
   }
 
-  return { hasPendingWorker, hasPendingDriver };
+  return { hasPendingDriver };
 }
 
-// ---------- Worker Upgrade Modal ----------
-function showWorkerUpgradeModal(field) {
-  const modal = document.createElement("div");
-  modal.className =
-    "fixed inset-0 bg-black/40 flex items-center justify-center z-[10000] backdrop-blur-sm";
-  modal.innerHTML = `
-    <div class="bg-white rounded-xl p-6 w-[90%] max-w-md relative text-center border border-[var(--cane-200)] shadow-md">
-      <button id="closeUpgradeModal" class="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">&times;</button>
-      <div class="mb-4">
-        <div class="w-16 h-16 mx-auto bg-[var(--cane-100)] rounded-full flex items-center justify-center mb-3">
-          <i class="fas fa-user-cog text-[var(--cane-700)] text-2xl"></i>
-        </div>
-        <h3 class="text-lg font-bold text-[var(--cane-900)] mb-2">Join Field</h3>
-        <p class="text-sm text-gray-600">Choose how you want to join this field:</p>
-      </div>
-
-      <div class="space-y-3 mb-4">
-        <button id="joinAsWorker" class="w-full px-4 py-3 rounded-lg bg-[var(--cane-600)] text-white text-sm font-medium hover:bg-[var(--cane-700)] transition flex items-center justify-between">
-          <span><i class="fas fa-user mr-2"></i>Join as Worker</span>
-          <i class="fas fa-arrow-right"></i>
-        </button>
-
-        <button id="upgradeToDriver" class="w-full px-4 py-3 rounded-lg border-2 border-[var(--cane-600)] text-[var(--cane-700)] text-sm font-medium hover:bg-[var(--cane-50)] transition flex items-center justify-between">
-          <span><i class="fas fa-truck mr-2"></i>Upgrade to Driver</span>
-          <i class="fas fa-arrow-right"></i>
-        </button>
-      </div>
-
-      <p class="text-xs text-gray-500 italic">
-        <i class="fas fa-info-circle mr-1"></i>
-        Upgrading to Driver requires badge approval. You'll keep worker access.
-      </p>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  modal.querySelector("#closeUpgradeModal").onclick = () => modal.remove();
-
-  modal.querySelector("#joinAsWorker").onclick = () => {
-    modal.remove();
-    openConfirmJoinModal(field, "worker");
-  };
-
-  modal.querySelector("#upgradeToDriver").onclick = () => {
-    modal.remove();
-    showToast("📝 To become a Driver, please apply for a Driver Badge first.", "gray");
-    setTimeout(() => {
-      window.location.href = "../../frontend/Driver/Driver_Badge.html";
-    }, 2000);
-  };
-}
 
 // ---------- Join Modal ----------
 function openJoinModal(field) {
   const userRole = (localStorage.getItem("userRole") || "").toLowerCase();
 
   // 🔹 Role Progression Rules:
-  // - Handler: Cannot become worker/driver (different track)
-  // - Worker: Can upgrade to Driver (keeps worker access)
-  // - Driver: Already has both worker + driver access
-  // - Farmer: Can become Worker OR Driver
+  // - Handler: Cannot become driver (different track)
+  // - Driver: Can join as driver
+  // - Farmer: Can become Driver
 
   if (userRole === "handler") {
-    showToast("⚠️ Handlers cannot join fields as workers or drivers. You manage fields instead.", "gray");
+    showToast("⚠️ Handlers cannot join fields as drivers. You manage fields instead.", "gray");
     return;
   }
 
   if (userRole === "driver") {
-    // Drivers can join as driver (they already have worker capabilities)
+    // Drivers can join as driver
     openConfirmJoinModal(field, "driver");
-    return;
-  }
-
-  if (userRole === "worker") {
-    // Workers can join as worker, or choose to upgrade to driver
-    showWorkerUpgradeModal(field);
     return;
   }
 
@@ -1457,7 +1397,6 @@ function openJoinModal(field) {
                 <button id="closeJoinModal" class="absolute top-2 right-3 text-gray-500 hover:text-gray-700 text-lg font-bold">&times;</button>
                 <h3 class="text-base font-semibold text-[var(--cane-900)] mb-5">Join as:</h3>
                 <div class="flex justify-center gap-3 mb-4">
-                    <button id="joinWorker" class="px-4 py-2 rounded-md bg-[var(--cane-700)] text-white text-sm font-medium hover:bg-[var(--cane-800)] transition">Worker</button>
                     <button id="joinDriver" class="px-4 py-2 rounded-md bg-[var(--cane-700)] text-white text-sm font-medium hover:bg-[var(--cane-800)] transition">Driver</button>
                 </div>
                 <p id="pendingNotice" class="text-xs text-[var(--cane-700)] italic hidden"></p>
@@ -1674,7 +1613,7 @@ async function confirmJoin(field, role) {
     );
 
     // ✅ Optimistic update: immediately set pending flag in localStorage
-    if (role === "worker") {
+    // Worker role removed
       localStorage.setItem("pendingWorker", "true");
     } else if (role === "driver") {
       localStorage.setItem("pendingDriver", "true");
@@ -1683,7 +1622,7 @@ async function confirmJoin(field, role) {
     // ✅ Trigger immediate re-check of Register Field button by dispatching storage event
     // This works even if checkRegisterFieldButton is in a closure
     window.dispatchEvent(new StorageEvent('storage', {
-      key: role === "worker" ? "pendingWorker" : "pendingDriver",
+      key: "pendingDriver",
       newValue: "true",
       storageArea: localStorage
     }));
@@ -2120,7 +2059,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Role gating for Dashboard
   const dashboardLink = document.getElementById("dashboardLink");
   const role = (localStorage.getItem("userRole") || "").toLowerCase();
-  const approvedRoles = ["handler", "worker", "driver", "sra"];
+  const approvedRoles = ["handler", "driver", "sra"];
   const isApproved = approvedRoles.includes(role);
   const userId = localStorage.getItem("userId") || fullName;
   async function checkHandlerAccess() {
@@ -2156,7 +2095,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!snap.exists()) return;
         const data = snap.data();
         const role = (data.role || "").toLowerCase();
-        const approvedRoles = ["handler", "worker", "driver", "sra"];
+        const approvedRoles = ["handler", "driver", "sra"];
         const isApproved = approvedRoles.includes(role);
         localStorage.setItem("userRole", role);
         console.log("🧭 Live role update detected:", role);
@@ -2303,9 +2242,6 @@ document.addEventListener("DOMContentLoaded", function () {
             case "handler":
               dashboardLink.href = "../Handler/dashboard.html";
               break;
-            case "worker":
-              dashboardLink.href = "../Worker/Workers.html";
-              break;
             case "driver":
               dashboardLink.href = "../Driver/Driver_Dashboard.html";
               break;
@@ -2313,7 +2249,7 @@ document.addEventListener("DOMContentLoaded", function () {
               dashboardLink.href = "../SRA/SRA_Dashboard.html";
               break;
             default:
-              dashboardLink.href = "../Worker/Workers.html";
+              dashboardLink.href = "../Common/lobby.html";
           }
         }
 
@@ -2365,7 +2301,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (dashboardLink) {
     // Get role & mark approved roles
     const role = (localStorage.getItem("userRole") || "").toLowerCase();
-    const approvedRoles = ["handler", "worker", "driver", "sra"];
+    const approvedRoles = ["handler", "driver", "sra"];
     const isApproved = approvedRoles.includes(role);
 
     if (!isApproved) {
@@ -2478,9 +2414,6 @@ document.addEventListener("DOMContentLoaded", function () {
         case "handler":
           dashboardLink.href = "../Handler/dashboard.html";
           break;
-        case "worker":
-          dashboardLink.href = "../Worker/Workers.html";
-          break;
         case "driver":
           dashboardLink.href = "../Driver/Driver_Dashboard.html";
           break;
@@ -2488,7 +2421,7 @@ document.addEventListener("DOMContentLoaded", function () {
           dashboardLink.href = "../SRA/SRA_Dashboard.html";
           break;
         default:
-          dashboardLink.href = "../Worker/Workers.html";
+          dashboardLink.href = "../Common/lobby.html";
       }
     }
   }
@@ -2853,7 +2786,6 @@ document.addEventListener("DOMContentLoaded", function () {
         // 🔥 If should be hidden (same logic as your dropdown)
         const shouldHide =
           role === "handler" ||
-          role === "worker" ||
           (role === "farmer" && farmerHasPending);
 
         // 🔥 Override ALL icon visibility BEFORE viewport rules run
@@ -2901,7 +2833,7 @@ document.addEventListener("DOMContentLoaded", function () {
             a.style.pointerEvents = '';
           } catch (_) { }
         }
-        if (role === 'worker') {
+        // Worker role removed
           if (dropdownDriverLink) { if (shouldHide) disableLink(dropdownDriverLink); else enableLink(dropdownDriverLink); }
           if (regFieldDropdown) { if (shouldHide) disableLink(regFieldDropdown); else enableLink(regFieldDropdown); }
         }
@@ -3957,7 +3889,7 @@ setTimeout(() => {
           if (!candidates.length || !userId) return;
 
           // Roles not allowed
-          const blockedRoles = ["sra", "handler", "worker"];
+          const blockedRoles = ["sra", "handler"];
           if (blockedRoles.includes(userRole)) {
             const message = `You cannot apply for a Driver’s Badge with your current role: “${userRole}”. Only Drivers or Farmers are eligible.`;
             candidates.forEach((btn) => disableDriverBtn(btn, message));
@@ -4183,7 +4115,7 @@ setTimeout(() => {
           const normalizedRole = userRole || "";
 
           // 1) Roles that must be blocked (drivers, sra, worker)
-          const blockedRoles = ["driver", "sra", "worker"];
+          const blockedRoles = ["driver", "sra"];
           if (blockedRoles.includes(normalizedRole)) {
             const message = `You cannot register a field with your current role: “${userRole}”. Only Handlers or Farmers are eligible.`;
             disableRegisterBtn(btn, message);
@@ -4581,7 +4513,7 @@ setInterval(updateDriverBadgePromoVisibility, 400);
     }
 
     // Hide Driver Badge icon if handler or worker
-    if (role !== "handler" && role !== "worker") {
+    if (role !== "handler") {
       if (!mobileDriverBtn) {
         mobileDriverBtn = createDriverBadgeButton();
         headerIcons.appendChild(mobileDriverBtn);
@@ -4591,7 +4523,7 @@ setInterval(updateDriverBadgePromoVisibility, 400);
     }
 
     // Hide Register a Field completely if role is driver or worker
-    if (role === "driver" || role === "worker") {
+    if (role === "driver") {
       if (regBtn) regBtn.style.display = "none";
     } else {
       if (regBtn) regBtn.style.display = "inline-flex";
@@ -4606,7 +4538,7 @@ setInterval(updateDriverBadgePromoVisibility, 400);
       // Convert Register → map icon
       if (isSmall) {
         // Only create / display Register map icon if role is allowed
-        if (role !== "driver" && role !== "worker" && regBtn) {
+        if (role !== "driver" && regBtn) {
           regBtn.innerHTML = `
             <span class="sr-only">Register a Field</span>
             <i class="fas fa-map-marker-alt" 
@@ -4631,7 +4563,7 @@ setInterval(updateDriverBadgePromoVisibility, 400);
 
         // Mobile driver icon
         if (mobileDriverBtn) {
-          mobileDriverBtn.style.display = (role !== "handler" && role !== "worker") ? "inline-flex" : "none";
+          mobileDriverBtn.style.display = (role !== "handler") ? "inline-flex" : "none";
           if (mobileDriverBtn.style.display === "inline-flex") addTooltip(mobileDriverBtn, "Apply a Driver Badge");
         }
 
@@ -4640,8 +4572,8 @@ setInterval(updateDriverBadgePromoVisibility, 400);
 
         // Correct order & append
         const buttonsToAppend = [];
-        if (regBtn && role !== "driver" && role !== "worker") buttonsToAppend.push(regBtn);
-        if (mobileDriverBtn && role !== "handler" && role !== "worker") buttonsToAppend.push(mobileDriverBtn);
+        if (regBtn && role !== "driver") buttonsToAppend.push(regBtn);
+        if (mobileDriverBtn && role !== "handler") buttonsToAppend.push(mobileDriverBtn);
         if (notifBtn) buttonsToAppend.push(notifBtn);
 
         buttonsToAppend.forEach(btn => {

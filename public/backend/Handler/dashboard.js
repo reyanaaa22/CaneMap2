@@ -6,7 +6,6 @@ import {
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, serverTimestamp, orderBy, limit, onSnapshot, collectionGroup } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 import { initializeFieldsSection } from "./fields-map.js";
 import { initializeRentDriverSection } from "./rent-driver.js";
-import { initializeHandlerWorkersSection } from "./worker.js";
 import { notifyTaskDeletion, createBatchNotifications } from "../Common/notifications.js";
 import { calculateDAP } from "./growth-tracker.js";
 import './analytics.js';
@@ -301,8 +300,7 @@ Array.from(list.querySelectorAll("button[data-id]"))
           }
 
           if (type === 'new_join_request' || title.includes('join request') || title.includes('new join')) {
-            // Team (workers) — try friendly name 'Team' then 'Workers'
-            if (!gotoSection('team', 'Team')) gotoSection('workers', 'Team');
+            // Navigate to appropriate section
             return;
           }
 
@@ -1333,9 +1331,9 @@ async function loadRecentTaskActivity(handlerId) {
       return;
     }
 
-    // PERFORMANCE FIX: Batch fetch all workers and fields in parallel (not N+1 sequential fetches)
+    // PERFORMANCE FIX: Batch fetch all assigned users and fields in parallel (not N+1 sequential fetches)
     // Extract unique IDs first
-    const workerIds = Array.from(new Set(
+    const assignedUserIds = Array.from(new Set(
       tasksSnapshot.docs
         .map(doc => doc.data().assignedTo?.[0])
         .filter(Boolean)
@@ -1346,9 +1344,9 @@ async function loadRecentTaskActivity(handlerId) {
         .filter(Boolean)
     ));
 
-    // Fetch all workers and fields in parallel (selective fields only to reduce payload)
-    const [workerDocs, fieldDocs] = await Promise.all([
-      Promise.all(workerIds.map(id =>
+    // Fetch all assigned users and fields in parallel (selective fields only to reduce payload)
+    const [userDocs, fieldDocs] = await Promise.all([
+      Promise.all(assignedUserIds.map(id =>
         getDoc(doc(db, "users", id))
           .then(snap => snap.exists() ? { id, data: snap.data() } : { id, data: null })
           .catch(() => ({ id, data: null }))
@@ -1361,7 +1359,7 @@ async function loadRecentTaskActivity(handlerId) {
     ]);
 
     // Build lookup maps (only selective fields to reduce payload)
-    const workerMap = new Map(workerDocs.map(r => [
+    const userMap = new Map(userDocs.map(r => [
       r.id,
       r.data ? { name: r.data.name || r.data.email || "Unknown" } : null
     ]));
@@ -1373,13 +1371,13 @@ async function loadRecentTaskActivity(handlerId) {
     // Build task details using cached maps (no additional queries)
     const tasksWithDetails = tasksSnapshot.docs.map(taskDoc => {
       const taskData = taskDoc.data();
-      const workerId = taskData.assignedTo?.[0];
+      const assignedUserId = taskData.assignedTo?.[0];
       const fieldId = taskData.fieldId;
 
       return {
         id: taskDoc.id,
         ...taskData,
-        workerName: workerMap.get(workerId)?.name || "Unknown Worker",
+        assignedUserName: userMap.get(assignedUserId)?.name || "Unknown User",
         fieldName: fieldMap.get(fieldId)?.fieldName || "Unknown Field"
       };
     });
@@ -1417,7 +1415,7 @@ async function loadRecentTaskActivity(handlerId) {
               <div class="flex-1">
                 <p class="text-sm font-semibold text-gray-900 truncate">${escapeHtml(taskName)}</p>
                 <p class="text-xs text-gray-600 mt-0.5">
-                  <i class="fas fa-user text-gray-400 mr-1"></i>${escapeHtml(task.workerName)}
+                  <i class="fas fa-user text-gray-400 mr-1"></i>${escapeHtml(task.assignedUserName)}
                   <span class="mx-1">•</span>
                   <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i>${escapeHtml(task.fieldName)}
                 </p>
@@ -1904,32 +1902,7 @@ async function loadActivityLogs(handlerId) {
 
 // === FIXED WORKER + DRIVER LOG QUERIES ===
 
-const [workerLogsFromTasks, driverLogsList] = await Promise.all([
-
-  // WORKER LOGS (from 'tasks')
-  getDocs(query(
-    collection(db, "tasks"),
-    where("handlerId", "==", handlerId),
-    where("taskType", "==", "worker_log"),
-    orderBy("completedAt", "desc")
-  )).then(snap => snap.docs.map(d => {
-    const data = d.data();
-    return {
-      id: d.id,
-      source: "tasks",
-      type: "worker",
-      task_name: data.title || data.details || data.taskType || "Worker Task",
-      user_id: (Array.isArray(data.assignedTo) && data.assignedTo[0]) || data.createdBy || data.created_by || null,
-      user_name: data.workerName || "",
-      task_type: data.taskType || "",
-      description: data.notes || data.description || "",
-      field_id: data.fieldId || null,
-      field_name: data.fieldName || "",
-      logged_at: data.completedAt || null,
-      selfie_path: data.photoURL || null,
-      field_photo_path: data.photoURL || null
-    };
-  })),
+const [driverLogsList] = await Promise.all([
 
   // DRIVER LOGS (from tasks)
   getDocs(query(
@@ -1958,7 +1931,7 @@ const [workerLogsFromTasks, driverLogsList] = await Promise.all([
 ]);
 
 // FINAL COMBINE (FIXED)
-logs.push(...workerLogsFromTasks, ...driverLogsList);
+logs.push(...driverLogsList);
 
     // UI DISPLAY SORT — newest → oldest (NO GROUPING)
     logs.sort((a, b) => {
@@ -2450,7 +2423,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Note: 'tasks' is hardcoded in dashboard.html, not dynamically loaded
   const dynamicSections = {
     'fields': 'sections/fields.html',
-    'workers': 'sections/workers.html',
     'analytics': 'sections/analytics.html',
     'reports': 'sections/reports.html',
     'rentDriver': 'sections/rent-driver.html'
@@ -2526,12 +2498,6 @@ document.addEventListener("DOMContentLoaded", () => {
         initializeRentDriverSection();
       }
 
-      if (sectionId === 'workers') {
-        console.log('👥 Workers section loaded, initializing scripts...');
-        setTimeout(() => {
-          initializeHandlerWorkersSection();
-        }, 50);
-      }
 
       if (sectionId === 'analytics') {
         console.log('📊 Analytics section loaded, initializing...');
@@ -3193,10 +3159,7 @@ function renderTasksTable(filter = 'all') {
   let filteredTasks = allTasksData;
   if (filter !== 'all') {
     filteredTasks = allTasksData.filter(task => {
-      if (filter === 'worker') {
-        // Worker tasks: have metadata.workers_count or don't have metadata.driver
-        return task.metadata && (task.metadata.workers_count !== undefined || !task.metadata.driver);
-      } else if (filter === 'driver') {
+      if (filter === 'driver') {
         // Driver tasks: have metadata.driver
         return task.metadata && task.metadata.driver;
       } else if (filter === 'pending') {
@@ -3463,9 +3426,7 @@ async function initializeTasksSection(handlerId) {
         // Apply current filter
         if (currentFilter !== 'all') {
           filteredTasks = filteredTasks.filter(task => {
-            if (currentFilter === 'worker') {
-              return task.metadata && (task.metadata.workers_count !== undefined || !task.metadata.driver);
-            } else if (currentFilter === 'driver') {
+            if (currentFilter === 'driver') {
               return task.metadata && task.metadata.driver;
             } else if (currentFilter === 'pending') {
               const status = (task.status || 'pending').toLowerCase();
@@ -3639,15 +3600,15 @@ window.viewTaskDetails = async function (taskId) {
     assignedRole = 'worker';
     const workerId = task.assignedTo[0];
     try {
-      const workerRef = doc(db, 'users', workerId);
-      const workerSnap = await getDoc(workerRef);
-      if (workerSnap.exists()) {
-        const workerData = workerSnap.data();
+      const userRef = doc(db, 'users', assignedUserId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
         assignedUserInfo = {
-          id: workerId,
-          name: workerData.fullname || workerData.name || workerData.email || 'Unknown Worker',
-          photoURL: workerData.photoURL || workerData.photo_url || null,
-          role: 'worker'
+          id: assignedUserId,
+          name: userData.fullname || userData.name || userData.email || 'Unknown User',
+          photoURL: userData.photoURL || userData.photo_url || null,
+          role: userData.role || 'user'
         };
       }
     } catch (err) {
