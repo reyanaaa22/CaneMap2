@@ -220,6 +220,13 @@
       color: #3730a3;
     }
 
+    /* Limit height of activity lists per stage and make scrollable when many records */
+    .activities-stage-list {
+      max-height: 260px; /* roughly 4 nodes tall */
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
     .activity-node {
       background: white;
       border: 1px solid var(--cane-200);
@@ -633,7 +640,7 @@
               </div>
                     <span class="badge badge-done text-xs" id="badge-germination" style="display: none;">Active</span>
             </div>
-                  <div id="activities-germination" class="mt-3 space-y-2">
+                  <div id="activities-germination" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
                 </div>
@@ -655,7 +662,7 @@
               </div>
                     <span class="badge badge-progress text-xs" id="badge-tillering" style="display: none;">In Progress</span>
             </div>
-                  <div id="activities-tillering" class="mt-3 space-y-2">
+                  <div id="activities-tillering" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
             </div>
                 </div>
@@ -677,7 +684,7 @@
               </div>
                     <span class="badge badge-not text-xs" id="badge-grand" style="display: none;">Expected</span>
             </div>
-                  <div id="activities-grand" class="mt-3 space-y-2">
+                  <div id="activities-grand" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
                 </div>
@@ -699,7 +706,7 @@
               </div>
                     <span class="badge badge-not text-xs" id="badge-maturing" style="display: none;">Expected</span>
             </div>
-                  <div id="activities-maturing" class="mt-3 space-y-2">
+                  <div id="activities-maturing" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
                 </div>
@@ -720,7 +727,7 @@
                     </div>
                     <span class="badge badge-not text-xs" id="badge-harvest" style="display: none;">Expected</span>
                   </div>
-                  <div id="activities-harvest" class="mt-3 space-y-2">
+                  <div id="activities-harvest" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
                 </div>
@@ -1857,11 +1864,11 @@
               return;
             }
 
-            // Sort records by date (most recent first)
+            // Sort records by date (oldest first for true timeline order)
             statusRecords.sort((a, b) => {
               const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
               const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
-              return dateB - dateA;
+              return dateA - dateB;
             });
 
             let html = '';

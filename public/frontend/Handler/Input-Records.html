@@ -1839,7 +1839,20 @@ if (addBoughtItemBtn && boughtItemsList) {
         </div>
         <div>
           <label class="text-xs">Unit</label>
-          <input type="text" class="bought-item-unit w-full px-2 py-1 border rounded text-sm" />
+          <select class="bought-item-unit w-full px-2 py-1 border rounded text-sm">
+            <option value="">Select unit</option>
+            <option value="kg">Kilogram (kg)</option>
+            <option value="bag">Bag/s</option>
+            <option value="sack">Sack/s</option>
+            <option value="ton">Ton/s</option>
+            <option value="liter">Liter/s</option>
+            <option value="gallon">Gallon/s</option>
+            <option value="pcs">Piece/s</option>
+            <option value="bundle">Bundle/s</option>
+            <option value="box">Box/es</option>
+            <option value="hectare">Hectare/s</option>
+            <option value="others">Others</option>
+          </select>
         </div>
         <div>
           <label class="text-xs">Price</label>
