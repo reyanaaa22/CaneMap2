@@ -771,7 +771,21 @@ const taskFieldMap = {
 
 "Planting Operation": [
   { id:'plantingDate', label:'Planting Date', type:'date' },
-  { id:'variety', label:'Variety', type:'text' },
+  { 
+    id:'variety', 
+    label:'Variety', 
+    type:'select',
+    options:[
+      'PHIL 99-1793',
+      'PHIL 80-13',
+      'VMC 84-524',
+      'VMC 84-947',
+      'PHIL 93-1601',
+      'PHIL 94-0913',
+      'PHIL 92-0577',
+      'Others'
+    ]
+  },
   { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
 
   // Cost of cane points
@@ -824,7 +838,21 @@ const taskFieldMap = {
 
 "Replanting Operation": [
   { id:'replantingDate', label:'Replanting Date', type:'date' },
-  { id:'variety', label:'Variety', type:'text' },
+  { 
+    id:'variety', 
+    label:'Variety', 
+    type:'select',
+    options:[
+      'PHIL 99-1793',
+      'PHIL 80-13',
+      'VMC 84-524',
+      'VMC 84-947',
+      'PHIL 93-1601',
+      'PHIL 94-0913',
+      'PHIL 92-0577',
+      'Others'
+    ]
+  },
   { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
 
   // Cost of materials
@@ -2067,16 +2095,27 @@ window.confirmSave = async () => {
     if (pendingPayload.status === 'Germination' && 
         (pendingPayload.taskType === 'Planting Operation' || pendingPayload.taskType === 'Replanting / Gap Filling')) {
       try {
-        const plantingDate = pendingPayload.data.plantingDate || pendingPayload.data.date;
+        // Get planting date - check both plantingDate (for Planting Operation) and replantingDate (for Replanting)
+        const plantingDate = pendingPayload.data.plantingDate || pendingPayload.data.replantingDate || pendingPayload.data.date;
         const variety = pendingPayload.data.variety;
         
         if (plantingDate && variety) {
           // Import growth tracker functions
-          const { calculateExpectedHarvestDate, VARIETY_HARVEST_DAYS } = await import('../../backend/Handler/growth-tracker.js');
+          const { calculateExpectedHarvestDate, getHarvestDaysRange } = await import('../../backend/Handler/growth-tracker.js');
           
-          const harvestDays = VARIETY_HARVEST_DAYS[variety] || 365;
+          // Use the calculateExpectedHarvestDate function which handles variety-specific harvest days ranges
+          // Uses max value from range for conservative planning
           const plantingDateObj = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
-          const predictedHarvestDate = new Date(plantingDateObj.getTime() + harvestDays * 24 * 60 * 60 * 1000);
+          const predictedHarvestDate = calculateExpectedHarvestDate(plantingDateObj, variety);
+          
+          if (!predictedHarvestDate) {
+            console.error('Failed to calculate predicted harvest date');
+            return;
+          }
+          
+          // Get harvest days range for logging
+          const harvestRange = getHarvestDaysRange(variety);
+          console.log(`📅 Variety: ${variety}, Harvest Days Range: ${harvestRange.min}-${harvestRange.max} days, Predicted Harvest (using max): ${predictedHarvestDate.toLocaleDateString()}`);
           
           // Update field with predicted harvest date
           const { updateDoc, doc, Timestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');

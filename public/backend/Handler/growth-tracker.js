@@ -18,16 +18,45 @@ function removeUndefined(obj) {
   return cleaned;
 }
 
-// Variety-specific harvest days mapping
+// Variety-specific harvest days range (min-max days)
+export const VARIETY_HARVEST_DAYS_RANGE = {
+  // Early to medium maturity (most common)
+  "VMC 84-524":  { min: 330, max: 360 }, // ~11–12 months
+  "VMC 84-947":  { min: 335, max: 365 }, // ~11–12 months
+
+  // Medium maturity (standard PHIL varieties)
+  "PHIL 80-13":  { min: 335, max: 365 }, // ~11–12 months
+  "PHIL 99-1793":{ min: 335, max: 365 }, // ~11–12 months
+  "PHIL 92-0577":{ min: 335, max: 365 }, // ~11–12 months
+
+  // Slightly later but STILL within commercial range
+  "PHIL 93-1601":{ min: 350, max: 380 }, // ~11.5–12.5 months
+  "PHIL 94-0913":{ min: 350, max: 380 }, // ~11.5–12.5 months
+
+  // Default fallback
+  "Others":      { min: 335, max: 365 },
+};
+
+// Legacy VARIETY_HARVEST_DAYS for backward compatibility (uses max from range)
+// This allows existing code to continue working while we migrate to ranges
 export const VARIETY_HARVEST_DAYS = {
+  "PHIL 99-1793": VARIETY_HARVEST_DAYS_RANGE["PHIL 99-1793"]?.max || 365,
+  "PHIL 80-13": VARIETY_HARVEST_DAYS_RANGE["PHIL 80-13"]?.max || 365,
+  "VMC 84-524": VARIETY_HARVEST_DAYS_RANGE["VMC 84-524"]?.max || 360,
+  "VMC 84-947": VARIETY_HARVEST_DAYS_RANGE["VMC 84-947"]?.max || 365,
+  "PHIL 93-1601": VARIETY_HARVEST_DAYS_RANGE["PHIL 93-1601"]?.max || 380,
+  "PHIL 94-0913": VARIETY_HARVEST_DAYS_RANGE["PHIL 94-0913"]?.max || 380,
+  "PHIL 92-0577": VARIETY_HARVEST_DAYS_RANGE["PHIL 92-0577"]?.max || 365,
+  "Others": VARIETY_HARVEST_DAYS_RANGE["Others"]?.max || 365,
+  // Legacy varieties (for backward compatibility)
   "PSR 07-195": 345,
   "PSR 03-171": 345,
-  "Phil 93-1601": 365,
-  "Phil 94-0913": 365,
-  "Phil 92-0577": 355,
+  "Phil 93-1601": VARIETY_HARVEST_DAYS_RANGE["PHIL 93-1601"]?.max || 380,
+  "Phil 94-0913": VARIETY_HARVEST_DAYS_RANGE["PHIL 94-0913"]?.max || 380,
+  "Phil 92-0577": VARIETY_HARVEST_DAYS_RANGE["PHIL 92-0577"]?.max || 365,
   "Phil 92-0051": 355,
-  "Phil 99-1793": 375,
-  "VMC 84-524": 375,
+  "Phil 99-1793": VARIETY_HARVEST_DAYS_RANGE["PHIL 99-1793"]?.max || 365,
+  "VMC 84-524": VARIETY_HARVEST_DAYS_RANGE["VMC 84-524"]?.max || 360,
   "LCP 85-384": 365,
   "BZ 148": 365
 };
@@ -69,23 +98,39 @@ export function getGrowthStage(DAP) {
 
 /**
  * Calculate expected harvest date based on variety
+ * Uses the max value from the harvest days range for conservative planning
  * @param {Date} plantingDate - The date when the field was planted
  * @param {string} variety - Sugarcane variety
+ * @param {string} useMin - If true, uses min value; otherwise uses max (default: false)
  * @returns {Date|null} Expected harvest date
  */
-export function calculateExpectedHarvestDate(plantingDate, variety) {
+export function calculateExpectedHarvestDate(plantingDate, variety, useMin = false) {
   if (!plantingDate || !variety) return null;
 
-  const harvestDays = VARIETY_HARVEST_DAYS[variety];
-  if (!harvestDays) {
-    console.warn(`Unknown variety: ${variety}. Using default 365 days.`);
-    return calculateDefaultHarvestDate(plantingDate);
+  // Get harvest days range for the variety
+  const range = VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 335, max: 365 };
+  
+  // Use max for conservative planning (better to predict later than earlier)
+  // Use min if explicitly requested
+  const harvestDays = useMin ? range.min : range.max;
+  
+  if (!VARIETY_HARVEST_DAYS_RANGE[variety]) {
+    console.warn(`Unknown variety: "${variety}". Using default range (335-365 days).`);
   }
 
   const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
   const expectedHarvest = new Date(planting.getTime() + harvestDays * 24 * 60 * 60 * 1000);
 
   return expectedHarvest;
+}
+
+/**
+ * Get harvest days range for a variety
+ * @param {string} variety - Sugarcane variety
+ * @returns {{min: number, max: number}} Harvest days range
+ */
+export function getHarvestDaysRange(variety) {
+  return VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 335, max: 365 };
 }
 
 /**
@@ -802,6 +847,9 @@ if (typeof window !== 'undefined') {
     handleHarvestCompletion,
     updateGrowthStage,
     getFieldGrowthData,
-    VARIETY_HARVEST_DAYS
+    calculateExpectedHarvestDate,
+    getHarvestDaysRange,
+    VARIETY_HARVEST_DAYS,
+    VARIETY_HARVEST_DAYS_RANGE
   };
 }
