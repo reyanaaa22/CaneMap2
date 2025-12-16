@@ -4304,25 +4304,28 @@ export function initializeFieldsSection() {
 
     const statusLabel = getStatusLabel(field.status);
     const statusColor = getStatusColor(field.status);
-    const popupContent = `
-      <div style="min-width: 200px;">
-        <h3 style="font-weight: bold; font-size: 1rem; margin-bottom: 0.5rem; color: #1f2937;">
-          ${field.field_name || field.fieldName || 'Unnamed Field'}
-        </h3>
-        <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
-          <p><strong>Location:</strong> ${field.barangay || 'N/A'}</p>
-          <p><strong>Area:</strong> ${field.field_size || field.area_size || field.area || field.size || 'N/A'} hectares</p>
-          <p><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: 600;">${statusLabel}</span></p>
-        </div>
-        <button onclick="viewFieldDetails('${field.id}')" style="background: #7ccf00; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; width: 100%; border: none; cursor: pointer;">
-          View Details
-        </button>
+    
+    const tooltipContent = `
+      <div style="font-size:12px; line-height:1.4; max-width:250px; color:#14532d;">
+        <b style="font-size:14px; color:#166534;">${field.field_name || field.fieldName || 'Unnamed Field'}</b>
+        <br><span style="font-size:10px; color:#15803d;">📍 ${field.barangay || 'N/A'}, Ormoc City, Leyte</span>
+        <br><span style="font-size:10px; color:#15803d;">📐 ${field.field_size || field.area_size || field.area || field.size || 'N/A'} hectares</span>
+        <br><span style="font-size:10px; color:${statusColor}; font-weight: 600;">● ${statusLabel}</span>
+        <br><a href="#" class="seeFieldDetails" style="font-size:10px; color:gray; display:inline-block; margin-top:3px;">Click to see more details.</a>
       </div>
     `;
-    marker.bindPopup(popupContent);
 
+    marker.bindTooltip(tooltipContent, {
+      permanent: false,
+      direction: 'top',
+      offset: [0, -25],
+      opacity: 0.95
+    });
+
+    marker.on('mouseover', () => marker.openTooltip());
+    marker.on('mouseout', () => marker.closeTooltip());
     marker.on('click', () => {
-      highlightFieldInList(field.field_name || field.fieldName || '');
+      viewFieldDetails(field.id);
     });
   }
 
