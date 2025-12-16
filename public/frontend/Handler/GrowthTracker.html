@@ -561,7 +561,10 @@
           </div>
         </div>
 
-        <p class="font-semibold text-base" id="fieldStatusTitle">Growth Status</p>
+        <div class="flex items-center justify-between">
+          <p class="font-semibold text-base" id="fieldStatusTitle">Growth Status</p>
+          <p class="text-sm text-[var(--cane-700)]">Planted: <span class="font-semibold" id="plantedDateDisplay">—</span></p>
+        </div>
         <div class="section-card rounded-xl p-4 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div>
@@ -569,7 +572,7 @@
               <div class="inner-box rounded px-3 py-1.5" id="uiVariety">Phil 99-1793</div>
             </div>
             <div>
-              <div class="text-[var(--cane-800)] mb-1">Days Since Planting:</div>
+              <div class="text-[var(--cane-800)] mb-1">Age:</div>
               <div class="inner-box rounded px-3 py-1.5"><span id="uiDays">0</span> Days</div>
             </div>
             <div>
@@ -587,6 +590,17 @@
             <div>
               <div class="text-[var(--cane-800)] mb-1">Area Size:</div>
               <div class="inner-box rounded px-3 py-1.5">2.5</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Fertilizers Used:</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiFertilizers">—</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Seed Rate:</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiSeedRate">—</div>
             </div>
           </div>
 
@@ -1127,23 +1141,40 @@
               uiVariety.textContent = growthData.variety || 'Not specified';
             }
 
+            // Update fertilizers used
+            const uiFertilizers = document.getElementById('uiFertilizers');
+            if (uiFertilizers) {
+              uiFertilizers.textContent = growthData.fertilizersUsed || '—';
+            }
+
+            // Update seed rate
+            const uiSeedRate = document.getElementById('uiSeedRate');
+            if (uiSeedRate) {
+              uiSeedRate.textContent = growthData.seedRate || '—';
+            }
+
             // Check if field has been planted
             if (!growthData.plantingDate) {
               showNotPlantedState();
-              // Still load timeline nodes even if not planted (records might exist)
               await loadTimelineNodes(fieldId);
               return;
             }
 
-            // Remove "not planted" message if it exists (when switching from unplanted to planted field)
+            // Remove "not planted" message if it exists
             const notPlantedMsg = document.getElementById('notPlantedInfo');
             if (notPlantedMsg) notPlantedMsg.remove();
 
             // Update planting date
             const plantingDate = growthData.plantingDate;
             const uiPlanted = document.getElementById('uiPlanted');
-            if (uiPlanted) {
+            if (uiPlanted && plantingDate) {
               uiPlanted.textContent = plantingDate.toLocaleDateString();
+            }
+
+            // Update planted date display in header
+            const plantedDateDisplay = document.getElementById('plantedDateDisplay');
+            if (plantedDateDisplay && plantingDate) {
+              plantedDateDisplay.textContent = plantingDate.toLocaleDateString();
             }
 
             // Update DAP
@@ -1161,9 +1192,9 @@
             // Update expected harvest date
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
-            if (growthData.expectedHarvestDate) {
+              if (growthData.expectedHarvestDate) {
                 uiHarvest.textContent = growthData.expectedHarvestDate.toLocaleDateString();
-            } else {
+              } else {
                 uiHarvest.textContent = '—';
               }
             }
