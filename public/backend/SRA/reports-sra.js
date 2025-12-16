@@ -21,35 +21,56 @@ export async function getAllReports(filters = {}) {
     let reportsQuery = null;
     let snapshot = null;
     
-    // Default to "sent" status if no status filter specified
-    const statusFilter = filters.status || 'sent';
+    // Only filter by status if explicitly provided
+    // This allows showing all reports (approved, rejected, sent, etc.)
     
     // Strategy 1: Try with createdAt (new reports structure)
     try {
-      reportsQuery = query(
-        collection(db, 'reports'),
-        where('reportStatus', '==', statusFilter),
-        orderBy('createdAt', 'desc')
-      );
+      if (filters.status) {
+        reportsQuery = query(
+          collection(db, 'reports'),
+          where('reportStatus', '==', filters.status),
+          orderBy('createdAt', 'desc')
+        );
+      } else {
+        // No status filter - get all reports
+        reportsQuery = query(
+          collection(db, 'reports'),
+          orderBy('createdAt', 'desc')
+        );
+      }
       snapshot = await getDocs(reportsQuery);
     } catch (error1) {
-      // Strategy 2: Try with timestamp
-      if (error1.code === 'failed-precondition' || error1.code === 9) {
-        try {
-          reportsQuery = query(
-            collection(db, 'reports'),
-            where('reportStatus', '==', statusFilter),
-            orderBy('timestamp', 'desc')
-          );
-          snapshot = await getDocs(reportsQuery);
-        } catch (error2) {
-          // Strategy 3: Try without orderBy
+        // Strategy 2: Try with timestamp
+        if (error1.code === 'failed-precondition' || error1.code === 9) {
           try {
-            reportsQuery = query(
-              collection(db, 'reports'),
-              where('reportStatus', '==', statusFilter)
-            );
+            if (filters.status) {
+              reportsQuery = query(
+                collection(db, 'reports'),
+                where('reportStatus', '==', filters.status),
+                orderBy('timestamp', 'desc')
+              );
+            } else {
+              reportsQuery = query(
+                collection(db, 'reports'),
+                orderBy('timestamp', 'desc')
+              );
+            }
             snapshot = await getDocs(reportsQuery);
+          } catch (error2) {
+            // Strategy 3: Try without orderBy
+            try {
+              if (filters.status) {
+                reportsQuery = query(
+                  collection(db, 'reports'),
+                  where('reportStatus', '==', filters.status)
+                );
+              } else {
+                reportsQuery = query(
+                  collection(db, 'reports')
+                );
+              }
+              snapshot = await getDocs(reportsQuery);
           } catch (error3) {
             console.error('Error querying reports:', error3);
             return [];
@@ -60,7 +81,13 @@ export async function getAllReports(filters = {}) {
       }
     }
     let reports = [];
+    
+    // Collect unique handler IDs and field IDs for batch fetching
+    const handlerIds = new Set();
+    const fieldIds = new Set();
+    const reportDataMap = new Map();
 
+    // First pass: collect all IDs and filter old reports
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
 
@@ -71,25 +98,51 @@ export async function getAllReports(filters = {}) {
         continue; // Skip old reports
       }
 
-      // Fetch handler details
-      const handlerName = await getHandlerName(data.handlerId);
-
-      // Fetch field details if fieldId exists
-      let fieldName = 'No field';
-      if (data.fieldId) {
-        fieldName = await getFieldName(data.fieldId);
-      }
-
+      // Collect IDs for batch fetching
+      if (data.handlerId) handlerIds.add(data.handlerId);
+      if (data.fieldId) fieldIds.add(data.fieldId);
+      
       // Normalize status field (use reportStatus if available, fallback to status)
       const normalizedStatus = data.reportStatus || data.status || 'sent';
       
-      reports.push({
+      reportDataMap.set(docSnap.id, {
         id: docSnap.id,
         ...data,
         reportStatus: normalizedStatus,
         status: normalizedStatus, // Keep both for compatibility
-        handlerName,
-        fieldName
+        handlerId: data.handlerId,
+        fieldId: data.fieldId
+      });
+    }
+
+    // Batch fetch handler names
+    const handlerNameMap = new Map();
+    if (handlerIds.size > 0) {
+      const handlerPromises = Array.from(handlerIds).map(async (handlerId) => {
+        const name = await getHandlerName(handlerId);
+        return [handlerId, name];
+      });
+      const handlerResults = await Promise.all(handlerPromises);
+      handlerResults.forEach(([id, name]) => handlerNameMap.set(id, name));
+    }
+
+    // Batch fetch field names
+    const fieldNameMap = new Map();
+    if (fieldIds.size > 0) {
+      const fieldPromises = Array.from(fieldIds).map(async (fieldId) => {
+        const name = await getFieldName(fieldId);
+        return [fieldId, name];
+      });
+      const fieldResults = await Promise.all(fieldPromises);
+      fieldResults.forEach(([id, name]) => fieldNameMap.set(id, name));
+    }
+
+    // Second pass: combine report data with fetched names
+    for (const [reportId, reportData] of reportDataMap) {
+      reports.push({
+        ...reportData,
+        handlerName: reportData.handlerId ? (handlerNameMap.get(reportData.handlerId) || 'Unknown Handler') : 'Unknown Handler',
+        fieldName: reportData.fieldId ? (fieldNameMap.get(reportData.fieldId) || 'Unknown Field') : 'No field'
       });
     }
 
@@ -417,10 +470,9 @@ function setupFilterDropdown(inputId, btnId, menuId, labelId, iconId) {
  * @param {Object} filters - Filter options
  */
 export async function renderReportsTable(containerId, filters = {}) {
-  // Default to showing only "sent" status reports if no status filter specified
-  if (!filters.status) {
-    filters.status = 'sent';
-  }
+  // Don't default to 'sent' - allow showing all reports if no filter specified
+  // This ensures approved/rejected reports remain visible
+  // If status filter is explicitly set, use it; otherwise query all statuses
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`Container #${containerId} not found`);
@@ -445,16 +497,17 @@ export async function renderReportsTable(containerId, filters = {}) {
         <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
         <div class="relative">
           <button type="button" id="filterStatusBtn" class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-[var(--cane-500)] focus:outline-none focus:border-[var(--cane-600)] focus:ring-2 focus:ring-[var(--cane-600)] focus:ring-opacity-20 transition-all">
-            <span id="filterStatusLabel" class="text-gray-700">${filters.status === 'sent' ? 'Sent' : filters.status === 'pending_review' ? 'Pending Review' : filters.status === 'approved' ? 'Approved' : filters.status === 'rejected' ? 'Rejected' : 'Sent'}</span>
+            <span id="filterStatusLabel" class="text-gray-700">${filters.status === 'sent' ? 'Sent' : filters.status === 'pending_review' ? 'Pending Review' : filters.status === 'approved' ? 'Approved' : filters.status === 'rejected' ? 'Rejected' : 'All Status'}</span>
             <i class="fas fa-chevron-down text-gray-400 transition-transform text-xs" id="filterStatusIcon"></i>
           </button>
           <div id="filterStatusMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="">All Status</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="sent">Sent</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="pending_review">Pending Review</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="approved">Approved</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="rejected">Rejected</button>
           </div>
-          <input type="hidden" id="filterStatus" value="${filters.status || 'sent'}">
+          <input type="hidden" id="filterStatus" value="${filters.status || ''}">
         </div>
       </div>
 
@@ -512,14 +565,14 @@ export async function renderReportsTable(containerId, filters = {}) {
   });
 
   document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-    document.getElementById('filterStatus').value = 'sent';
+    document.getElementById('filterStatus').value = '';
     document.getElementById('filterHandler').value = '';
     document.getElementById('filterStartDate').value = '';
     document.getElementById('filterEndDate').value = '';
     // Reset dropdown labels
-    document.getElementById('filterStatusLabel').textContent = 'Sent';
+    document.getElementById('filterStatusLabel').textContent = 'All Status';
     document.getElementById('filterHandlerLabel').textContent = 'All Handlers';
-    renderReportsTable(containerId, { status: 'sent' });
+    renderReportsTable(containerId, {});
   });
 
   document.getElementById('exportCSVBtn').addEventListener('click', async () => {
@@ -642,14 +695,14 @@ function renderReportRow(report) {
 }
 
 /**
- * Get status badge HTML
+ * Get status badge HTML with icons
  */
 function getStatusBadge(status) {
   const badges = {
-    'sent': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Sent</span>',
-    'pending_review': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Review</span>',
-    'approved': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>',
-    'rejected': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>'
+    'sent': '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200"><i class="fas fa-paper-plane text-[10px]"></i> Sent</span>',
+    'pending_review': '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200"><i class="fas fa-clock text-[10px]"></i> Pending Review</span>',
+    'approved': '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200"><i class="fas fa-check-circle text-[10px]"></i> Approved</span>',
+    'rejected': '<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 border border-red-200"><i class="fas fa-times-circle text-[10px]"></i> Rejected</span>'
   };
 
   return badges[status] || badges['sent'];
@@ -700,221 +753,899 @@ function setupActionHandlers() {
 
   // Approve report
   window.approveReport = async function(reportId) {
-    if (!confirm('Are you sure you want to approve this report?')) return;
+    // Create custom approval modal
+    const modal = document.createElement('div');
+    modal.id = 'approveReportModal';
+    modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <i class="fas fa-check-circle text-2xl text-green-600"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Approve Report</h3>
+              <p class="text-sm text-gray-600">Confirm approval action</p>
+            </div>
+          </div>
 
-    try {
-      // Get report data to send notification
-      const reportRef = doc(db, 'reports', reportId);
-      const reportSnap = await getDoc(reportRef);
+          <p class="text-gray-700 mb-6">Are you sure you want to approve this report? The handler will be notified immediately.</p>
+
+          <div class="flex items-center justify-end gap-3">
+            <button id="cancelApproveBtn" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition">
+              Cancel
+            </button>
+            <button id="confirmApproveBtn" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition flex items-center gap-2">
+              <i class="fas fa-check"></i> Approve Report
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close modal handlers
+    const closeModal = () => modal.remove();
+    const cancelBtn = modal.querySelector('#cancelApproveBtn');
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Confirm approval
+    const confirmBtn = modal.querySelector('#confirmApproveBtn');
+    confirmBtn.addEventListener('click', async () => {
+      // Disable button and show loading
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...';
       
-      if (!reportSnap.exists()) {
-        alert('Report not found');
-        return;
-      }
-      
-      const reportData = reportSnap.data();
-      
-      // Update report status
-      await updateReportStatus(reportId, 'approved');
-      
-      // Send notification to handler
-      if (reportData.handlerId) {
-        try {
-          await notifyReportApproval(reportData.handlerId, 'Field Report', reportId);
-          console.log('✅ Approval notification sent to handler');
-        } catch (notifError) {
-          console.error('Failed to send approval notification:', notifError);
-          // Don't fail the approval if notification fails
+      try {
+        // Get report data to send notification
+        const reportRef = doc(db, 'reports', reportId);
+        const reportSnap = await getDoc(reportRef);
+        
+        if (!reportSnap.exists()) {
+          alert('Report not found');
+          closeModal();
+          return;
         }
+        
+        const reportData = reportSnap.data();
+        
+        // Update report status
+        await updateReportStatus(reportId, 'approved');
+        
+        // Send notification to handler
+        if (reportData.handlerId) {
+          try {
+            await notifyReportApproval(reportData.handlerId, 'Field Report', reportId);
+            console.log('✅ Approval notification sent to handler');
+          } catch (notifError) {
+            console.error('Failed to send approval notification:', notifError);
+            // Don't fail the approval if notification fails
+          }
+        }
+        
+        // Close modal
+        closeModal();
+        
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+        successDiv.innerHTML = '<i class="fas fa-check-circle"></i> Report approved successfully!';
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 3000);
+        
+        // Refresh the reports table preserving current filter status
+        const container = document.getElementById('sraReportsTableContainer');
+        if (container) {
+          // Get current filter status from the filter input (empty string means "All Status")
+          const currentStatus = document.getElementById('filterStatus')?.value || '';
+          const currentHandler = document.getElementById('filterHandler')?.value || '';
+          const currentStartDate = document.getElementById('filterStartDate')?.value || '';
+          const currentEndDate = document.getElementById('filterEndDate')?.value || '';
+          
+          renderReportsTable('sraReportsTableContainer', {
+            status: currentStatus || undefined,
+            handlerId: currentHandler || undefined,
+            startDate: currentStartDate || undefined,
+            endDate: currentEndDate || undefined
+          });
+        } else {
+          location.reload();
+        }
+      } catch (error) {
+        console.error('Error approving report:', error);
+        alert('Failed to approve report: ' + error.message);
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-check"></i> Approve Report';
       }
-      
-      alert('Report approved successfully');
-      // Refresh the reports table instead of full page reload
-      const container = document.getElementById('sraReportsTableContainer');
-      if (container) {
-        renderReportsTable('sraReportsTableContainer');
-      } else {
-        location.reload();
+    });
+
+    // Close on ESC key
+    const escHandler = (e) => {
+      if (e.key === 'Escape' && document.getElementById('approveReportModal')) {
+        closeModal();
+        document.removeEventListener('keydown', escHandler);
       }
-    } catch (error) {
-      console.error('Error approving report:', error);
-      alert('Failed to approve report');
-    }
+    };
+    document.addEventListener('keydown', escHandler);
   };
 
   // Reject report
   window.rejectReport = async function(reportId) {
-    const remarks = prompt('Enter rejection remarks (optional):');
-    if (remarks === null) return; // User cancelled
+    // Create custom rejection modal
+    const modal = document.createElement('div');
+    modal.id = 'rejectReportModal';
+    modal.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div class="p-6">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <i class="fas fa-times-circle text-2xl text-red-600"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Reject Report</h3>
+              <p class="text-sm text-gray-600">Provide feedback to the handler</p>
+            </div>
+          </div>
 
-    try {
-      // Get report data to send notification
-      const reportRef = doc(db, 'reports', reportId);
-      const reportSnap = await getDoc(reportRef);
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Rejection Remarks <span class="text-gray-500 text-xs">(Optional)</span>
+            </label>
+            <textarea id="rejectionRemarks" rows="4" 
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition resize-none"
+                      placeholder="Enter reason for rejection (optional)..."></textarea>
+          </div>
+
+          <p class="text-sm text-gray-600 mb-6">The handler will be notified of this rejection.</p>
+
+          <div class="flex items-center justify-end gap-3">
+            <button id="cancelRejectBtn" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition">
+              Cancel
+            </button>
+            <button id="confirmRejectBtn" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition flex items-center gap-2">
+              <i class="fas fa-times"></i> Reject Report
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Focus on textarea
+    const remarksTextarea = modal.querySelector('#rejectionRemarks');
+    setTimeout(() => remarksTextarea.focus(), 100);
+
+    // Close modal handlers
+    const closeModal = () => modal.remove();
+    const cancelBtn = modal.querySelector('#cancelRejectBtn');
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Confirm rejection
+    const confirmBtn = modal.querySelector('#confirmRejectBtn');
+    confirmBtn.addEventListener('click', async () => {
+      const remarks = remarksTextarea.value.trim();
       
-      if (!reportSnap.exists()) {
-        alert('Report not found');
-        return;
-      }
+      // Disable button and show loading
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rejecting...';
       
-      const reportData = reportSnap.data();
-      
-      // Update report status
-      await updateReportStatus(reportId, 'rejected', remarks);
-      
-      // Send notification to handler
-      if (reportData.handlerId) {
-        try {
-          await notifyReportRejection(reportData.handlerId, 'Field Report', reportId, remarks || '');
-          console.log('✅ Rejection notification sent to handler');
-        } catch (notifError) {
-          console.error('Failed to send rejection notification:', notifError);
-          // Don't fail the rejection if notification fails
+      try {
+        // Get report data to send notification
+        const reportRef = doc(db, 'reports', reportId);
+        const reportSnap = await getDoc(reportRef);
+        
+        if (!reportSnap.exists()) {
+          alert('Report not found');
+          closeModal();
+          return;
         }
+        
+        const reportData = reportSnap.data();
+        
+        // Update report status
+        await updateReportStatus(reportId, 'rejected', remarks);
+        
+        // Send notification to handler
+        if (reportData.handlerId) {
+          try {
+            await notifyReportRejection(reportData.handlerId, 'Field Report', reportId, remarks || '');
+            console.log('✅ Rejection notification sent to handler');
+          } catch (notifError) {
+            console.error('Failed to send rejection notification:', notifError);
+            // Don't fail the rejection if notification fails
+          }
+        }
+        
+        // Close modal
+        closeModal();
+        
+        // Show success message
+        const successDiv = document.createElement('div');
+        successDiv.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+        successDiv.innerHTML = '<i class="fas fa-check-circle"></i> Report rejected successfully!';
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 3000);
+        
+        // Refresh the reports table preserving current filter status
+        const container = document.getElementById('sraReportsTableContainer');
+        if (container) {
+          // Get current filter status from the filter input (empty string means "All Status")
+          const currentStatus = document.getElementById('filterStatus')?.value || '';
+          const currentHandler = document.getElementById('filterHandler')?.value || '';
+          const currentStartDate = document.getElementById('filterStartDate')?.value || '';
+          const currentEndDate = document.getElementById('filterEndDate')?.value || '';
+          
+          renderReportsTable('sraReportsTableContainer', {
+            status: currentStatus || undefined,
+            handlerId: currentHandler || undefined,
+            startDate: currentStartDate || undefined,
+            endDate: currentEndDate || undefined
+          });
+        } else {
+          location.reload();
+        }
+      } catch (error) {
+        console.error('Error rejecting report:', error);
+        alert('Failed to reject report: ' + error.message);
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-times"></i> Reject Report';
       }
-      
-      alert('Report rejected');
-      // Refresh the reports table instead of full page reload
-      const container = document.getElementById('sraReportsTableContainer');
-      if (container) {
-        renderReportsTable('sraReportsTableContainer');
-      } else {
-        location.reload();
+    });
+
+    // Close on ESC key
+    const escHandler = (e) => {
+      if (e.key === 'Escape' && document.getElementById('rejectReportModal')) {
+        closeModal();
+        document.removeEventListener('keydown', escHandler);
       }
-    } catch (error) {
-      console.error('Error rejecting report:', error);
-      alert('Failed to reject report');
-    }
+    };
+    document.addEventListener('keydown', escHandler);
   };
 }
 
 /**
- * Show report details modal
+ * Show report details modal with bond paper-style preview
  */
-function showReportDetailsModal(reportId, report) {
+async function showReportDetailsModal(reportId, report) {
   const modal = document.createElement('div');
   modal.id = 'reportDetailsModal';
-  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50';
-
-  // For new Field Reports, display PDF link and summary info instead of data fields
-  let reportDataHTML = '';
+  modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50';
+  modal.style.overflowY = 'auto';
+  modal.style.maxHeight = '100vh';
   
-  if (report.pdfUrl) {
-    // New Field Report structure (from Handler "Send Report to SRA")
-    reportDataHTML = `
-      <div class="border-b border-gray-200 py-2">
-        <dt class="text-sm font-medium text-gray-500">PDF Document</dt>
-        <dd class="mt-1">
-          <a href="${report.pdfUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center gap-2">
-            <i class="fas fa-file-pdf"></i> View Report PDF
-          </a>
-        </dd>
-      </div>
-      ${report.recordCount !== undefined ? `
-        <div class="border-b border-gray-200 py-2">
-          <dt class="text-sm font-medium text-gray-500">Record Count</dt>
-          <dd class="mt-1 text-sm text-gray-900">${report.recordCount} record(s)</dd>
-        </div>
-      ` : ''}
-      ${report.costSummary ? `
-        <div class="border-b border-gray-200 py-2">
-          <dt class="text-sm font-medium text-gray-500">Total Cost</dt>
-          <dd class="mt-1 text-sm text-gray-900">₱${(report.costSummary.grandTotal || 0).toFixed(2)}</dd>
-        </div>
-      ` : ''}
-    `;
-  } else if (report.data && typeof report.data === 'object' && Object.keys(report.data).length > 0) {
-    // Old report structure with data fields
-    reportDataHTML = Object.entries(report.data).map(([key, value]) => {
-      return `
-        <div class="border-b border-gray-200 py-2">
-          <dt class="text-sm font-medium text-gray-500">${formatFieldName(key)}</dt>
-          <dd class="mt-1 text-sm text-gray-900">${formatFieldValue(value)}</dd>
-        </div>
-      `;
-    }).join('');
-  } else {
-    reportDataHTML = `
-      <div class="border-b border-gray-200 py-2">
-        <p class="text-sm text-gray-500 italic">No detailed data available</p>
-      </div>
-    `;
-  }
-
-  const submittedDate = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }) : report.timestamp?.toDate ? report.timestamp.toDate().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }) : report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }) : 'N/A';
-
+  // Show loading state
   modal.innerHTML = `
-    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" id="reportDetailsPrintArea">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold text-gray-900">Field Growth & Operations Report</h3>
-          <button onclick="document.getElementById('reportDetailsModal').remove()"
-                  class="text-gray-400 hover:text-gray-600 print:hidden">
-            <i class="fas fa-times text-xl"></i>
-          </button>
-        </div>
-
-        <!-- Report Metadata -->
-        <div class="mb-4 p-4 bg-gray-50 rounded-lg space-y-2">
-          <div class="flex items-center text-sm">
-            <span class="font-medium text-gray-700 w-32">Handler:</span>
-            <span class="text-gray-900">${escapeHtml(report.handlerName || 'Unknown')}</span>
-          </div>
-          <div class="flex items-center text-sm">
-            <span class="font-medium text-gray-700 w-32">Field:</span>
-            <span class="text-gray-900">${escapeHtml(report.fieldName || 'No field')}</span>
-          </div>
-          <div class="flex items-center text-sm">
-            <span class="font-medium text-gray-700 w-32">Submitted:</span>
-            <span class="text-gray-900">${submittedDate}</span>
-          </div>
-          <div class="flex items-center text-sm">
-            <span class="font-medium text-gray-700 w-32">Status:</span>
-            <span>${getStatusBadge(report.reportStatus || report.status || 'sent')}</span>
-          </div>
-        </div>
-
-        <!-- Report Data or PDF Link -->
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">Report Details</h4>
-        <dl class="divide-y divide-gray-200">
-          ${reportDataHTML}
-        </dl>
-
-        ${report.remarks ? `
-          <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p class="text-sm font-medium text-yellow-800">Remarks:</p>
-            <p class="text-sm text-yellow-700 mt-1">${escapeHtml(report.remarks)}</p>
-          </div>
-        ` : ''}
-
-        <!-- Export Actions -->
-        <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-gray-200 print:hidden">
-          <button onclick="downloadSRAReportPDF('${reportId}', '${escapeHtml(report.fieldName || 'Field Report')}')"
-                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2">
-            <i class="fas fa-download"></i> Download PDF
-          </button>
-          <button onclick="printReport()"
-                  class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2">
-            <i class="fas fa-print"></i> Print Report
-          </button>
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-auto flex flex-col" style="max-height: calc(100vh - 20px); min-height: 0;">
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900">Field Growth & Operations Report</h3>
+        <button id="closeReportModal" class="text-gray-400 hover:text-gray-600 transition">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 report-content-scrollable" style="min-height: 0;">
+        <div class="flex items-center justify-center py-12">
+          <i class="fas fa-spinner fa-spin text-3xl text-[var(--cane-600)] mb-3"></i>
+          <p class="text-gray-500 ml-3">Loading report...</p>
         </div>
       </div>
     </div>
   `;
-
+  
   document.body.appendChild(modal);
+  
+  // Close button handler
+  const closeBtn = modal.querySelector('#closeReportModal');
+  const closeModal = () => {
+    modal.remove();
+    document.body.style.overflow = '';
+    document.body.classList.remove('modal-open');
+  };
+  closeBtn.addEventListener('click', closeModal);
+  
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  // Close on ESC key
+  const escHandler = (e) => {
+    if (e.key === 'Escape' && document.getElementById('reportDetailsModal')) {
+      closeModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+  
+  // Prevent body scroll when modal is open
+  document.body.style.overflow = 'hidden';
+  document.body.classList.add('modal-open');
+  
+  try {
+    // Fetch field data and records to regenerate report
+    let fieldData = null;
+    let recordsData = [];
+    
+    if (report.fieldId) {
+      try {
+        const fieldRef = doc(db, 'fields', report.fieldId);
+        const fieldSnap = await getDoc(fieldRef);
+        if (fieldSnap.exists()) {
+          fieldData = fieldSnap.data();
+        }
+      } catch (fieldError) {
+        console.warn('Error fetching field data:', fieldError);
+        // Continue without field data
+      }
+    }
+    
+    if (report.fieldId && report.handlerId) {
+      // Fetch records for this field
+      try {
+        const recordsQuery = query(
+          collection(db, 'records'),
+          where('fieldId', '==', report.fieldId),
+          where('userId', '==', report.handlerId),
+          orderBy('createdAt', 'desc')
+        );
+        
+        try {
+          const recordsSnapshot = await getDocs(recordsQuery);
+          const recordPromises = recordsSnapshot.docs.map(async (recordDoc) => {
+            const recordData = recordDoc.data();
+            
+            // Fetch bought_items and vehicle_updates
+            const [boughtItemsSnap, vehicleUpdatesSnap] = await Promise.all([
+              getDocs(collection(db, 'records', recordDoc.id, 'bought_items')).catch(() => ({ docs: [] })),
+              getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates')).catch(() => ({ docs: [] }))
+            ]);
+            
+            return {
+              id: recordDoc.id,
+              ...recordData,
+              boughtItems: boughtItemsSnap.docs.map(d => d.data()),
+              vehicleUpdates: vehicleUpdatesSnap.docs.length > 0 ? vehicleUpdatesSnap.docs[0].data() : null
+            };
+          });
+          
+          recordsData = await Promise.all(recordPromises);
+        } catch (error) {
+          console.warn('Error fetching records (may need index):', error);
+          // Try without orderBy
+          try {
+            const recordsQuery2 = query(
+              collection(db, 'records'),
+              where('fieldId', '==', report.fieldId),
+              where('userId', '==', report.handlerId)
+            );
+            const recordsSnapshot2 = await getDocs(recordsQuery2);
+            const recordPromises2 = recordsSnapshot2.docs.map(async (recordDoc) => {
+              const recordData = recordDoc.data();
+              const [boughtItemsSnap, vehicleUpdatesSnap] = await Promise.all([
+                getDocs(collection(db, 'records', recordDoc.id, 'bought_items')).catch(() => ({ docs: [] })),
+                getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates')).catch(() => ({ docs: [] }))
+              ]);
+              return {
+                id: recordDoc.id,
+                ...recordData,
+                boughtItems: boughtItemsSnap.docs.map(d => d.data()),
+                vehicleUpdates: vehicleUpdatesSnap.docs.length > 0 ? vehicleUpdatesSnap.docs[0].data() : null
+              };
+            });
+            recordsData = await Promise.all(recordPromises2);
+            // Sort client-side
+            recordsData.sort((a, b) => {
+              const dateA = a.createdAt?.toDate?.() || new Date(0);
+              const dateB = b.createdAt?.toDate?.() || new Date(0);
+              return dateB - dateA;
+            });
+          } catch (error2) {
+            console.error('Error fetching records:', error2);
+            // Continue with empty records array
+          }
+        }
+      } catch (recordsError) {
+        console.warn('Error setting up records query:', recordsError);
+        // Continue with empty records array
+      }
+    }
+    
+    // Generate report HTML
+    const reportHTML = generateReportHTML(report, fieldData, recordsData);
+    
+    // Update modal with report content
+    const submittedDate = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : report.timestamp?.toDate ? report.timestamp.toDate().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }) : 'N/A';
+    
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-auto flex flex-col" style="max-height: calc(100vh - 20px); min-height: 0;">
+        <!-- Header -->
+        <div class="p-3 sm:p-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900">Field Growth & Operations Report</h3>
+          <button id="closeReportModal" class="text-gray-400 hover:text-gray-600 transition">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="p-3 sm:p-4 border-b border-gray-200 flex items-center justify-center sm:justify-end gap-2 flex-wrap flex-shrink-0 print:hidden">
+          <button id="downloadPDFBtn" class="px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fas fa-download"></i> <span>Download PDF</span>
+          </button>
+          <button id="printReportBtn" class="px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fas fa-print"></i> <span>Print</span>
+          </button>
+        </div>
+        
+        <!-- Report Content (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 report-content-scrollable" style="min-height: 0;">
+          <div id="reportContent" class="bg-white mx-auto" style="padding: 20px 30px 40px 30px; max-width: 210mm; width: 100%; box-shadow: 0 0 10px rgba(0,0,0,0.1); min-height: calc(100% - 2rem); margin-bottom: 2rem; display: flex; flex-direction: column;">
+            ${reportHTML}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Re-attach close handler
+    const newCloseBtn = modal.querySelector('#closeReportModal');
+    newCloseBtn.addEventListener('click', closeModal);
+    
+    // Download PDF button
+    const downloadBtn = modal.querySelector('#downloadPDFBtn');
+    downloadBtn.addEventListener('click', async () => {
+      try {
+        await downloadReportPDF(modal.querySelector('#reportContent'), report.fieldName || 'Field Report');
+      } catch (error) {
+        console.error('Error downloading PDF:', error);
+        alert('Failed to download PDF. Please try again.');
+      }
+    });
+    
+    // Print button
+    const printBtn = modal.querySelector('#printReportBtn');
+    printBtn.addEventListener('click', () => {
+      printReportContent(modal.querySelector('#reportContent'));
+    });
+    
+  } catch (error) {
+    console.error('Error loading report details:', error);
+    const contentArea = modal.querySelector('.flex-1');
+    if (contentArea) {
+      contentArea.innerHTML = `
+        <div class="text-center py-12">
+          <i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-3"></i>
+          <p class="text-gray-500">Failed to load report details</p>
+          <p class="text-xs text-gray-400 mt-2">${error.message || 'Unknown error'}</p>
+        </div>
+      `;
+    }
+  }
+}
+
+/**
+ * Generate report HTML in bond paper format
+ */
+function generateReportHTML(report, fieldData, recordsData) {
+  const submittedDate = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : 'N/A';
+  
+  // Calculate cost summary if not provided
+  let costSummary = report.costSummary || { totalTaskCost: 0, totalBoughtItemsCost: 0, totalVehicleCost: 0, grandTotal: 0 };
+  
+  if (!report.costSummary && recordsData.length > 0) {
+    costSummary = calculateCostSummary(recordsData);
+  }
+  
+  // Group records by growth stage
+  const recordsByStage = {};
+  recordsData.forEach(record => {
+    const stage = record.status || 'Unknown';
+    if (!recordsByStage[stage]) {
+      recordsByStage[stage] = [];
+    }
+    recordsByStage[stage].push(record);
+  });
+  
+  // Sort records within each stage by date
+  Object.keys(recordsByStage).forEach(stage => {
+    recordsByStage[stage].sort((a, b) => {
+      const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+      return dateA - dateB;
+    });
+  });
+  
+  // Format field data
+  const field = fieldData || {};
+  const fieldName = report.fieldName || field.field_name || field.fieldName || 'Unknown Field';
+  const owner = field.owner || report.handlerName || 'Unknown';
+  
+  return `
+    <div style="display: flex; flex-direction: column; min-height: 100%;">
+    <!-- Report Header -->
+    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #2c5a0b; padding-bottom: 20px; flex-shrink: 0;">
+      <h1 style="font-size: 24px; font-weight: bold; color: #2c5a0b; margin-bottom: 10px;">CaneMap</h1>
+      <h2 style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 5px;">Field Growth & Operations Report</h2>
+      <p style="font-size: 12px; color: #666;">Generated: ${submittedDate}</p>
+    </div>
+    
+    <!-- Field Information -->
+    <div style="margin-bottom: 30px; flex-shrink: 0;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Field Information</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <tr>
+          <td style="padding: 6px; font-weight: bold; width: 30%;">Field Name:</td>
+          <td style="padding: 6px; width: 20%;">${escapeHtml(fieldName)}</td>
+          <td style="padding: 6px; font-weight: bold; width: 25%;">Handler:</td>
+          <td style="padding: 6px; width: 25%;">${escapeHtml(report.handlerName || owner)}</td>
+        </tr>
+        ${field.barangay ? `
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Barangay:</td>
+          <td style="padding: 6px;">${escapeHtml(field.barangay)}</td>
+          ${field.street ? `
+          <td style="padding: 6px; font-weight: bold;">Street / Sitio:</td>
+          <td style="padding: 6px;">${escapeHtml(field.street)}</td>
+          ` : '<td colspan="2"></td>'}
+        </tr>
+        ` : ''}
+        ${field.area || field.field_size ? `
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Size (HA):</td>
+          <td style="padding: 6px;">${escapeHtml(String(field.area || field.field_size || 'N/A'))}</td>
+          ${field.fieldTerrain ? `
+          <td style="padding: 6px; font-weight: bold;">Field Terrain:</td>
+          <td style="padding: 6px;">${escapeHtml(field.fieldTerrain)}</td>
+          ` : '<td colspan="2"></td>'}
+        </tr>
+        ` : ''}
+        ${field.status ? `
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Status:</td>
+          <td style="padding: 6px;">${escapeHtml(field.status)}</td>
+          ${field.latitude ? `
+          <td style="padding: 6px; font-weight: bold;">Latitude:</td>
+          <td style="padding: 6px;">${typeof field.latitude === 'number' ? field.latitude.toFixed(6) : escapeHtml(String(field.latitude))}</td>
+          ` : '<td colspan="2"></td>'}
+        </tr>
+        ` : ''}
+        ${field.longitude ? `
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Longitude:</td>
+          <td style="padding: 6px;">${typeof field.longitude === 'number' ? field.longitude.toFixed(6) : escapeHtml(String(field.longitude))}</td>
+          ${field.variety || field.sugarcane_variety ? `
+          <td style="padding: 6px; font-weight: bold;">Sugarcane Variety:</td>
+          <td style="padding: 6px;">${escapeHtml(field.variety || field.sugarcane_variety || 'N/A')}</td>
+          ` : '<td colspan="2"></td>'}
+        </tr>
+        ` : ''}
+        ${field.soilType ? `
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Soil Type:</td>
+          <td style="padding: 6px;">${escapeHtml(field.soilType)}</td>
+          ${field.irrigationMethod ? `
+          <td style="padding: 6px; font-weight: bold;">Irrigation Method:</td>
+          <td style="padding: 6px;">${escapeHtml(field.irrigationMethod)}</td>
+          ` : '<td colspan="2"></td>'}
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+    
+    <!-- Records Breakdown by Growth Stage -->
+    ${Object.keys(recordsByStage).length > 0 ? `
+    <div style="margin-bottom: 30px; flex: 1; min-height: 0;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Records Breakdown</h3>
+      ${Object.entries(recordsByStage).map(([stage, stageRecords]) => `
+        <div style="margin-bottom: 25px; page-break-inside: avoid;">
+          <h4 style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px;">${escapeHtml(stage)}</h4>
+          ${stageRecords.map(record => {
+            const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+            const dateStr = recordDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            const recordCost = calculateRecordCost(record);
+            
+            return `
+              <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <p style="font-weight: bold; font-size: 12px; margin-bottom: 5px;">${escapeHtml(record.taskType || 'Unknown Task')} - ${dateStr}</p>
+                <p style="font-size: 11px; color: #666; margin-bottom: 5px;">Operation: ${escapeHtml(record.operation || 'N/A')}</p>
+                ${record.boughtItems && record.boughtItems.length > 0 ? `
+                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 8px; margin-bottom: 8px;">
+                    <thead>
+                      <tr style="background-color: #f9f9f9;">
+                        <th style="padding: 4px; text-align: left; border: 1px solid #ddd;">Item</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Qty</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Price</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${record.boughtItems.map(item => `
+                        <tr>
+                          <td style="padding: 4px; border: 1px solid #ddd;">${escapeHtml(item.itemName || 'N/A')}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">${escapeHtml(String(item.quantity || 0))} ${escapeHtml(item.unit || '')}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">₱${parseFloat(item.price || item.pricePerUnit || 0).toFixed(2)}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">₱${parseFloat(item.totalCost || item.total || 0).toFixed(2)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                ` : ''}
+                ${record.vehicleUpdates ? `
+                  <p style="font-size: 10px; color: #666; margin-top: 5px;">Vehicle: ${escapeHtml(record.vehicleUpdates.vehicleType || 'N/A')} | Boxes: ${record.vehicleUpdates.boxes || 0} | Weight: ${record.vehicleUpdates.weight || 0} kg</p>
+                ` : ''}
+                <p style="font-size: 11px; font-weight: bold; margin-top: 5px;">Cost: ₱${recordCost.toFixed(2)}</p>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `).join('')}
+    </div>
+    ` : `
+    <div style="margin-bottom: 30px; flex: 1; min-height: 0;">
+      <p style="font-size: 12px; color: #666; font-style: italic; padding: 15px; text-align: center; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+        No records found for this field.
+      </p>
+    </div>
+    `}
+    
+    <!-- Cost Summary -->
+    <div style="margin-top: auto; margin-bottom: 0; padding: 15px; background-color: #f9f9f9; border: 2px solid #2c5a0b; page-break-inside: avoid; flex-shrink: 0;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px;">Cost Summary</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Task Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalTaskCost.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Bought Items Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalBoughtItemsCost.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Vehicle Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalVehicleCost.toFixed(2)}</td>
+        </tr>
+        <tr style="border-top: 2px solid #2c5a0b;">
+          <td style="padding: 10px; font-weight: bold; font-size: 14px;">Grand Total:</td>
+          <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 14px;">₱${costSummary.grandTotal.toFixed(2)}</td>
+        </tr>
+      </table>
+    </div>
+    </div>
+  `;
+}
+
+/**
+ * Calculate cost summary from records (matches Handler's calculateTotalCost logic)
+ */
+function calculateCostSummary(records) {
+  let totalTaskCost = 0;
+  let totalBoughtItemsCost = 0;
+  let totalVehicleCost = 0;
+  
+  records.forEach(record => {
+    // 1. Task cost from record.data.totalCost
+    let taskCost = parseFloat(record.data?.totalCost || 0) || 0;
+    
+    // 2. Scan record.data for ALL cost-related fields
+    if (record.data && typeof record.data === 'object') {
+      for (const [key, value] of Object.entries(record.data)) {
+        if (key === 'totalCost') continue; // Already added
+        const keyLower = key.toLowerCase();
+        if ((keyLower.includes('cost') || 
+             keyLower.includes('price') || 
+             keyLower.includes('amount') ||
+             keyLower.includes('expense') ||
+             keyLower.includes('fee') ||
+             keyLower.includes('charge')) && 
+            typeof value === 'number') {
+          taskCost += parseFloat(value) || 0;
+        }
+      }
+    }
+    totalTaskCost += taskCost;
+    
+    // 3. Bought items cost
+    if (record.boughtItems && record.boughtItems.length > 0) {
+      record.boughtItems.forEach(item => {
+        let itemTotal = parseFloat(item.totalCost || item.total || 0) || 0;
+        // Check for other cost fields in the item
+        if (item && typeof item === 'object') {
+          for (const [key, value] of Object.entries(item)) {
+            if (key === 'totalCost' || key === 'total') continue;
+            const keyLower = key.toLowerCase();
+            if ((keyLower.includes('cost') || 
+                 keyLower.includes('amount')) && 
+                typeof value === 'number') {
+              itemTotal += parseFloat(value) || 0;
+            }
+          }
+        }
+        totalBoughtItemsCost += itemTotal;
+      });
+    }
+    
+    // 4. Vehicle cost
+    if (record.vehicleUpdates && typeof record.vehicleUpdates === 'object') {
+      let vehicleCost = parseFloat(record.vehicleUpdates.totalCost || 0) || 0;
+      // Scan for other cost fields in vehicle updates
+      for (const [key, value] of Object.entries(record.vehicleUpdates)) {
+        if (key === 'totalCost') continue;
+        const keyLower = key.toLowerCase();
+        if ((keyLower.includes('cost') || 
+             keyLower.includes('price') || 
+             keyLower.includes('amount')) && 
+            typeof value === 'number') {
+          vehicleCost += parseFloat(value) || 0;
+        }
+      }
+      totalVehicleCost += vehicleCost;
+    }
+  });
+  
+  return {
+    totalTaskCost,
+    totalBoughtItemsCost,
+    totalVehicleCost,
+    grandTotal: totalTaskCost + totalBoughtItemsCost + totalVehicleCost
+  };
+}
+
+/**
+ * Calculate cost for a single record (matches Handler's calculateTotalCost logic)
+ */
+function calculateRecordCost(record) {
+  let total = 0;
+  
+  // 1. Task cost from record.data.totalCost
+  total += parseFloat(record.data?.totalCost || 0) || 0;
+  
+  // 2. Scan record.data for ALL cost-related fields
+  if (record.data && typeof record.data === 'object') {
+    for (const [key, value] of Object.entries(record.data)) {
+      if (key === 'totalCost') continue;
+      const keyLower = key.toLowerCase();
+      if ((keyLower.includes('cost') || 
+           keyLower.includes('price') || 
+           keyLower.includes('amount') ||
+           keyLower.includes('expense') ||
+           keyLower.includes('fee') ||
+           keyLower.includes('charge')) && 
+          typeof value === 'number') {
+        total += parseFloat(value) || 0;
+      }
+    }
+  }
+  
+  // 3. Bought items cost
+  if (record.boughtItems && record.boughtItems.length > 0) {
+    record.boughtItems.forEach(item => {
+      let itemTotal = parseFloat(item.totalCost || item.total || 0) || 0;
+      if (item && typeof item === 'object') {
+        for (const [key, value] of Object.entries(item)) {
+          if (key === 'totalCost' || key === 'total') continue;
+          const keyLower = key.toLowerCase();
+          if ((keyLower.includes('cost') || 
+               keyLower.includes('amount')) && 
+              typeof value === 'number') {
+            itemTotal += parseFloat(value) || 0;
+          }
+        }
+      }
+      total += itemTotal;
+    });
+  }
+  
+  // 4. Vehicle cost
+  if (record.vehicleUpdates && typeof record.vehicleUpdates === 'object') {
+    total += parseFloat(record.vehicleUpdates.totalCost || 0) || 0;
+    for (const [key, value] of Object.entries(record.vehicleUpdates)) {
+      if (key === 'totalCost') continue;
+      const keyLower = key.toLowerCase();
+      if ((keyLower.includes('cost') || 
+           keyLower.includes('price') || 
+           keyLower.includes('amount')) && 
+          typeof value === 'number') {
+        total += parseFloat(value) || 0;
+      }
+    }
+  }
+  
+  return total;
+}
+
+/**
+ * Download report as PDF
+ */
+async function downloadReportPDF(contentElement, reportName) {
+  try {
+    if (typeof window.html2pdf === 'undefined') {
+      alert('PDF library not loaded. Please refresh the page and try again.');
+      return;
+    }
+    
+    const clone = contentElement.cloneNode(true);
+    
+    // Remove any buttons from clone
+    const buttons = clone.querySelectorAll('button');
+    buttons.forEach(btn => btn.remove());
+    
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `Field_Report_${(reportName || 'Field_Report').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    await window.html2pdf().set(opt).from(clone).save();
+    console.log('✅ PDF downloaded successfully');
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error;
+  }
+}
+
+/**
+ * Print report content
+ */
+function printReportContent(contentElement) {
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Field Growth & Operations Report</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+        @media print {
+          body { margin: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      ${contentElement.innerHTML}
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
 }
 
 /**
