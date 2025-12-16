@@ -3754,7 +3754,7 @@ function updateHandlerFieldsView(rawTerm = "") {
 
     item.addEventListener("click", () => {
       if (!lat || !lng) return;
-      // Zoom to maximum zoom level (18) for fullest zoom
+      // Zoom to maximum zoom level (18) for fullest zoom - Esri World Imagery maximum supported
       handlerFieldsMapInstance.setView([lat, lng], 18, { animate: true });
     });
 
@@ -4086,7 +4086,7 @@ export function initializeFieldsSection() {
       });
 
       document.getElementById('mapZoomIn')?.addEventListener('click', () => {
-        // Zoom to maximum zoom level (18)
+        // Zoom to maximum zoom level (18) - Esri World Imagery maximum supported
         fieldsMap.setZoom(18);
       });
       document.getElementById('mapZoomOut')?.addEventListener('click', () => fieldsMap.zoomOut());
@@ -4406,7 +4406,7 @@ export function initializeFieldsSection() {
     const lng = field.longitude || field.lng;
     if (!lat || !lng) return;
 
-    // Zoom to maximum zoom level (18) for fullest super zoom
+    // Zoom to maximum zoom level (18) for fullest super zoom - Esri World Imagery maximum supported
     fieldsMap.setView([lat, lng], 18, { animate: true });
 
     markersLayer.eachLayer(layer => {
