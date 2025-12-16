@@ -4,9 +4,9 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, serverTimestamp, orderBy, limit, onSnapshot, collectionGroup } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-import { initializeFieldsSection } from "./fields-map.js";
 import { notifyTaskDeletion, createBatchNotifications } from "../Common/notifications.js";
-import { calculateDAP } from "./growth-tracker.js";
+import { calculateDAP, handleRatooning, handleReplanting, VARIETY_HARVEST_DAYS } from "./growth-tracker.js";
+import { openCreateTaskModal } from "./create-task.js";
 import './analytics.js';
 
 const NAME_PLACEHOLDERS = new Set([
@@ -1606,6 +1606,9 @@ let currentUserId = null;
 onAuthStateChanged(auth, async (user) => {
   if (!user) return (window.location.href = "../../frontend/Common/farmers_login.html");
 
+  // ✅ Set current user ID for fields section
+  currentUserId = user.uid;
+
   // ✅ Prevent re-initialization for same user (fixes double rendering in production)
   if (isInitialized && currentUserId === user.uid) {
     console.log('⏭️ Dashboard already initialized for this user, skipping...');
@@ -1616,15 +1619,11 @@ onAuthStateChanged(auth, async (user) => {
   if (isInitialized && currentUserId !== user.uid) {
     console.log('🔄 User changed, cleaning up previous listeners...');
     if (notificationsUnsub) notificationsUnsub();
-    if (activeWorkersUnsub) activeWorkersUnsub();
-    if (pendingTasksUnsub) pendingTasksUnsub();
-    if (taskWarningsUnsub) taskWarningsUnsub();
-    if (unsubscribeJoinRequests) unsubscribeJoinRequests();
-    if (tasksUnsubscribe) tasksUnsubscribe();
-    isInitialized = false;
   }
 
-  currentUserId = user.uid;
+  // ✅ Initialize fields section to load map and field data from Firebase
+  console.log('🚀 Calling initializeFieldsSection for user:', user.uid);
+  initializeFieldsSection();
 
   // ✅ SECURITY: Verify user has handler role before allowing access
   try {
@@ -3534,8 +3533,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-const DEFAULT_HANDLER_MAP_CENTER = [11.0, 124.6];
-
 const toLatLng = (fieldInfo = {}) => {
   const lat = fieldInfo.latitude || fieldInfo.lat || fieldInfo.location_lat;
   const lng = fieldInfo.longitude || fieldInfo.lng || fieldInfo.location_lng;
@@ -3893,4 +3890,806 @@ window.__syncDashboardProfile = async function () {
     console.error('Profile sync error:', e);
   }
 };
+
+// ============================================================
+// FIELDS MAP FUNCTIONALITY (merged from fields-map.js)
+// ============================================================
+
+let fieldsMap = null;
+let markersLayer = null;
+let fieldsData = [];
+let topFieldsUnsub = null;
+let nestedFieldsUnsub = null;
+const fieldStore = new Map();
+
+// currentUserId is declared globally at line 1604
+
+export function initializeFieldsSection() {
+  let topFieldKeys = new Set();
+  let nestedFieldKeys = new Set();
+  let activeHighlightedField = null;
+
+  function highlightFieldInList(fieldName) {
+    const listContainer = document.getElementById('handlerFieldsList');
+    if (!listContainer) return;
+
+    if (activeHighlightedField) {
+      activeHighlightedField.classList.remove('ring-2', 'ring-green-400', 'bg-green-50');
+      activeHighlightedField = null;
+    }
+
+    const items = Array.from(listContainer.children);
+    const match = items.find(item =>
+      item.textContent.toLowerCase().includes((fieldName || '').toLowerCase())
+    );
+
+    if (match) {
+      match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      match.classList.add('ring-2', 'ring-green-400', 'bg-green-50');
+      activeHighlightedField = match;
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (activeHighlightedField && !e.target.closest('#handlerFieldsList') && !e.target.closest('.leaflet-popup') && !e.target.closest('.leaflet-container')) {
+      activeHighlightedField.classList.remove('ring-2', 'ring-green-400', 'bg-green-50');
+      activeHighlightedField = null;
+    }
+  });
+
+  const STATUS_META = {
+    reviewed: { label: 'Reviewed', badgeClass: 'bg-green-100', textClass: 'text-green-800', color: '#16a34a' },
+    approved: { label: 'Approved', badgeClass: 'bg-green-100', textClass: 'text-green-800', color: '#16a34a' },
+    pending: { label: 'Pending Review', badgeClass: 'bg-yellow-100', textClass: 'text-yellow-700', color: '#eab308' },
+    'to edit': { label: 'Needs Update', badgeClass: 'bg-yellow-100', textClass: 'text-yellow-700', color: '#d97706' },
+    declined: { label: 'Declined', badgeClass: 'bg-red-100', textClass: 'text-red-700', color: '#dc2626' },
+    rejected: { label: 'Rejected', badgeClass: 'bg-red-100', textClass: 'text-red-700', color: '#dc2626' },
+    active: { label: 'Active', badgeClass: 'bg-green-100', textClass: 'text-green-800', color: '#16a34a' },
+    harvested: { label: 'Harvested', badgeClass: 'bg-purple-100', textClass: 'text-purple-800', color: '#9333ea' },
+    'for certification': { label: 'For Certification', badgeClass: 'bg-blue-100', textClass: 'text-blue-700', color: '#2563eb' },
+    'for_certification': { label: 'For Certification', badgeClass: 'bg-blue-100', textClass: 'text-blue-700', color: '#2563eb' }
+  };
+
+  const DEFAULT_STATUS_META = {
+    label: 'Pending Review',
+    badgeClass: 'bg-gray-100',
+    textClass: 'text-gray-700',
+    color: '#6b7280'
+  };
+
+  function getStatusMeta(status) {
+    const key = typeof status === 'string' ? status.toLowerCase().trim() : '';
+    return STATUS_META[key] || DEFAULT_STATUS_META;
+  }
+
+  function getStatusLabel(status) {
+    return getStatusMeta(status).label;
+  }
+
+  function getStatusColor(status) {
+    return getStatusMeta(status).color;
+  }
+
+  function getBadgeClasses(status) {
+    const meta = getStatusMeta(status);
+    return { badgeClass: meta.badgeClass, textClass: meta.textClass };
+  }
+
+  function initFieldsMap() {
+    const mapContainer = document.getElementById('handlerFieldsMap');
+    if (!mapContainer) {
+      console.error('❌ Map container not found!');
+      return;
+    }
+    
+    if (fieldsMap) {
+      console.log('⚠️ Map already initialized, skipping...');
+      return;
+    }
+
+    try {
+      const defaultCenter = [11.0042, 124.6035];
+      const defaultZoom = 13;
+
+      console.log('📍 Creating Leaflet map instance...');
+      
+      fieldsMap = L.map('handlerFieldsMap', {
+        zoomControl: false,
+        preferCanvas: true
+      }).setView(defaultCenter, defaultZoom);
+
+      console.log('🗺️ Map instance created, adding tile layer...');
+
+      const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+      }).addTo(fieldsMap);
+
+      tileLayer.on('loading', () => console.log('🔄 Loading map tiles...'));
+      tileLayer.on('load', () => console.log('✅ Map tiles loaded'));
+      tileLayer.on('tileerror', (e) => console.warn('⚠️ Tile load error:', e));
+
+      markersLayer = L.layerGroup().addTo(fieldsMap);
+
+      document.getElementById('addNewField')?.addEventListener('click', () => {
+        window.location.href = '../Handler/Register-field.html';
+      });
+
+      document.getElementById('mapZoomIn')?.addEventListener('click', () => fieldsMap.zoomIn());
+      document.getElementById('mapZoomOut')?.addEventListener('click', () => fieldsMap.zoomOut());
+      
+      document.getElementById('mapLocate')?.addEventListener('click', () => {
+        fieldsMap.locate({setView: true, maxZoom: 16});
+      });
+
+      fieldsMap.on('locationfound', (e) => {
+        const radius = e.accuracy / 2;
+        L.marker(e.latlng, {
+          icon: L.divIcon({
+            className: 'custom-location-marker',
+            html: '<div style="background: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(59,130,246,0.5);"></div>',
+            iconSize: [18, 18]
+          })
+        }).addTo(markersLayer)
+          .bindPopup(`You are within ${Math.round(radius)} meters from this point`);
+        
+        L.circle(e.latlng, {
+          radius: radius,
+          color: '#3b82f6',
+          fillColor: '#3b82f6',
+          fillOpacity: 0.1,
+          weight: 1
+        }).addTo(markersLayer);
+      });
+
+      fieldsMap.on('locationerror', (e) => {
+        console.warn('⚠️ Location access denied:', e.message);
+      });
+
+      console.log('✅ Fields map initialized successfully');
+      
+      const loadingIndicator = document.getElementById('mapLoadingIndicator');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      setTimeout(() => {
+        if (fieldsMap) {
+          fieldsMap.invalidateSize();
+          console.log('✅ Map size invalidated and recalculated');
+        }
+      }, 250);
+      
+      loadUserFields();
+      
+    } catch (error) {
+      console.error('❌ Error initializing map:', error);
+      showMessage('Failed to initialize map: ' + error.message, 'error');
+      
+      const loadingIndicator = document.getElementById('mapLoadingIndicator');
+      if (loadingIndicator) {
+        loadingIndicator.innerHTML = `
+          <div class="text-center">
+            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-2"></i>
+            <p class="text-sm text-red-600">Failed to load map</p>
+            <p class="text-xs text-gray-500 mt-1">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+  }
+
+  async function loadUserFields() {
+    if (!currentUserId) {
+      console.warn('⚠️ No user logged in, cannot load fields');
+      showMessage('Please log in to view your fields', 'error');
+      return;
+    }
+
+    console.log('📡 Fetching fields for user:', currentUserId);
+    showMessage('Loading your reviewed fields...', 'info');
+
+    try {
+      if (topFieldsUnsub) {
+        topFieldsUnsub();
+        topFieldsUnsub = null;
+      }
+      if (nestedFieldsUnsub) {
+        nestedFieldsUnsub();
+        nestedFieldsUnsub = null;
+      }
+
+      const renderFromStore = () => {
+        fieldsData = Array.from(fieldStore.values());
+
+        if (!markersLayer) {
+          markersLayer = L.layerGroup().addTo(fieldsMap);
+        }
+
+        markersLayer.clearLayers();
+        let markersAdded = 0;
+
+        fieldsData.forEach((field) => {
+          const lat = parseFloat(field.latitude ?? field.lat ?? '');
+          const lng = parseFloat(field.longitude ?? field.lng ?? '');
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            console.warn('⚠️ No coordinates for field:', field.field_name || field.fieldName || field.id);
+            return;
+          }
+          addFieldMarker({ ...field, latitude: lat, longitude: lng });
+          markersAdded += 1;
+        });
+
+        updateFieldsList();
+        updateFieldsCount();
+
+        if (fieldsData.length > 0 && markersAdded > 0) {
+          const group = new L.featureGroup(markersLayer.getLayers());
+          fieldsMap.fitBounds(group.getBounds().pad(0.1));
+          showMessage(`Showing ${fieldsData.length} field(s) on the map`, 'info');
+        } else if (fieldsData.length > 0) {
+          showMessage(`Found ${fieldsData.length} field(s) but no coordinates available`, 'error');
+        } else {
+          showMessage('No fields registered yet', 'info');
+        }
+
+        console.log(`✅ Loaded ${fieldsData.length} fields, ${markersAdded} markers`);
+      };
+
+      const createTopKey = (doc) => doc.data()?.sourceRef || doc.ref.path;
+
+      const topQuery = query(
+        collection(db, 'fields'),
+        where('userId', '==', currentUserId),
+        where('status', 'in', ['reviewed', 'active', 'harvested'])
+      );
+      topFieldsUnsub = onSnapshot(topQuery, (snapshot) => {
+        console.log('📦 Top-level fields snapshot (reviewed) size:', snapshot.size);
+        const seen = new Set();
+
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() || {};
+          const key = createTopKey(docSnap);
+          seen.add(key);
+          fieldStore.set(key, {
+            id: docSnap.id,
+            ...data,
+            userId: data.userId || currentUserId,
+            sourceRef: key
+          });
+        });
+
+        topFieldKeys.forEach((key) => {
+          if (!seen.has(key) && !nestedFieldKeys.has(key)) {
+            fieldStore.delete(key);
+          }
+        });
+        topFieldKeys = seen;
+
+        renderFromStore();
+      }, (error) => {
+        console.error('❌ Error fetching fields (top-level reviewed):', error);
+        showMessage('Error loading fields: ' + error.message, 'error');
+      });
+
+    } catch (error) {
+      console.error('❌ Error loading fields:', error);
+      showMessage('Error loading fields: ' + error.message, 'error');
+    }
+  }
+
+  function addFieldMarker(field) {
+    const lat = field.latitude || field.lat;
+    const lng = field.longitude || field.lng;
+    if (!lat || !lng) return;
+
+    const fieldIcon = L.icon({
+      iconUrl: '../../frontend/img/PIN.png',
+      iconSize: [38, 44],
+      iconAnchor: [19, 44],
+      popupAnchor: [0, -36]
+    });
+
+    if (!markersLayer) {
+      markersLayer = L.layerGroup().addTo(fieldsMap);
+    }
+
+    const marker = L.marker([lat, lng], { icon: fieldIcon }).addTo(markersLayer);
+
+    const statusLabel = getStatusLabel(field.status);
+    const statusColor = getStatusColor(field.status);
+    const popupContent = `
+      <div style="min-width: 200px;">
+        <h3 style="font-weight: bold; font-size: 1rem; margin-bottom: 0.5rem; color: #1f2937;">
+          ${field.field_name || field.fieldName || 'Unnamed Field'}
+        </h3>
+        <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+          <p><strong>Location:</strong> ${field.barangay || 'N/A'}</p>
+          <p><strong>Area:</strong> ${field.field_size || field.area_size || field.area || field.size || 'N/A'} hectares</p>
+          <p><strong>Status:</strong> <span style="color: ${statusColor}; font-weight: 600;">${statusLabel}</span></p>
+        </div>
+        <button onclick="viewFieldDetails('${field.id}')" style="background: #7ccf00; color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; width: 100%; border: none; cursor: pointer;">
+          View Details
+        </button>
+      </div>
+    `;
+    marker.bindPopup(popupContent);
+
+    marker.on('click', () => {
+      highlightFieldInList(field.field_name || field.fieldName || '');
+    });
+  }
+
+  function updateFieldsList() {
+    const listContainer = document.getElementById('handlerFieldsList');
+    
+    if (!listContainer) return;
+
+    if (fieldsData.length === 0) {
+      listContainer.classList.remove('hidden');
+      listContainer.innerHTML = '<div class="text-sm text-gray-500">No fields found</div>';
+      return;
+    }
+
+    listContainer.classList.remove('hidden');
+
+    listContainer.innerHTML = fieldsData.map(field => {
+      const statusLabel = getStatusLabel(field.status);
+      const { badgeClass, textClass } = getBadgeClasses(field.status);
+      return `
+        <div class="p-3 bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg hover:shadow-md transition-all cursor-pointer">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h3 class="font-semibold text-gray-900 text-sm">${field.field_name || field.fieldName || 'Unnamed Field'}</h3>
+              <p class="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                <i class="fas fa-map-pin text-[var(--cane-600)]"></i>
+                ${field.barangay || 'Unknown location'}
+              </p>
+              <p class="text-xs text-gray-500 mt-0.5">${field.field_size || field.area_size || field.area || field.size || 'N/A'} hectares</p>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${badgeClass} ${textClass} text-[10px] font-semibold">
+                <i class="fas fa-check-circle text-xs"></i>${statusLabel}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button class="flex-1 px-2 py-1.5 bg-[var(--cane-600)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--cane-700)] transition-colors flex items-center justify-center gap-1" onclick="focusField('${field.id}')">
+              <i class="fas fa-map"></i>Focus on Map
+            </button>
+            <button class="flex-1 px-2 py-1.5 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-1" onclick="viewFieldDetails('${field.id}')">
+              <i class="fas fa-eye"></i>View Details
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateFieldsCount() {
+    const countElement = document.getElementById('handlerFieldsTotal');
+    if (countElement) {
+      countElement.innerHTML = `<i class="fas fa-map-pin text-[var(--cane-700)]"></i><span>${fieldsData.length} fields</span>`;
+    }
+  }
+
+  window.focusField = function(fieldId) {
+    const field = fieldsData.find(f => f.id === fieldId);
+    if (!field) return;
+
+    const lat = field.latitude || field.lat;
+    const lng = field.longitude || field.lng;
+    if (!lat || !lng) return;
+
+    fieldsMap.setView([lat, lng], 16);
+
+    markersLayer.eachLayer(layer => {
+      if (layer instanceof L.Marker) {
+        const markerLatLng = layer.getLatLng();
+        if (Math.abs(markerLatLng.lat - lat) < 0.0001 && Math.abs(markerLatLng.lng - lng) < 0.0001) {
+          layer.openPopup();
+        }
+      }
+    });
+
+    highlightFieldInList(field.field_name || field.fieldName || '');
+  };
+
+  window.viewFieldDetails = async function(fieldId) {
+    try {
+      console.log('Opening Field Details modal for:', fieldId);
+
+      let field = null;
+      if (Array.isArray(fieldsData) && fieldsData.length) {
+        field = fieldsData.find(f => (f.id || f.field_id || f.fieldId) === fieldId);
+      }
+      if (!field && fieldStore && fieldStore.size) {
+        for (const item of fieldStore.values()) {
+          if ((item.id || item.field_id || item.fieldId) === fieldId) { field = item; break; }
+        }
+      }
+      if (!field) {
+        try {
+          const fieldRef = doc(db, 'fields', fieldId);
+          const snap = await getDoc(fieldRef);
+          if (snap.exists()) field = { id: snap.id, ...(snap.data()||{}) };
+        } catch (err) {
+          console.warn('Failed to fetch field doc from Firestore:', err);
+        }
+      }
+
+      if (!field) {
+        alert('Field not found.');
+        return;
+      }
+
+      const fieldName = field.field_name || field.fieldName || 'Unnamed Field';
+      const street = field.street || '—';
+      const barangay = field.barangay || '—';
+      const caneType = field.sugarcane_variety || field.variety || 'N/A';
+      const area = field.field_size || field.area_size || field.area || field.size || 'N/A';
+      const terrain = field.terrain_type || 'N/A';
+
+      const formattedAddress = `${street}, ${barangay}, Ormoc City`;
+
+      const existing = document.getElementById('fieldDetailsModal');
+      if (existing) {
+        console.log('🗑️ Removing existing field details modal');
+        existing.remove();
+      }
+
+      const modal = document.createElement('div');
+      modal.id = 'fieldDetailsModal';
+      modal.className = 'fixed inset-0 z-[20000] flex items-center justify-center p-4';
+      modal.innerHTML = `
+        <div id="fieldDetailsBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <section class="relative w-full max-w-[1300px] max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-xl border border-[var(--cane-200)] flex flex-col">
+          <header class="flex items-start justify-between gap-4 p-6 border-b">
+            <div>
+            <h2 id="fd_name" class="text-2xl font-bold text-[var(--cane-900)] leading-tight">${escapeHtml(fieldName)}</h2>
+            <div id="fd_address" class="flex items-center gap-1.5 mt-1 text-sm text-[var(--cane-700)]">
+              <i class="fas fa-map-marker-alt text-[var(--cane-600)] opacity-80"></i>
+              <span>${escapeHtml(formattedAddress)}</span>
+            </div><div class="mt-2 text-xs text-[var(--cane-600)] flex flex-wrap gap-x-3 gap-y-1">
+              <span><strong>Type:</strong> ${escapeHtml(caneType)}</span>
+              <span><strong>Area:</strong> ${escapeHtml(String(area))} ha</span>
+              <span><strong>Terrain:</strong> ${escapeHtml(terrain)}</span>
+            </div>
+            </div>
+            <div class="ml-4 flex-shrink-0">
+              <div id="fd_status" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-[var(--cane-100)] text-[var(--cane-800)]"></div>
+            </div>
+          </header>
+
+          <div class="p-6 modal-content">
+            <div class="space-y-5 modal-left-col">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-bold text-[var(--cane-900)]">
+                  <span id="fd_month_label">November</span>
+                  <span id="fd_week_label"></span>
+                </h3>
+                <div class="flex items-center gap-2">
+                  <select id="fd_month_selector" class="text-xs px-2 py-1 border rounded">
+                    <option value="all">All Time</option>
+                    <option value="0">January</option>
+                    <option value="1">February</option>
+                    <option value="2">March</option>
+                    <option value="3">April</option>
+                    <option value="4">May</option>
+                    <option value="5">June</option>
+                    <option value="6">July</option>
+                    <option value="7">August</option>
+                    <option value="8">September</option>
+                    <option value="9">October</option>
+                    <option value="10" selected>November</option>
+                    <option value="11">December</option>
+                  </select>
+                  <select id="fd_week_selector" class="text-xs px-2 py-1 border rounded"></select>
+                </div>
+              </div>
+
+              <div class="fd_table_card p-3">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold">Tasks</h3>
+                  <select id="fd_tasks_filter" class="text-xs rounded-md border px-2 py-1">
+                    <option value="all">All Status</option>
+                    <option value="todo">To Do</option>
+                    <option value="pending">Pending</option>
+                    <option value="done">Done</option>
+                  </select>
+                </div>
+                <div id="fd_tasks_container">
+                  <p class="text-xs text-[var(--cane-600)]">Loading tasks...</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="fd_table_card p-3 modal-right-col">
+              <h3 class="text-sm font-semibold mb-2">Growth Tracker</h3>
+              <div id="fd_growth_container" class="text-xs text-[var(--cane-600)]">Loading growth tracker...</div>
+            </div>
+          </div>
+
+          <footer class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t">
+            <div class="flex items-center gap-2 flex-wrap ${field.status !== 'harvested' ? 'invisible' : ''}" id="fd_harvest_actions">
+              <button id="fd_ratoon_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-purple-300 bg-purple-50 text-sm text-purple-700 hover:bg-purple-100 transition flex-1 sm:flex-none min-w-0">
+                <i class="fas fa-seedling"></i>
+                <span class="whitespace-nowrap">Ratoon</span>
+              </button>
+              <button id="fd_replant_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-300 bg-green-50 text-sm text-green-700 hover:bg-green-100 transition flex-1 sm:flex-none min-w-0">
+                <i class="fas fa-redo"></i>
+                <span class="whitespace-nowrap">Replant</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <button id="fd_create_task_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 text-sm text-[var(--cane-800)] hover:bg-gray-50 transition flex-1 sm:flex-none min-w-0">
+                <i class="fas fa-plus"></i>
+                <span class="whitespace-nowrap">Create Task</span>
+              </button>
+              <button id="fd_close_btn" class="px-4 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white shadow-lg flex-1 sm:flex-none min-w-0">
+                Close
+              </button>
+            </div>
+          </footer>
+        </section>
+      `;
+
+      const modalStyle = document.createElement('style');
+      modalStyle.textContent = `
+        #fieldDetailsModal section { display: flex; flex-direction: column; height: 90vh; overflow: hidden; }
+        #fieldDetailsModal header, #fieldDetailsModal footer { flex: 0 0 auto; z-index: 5; background: white; }
+        #fieldDetailsModal .modal-content { flex: 1 1 auto; display: flex; gap: 20px; overflow: hidden; }
+        #fieldDetailsModal .modal-left-col { flex: 1 1 65%; min-width: 0; }
+        #fieldDetailsModal .modal-right-col { flex: 1 1 35%; min-width: 0; }
+        @media (min-width: 769px) {
+          #fieldDetailsModal #fd_tasks_container { overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 8px; padding-bottom: 24px; }
+          #fieldDetailsModal .modal-content { overflow: hidden; }
+        }
+        @media (max-width: 768px) {
+          #fieldDetailsModal .modal-content { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+          #fieldDetailsModal .modal-left-col, #fieldDetailsModal .modal-right-col { flex: 1 1 auto; width: 100%; }
+          #fieldDetailsModal #fd_tasks_container { overflow: visible; max-height: none; }
+          #fieldDetailsModal footer { padding: 12px 16px; gap: 8px; }
+          #fieldDetailsModal footer button { font-size: 0.875rem; padding: 8px 12px; white-space: nowrap; }
+        }
+        #fieldDetailsModal #fd_tasks_container { margin-bottom: 16px; }
+      `;
+
+      if (!document.getElementById('fieldDetailsModalStyle')) {
+        modalStyle.id = 'fieldDetailsModalStyle';
+        document.head.appendChild(modalStyle);
+      }
+
+      document.body.appendChild(modal);
+      modal.querySelector('section')?.scrollTo?.({ top: 0 });
+
+      const fieldRef = doc(db, 'fields', fieldId);
+      const fieldStatusUnsub = onSnapshot(fieldRef, async (snapshot) => {
+        if (!snapshot.exists()) return;
+        const updatedField = snapshot.data();
+        const newStatus = (updatedField.status || 'active').toString().toLowerCase();
+        const statusEl = modal.querySelector('#fd_status');
+        if (statusEl) {
+          statusEl.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+          if (newStatus.includes('review') || newStatus.includes('active')) {
+            statusEl.style.background = 'rgba(124, 207, 0, 0.12)';
+            statusEl.style.color = '#166534';
+          } else if (newStatus.includes('pending') || newStatus.includes('edit')) {
+            statusEl.style.background = 'rgba(250, 204, 21, 0.12)';
+            statusEl.style.color = '#92400e';
+          } else if (newStatus.includes('harvest')) {
+            statusEl.style.background = 'rgba(139, 69, 19, 0.12)';
+            statusEl.style.color = '#78350f';
+          } else {
+            statusEl.style.background = 'rgba(239, 68, 68, 0.08)';
+            statusEl.style.color = '#991b1b';
+          }
+        }
+        const harvestActions = modal.querySelector('#fd_harvest_actions');
+        if (harvestActions) {
+          harvestActions.classList.toggle('invisible', newStatus !== 'harvested');
+        }
+      });
+
+      modal.querySelector('#fd_close_btn')?.addEventListener('click', () => modal.remove());
+      modal.querySelector('#fd_create_task_btn')?.addEventListener('click', (e) => {
+        try {
+          openCreateTaskModal(fieldId);
+        } catch (err) {
+          console.error('Failed to open Create Task modal:', err);
+          alert('Unable to open Create Task modal. See console for details.');
+        }
+      });
+
+      modal.querySelector('#fieldDetailsBackdrop')?.addEventListener('click', (e) => {
+        if (e.target.id === 'fieldDetailsBackdrop') modal.remove();
+      });
+      const escHandler = (e) => { if (e.key === 'Escape') modal.remove(); };
+      document.addEventListener('keydown', escHandler);
+      modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); fieldStatusUnsub(); });
+
+    } catch (outerErr) {
+      console.error('viewFieldDetails failed', outerErr);
+      alert('Failed to open field details: ' + (outerErr.message || outerErr));
+    }
+  };
+
+  function showMessage(message, type = 'info') {
+    const messageEl = document.getElementById('handlerFieldsMessage');
+    if (messageEl) {
+      messageEl.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'} text-${type === 'error' ? 'red' : 'blue'}-500"></i><span>${message}</span>`;
+    }
+  }
+
+  document.getElementById('handlerFieldsSearch')?.addEventListener('input', (e) => {
+    const term = e.target.value.trim().toLowerCase();
+
+    if (!term) {
+      updateFieldsList();
+      updateFieldsCount();
+      if (markersLayer) {
+        markersLayer.clearLayers();
+        fieldsData.forEach(f => addFieldMarker(f));
+        const group = new L.featureGroup(markersLayer.getLayers());
+        fieldsMap.fitBounds(group.getBounds().pad(0.1));
+      }
+      return;
+    }
+
+    const filtered = fieldsData.filter(f =>
+      (f.field_name || f.fieldName || '').toLowerCase().includes(term) ||
+      (f.barangay || '').toLowerCase().includes(term) ||
+      (f.location || '').toLowerCase().includes(term)
+    );
+
+    const listContainer = document.getElementById('handlerFieldsList');
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `
+        <div class="p-3 text-center text-sm text-gray-600">
+          <i class="fas fa-search text-[var(--cane-600)] mr-1"></i>
+          No fields found.
+        </div>`;
+    } else {
+      const backup = fieldsData;
+      fieldsData = filtered;
+      updateFieldsList();
+      fieldsData = backup;
+    }
+
+    if (markersLayer) markersLayer.clearLayers();
+    filtered.forEach(f => addFieldMarker(f));
+
+    if (filtered.length > 0 && markersLayer.getLayers().length > 0) {
+      const group = new L.featureGroup(markersLayer.getLayers());
+      fieldsMap.fitBounds(group.getBounds().pad(0.1));
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUserId = user.uid;
+      console.log('✅ User logged in:', currentUserId);
+      if (fieldsMap) {
+        console.log('🗺️ Map exists, loading fields...');
+        loadUserFields();
+      } else {
+        console.log('⏳ Map not ready yet, will load fields after init');
+      }
+    } else {
+      console.warn('❌ No user logged in');
+      currentUserId = null;
+      fieldsData = [];
+      if (markersLayer) {
+        markersLayer.clearLayers();
+      }
+      updateFieldsList();
+      updateFieldsCount();
+    }
+  });
+
+  const initWhenReady = () => {
+    console.log('🚀 Initializing fields map...');
+    const mapContainer = document.getElementById('handlerFieldsMap');
+    
+    if (typeof L === 'undefined') {
+      console.log('⏳ Leaflet not loaded yet, retrying...');
+      setTimeout(initWhenReady, 200);
+      return;
+    }
+    
+    if (!mapContainer) {
+      console.log('⏳ Map container not found yet, retrying...');
+      setTimeout(initWhenReady, 200);
+      return;
+    }
+    
+    const rect = mapContainer.getBoundingClientRect();
+    if (mapContainer.offsetParent === null || rect.width === 0 || rect.height === 0) {
+      console.log('⏳ Map container not visible yet, retrying...');
+      setTimeout(initWhenReady, 200);
+      return;
+    }
+    
+    console.log('✅ All conditions met, initializing map...');
+    setTimeout(() => {
+      initFieldsMap();
+    }, 100);
+  };
+
+  window.addEventListener('load', () => {
+    const fieldId = sessionStorage.getItem('reopenFieldModal');
+    if (fieldId) {
+      sessionStorage.removeItem('reopenFieldModal');
+      setTimeout(() => {
+        if (typeof viewFieldDetails === 'function') {
+          viewFieldDetails(fieldId);
+        }
+      }, 600);
+    }
+  });
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const fieldsSection = document.getElementById('fields');
+        if (fieldsSection && !fieldsSection.classList.contains('hidden')) {
+          if (!fieldsMap) {
+            console.log('📍 Fields section now visible, initializing map...');
+            initWhenReady();
+          } else {
+            console.log('🔄 Fields section visible, resizing map...');
+            setTimeout(() => {
+              if (fieldsMap) {
+                fieldsMap.invalidateSize();
+              }
+            }, 100);
+          }
+        }
+      }
+    });
+  });
+  
+  // ✅ Initialize map immediately for dashboard (not waiting for fields section visibility)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWhenReady);
+  } else {
+    initWhenReady();
+  }
+
+  // Also observe fields section for when user navigates to it
+  const fieldsSection = document.getElementById('fields');
+  if (fieldsSection) {
+    observer.observe(fieldsSection, { attributes: true });
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (fieldsMap) {
+    setTimeout(() => fieldsMap.invalidateSize(), 300);
+  }
+});
+
+function getWeatherDescription(code) {
+  const map = {
+    0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
+    45: "Fog", 48: "Depositing Rime Fog",
+    51: "Light Drizzle", 53: "Drizzle", 55: "Dense Drizzle",
+    61: "Slight Rain", 63: "Moderate Rain", 65: "Heavy Rain",
+    71: "Slight Snowfall", 73: "Moderate Snow", 75: "Heavy Snow",
+    95: "Thunderstorm", 96: "Thunderstorm w/ Hail", 99: "Severe Thunderstorm"
+  };
+  return map[code] || "Unknown";
+}
+
+function getWeatherIconUrl(code) {
+  if ([0,1].includes(code)) return "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+  if ([2,3].includes(code)) return "https://cdn-icons-png.flaticon.com/512/1163/1163661.png";
+  if ([45,48].includes(code)) return "https://cdn-icons-png.flaticon.com/512/4005/4005901.png";
+  if ([61,63,65].includes(code)) return "https://cdn-icons-png.flaticon.com/512/3313/3313888.png";
+  if ([95,96,99].includes(code)) return "https://cdn-icons-png.flaticon.com/512/1779/1779940.png";
+  return "https://cdn-icons-png.flaticon.com/512/869/869869.png";
+}
+
 
