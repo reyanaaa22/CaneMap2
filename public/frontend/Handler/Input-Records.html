@@ -77,6 +77,10 @@ This file handles ALL functionalities described in the PDF:
       border-left: 4px solid #3b82f6;
     }
     
+    .notification-content.info {
+      border-left: 4px solid #3b82f6;
+    }
+    
     .notification-icon {
       flex-shrink: 0;
       width: 2.5rem;
@@ -100,6 +104,11 @@ This file handles ALL functionalities described in the PDF:
     }
     
     .notification-icon.loading {
+      background: #dbeafe;
+      color: #3b82f6;
+    }
+    
+    .notification-icon.info {
       background: #dbeafe;
       color: #3b82f6;
     }
@@ -423,6 +432,11 @@ This file handles ALL functionalities described in the PDF:
 import { auth, db } from '../../backend/Common/firebase-config.js'
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js'
 import { collection, getDocs, addDoc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
+import { initHandlerOfflineSync, getOnlineStatus, wasOnInputRecords } from '../../backend/Handler/offline-input-sync.js'
+import { addPendingRecord } from '../../backend/Handler/offline-input-storage.js'
+
+// Initialize offline sync for Input Records page
+initHandlerOfflineSync();
 
 let uid=null
 let pendingPayload=null
@@ -2313,6 +2327,73 @@ for(const f of fields){
 window.confirmSave = async () => {
   console.log('Saving...', pendingPayload);
 
+  // Check if offline
+  const isOnline = getOnlineStatus();
+  // Always allow offline save if on Input Records page
+  const canSaveOffline = window.location.pathname.includes('Input-Records.html');
+
+  if (!isOnline && canSaveOffline) {
+    // Save offline
+    try {
+      showLoading(true);
+      closeConfirm();
+      
+      // Convert Firestore objects to serializable format for IndexedDB
+      const serializeForIndexedDB = (obj) => {
+        if (obj && typeof obj === 'object') {
+          if (obj.toDate && typeof obj.toDate === 'function') {
+            // Firestore Timestamp - convert to serializable format
+            return {
+              _type: 'Timestamp',
+              seconds: obj.seconds,
+              nanoseconds: obj.nanoseconds
+            };
+          }
+          if (obj._methodName === 'serverTimestamp') {
+            // serverTimestamp placeholder
+            return { _methodName: 'serverTimestamp' };
+          }
+          if (Array.isArray(obj)) {
+            return obj.map(serializeForIndexedDB);
+          }
+          const serialized = {};
+          for (const key in obj) {
+            serialized[key] = serializeForIndexedDB(obj[key]);
+          }
+          return serialized;
+        }
+        return obj;
+      };
+      
+      const offlinePayload = serializeForIndexedDB(pendingPayload);
+      
+      await addPendingRecord(offlinePayload);
+      
+      showLoading(false);
+      
+      // Show floating notification about auto-sync (NO PAGE REFRESH)
+      showNotification('success', 'Record Saved Offline', 'This record will sync automatically when the internet is restored.', [
+        {
+          text: 'OK',
+          type: 'primary',
+          action: () => {
+            // DO NOT refresh page - just dismiss notification
+            // Allow user to continue inputting records offline
+            hideNotification();
+          }
+        }
+      ]);
+      
+      return;
+    } catch (error) {
+      console.error('Error saving offline:', error);
+      showLoading(false);
+      showNotification('error', 'Failed to Save Offline', 'An error occurred while saving offline. Please try again.');
+      return;
+    }
+  }
+
+  // Online save (original logic)
   // Show loading state
   showLoading(true);
   closeConfirm();
@@ -2443,8 +2524,8 @@ function showNotification(type, title, message, actions = null) {
   notificationCallbacks = [];
   
   // Remove all type classes
-  content.classList.remove('success', 'error', 'loading');
-  icon.classList.remove('success', 'error', 'loading');
+  content.classList.remove('success', 'error', 'loading', 'info');
+  icon.classList.remove('success', 'error', 'loading', 'info');
   
   // Set type classes
   content.classList.add(type);
@@ -2456,7 +2537,9 @@ function showNotification(type, title, message, actions = null) {
   } else if (type === 'error') {
     iconI.className = 'fas fa-exclamation-circle';
   } else if (type === 'loading') {
-    iconI.className = 'fas fa-spinner';
+    iconI.className = 'fas fa-spinner fa-spin';
+  } else if (type === 'info') {
+    iconI.className = 'fas fa-info-circle';
   }
   
   // Set content

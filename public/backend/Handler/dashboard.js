@@ -8,7 +8,59 @@ import { createBatchNotifications, notifyWeatherAdvisory } from "../Common/notif
 import { calculateDAP, handleRatooning, handleReplanting, VARIETY_HARVEST_DAYS } from "./growth-tracker.js";
 import { openCreateTaskModal } from "./create-task.js";
 import { initializeRecordsSection, cleanupRecordsSection } from "./records-section.js";
+import { initHandlerOfflineSync, getOnlineStatus } from "./offline-input-sync.js";
 import './analytics.js';
+
+/**
+ * Show modal warning when trying to navigate while offline
+ * @param {Event} event - Optional event object to check for notification clicks
+ */
+function showOfflineNavigationWarning(event = null) {
+  // Don't show modal if clicking on notification dropdown
+  if (event && event.target && (
+    event.target.closest('#notificationBellBtn') ||
+    event.target.closest('#notificationDropdown') ||
+    event.target.closest('.notification-item')
+  )) {
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[10002]';
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md border border-[var(--cane-200)]">
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-wifi-slash text-orange-600 text-xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-[var(--cane-900)]">Offline Mode</h3>
+        </div>
+        <p class="text-[var(--cane-700)] mb-6">
+          Offline use is only allowed in Input Records. Please restore your internet connection to access other features.
+        </p>
+        <div class="flex justify-end">
+          <button id="offlineWarningOk" class="px-6 py-2 bg-[var(--cane-700)] text-white rounded-lg hover:bg-[var(--cane-800)] transition-colors">
+            Okay
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  const okBtn = modal.querySelector('#offlineWarningOk');
+  okBtn.addEventListener('click', () => {
+    modal.remove();
+  });
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
 
 const NAME_PLACEHOLDERS = new Set([
   "",
@@ -2775,6 +2827,14 @@ if (refreshActivityBtn) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Initialize Handler offline sync
+  try {
+    initHandlerOfflineSync();
+    console.log('Handler offline sync initialized');
+  } catch (error) {
+    console.error('Failed to initialize Handler offline sync:', error);
+  }
+
   const dropdownBtn = document.getElementById("profileDropdownBtn");
   const dropdownMenu = document.getElementById("profileDropdown");
   if (dropdownBtn && dropdownMenu) {
@@ -2925,8 +2985,32 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       const target = event.currentTarget;
       if (!target || !target.dataset.section) return;
+      
+      // Block navigation if offline (except Input Records)
+      if (!getOnlineStatus() && target.dataset.section !== 'activityLogs') {
+        showOfflineNavigationWarning(event);
+        return;
+      }
+      
       setActiveSection(target.dataset.section);
     });
+  });
+  
+  // Block external navigation links when offline
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (link && !getOnlineStatus()) {
+      const href = link.getAttribute('href');
+      // Allow Input Records navigation
+      if (href && href.includes('Input-Records.html')) {
+        return; // Allow navigation to Input Records
+      }
+      // Block other navigation
+      if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+        event.preventDefault();
+        showOfflineNavigationWarning(event);
+      }
+    }
   });
 
   setActiveSection("dashboard");
