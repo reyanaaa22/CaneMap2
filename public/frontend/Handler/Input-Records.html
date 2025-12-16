@@ -31,6 +31,228 @@ This file handles ALL functionalities described in the PDF:
     .btn{transition:.2s}
     .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(0,0,0,.15)}
     
+    /* Modern Notification Banner Styles */
+    .notification-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      padding: 1rem;
+      pointer-events: none;
+    }
+    
+    .notification-content {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      pointer-events: auto;
+      transform: translateY(-120%);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .notification-content.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification-content.success {
+      border-left: 4px solid #10b981;
+    }
+    
+    .notification-content.error {
+      border-left: 4px solid #ef4444;
+    }
+    
+    .notification-content.loading {
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .notification-icon {
+      flex-shrink: 0;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      animation: scaleIn 0.3s ease-out;
+    }
+    
+    .notification-icon.success {
+      background: #d1fae5;
+      color: #10b981;
+    }
+    
+    .notification-icon.error {
+      background: #fee2e2;
+      color: #ef4444;
+    }
+    
+    .notification-icon.loading {
+      background: #dbeafe;
+      color: #3b82f6;
+    }
+    
+    .notification-icon.loading i {
+      animation: spin 1s linear infinite;
+    }
+    
+    .notification-text {
+      flex: 1;
+    }
+    
+    .notification-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #111827;
+      margin-bottom: 0.25rem;
+    }
+    
+    .notification-message {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 0.5rem;
+    }
+    
+    .notification-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    
+    .notification-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .notification-btn-primary {
+      background: var(--cane-700);
+      color: white;
+    }
+    
+    .notification-btn-primary:hover {
+      background: var(--cane-600);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .notification-btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    .notification-btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    
+    .notification-close {
+      flex-shrink: 0;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #9ca3af;
+      transition: all 0.2s;
+      background: transparent;
+      border: none;
+    }
+    
+    .notification-close:hover {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+      }
+      to {
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes slideDown {
+      from {
+        transform: translateY(-120%);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateY(-120%);
+        opacity: 0;
+      }
+    }
+    
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .loading-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .loading-spinner {
+      width: 3.5rem;
+      height: 3.5rem;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
   </style>
 </head>
 
@@ -175,8 +397,27 @@ This file handles ALL functionalities described in the PDF:
   </div>
 </div>
 
-<!-- TOAST -->
-<div id="toast" class="fixed bottom-5 right-5 hidden px-4 py-3 rounded-lg text-white shadow-lg"></div>
+<!-- Modern Notification Banner -->
+<div id="notificationBanner" class="notification-banner">
+  <div id="notificationContent" class="notification-content">
+    <div id="notificationIcon" class="notification-icon">
+      <i id="notificationIconI" class="fas"></i>
+    </div>
+    <div class="notification-text">
+      <div id="notificationTitle" class="notification-title"></div>
+      <div id="notificationMessage" class="notification-message"></div>
+      <div id="notificationActions" class="notification-actions"></div>
+    </div>
+    <button id="notificationClose" class="notification-close" onclick="hideNotification()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner"></div>
+</div>
 
 <script type="module">
 import { auth, db } from '../../backend/Common/firebase-config.js'
@@ -1317,10 +1558,10 @@ statusSelect.onchange = () => {
 operationSelect.onchange = () => {
   const status = statusSelect.value;
   const operation = operationSelect.value;
-  
+
   taskType.value = '';
   dynamicForm.innerHTML = '';
-  
+
   if (!status || !operation) {
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
@@ -1341,9 +1582,9 @@ operationSelect.onchange = () => {
   }
   
   // Show Task Type dropdown
-  taskTypeWrap.classList.remove('hidden');
+    taskTypeWrap.classList.remove('hidden');
   taskType.innerHTML = '<option value="">Select</option>' +
-    tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+      tasks.map(t => `<option value="${t}">${t}</option>`).join('');
   
   dynamicForm.classList.add('hidden');
   boughtItemsSection.classList.add('hidden');
@@ -1790,16 +2031,9 @@ for(const f of fields){
 window.confirmSave = async () => {
   console.log('Saving...', pendingPayload);
 
-  // Create a centered success modal
-  const successModal = document.createElement('div');
-  successModal.className = 'fixed inset-0 flex items-center justify-center bg-black/40 z-50';
-  successModal.innerHTML = `
-    <div class="bg-white rounded-xl p-6 w-[90%] max-w-sm text-center">
-      <h3 class="font-semibold mb-4 text-lg">Record saved successfully!</h3>
-      <button id="okBtn" class="px-4 py-2 bg-[var(--cane-700)] text-white rounded">Okay</button>
-    </div>
-  `;
-  document.body.appendChild(successModal);
+  // Show loading state
+  showLoading(true);
+  closeConfirm();
 
   try {
     // Prepare main record payload (without subcollections)
@@ -1864,30 +2098,141 @@ window.confirmSave = async () => {
       }
     }
 
-    toast('Record saved successfully!', false);
+    // Hide loading and show success notification with action buttons
+    showLoading(false);
+    const fieldId = pendingPayload.fieldId;
+    showNotification('success', 'Record Saved Successfully!', 'Your input record has been saved and will appear in the Growth Tracker timeline.', [
+      {
+        text: 'View in Growth Tracker',
+        type: 'primary',
+        action: () => {
+          window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
+        }
+      },
+      {
+        text: 'Stay Here',
+        type: 'secondary',
+        action: () => {
+          location.reload();
+        }
+      }
+    ]);
   } catch(e) {
     console.error('Error saving record:', e);
-    toast('Failed to save record', true);
-    successModal.remove();
-    return;
+    showLoading(false);
+    showNotification('error', 'Failed to Save Record', e.message || 'An error occurred while saving. Please try again.');
   }
-
-  document.getElementById('okBtn').onclick = () => {
-    successModal.remove();
-    location.reload();  // ✅ refresh page after user clicks Okay
-  };
-
-  closeConfirm();
 }
 
 
 window.closeConfirm=()=>confirmModal.classList.add('hidden')
 
-function toast(msg,err=false){
-  toastEl.className=`fixed bottom-5 right-5 px-4 py-3 rounded-lg text-white ${err?'bg-red-600':'bg-green-600'}`
-  toastEl.textContent=msg
-  toastEl.classList.remove('hidden')
-  setTimeout(()=>toastEl.classList.add('hidden'),3000)
+// Modern Notification System
+let notificationTimeout = null;
+let notificationCallbacks = [];
+
+function showNotification(type, title, message, actions = null) {
+  const banner = document.getElementById('notificationBanner');
+  const content = document.getElementById('notificationContent');
+  const icon = document.getElementById('notificationIcon');
+  const iconI = document.getElementById('notificationIconI');
+  const titleEl = document.getElementById('notificationTitle');
+  const messageEl = document.getElementById('notificationMessage');
+  const actionsEl = document.getElementById('notificationActions');
+  
+  // Clear any existing timeout
+  if (notificationTimeout) {
+    clearTimeout(notificationTimeout);
+    notificationTimeout = null;
+  }
+  
+  // Clear callbacks
+  notificationCallbacks = [];
+  
+  // Remove all type classes
+  content.classList.remove('success', 'error', 'loading');
+  icon.classList.remove('success', 'error', 'loading');
+  
+  // Set type classes
+  content.classList.add(type);
+  icon.classList.add(type);
+  
+  // Set icon based on type
+  if (type === 'success') {
+    iconI.className = 'fas fa-check-circle';
+  } else if (type === 'error') {
+    iconI.className = 'fas fa-exclamation-circle';
+  } else if (type === 'loading') {
+    iconI.className = 'fas fa-spinner';
+  }
+  
+  // Set content
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  
+  // Clear and populate actions
+  actionsEl.innerHTML = '';
+  if (actions && Array.isArray(actions)) {
+    actions.forEach(action => {
+      const btn = document.createElement('button');
+      btn.className = `notification-btn notification-btn-${action.type || 'primary'}`;
+      btn.textContent = action.text;
+      if (action.icon) {
+        const iconEl = document.createElement('i');
+        iconEl.className = action.icon;
+        btn.insertBefore(iconEl, btn.firstChild);
+      }
+      btn.onclick = () => {
+        hideNotification();
+        if (action.action) {
+          setTimeout(() => action.action(), 400); // Wait for animation
+        }
+      };
+      actionsEl.appendChild(btn);
+    });
+    notificationCallbacks = actions.map(a => a.action).filter(Boolean);
+  } else if (actions && typeof actions === 'function') {
+    // Backward compatibility: single callback
+    notificationCallbacks = [actions];
+  }
+  
+  // Show notification with animation
+  setTimeout(() => {
+    content.classList.add('show');
+  }, 10);
+  
+  // Auto-hide after 8 seconds for success (longer to allow button clicks), 5 seconds for errors
+  const autoHideDelay = type === 'error' ? 5000 : 8000;
+  notificationTimeout = setTimeout(() => {
+    hideNotification();
+  }, autoHideDelay);
+}
+
+function hideNotification() {
+  const content = document.getElementById('notificationContent');
+  content.classList.remove('show');
+  
+  if (notificationTimeout) {
+    clearTimeout(notificationTimeout);
+    notificationTimeout = null;
+  }
+  
+  // Clear callbacks (they're handled by button clicks)
+  notificationCallbacks = [];
+}
+
+function showLoading(show) {
+  const overlay = document.getElementById('loadingOverlay');
+  if (show) {
+    overlay.classList.add('show');
+  } else {
+    overlay.classList.remove('show');
+  }
+}
+
+// Legacy toast function for backward compatibility
+function toast(msg, err = false) {
+  showNotification(err ? 'error' : 'success', err ? 'Error' : 'Success', msg);
 }
 
 
@@ -1928,7 +2273,7 @@ function getFinalValue(id){
   return el.value;
 }
 
-const toastEl=document.getElementById('toast')
+// Old toast element removed - using modern notification system instead
 </script>
 
 </body>

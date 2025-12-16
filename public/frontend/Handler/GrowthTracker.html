@@ -702,6 +702,12 @@
           }
         });
 
+        // Get fieldId from URL parameters
+        function getFieldIdFromURL() {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get('fieldId');
+        }
+
         // Load user's fields (all fields, same as Input Records)
         async function loadUserFields() {
           try {
@@ -719,8 +725,52 @@
             populateFieldDropdown();
 
             if (userFields.length > 0) {
-              selectedFieldId = userFields[0].id;
-              await displayFieldGrowthData(selectedFieldId);
+              // Check if fieldId is in URL
+              const urlFieldId = getFieldIdFromURL();
+              if (urlFieldId) {
+                // Check if the field exists in user's fields
+                const fieldExists = userFields.find(f => f.id === urlFieldId);
+                if (fieldExists) {
+                  selectedFieldId = urlFieldId;
+                  console.log(`📍 Auto-selecting field from URL: ${urlFieldId}`);
+                  
+                  // Update native select
+                  const fieldSelect = document.getElementById('gtField');
+                  if (fieldSelect) {
+                    fieldSelect.value = urlFieldId;
+                  }
+                  
+                  // Update custom dropdown
+                  const dropdownTriggerText = document.getElementById('dropdownTriggerText');
+                  if (dropdownTriggerText) {
+                    dropdownTriggerText.textContent = fieldExists.field_name || fieldExists.fieldName || 'Unnamed Field';
+                  }
+                  
+                  // Update selected state in custom dropdown
+                  document.querySelectorAll('.dropdown-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    if (opt.dataset.value === urlFieldId) {
+                      opt.classList.add('selected');
+                    }
+                  });
+                  
+                  // Load field data
+                  await displayFieldGrowthData(selectedFieldId);
+                  
+                  // Clean up URL parameter (optional - keeps URL clean)
+                  const newUrl = window.location.pathname;
+                  window.history.replaceState({}, '', newUrl);
+                } else {
+                  console.warn(`⚠️ Field ${urlFieldId} not found in user's fields`);
+                  // Fallback to first field
+                  selectedFieldId = userFields[0].id;
+                  await displayFieldGrowthData(selectedFieldId);
+                }
+              } else {
+                // No URL parameter, use first field
+                selectedFieldId = userFields[0].id;
+                await displayFieldGrowthData(selectedFieldId);
+              }
             } else {
               showNoFieldsMessage();
             }
@@ -760,10 +810,15 @@
 
           // Populate custom dropdown
           if (dropdownOptions) {
+            // Get fieldId from URL to determine which should be selected
+            const urlFieldId = getFieldIdFromURL();
+            const defaultSelectedId = urlFieldId && userFields.find(f => f.id === urlFieldId) ? urlFieldId : (userFields[0]?.id || null);
+            
             userFields.forEach((field, index) => {
               const optionBtn = document.createElement('button');
               optionBtn.type = 'button';
-              optionBtn.className = 'dropdown-option' + (index === 0 ? ' selected' : '');
+              const isSelected = field.id === defaultSelectedId;
+              optionBtn.className = 'dropdown-option' + (isSelected ? ' selected' : '');
               optionBtn.textContent = field.field_name || field.fieldName || 'Unnamed Field';
               optionBtn.dataset.value = field.id;
 
@@ -797,6 +852,14 @@
 
               dropdownOptions.appendChild(optionBtn);
             });
+            
+            // Update dropdown trigger text if URL fieldId exists
+            if (urlFieldId && dropdownTriggerText) {
+              const urlField = userFields.find(f => f.id === urlFieldId);
+              if (urlField) {
+                dropdownTriggerText.textContent = urlField.field_name || urlField.fieldName || 'Unnamed Field';
+              }
+            }
           }
 
           // Native select change handler
