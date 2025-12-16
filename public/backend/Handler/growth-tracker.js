@@ -18,48 +18,68 @@ function removeUndefined(obj) {
   return cleaned;
 }
 
-// Variety-specific harvest days range (min-max days)
-export const VARIETY_HARVEST_DAYS_RANGE = {
-  // Early to medium maturity (most common)
-  "VMC 84-524":  { min: 330, max: 360 }, // ~11–12 months
-  "VMC 84-947":  { min: 335, max: 365 }, // ~11–12 months
-
-  // Medium maturity (standard PHIL varieties)
-  "PHIL 80-13":  { min: 335, max: 365 }, // ~11–12 months
-  "PHIL 99-1793":{ min: 335, max: 365 }, // ~11–12 months
-  "PHIL 92-0577":{ min: 335, max: 365 }, // ~11–12 months
-
-  // Slightly later but STILL within commercial range
-  "PHIL 93-1601":{ min: 350, max: 380 }, // ~11.5–12.5 months
-  "PHIL 94-0913":{ min: 350, max: 380 }, // ~11.5–12.5 months
-
-  // Default fallback
-  "Others":      { min: 335, max: 365 },
+// Variety-specific harvest months range (min-max months)
+// Converted to days using: months * 30.44 (average days per month)
+export const VARIETY_HARVEST_MONTHS_RANGE = {
+  'K 88-65': { min: 12, max: 14 },
+  'K 88-87': { min: 12, max: 14 },
+  'PS 1': { min: 11, max: 12 },
+  'VMC 84-947': { min: 11, max: 12 },
+  'PS 2': { min: 9, max: 10 },
+  'VMC 88-354': { min: 9, max: 10 },
+  'PS 3': { min: 10, max: 11 },
+  'VMC 84-524': { min: 10, max: 11 },
+  'CADP Sc1': { min: 10, max: 11 },
+  'PS 4': { min: 10, max: 12 },
+  'VMC 95-152': { min: 10, max: 12 },
+  'PS 5': { min: 10, max: 12 },
+  'VMC 95-09': { min: 10, max: 12 },
+  'PSR 2000-161': { min: 11, max: 12 },
+  'PSR 2000-343': { min: 11, max: 11.5 },
+  'PSR 2000-34': { min: 11, max: 12 },
+  'PSR 97-41': { min: 11, max: 11 },
+  'PSR 97-45': { min: 10, max: 11 },
+  'Ps 862': { min: 10, max: 12 },
+  'VMC 71-39': { min: 10, max: 12 },
+  'VMC 84-549': { min: 10, max: 10 },
+  'VMC 86-550': { min: 11, max: 12 },
+  'VMC 87-599': { min: 10, max: 12 },
+  'VMC 87-95': { min: 10, max: 11 }
 };
+
+// Variety-specific harvest days range (converted from months for backward compatibility)
+export const VARIETY_HARVEST_DAYS_RANGE = (() => {
+  const daysRange = {};
+  for (const [variety, months] of Object.entries(VARIETY_HARVEST_MONTHS_RANGE)) {
+    daysRange[variety] = {
+      min: Math.round(months.min * 30.44),
+      max: Math.round(months.max * 30.44)
+    };
+  }
+  // Add default fallback
+  daysRange["Others"] = { min: 305, max: 365 };
+  return daysRange;
+})();
 
 // Legacy VARIETY_HARVEST_DAYS for backward compatibility (uses max from range)
 // This allows existing code to continue working while we migrate to ranges
-export const VARIETY_HARVEST_DAYS = {
-  "PHIL 99-1793": VARIETY_HARVEST_DAYS_RANGE["PHIL 99-1793"]?.max || 365,
-  "PHIL 80-13": VARIETY_HARVEST_DAYS_RANGE["PHIL 80-13"]?.max || 365,
-  "VMC 84-524": VARIETY_HARVEST_DAYS_RANGE["VMC 84-524"]?.max || 360,
-  "VMC 84-947": VARIETY_HARVEST_DAYS_RANGE["VMC 84-947"]?.max || 365,
-  "PHIL 93-1601": VARIETY_HARVEST_DAYS_RANGE["PHIL 93-1601"]?.max || 380,
-  "PHIL 94-0913": VARIETY_HARVEST_DAYS_RANGE["PHIL 94-0913"]?.max || 380,
-  "PHIL 92-0577": VARIETY_HARVEST_DAYS_RANGE["PHIL 92-0577"]?.max || 365,
-  "Others": VARIETY_HARVEST_DAYS_RANGE["Others"]?.max || 365,
-  // Legacy varieties (for backward compatibility)
-  "PSR 07-195": 345,
-  "PSR 03-171": 345,
-  "Phil 93-1601": VARIETY_HARVEST_DAYS_RANGE["PHIL 93-1601"]?.max || 380,
-  "Phil 94-0913": VARIETY_HARVEST_DAYS_RANGE["PHIL 94-0913"]?.max || 380,
-  "Phil 92-0577": VARIETY_HARVEST_DAYS_RANGE["PHIL 92-0577"]?.max || 365,
-  "Phil 92-0051": 355,
-  "Phil 99-1793": VARIETY_HARVEST_DAYS_RANGE["PHIL 99-1793"]?.max || 365,
-  "VMC 84-524": VARIETY_HARVEST_DAYS_RANGE["VMC 84-524"]?.max || 360,
-  "LCP 85-384": 365,
-  "BZ 148": 365
-};
+export const VARIETY_HARVEST_DAYS = (() => {
+  const harvestDays = {};
+  for (const [variety, range] of Object.entries(VARIETY_HARVEST_DAYS_RANGE)) {
+    harvestDays[variety] = range.max;
+  }
+  // Add legacy varieties for backward compatibility
+  harvestDays["PSR 07-195"] = 345;
+  harvestDays["PSR 03-171"] = 345;
+  harvestDays["Phil 93-1601"] = VARIETY_HARVEST_DAYS_RANGE["PHIL 93-1601"]?.max || 380;
+  harvestDays["Phil 94-0913"] = VARIETY_HARVEST_DAYS_RANGE["PHIL 94-0913"]?.max || 380;
+  harvestDays["Phil 92-0577"] = VARIETY_HARVEST_DAYS_RANGE["PHIL 92-0577"]?.max || 365;
+  harvestDays["Phil 92-0051"] = 355;
+  harvestDays["Phil 99-1793"] = VARIETY_HARVEST_DAYS_RANGE["PHIL 99-1793"]?.max || 365;
+  harvestDays["LCP 85-384"] = 365;
+  harvestDays["BZ 148"] = 365;
+  return harvestDays;
+})();
 
 /**
  * Calculate Days After Planting (DAP)
