@@ -4450,17 +4450,40 @@ export function initializeFieldsSection() {
       }
 
       const fieldName = field.field_name || field.fieldName || 'Unnamed Field';
+      const owner = field.owner || field.applicant_name || field.applicantName || 'N/A';
       const street = field.street || '—';
       const barangay = field.barangay || '—';
-      const caneType = field.sugarcane_variety || field.variety || 'N/A';
-      const area = field.field_size || field.area_size || field.area || field.size || 'N/A';
-      const terrain = field.terrain_type || 'N/A';
-
-      const formattedAddress = `${street}, ${barangay}, Ormoc City`;
+      const size = field.field_size || field.area_size || field.area || field.size || 'N/A';
+      const terrain = field.terrain_type || field.field_terrain || 'N/A';
+      const status = field.status || 'active';
+      const latitude = field.latitude || field.lat || 'N/A';
+      const longitude = field.longitude || field.lng || 'N/A';
+      const variety = field.sugarcane_variety || field.variety || 'N/A';
+      const soilType = field.soil_type || field.soilType || 'N/A';
+      const irrigationMethod = field.irrigation_method || field.irrigationMethod || 'N/A';
+      const previousCrop = field.previous_crop || field.previousCrop || 'N/A';
+      const growthStage = field.current_growth_stage || field.growthStage || '—';
+      
+      // Format dates from Firestore Timestamps
+      const formatFirestoreDate = (dateValue) => {
+        if (!dateValue) return '—';
+        if (typeof dateValue === 'string') return dateValue;
+        if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+          return dateValue.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        }
+        if (dateValue instanceof Date) {
+          return dateValue.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+        }
+        return String(dateValue);
+      };
+      
+      const plantingDate = formatFirestoreDate(field.planting_date || field.plantingDate);
+      const expectedHarvestDate = formatFirestoreDate(field.expected_harvest_date || field.expectedHarvestDate);
+      const delayDays = field.delay_days || field.delayDays || '—';
+      const createdOn = formatFirestoreDate(field.created_on || field.createdOn || field.timestamp);
 
       const existing = document.getElementById('fieldDetailsModal');
       if (existing) {
-        console.log('🗑️ Removing existing field details modal');
         existing.remove();
       }
 
@@ -4469,175 +4492,354 @@ export function initializeFieldsSection() {
       modal.className = 'fixed inset-0 z-[20000] flex items-center justify-center p-4';
       modal.innerHTML = `
         <div id="fieldDetailsBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <section class="relative w-full max-w-[1300px] max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-xl border border-[var(--cane-200)] flex flex-col">
-          <header class="flex items-start justify-between gap-4 p-6 border-b">
+        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-[var(--cane-200)] overflow-y-auto max-h-[90vh]">
+          <header class="sticky top-0 bg-white border-b border-[var(--cane-200)] p-6 flex items-start justify-between">
             <div>
-            <h2 id="fd_name" class="text-2xl font-bold text-[var(--cane-900)] leading-tight">${escapeHtml(fieldName)}</h2>
-            <div id="fd_address" class="flex items-center gap-1.5 mt-1 text-sm text-[var(--cane-700)]">
-              <i class="fas fa-map-marker-alt text-[var(--cane-600)] opacity-80"></i>
-              <span>${escapeHtml(formattedAddress)}</span>
-            </div><div class="mt-2 text-xs text-[var(--cane-600)] flex flex-wrap gap-x-3 gap-y-1">
-              <span><strong>Type:</strong> ${escapeHtml(caneType)}</span>
-              <span><strong>Area:</strong> ${escapeHtml(String(area))} ha</span>
-              <span><strong>Terrain:</strong> ${escapeHtml(terrain)}</span>
+              <h2 class="text-2xl font-bold text-[var(--cane-900)]">${escapeHtml(fieldName)}</h2>
             </div>
-            </div>
-            <div class="ml-4 flex-shrink-0">
-              <div id="fd_status" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-[var(--cane-100)] text-[var(--cane-800)]"></div>
-            </div>
+            <button id="fd_close_btn" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
           </header>
 
-          <div class="p-6 modal-content">
-            <div class="space-y-5 modal-left-col">
-              <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-[var(--cane-900)]">
-                  <span id="fd_month_label">November</span>
-                  <span id="fd_week_label"></span>
-                </h3>
-                <div class="flex items-center gap-2">
-                  <select id="fd_month_selector" class="text-xs px-2 py-1 border rounded">
-                    <option value="all">All Time</option>
-                    <option value="0">January</option>
-                    <option value="1">February</option>
-                    <option value="2">March</option>
-                    <option value="3">April</option>
-                    <option value="4">May</option>
-                    <option value="5">June</option>
-                    <option value="6">July</option>
-                    <option value="7">August</option>
-                    <option value="8">September</option>
-                    <option value="9">October</option>
-                    <option value="10" selected>November</option>
-                    <option value="11">December</option>
-                  </select>
-                  <select id="fd_week_selector" class="text-xs px-2 py-1 border rounded"></select>
+          <div class="p-6 space-y-6">
+            <div>
+              <h3 class="text-sm font-bold text-[var(--cane-700)] uppercase tracking-wide mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle text-[var(--cane-600)]"></i>Field Information
+              </h3>
+              <div class="grid grid-cols-2 gap-6">
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Field Name</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(fieldName)}</p>
                 </div>
-              </div>
-
-              <div class="fd_table_card p-3">
-                <div class="flex items-center justify-between mb-3">
-                  <h3 class="text-sm font-semibold">Tasks</h3>
-                  <select id="fd_tasks_filter" class="text-xs rounded-md border px-2 py-1">
-                    <option value="all">All Status</option>
-                    <option value="todo">To Do</option>
-                    <option value="pending">Pending</option>
-                    <option value="done">Done</option>
-                  </select>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Owner</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(owner)}</p>
                 </div>
-                <div id="fd_tasks_container">
-                  <p class="text-xs text-[var(--cane-600)]">Loading tasks...</p>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Street / Sitio</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(street)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Barangay</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(barangay)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Size (HA)</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(size))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Field Terrain</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(terrain)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Status</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1 capitalize">${escapeHtml(status)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Latitude</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${typeof latitude === 'number' ? latitude.toFixed(6) : escapeHtml(String(latitude))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Longitude</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${typeof longitude === 'number' ? longitude.toFixed(6) : escapeHtml(String(longitude))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Sugarcane Variety</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(variety)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Soil Type</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(soilType)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Irrigation Method</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(irrigationMethod)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Previous Crop</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(previousCrop)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Current Growth Stage</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(growthStage)}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Planting Date</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(plantingDate))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Expected Harvest Date</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(expectedHarvestDate))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Delay Days</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(delayDays))}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Created On</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(createdOn))}</p>
                 </div>
               </div>
             </div>
 
-            <div class="fd_table_card p-3 modal-right-col">
-              <h3 class="text-sm font-semibold mb-2">Growth Tracker</h3>
-              <div id="fd_growth_container" class="text-xs text-[var(--cane-600)]">Loading growth tracker...</div>
+            <div>
+              <h3 class="text-sm font-bold text-[var(--cane-700)] uppercase tracking-wide mb-4 flex items-center gap-2">
+                <i class="fas fa-file-alt text-[var(--cane-600)]"></i>Documents & Photos
+              </h3>
+              <div id="fd_documents_container" class="space-y-4">
+                <p class="text-xs text-[var(--cane-600)]">Loading documents...</p>
+              </div>
             </div>
           </div>
 
-          <footer class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 sm:p-6 border-t">
-            <div class="flex items-center gap-2 flex-wrap ${field.status !== 'harvested' ? 'invisible' : ''}" id="fd_harvest_actions">
-              <button id="fd_ratoon_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-purple-300 bg-purple-50 text-sm text-purple-700 hover:bg-purple-100 transition flex-1 sm:flex-none min-w-0">
-                <i class="fas fa-seedling"></i>
-                <span class="whitespace-nowrap">Ratoon</span>
-              </button>
-              <button id="fd_replant_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-green-300 bg-green-50 text-sm text-green-700 hover:bg-green-100 transition flex-1 sm:flex-none min-w-0">
-                <i class="fas fa-redo"></i>
-                <span class="whitespace-nowrap">Replant</span>
-              </button>
-            </div>
-
-            <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-              <button id="fd_create_task_btn" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 text-sm text-[var(--cane-800)] hover:bg-gray-50 transition flex-1 sm:flex-none min-w-0">
-                <i class="fas fa-plus"></i>
-                <span class="whitespace-nowrap">Create Task</span>
-              </button>
-              <button id="fd_close_btn" class="px-4 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white shadow-lg flex-1 sm:flex-none min-w-0">
-                Close
-              </button>
-            </div>
+          <footer class="sticky bottom-0 bg-white border-t border-[var(--cane-200)] p-6 flex justify-end gap-3">
+            <button id="fd_close_btn_footer" class="px-6 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors">
+              Close
+            </button>
           </footer>
-        </section>
+        </div>
       `;
-
-      const modalStyle = document.createElement('style');
-      modalStyle.textContent = `
-        #fieldDetailsModal section { display: flex; flex-direction: column; height: 90vh; overflow: hidden; }
-        #fieldDetailsModal header, #fieldDetailsModal footer { flex: 0 0 auto; z-index: 5; background: white; }
-        #fieldDetailsModal .modal-content { flex: 1 1 auto; display: flex; gap: 20px; overflow: hidden; }
-        #fieldDetailsModal .modal-left-col { flex: 1 1 65%; min-width: 0; }
-        #fieldDetailsModal .modal-right-col { flex: 1 1 35%; min-width: 0; }
-        @media (min-width: 769px) {
-          #fieldDetailsModal #fd_tasks_container { overflow-y: auto; max-height: calc(90vh - 240px); padding-right: 8px; padding-bottom: 24px; }
-          #fieldDetailsModal .modal-content { overflow: hidden; }
-        }
-        @media (max-width: 768px) {
-          #fieldDetailsModal .modal-content { flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
-          #fieldDetailsModal .modal-left-col, #fieldDetailsModal .modal-right-col { flex: 1 1 auto; width: 100%; }
-          #fieldDetailsModal #fd_tasks_container { overflow: visible; max-height: none; }
-          #fieldDetailsModal footer { padding: 12px 16px; gap: 8px; }
-          #fieldDetailsModal footer button { font-size: 0.875rem; padding: 8px 12px; white-space: nowrap; }
-        }
-        #fieldDetailsModal #fd_tasks_container { margin-bottom: 16px; }
-      `;
-
-      if (!document.getElementById('fieldDetailsModalStyle')) {
-        modalStyle.id = 'fieldDetailsModalStyle';
-        document.head.appendChild(modalStyle);
-      }
 
       document.body.appendChild(modal);
-      modal.querySelector('section')?.scrollTo?.({ top: 0 });
 
-      const fieldRef = doc(db, 'fields', fieldId);
-      const fieldStatusUnsub = onSnapshot(fieldRef, async (snapshot) => {
-        if (!snapshot.exists()) return;
-        const updatedField = snapshot.data();
-        const newStatus = (updatedField.status || 'active').toString().toLowerCase();
-        const statusEl = modal.querySelector('#fd_status');
-        if (statusEl) {
-          statusEl.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
-          if (newStatus.includes('review') || newStatus.includes('active')) {
-            statusEl.style.background = 'rgba(124, 207, 0, 0.12)';
-            statusEl.style.color = '#166534';
-          } else if (newStatus.includes('pending') || newStatus.includes('edit')) {
-            statusEl.style.background = 'rgba(250, 204, 21, 0.12)';
-            statusEl.style.color = '#92400e';
-          } else if (newStatus.includes('harvest')) {
-            statusEl.style.background = 'rgba(139, 69, 19, 0.12)';
-            statusEl.style.color = '#78350f';
-          } else {
-            statusEl.style.background = 'rgba(239, 68, 68, 0.08)';
-            statusEl.style.color = '#991b1b';
-          }
-        }
-        const harvestActions = modal.querySelector('#fd_harvest_actions');
-        if (harvestActions) {
-          harvestActions.classList.toggle('invisible', newStatus !== 'harvested');
-        }
-      });
+      const closeBtn = modal.querySelector('#fd_close_btn');
+      const closeBtnFooter = modal.querySelector('#fd_close_btn_footer');
+      const backdrop = modal.querySelector('#fieldDetailsBackdrop');
 
-      modal.querySelector('#fd_close_btn')?.addEventListener('click', () => modal.remove());
-      modal.querySelector('#fd_create_task_btn')?.addEventListener('click', (e) => {
-        try {
-          openCreateTaskModal(fieldId);
-        } catch (err) {
-          console.error('Failed to open Create Task modal:', err);
-          alert('Unable to open Create Task modal. See console for details.');
-        }
-      });
-
-      modal.querySelector('#fieldDetailsBackdrop')?.addEventListener('click', (e) => {
+      closeBtn?.addEventListener('click', () => modal.remove());
+      closeBtnFooter?.addEventListener('click', () => modal.remove());
+      backdrop?.addEventListener('click', (e) => {
         if (e.target.id === 'fieldDetailsBackdrop') modal.remove();
       });
+
       const escHandler = (e) => { if (e.key === 'Escape') modal.remove(); };
       document.addEventListener('keydown', escHandler);
-      modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); fieldStatusUnsub(); });
+      modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); });
+
+      // Load documents from field document
+      try {
+        console.log('Loading documents for fieldId:', fieldId);
+        const documentsContainer = modal.querySelector('#fd_documents_container');
+        
+        // Build documents list from field URLs
+        const docsList = [];
+        
+        if (field.validFrontUrl) {
+          docsList.push({
+            name: 'Valid ID Front',
+            url: field.validFrontUrl
+          });
+        }
+        if (field.validBackUrl) {
+          docsList.push({
+            name: 'Valid ID Back',
+            url: field.validBackUrl
+          });
+        }
+        if (field.selfieUrl) {
+          docsList.push({
+            name: 'Selfie with ID',
+            url: field.selfieUrl
+          });
+        }
+        if (field.barangayCertUrl) {
+          docsList.push({
+            name: 'Barangay Certificate',
+            url: field.barangayCertUrl
+          });
+        }
+        if (field.landTitleUrl) {
+          docsList.push({
+            name: 'Land Title',
+            url: field.landTitleUrl
+          });
+        }
+        
+        console.log('Documents found:', docsList.length);
+        
+        if (docsList.length === 0) {
+          console.log('No documents in field');
+          documentsContainer.innerHTML = '<p class="text-xs text-[var(--cane-600)] col-span-2">No documents uploaded</p>';
+        } else {
+          // Create organized layout: 2 rows of 2, then 1 centered
+          let html = '';
+          
+          // Row 1: Valid ID Front - Valid ID Back
+          html += '<div class="grid grid-cols-2 gap-4 mb-4">';
+          const frontDoc = docsList.find(d => d.name.includes('Front'));
+          const backDoc = docsList.find(d => d.name.includes('Back'));
+          
+          if (frontDoc) {
+            html += `
+              <div class="flex flex-col gap-2 cursor-pointer">
+                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(frontDoc.url)}', '${escapeHtml(frontDoc.name)}')">
+                  <img src="${escapeHtml(frontDoc.url)}" alt="${escapeHtml(frontDoc.name)}" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-eye text-white text-2xl"></i>
+                  </div>
+                </div>
+                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(frontDoc.name)}</p>
+              </div>
+            `;
+          }
+          
+          if (backDoc) {
+            html += `
+              <div class="flex flex-col gap-2 cursor-pointer">
+                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(backDoc.url)}', '${escapeHtml(backDoc.name)}')">
+                  <img src="${escapeHtml(backDoc.url)}" alt="${escapeHtml(backDoc.name)}" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-eye text-white text-2xl"></i>
+                  </div>
+                </div>
+                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(backDoc.name)}</p>
+              </div>
+            `;
+          }
+          html += '</div>';
+          
+          // Row 2: Barangay Certificate - Land Title
+          html += '<div class="grid grid-cols-2 gap-4 mb-4">';
+          const barangayDoc = docsList.find(d => d.name.includes('Barangay'));
+          const landDoc = docsList.find(d => d.name.includes('Land'));
+          
+          if (barangayDoc) {
+            html += `
+              <div class="flex flex-col gap-2 cursor-pointer">
+                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(barangayDoc.url)}', '${escapeHtml(barangayDoc.name)}')">
+                  <img src="${escapeHtml(barangayDoc.url)}" alt="${escapeHtml(barangayDoc.name)}" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-eye text-white text-2xl"></i>
+                  </div>
+                </div>
+                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(barangayDoc.name)}</p>
+              </div>
+            `;
+          }
+          
+          if (landDoc) {
+            html += `
+              <div class="flex flex-col gap-2 cursor-pointer">
+                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(landDoc.url)}', '${escapeHtml(landDoc.name)}')">
+                  <img src="${escapeHtml(landDoc.url)}" alt="${escapeHtml(landDoc.name)}" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <i class="fas fa-eye text-white text-2xl"></i>
+                  </div>
+                </div>
+                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(landDoc.name)}</p>
+              </div>
+            `;
+          }
+          html += '</div>';
+          
+          // Row 3: Selfie with ID (centered)
+          const selfieDoc = docsList.find(d => d.name.includes('Selfie'));
+          if (selfieDoc) {
+            html += `
+              <div class="flex justify-center">
+                <div class="w-1/2 flex flex-col gap-2 cursor-pointer">
+                  <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(selfieDoc.url)}', '${escapeHtml(selfieDoc.name)}')">
+                    <img src="${escapeHtml(selfieDoc.url)}" alt="${escapeHtml(selfieDoc.name)}" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <i class="fas fa-eye text-white text-2xl"></i>
+                    </div>
+                  </div>
+                  <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(selfieDoc.name)}</p>
+                </div>
+              </div>
+            `;
+          }
+          
+          documentsContainer.innerHTML = html;
+        }
+      } catch (docErr) {
+        console.error('Failed to load documents:', docErr);
+        console.error('Error details:', docErr.message);
+        const documentsContainer = modal.querySelector('#fd_documents_container');
+        documentsContainer.innerHTML = '<p class="text-xs text-[var(--cane-600)] col-span-2">Unable to load documents</p>';
+      }
 
     } catch (outerErr) {
       console.error('viewFieldDetails failed', outerErr);
       alert('Failed to open field details: ' + (outerErr.message || outerErr));
+    }
+  };
+
+  window.openDocumentModal = function(docUrl, docName) {
+    const existing = document.getElementById('documentViewerModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'documentViewerModal';
+    modal.className = 'fixed inset-0 z-[30000] flex items-center justify-center p-4';
+    modal.innerHTML = `
+      <div id="docViewerBackdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <div class="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <header class="flex items-center justify-between p-6 border-b border-gray-200 bg-white">
+          <h2 class="text-lg font-bold text-gray-900 truncate">${escapeHtml(docName)}</h2>
+          <button id="docViewerClose" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </header>
+        
+        <div class="flex-1 overflow-auto bg-gray-50 flex items-center justify-center">
+          <div id="docViewerContent" class="w-full h-full flex items-center justify-center">
+            <div class="text-center">
+              <i class="fas fa-spinner fa-spin text-[var(--cane-600)] text-4xl mb-4 block"></i>
+              <p class="text-gray-600">Loading document...</p>
+            </div>
+          </div>
+        </div>
+        
+        <footer class="p-6 border-t border-gray-200 bg-white flex justify-between items-center gap-3">
+          <a href="${escapeHtml(docUrl)}" target="_blank" download class="px-4 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors flex items-center gap-2">
+            <i class="fas fa-download"></i>Download
+          </a>
+          <button id="docViewerCloseBtn" class="px-4 py-2 rounded-lg font-semibold bg-gray-200 hover:bg-gray-300 text-gray-900 transition-colors">
+            Close
+          </button>
+        </footer>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = modal.querySelector('#docViewerClose');
+    const closeBtnFooter = modal.querySelector('#docViewerCloseBtn');
+    const backdrop = modal.querySelector('#docViewerBackdrop');
+    const contentDiv = modal.querySelector('#docViewerContent');
+
+    closeBtn?.addEventListener('click', () => modal.remove());
+    closeBtnFooter?.addEventListener('click', () => modal.remove());
+    backdrop?.addEventListener('click', (e) => {
+      if (e.target.id === 'docViewerBackdrop') modal.remove();
+    });
+
+    const escHandler = (e) => { if (e.key === 'Escape') modal.remove(); };
+    document.addEventListener('keydown', escHandler);
+    modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); });
+
+    // Load document content
+    if (docUrl) {
+      const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(docUrl);
+      const isPdf = /\.pdf$/i.test(docUrl);
+
+      if (isImage) {
+        contentDiv.innerHTML = `<img src="${escapeHtml(docUrl)}" alt="${escapeHtml(docName)}" class="max-w-full max-h-full object-contain" />`;
+      } else if (isPdf) {
+        contentDiv.innerHTML = `
+          <iframe src="${escapeHtml(docUrl)}" class="w-full h-full border-none"></iframe>
+        `;
+      } else {
+        contentDiv.innerHTML = `
+          <div class="text-center p-8">
+            <i class="fas fa-file text-6xl text-gray-400 mb-4 block"></i>
+            <p class="text-gray-600 mb-4">Document cannot be previewed in browser</p>
+            <a href="${escapeHtml(docUrl)}" target="_blank" class="inline-block px-4 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors">
+              Open in New Tab
+            </a>
+          </div>
+        `;
+      }
+    } else {
+      contentDiv.innerHTML = '<p class="text-gray-600">Document URL not available</p>';
     }
   };
 
