@@ -3619,10 +3619,26 @@ async function renderHandlerFields(userId) {
     const firstWithCoords = fields.find(field => toLatLng(field).lat && toLatLng(field).lng);
     const initialCenter = firstWithCoords ? [toLatLng(firstWithCoords).lat, toLatLng(firstWithCoords).lng] : DEFAULT_HANDLER_MAP_CENTER;
 
-    const map = L.map(mapContainer).setView(initialCenter, 11);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors"
-    }).addTo(map);
+    const map = L.map(mapContainer, {
+      maxZoom: 18,
+      minZoom: 11
+    }).setView(initialCenter, 12);
+    
+    // Add the same three layers as in lobby.js
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri' }
+    ).addTo(map);
+
+    const roads = L.tileLayer(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri' }
+    ).addTo(map);
+
+    const labels = L.tileLayer(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri' }
+    ).addTo(map);
 
     handlerFieldsMapInstance = map;
     handlerFieldsLastBounds = null;
@@ -3901,12 +3917,19 @@ let fieldsData = [];
 let topFieldsUnsub = null;
 let nestedFieldsUnsub = null;
 const fieldStore = new Map();
+let topFieldKeys = new Set();
+let nestedFieldKeys = new Set();
+let initializeFieldsSectionCalled = false;
 
 // currentUserId is declared globally at line 1604
 
 export function initializeFieldsSection() {
-  let topFieldKeys = new Set();
-  let nestedFieldKeys = new Set();
+  if (initializeFieldsSectionCalled) {
+    console.log('⚠️ initializeFieldsSection already called, skipping duplicate initialization');
+    return;
+  }
+  initializeFieldsSectionCalled = true;
+  
   let activeHighlightedField = null;
 
   function highlightFieldInList(fieldName) {
@@ -4000,15 +4023,30 @@ export function initializeFieldsSection() {
 
       console.log('🗺️ Map instance created, adding tile layer...');
 
-      const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19,
-        errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
-      }).addTo(fieldsMap);
+      // Add the same three layers as in lobby.js
+      const satellite = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        { 
+          attribution: 'Tiles © Esri',
+          errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+          maxZoom: 18,
+          minZoom: 11
+        }
+      ).addTo(fieldsMap);
 
-      tileLayer.on('loading', () => console.log('🔄 Loading map tiles...'));
-      tileLayer.on('load', () => console.log('✅ Map tiles loaded'));
-      tileLayer.on('tileerror', (e) => console.warn('⚠️ Tile load error:', e));
+      const roads = L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+        { attribution: '© Esri' }
+      ).addTo(fieldsMap);
+
+      const labels = L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+        { attribution: '© Esri' }
+      ).addTo(fieldsMap);
+
+      satellite.on('loading', () => console.log('🔄 Loading map tiles...'));
+      satellite.on('load', () => console.log('✅ Map tiles loaded'));
+      satellite.on('tileerror', (e) => console.warn('⚠️ Tile load error:', e));
 
       markersLayer = L.layerGroup().addTo(fieldsMap);
 
@@ -4102,6 +4140,8 @@ export function initializeFieldsSection() {
 
       const renderFromStore = () => {
         fieldsData = Array.from(fieldStore.values());
+        console.log('🔍 renderFromStore - fieldStore contents:', Array.from(fieldStore.entries()));
+        console.log('🔍 renderFromStore - fieldsData:', fieldsData);
 
         if (!markersLayer) {
           markersLayer = L.layerGroup().addTo(fieldsMap);
@@ -4110,13 +4150,16 @@ export function initializeFieldsSection() {
         markersLayer.clearLayers();
         let markersAdded = 0;
 
-        fieldsData.forEach((field) => {
+        fieldsData.forEach((field, index) => {
+          console.log(`🔍 Processing field ${index}:`, field);
           const lat = parseFloat(field.latitude ?? field.lat ?? '');
           const lng = parseFloat(field.longitude ?? field.lng ?? '');
+          console.log(`🔍 Field ${index} coords: lat=${lat}, lng=${lng}, isFinite=${Number.isFinite(lat) && Number.isFinite(lng)}`);
           if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
             console.warn('⚠️ No coordinates for field:', field.field_name || field.fieldName || field.id);
             return;
           }
+          console.log(`✅ Adding marker for field ${index}`);
           addFieldMarker({ ...field, latitude: lat, longitude: lng });
           markersAdded += 1;
         });
@@ -4137,7 +4180,7 @@ export function initializeFieldsSection() {
         console.log(`✅ Loaded ${fieldsData.length} fields, ${markersAdded} markers`);
       };
 
-      const createTopKey = (doc) => doc.data()?.sourceRef || doc.ref.path;
+      const createTopKey = (doc) => doc.id;
 
       const topQuery = query(
         collection(db, 'fields'),
@@ -4151,6 +4194,7 @@ export function initializeFieldsSection() {
         snapshot.forEach((docSnap) => {
           const data = docSnap.data() || {};
           const key = createTopKey(docSnap);
+          console.log(`📝 Processing field with key=${key}, docId=${docSnap.id}, fieldName=${data.field_name || data.fieldName}`);
           seen.add(key);
           fieldStore.set(key, {
             id: docSnap.id,
@@ -4158,10 +4202,15 @@ export function initializeFieldsSection() {
             userId: data.userId || currentUserId,
             sourceRef: key
           });
+          console.log(`✅ Added field to store. fieldStore size now: ${fieldStore.size}`);
         });
+
+        console.log(`🔍 After processing snapshot, fieldStore size: ${fieldStore.size}, seen size: ${seen.size}`);
+        console.log(`🔍 fieldStore contents:`, Array.from(fieldStore.entries()));
 
         topFieldKeys.forEach((key) => {
           if (!seen.has(key) && !nestedFieldKeys.has(key)) {
+            console.log(`🗑️ Deleting field with key: ${key}`);
             fieldStore.delete(key);
           }
         });
