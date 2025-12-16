@@ -5,7 +5,6 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
 import { handlePlantingCompletion, handleBasalFertilizationCompletion, handleMainFertilizationCompletion } from './growth-tracker.js';
-import { notifyTaskAssignment } from '../Common/notifications.js';
 import { getRecommendedTasksForDAP } from './task-automation.js';
 import { calculateDAP } from './growth-tracker.js';
 
@@ -1302,31 +1301,6 @@ el('#ct_save').addEventListener('click', async () => {
 
 
     if (res.ok) {
-      // --- Send Notifications ---
-      try {
-        const taskId = res.taskId;
-        const fieldName = await getFieldName(fieldId);
-        const taskType = payload.title || 'Task';
-        let assignedUserIds = [];
-
-        // Collect user IDs based on assignment type
-        if (assignType === 'driver') {
-          // Notify the selected driver (already in payload.assignedTo)
-          if (payload.assignedTo && Array.isArray(payload.assignedTo)) {
-            assignedUserIds = payload.assignedTo;
-          }
-        }
-
-        // Send notifications
-        if (assignedUserIds.length > 0) {
-          await notifyTaskAssignment(assignedUserIds, taskType, fieldName, taskId);
-          console.log(`✅ Sent notifications to ${assignedUserIds.length} user(s) for task ${taskId}`);
-        }
-      } catch (notifError) {
-        console.error('Error sending notifications:', notifError);
-        // Don't fail the whole operation if notification fails
-      }
-
       // --- Centered Success Message ---
       const successModal = document.createElement('div');
       successModal.className = 'fixed inset-0 z-[24000] flex items-center justify-center';

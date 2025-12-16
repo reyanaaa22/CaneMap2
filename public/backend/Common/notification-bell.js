@@ -57,7 +57,8 @@ function renderNotificationBell(containerId) {
 
       <!-- Notification Dropdown -->
       <div id="notificationDropdown"
-           class="hidden absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[32rem] flex flex-col">
+           class="hidden absolute right-0 mt-2 w-96 max-w-[calc(100vw-1rem)] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[calc(100vh-6rem)] flex flex-col"
+           style="margin-right: 0.5rem; margin-left: 0.5rem;">
 
         <!-- Header -->
         <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -122,6 +123,28 @@ function setupEventListeners() {
 }
 
 /**
+ * Filter out old notifications - only show new/recent ones
+ * @param {Array} notifications - Array of notification objects
+ * @returns {Array} Filtered array of new notifications only
+ */
+function filterNewNotifications(notifications) {
+  // Define cutoff date: only show notifications from the last 30 days
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 30);
+  
+  return notifications.filter(notif => {
+    const timestamp = notif.timestamp || notif.createdAt;
+    if (!timestamp) return false; // Exclude notifications without timestamp
+    
+    // Convert Firestore timestamp to Date
+    const notifDate = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    
+    // Only include notifications created after cutoff date
+    return notifDate >= cutoffDate;
+  });
+}
+
+/**
  * Setup realtime listeners for notification updates
  */
 function setupRealtimeListeners() {
@@ -130,14 +153,15 @@ function setupRealtimeListeners() {
   // Cleanup previous listeners
   cleanup();
 
-  // Subscribe to unread count
-  unsubscribeCount = subscribeToUnreadCount(currentUserId, (count) => {
-    updateBadgeCount(count);
-  });
-
-  // Subscribe to notifications
+  // Subscribe to notifications (we'll calculate badge count from filtered notifications)
   unsubscribeNotifs = subscribeToNotifications(currentUserId, (notifications) => {
-    displayNotifications(notifications);
+    // Filter and display only new notifications
+    const newNotifications = filterNewNotifications(notifications);
+    displayNotifications(newNotifications);
+    
+    // Update badge count to only reflect new unread notifications
+    const unreadNewCount = newNotifications.filter(n => !n.read).length;
+    updateBadgeCount(unreadNewCount);
   }, 20); // Limit to 20 notifications
 }
 
@@ -169,22 +193,44 @@ function getNotificationTitle(notification) {
     'report_sent': 'Field Report Received',
     'report_approved': 'Report Approved',
     'report_rejected': 'Report Rejected',
-    'task_assigned': 'New Task Assigned',
-    'task_completed': 'Task Completed',
-    'task_deleted': 'Task Cancelled',
-    'rental_approved': 'Rental Request Approved',
-    'rental_rejected': 'Rental Request Rejected',
     'field_approved': 'Field Registration Approved',
     'field_rejected': 'Field Registration Rejected',
     'field_registration': 'New Field Registration',
-    'badge_approved': 'Driver Badge Approved',
-    'badge_rejected': 'Driver Badge Rejected',
-    'badge_deleted': 'Driver Badge Deleted',
-    'join_approved': 'Join Request Approved',
-    'join_rejected': 'Join Request Rejected'
+    'field_updated': 'Field Updated for Review',
+    'harvest_due': 'Harvest Due Today',
+    'harvest_overdue': 'Harvest Overdue',
+    'weather_advisory': 'Weather Forecast / Work Advisory'
   };
 
   return typeToTitle[notification.type] || 'Notification';
+}
+
+/**
+ * Get notification description (short summary)
+ */
+function getNotificationDescription(notification) {
+  // If there's an explicit description, use it
+  if (notification.description) return notification.description;
+  
+  // Otherwise, use the message as description
+  if (notification.message) return notification.message;
+  
+  // Fallback description based on type
+  const typeToDescription = {
+    'report_requested': 'A new report has been requested from you.',
+    'report_sent': 'A field report has been received and requires review.',
+    'report_approved': 'Your submitted report has been approved.',
+    'report_rejected': 'Your submitted report requires attention.',
+    'field_approved': 'Your field registration has been approved.',
+    'field_rejected': 'Your field registration requires attention.',
+    'field_registration': 'A new field registration requires your review.',
+    'field_updated': 'A field has been updated and requires your review.',
+    'harvest_due': 'Your field is ready for harvest today. Please schedule harvesting immediately.',
+    'harvest_overdue': 'Your field harvest is overdue. Please schedule harvesting as soon as possible.',
+    'weather_advisory': 'Check today\'s weather forecast and work advisory before starting field work.'
+  };
+  
+  return typeToDescription[notification.type] || 'You have a new notification.';
 }
 
 /**
@@ -194,11 +240,12 @@ function displayNotifications(notifications) {
   const listContainer = document.getElementById('notificationsList');
   if (!listContainer) return;
 
+  // Notifications are already filtered in setupRealtimeListeners
   if (notifications.length === 0) {
     listContainer.innerHTML = `
       <div class="flex flex-col items-center justify-center py-12 text-gray-500">
         <i class="fas fa-bell-slash text-4xl mb-3"></i>
-        <p class="text-sm">No notifications</p>
+        <p class="text-sm">No new notifications</p>
       </div>
     `;
     return;
@@ -207,36 +254,86 @@ function displayNotifications(notifications) {
   listContainer.innerHTML = notifications.map(notif => {
     const isUnread = !notif.read;
     const icon = getNotificationIcon(notif.type);
-    const timeAgo = formatTimeAgo(notif.createdAt);
+    const timeAgo = formatTimeAgo(notif.timestamp || notif.createdAt);
     const title = getNotificationTitle(notif);
+    const description = getNotificationDescription(notif);
+    
+    // Special styling for weather advisory notifications
+    const isWeatherAdvisory = notif.type === 'weather_advisory';
+    const isSafe = notif.isSafe !== undefined ? notif.isSafe : true;
+    
+    // Colors matching work advisory (from lobby.js)
+    const safeBgColor = 'rgba(22,163,74,0.12)';
+    const safeBorderColor = 'rgba(22,163,74,0.35)';
+    const unsafeBgColor = 'rgba(220,38,38,0.15)';
+    const unsafeBorderColor = 'rgba(220,38,38,0.35)';
+    
+    const bgColor = isWeatherAdvisory ? (isSafe ? safeBgColor : unsafeBgColor) : (isUnread ? 'bg-blue-50' : '');
+    const borderColor = isWeatherAdvisory ? (isSafe ? safeBorderColor : unsafeBorderColor) : 'border-gray-100';
+    const borderStyle = isWeatherAdvisory ? `border: 1px solid ${borderColor};` : '';
 
     return `
-      <div class="notification-item px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition ${isUnread ? 'bg-blue-50' : ''}"
+      <div class="notification-item px-4 py-3 border-b ${borderColor} hover:bg-gray-50 cursor-pointer transition ${bgColor}"
+           style="${isWeatherAdvisory ? `background: ${bgColor}; ${borderStyle}` : ''}"
            data-notification-id="${notif.id}"
-           data-read="${notif.read ? 'true' : 'false'}">
+           data-notification-type="${escapeHtml(notif.type || '')}"
+           data-read="${notif.read ? 'true' : 'false'}"
+           ${isWeatherAdvisory ? `data-is-safe="${isSafe}"` : ''}>
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--cane-100)] flex items-center justify-center">
-            <i class="fas ${icon} text-[var(--cane-700)]"></i>
+          <div class="flex-shrink-0 w-10 h-10 rounded-full ${isWeatherAdvisory ? (isSafe ? 'bg-green-100' : 'bg-red-100') : 'bg-[var(--cane-100)]'} flex items-center justify-center">
+            <i class="fas ${icon} ${isWeatherAdvisory ? (isSafe ? 'text-green-700' : 'text-red-700') : 'text-[var(--cane-700)]'}"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold ${isUnread ? 'text-gray-900' : 'text-gray-800'}">
-              ${escapeHtml(title)}
+            <div class="flex items-start justify-between gap-2">
+              <p class="text-sm font-semibold ${isUnread ? 'text-gray-900' : 'text-gray-800'} leading-tight">
+                ${escapeHtml(title)}
+              </p>
+              ${isUnread ? '<div class="flex-shrink-0 mt-1"><div class="w-2 h-2 bg-blue-500 rounded-full"></div></div>' : ''}
+            </div>
+            <p class="text-xs ${isUnread ? 'text-gray-600' : 'text-gray-500'} mt-1.5 leading-relaxed line-clamp-2">
+              ${escapeHtml(description)}
             </p>
-            <p class="text-sm ${isUnread ? 'text-gray-700' : 'text-gray-600'} mt-0.5">
-              ${escapeHtml(notif.message)}
-            </p>
-            <p class="text-xs text-gray-500 mt-1">${timeAgo}</p>
+            ${isWeatherAdvisory ? `
+              <div class="mt-2 flex items-center gap-1">
+                <div class="weather-cooldown-line h-1 rounded-full ${isSafe ? 'bg-green-400' : 'bg-red-400'}" style="width: 0%; animation: cooldown 5s linear forwards;"></div>
+                <div class="weather-cooldown-line h-1 rounded-full ${isSafe ? 'bg-green-400' : 'bg-red-400'}" style="width: 0%; animation: cooldown 5s linear 0.2s forwards;"></div>
+                <div class="weather-cooldown-line h-1 rounded-full ${isSafe ? 'bg-green-400' : 'bg-red-400'}" style="width: 0%; animation: cooldown 5s linear 0.4s forwards;"></div>
+                <div class="weather-cooldown-line h-1 rounded-full ${isSafe ? 'bg-green-400' : 'bg-red-400'}" style="width: 0%; animation: cooldown 5s linear 0.6s forwards;"></div>
+                <div class="weather-cooldown-line h-1 rounded-full ${isSafe ? 'bg-green-400' : 'bg-red-400'}" style="width: 0%; animation: cooldown 5s linear 0.8s forwards;"></div>
+              </div>
+            ` : ''}
+            <p class="text-xs text-gray-400 mt-2">${timeAgo}</p>
           </div>
-          ${isUnread ? '<div class="flex-shrink-0"><div class="w-2 h-2 bg-blue-500 rounded-full"></div></div>' : ''}
         </div>
       </div>
     `;
   }).join('');
+  
+  // Add CSS animation for cooldown lines if weather advisory notifications exist
+  if (notifications.some(n => n.type === 'weather_advisory')) {
+    const styleId = 'weather-cooldown-animation';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        @keyframes cooldown {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+        .weather-cooldown-line {
+          flex: 1;
+          max-width: 20%;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
 
   // Add click handlers to notification items
   listContainer.querySelectorAll('.notification-item').forEach(item => {
     item.addEventListener('click', async () => {
       const notificationId = item.dataset.notificationId;
+      const notificationType = item.dataset.notificationType || '';
       const isRead = item.dataset.read === 'true';
 
       if (!isRead) {
@@ -248,7 +345,12 @@ function displayNotifications(notifications) {
       }
 
       // Handle notification click action (navigate to related entity, etc.)
-      handleNotificationClick(notificationId, notifications.find(n => n.id === notificationId));
+      const notificationData = {
+        id: notificationId,
+        type: notificationType,
+        read: isRead
+      };
+      handleNotificationClick(notificationId, notificationData);
     });
   });
 }
@@ -258,16 +360,13 @@ function displayNotifications(notifications) {
  */
 function getNotificationIcon(type) {
   const icons = {
-    'task_assigned': 'fa-tasks',
-    'rental_approved': 'fa-check-circle',
-    'rental_rejected': 'fa-times-circle',
     'report_requested': 'fa-file-alt',
     'report_sent': 'fa-paper-plane',
     'report_approved': 'fa-check-circle',
     'report_rejected': 'fa-times-circle',
     'field_approved': 'fa-check',
     'field_rejected': 'fa-times',
-    'rental_request': 'fa-car'
+    'weather_advisory': 'fa-cloud-sun'
   };
 
   return icons[type] || 'fa-bell';
@@ -302,16 +401,28 @@ function handleNotificationClick(notificationId, notification) {
   if (!notification) return;
 
   const routes = {
-    'task_assigned': `/frontend/Handler/sections/tasks.html${notification.relatedEntityId ? '?taskId=' + notification.relatedEntityId : ''}`,
-    'rental_approved': '/frontend/Handler/sections/rent-driver.html',
-    'rental_rejected': '/frontend/Handler/sections/rent-driver.html',
     'field_approved': '/frontend/Handler/sections/fields.html',
     'field_rejected': '/frontend/Handler/sections/fields.html',
     'report_sent': '/frontend/SRA/SRA_Dashboard.html?section=reports',
     'report_requested': '/frontend/SRA/SRA_Dashboard.html?section=reports',
     'report_approved': '/frontend/Handler/dashboard.html?section=activityLogs',
-    'report_rejected': '/frontend/Handler/dashboard.html?section=activityLogs'
+    'report_rejected': '/frontend/Handler/dashboard.html?section=activityLogs',
+    'weather_advisory': '/frontend/Common/lobby.html#weatherForecast'
   };
+
+  // Special handling for weather advisory - navigate to lobby and show weather forecast
+  if (notification.type === 'weather_advisory') {
+    // Close dropdown
+    document.getElementById('notificationDropdown')?.classList.add('hidden');
+    
+    // Navigate to lobby with weather forecast hash
+    // Determine correct path based on current location
+    const isHandler = window.location.pathname.includes('Handler');
+    const isSRA = window.location.pathname.includes('SRA');
+    const basePath = isHandler ? '../../Common/lobby.html' : (isSRA ? '../../Common/lobby.html' : '../Common/lobby.html');
+    window.location.href = `${basePath}#weatherForecast`;
+    return;
+  }
 
   const route = routes[notification.type];
   if (route) {

@@ -1279,12 +1279,115 @@
             overflow: visible !important;
         }
         
-        /* Notification dropdown should also be above header and main content */
+        /* Notification dropdown should be above everything including weather notification */
         #notificationDropdown {
-            z-index: 105 !important;
+            z-index: 700 !important; /* Higher than weather notification (z-600) */
             position: absolute !important;
             /* Ensure dropdown is not clipped */
-            overflow: visible !important;
+            overflow: hidden !important; /* Changed from visible to hidden to contain content */
+        }
+
+        /* Only show flex layout when dropdown is visible (not hidden) */
+        #notificationDropdown:not(.hidden) {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Hide dropdown when it has hidden class */
+        #notificationDropdown.hidden {
+            display: none !important;
+        }
+
+        /* When dropdown is open, ensure it's above weather notification */
+        #notificationDropdown:not(.hidden) {
+            z-index: 700 !important;
+        }
+
+        /* Mobile: ensure dropdown is above backdrop */
+        @media (max-width: 640px) {
+            #notificationDropdown:not(.hidden) {
+                z-index: 750 !important; /* Higher than backdrop (650) */
+            }
+        }
+
+        /* Notification dropdown responsive styles - Desktop */
+        #notificationDropdown {
+            width: 20rem;
+            max-width: calc(100vw - 2rem);
+            max-height: calc(100vh - 6rem);
+            z-index: 700 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Desktop: ensure dropdown appears below bell button correctly */
+        @media (min-width: 641px) {
+            #notificationDropdown {
+                position: absolute !important;
+                right: 0 !important;
+                top: 100% !important;
+                margin-top: 0.5rem !important;
+                transform: none !important;
+            }
+
+            /* Desktop: ensure notification list is scrollable */
+            #notificationList {
+                max-height: calc(100vh - 10rem) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                flex: 1 !important;
+                min-height: 0 !important;
+            }
+        }
+
+        /* Mobile-specific notification dropdown styles */
+        @media (max-width: 640px) {
+            #notificationDropdown {
+                width: calc(100vw - 2rem) !important;
+                max-width: 320px !important;
+                max-height: calc(100vh - 2rem) !important;
+                box-sizing: border-box !important;
+                z-index: 750 !important; /* Higher than backdrop (650) */
+                position: fixed !important;
+                isolation: isolate !important; /* Create new stacking context */
+            }
+
+            #notificationList {
+                max-height: calc(100vh - 10rem) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                flex: 1 !important;
+                min-height: 0 !important;
+            }
+
+            /* Ensure notification items are readable on mobile */
+            #notificationDropdown button[data-id] {
+                padding: 0.75rem 1rem !important;
+                font-size: 0.875rem !important;
+            }
+
+            /* Ensure dropdown header is compact on mobile */
+            #notificationDropdown > div:first-child {
+                padding: 0.75rem 1rem !important;
+            }
+        }
+
+        /* Tablet-specific notification dropdown styles */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #notificationDropdown {
+                width: 22rem;
+                max-width: calc(100vw - 2rem);
+                max-height: calc(100vh - 6rem);
+            }
+        }
+
+        /* Ensure dropdown doesn't overflow on any screen size */
+        @media (max-width: 1024px) {
+            #notificationDropdown {
+                box-sizing: border-box;
+            }
         }
         
         /* Ensure parent container of dropdowns creates proper stacking context */
@@ -1293,6 +1396,12 @@
             z-index: auto;
             /* Allow dropdowns to overflow */
             overflow: visible !important;
+        }
+
+        /* Notification bell container - ensure proper stacking */
+        header .relative:has(#notificationBellBtn) {
+            z-index: 700 !important;
+            position: relative !important;
         }
         
         /* Ensure header flex container doesn't clip dropdowns */
@@ -1304,6 +1413,25 @@
         header > div,
         header .container {
             overflow: visible !important;
+        }
+
+        /* Ensure weather notification doesn't interfere with dropdown */
+        #floatingWeatherNotification {
+            pointer-events: auto;
+        }
+
+        /* Better approach: ensure dropdown is always on top when visible */
+        #notificationDropdown:not(.hidden) {
+            z-index: 700 !important;
+            position: absolute !important;
+        }
+
+        /* On mobile, when dropdown is fixed, ensure it's above everything */
+        @media (max-width: 640px) {
+            #notificationDropdown:not(.hidden) {
+                z-index: 700 !important;
+                position: fixed !important;
+            }
         }
 
         /* main content should stay lower than overlay/sidebar and dropdowns */
@@ -1553,44 +1681,45 @@
                     </a>
 
                     <!-- Notification Bell with Dropdown -->
-                    <div class="relative">
+                    <div class="relative" style="z-index: 700; position: relative;">
                         <button id="notificationBellBtn"
-                            class="relative text-gray-800 hover:text-gray-600 transition-colors p-2">
+                            class="relative text-gray-800 hover:text-gray-600 transition-colors p-2 z-[700]"
+                            style="position: relative; z-index: 700;">
                             <i class="fas fa-bell text-base text-gray-800"></i>
                             <!-- Notification Badge -->
                             <span id="notificationBadge"
-                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                                class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center z-[701]">0</span>
                         </button>
 
                         <!-- Notification Dropdown -->
                         <div id="notificationDropdown"
-                            class="hidden absolute right-0 mt-2 sm:right-0 sm:mt-2 sm:left-auto bg-white rounded-lg shadow-xl border border-gray-200 z-[105] overflow-hidden"
-                            style="z-index: 105; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; width: 20rem; max-width: calc(100vw - 2rem); max-height: calc(100vh - 4rem);">
+                            class="hidden absolute right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden flex flex-col"
+                            style="z-index: 700; position: absolute; right: 0; top: 100%; margin-top: 0.5rem;">
                             <!-- Dropdown Header -->
                             <div
-                                class="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50 flex-shrink-0">
-                                <h3 class="text-sm font-semibold text-gray-800">Notifications</h3>
-                                <div class="flex items-center gap-2">
+                                class="px-3 sm:px-4 py-2.5 sm:py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50 flex-shrink-0">
+                                <h3 class="text-xs sm:text-sm font-semibold text-gray-800">Notifications</h3>
+                                <div class="flex items-center gap-1.5 sm:gap-2">
                                     <button id="notificationMarkAllReadBtn"
-                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs"
+                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs p-1"
                                         title="Mark all as read">
-                                        <i class="fas fa-check-double"></i>
+                                        <i class="fas fa-check-double text-xs"></i>
                                     </button>
                                     <button id="notificationRefreshBtn"
-                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs"
+                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs p-1"
                                         title="Refresh">
-                                        <i class="fas fa-sync-alt"></i>
+                                        <i class="fas fa-sync-alt text-xs"></i>
                                     </button>
                                     <button id="notificationCloseBtn"
-                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs"
+                                        class="text-[var(--cane-700)] hover:text-[var(--cane-800)] text-xs p-1"
                                         title="Close">
-                                        <i class="fas fa-times"></i>
+                                        <i class="fas fa-times text-xs"></i>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Notifications List -->
-                            <div id="notificationList" class="overflow-y-auto" style="max-height: calc(100vh - 10rem);">
+                            <div id="notificationList" class="overflow-y-auto flex-1 min-h-0" style="flex: 1; min-height: 0;">
                                 <div class="p-4 text-sm text-gray-500 text-center">Loading notifications...</div>
                             </div>
                         </div>

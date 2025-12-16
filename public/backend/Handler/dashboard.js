@@ -4,7 +4,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, serverTimestamp, orderBy, limit, onSnapshot, collectionGroup } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-import { notifyTaskDeletion, createBatchNotifications } from "../Common/notifications.js";
+import { createBatchNotifications, notifyWeatherAdvisory } from "../Common/notifications.js";
 import { calculateDAP, handleRatooning, handleReplanting, VARIETY_HARVEST_DAYS } from "./growth-tracker.js";
 import { openCreateTaskModal } from "./create-task.js";
 import { initializeRecordsSection, cleanupRecordsSection } from "./records-section.js";
@@ -54,6 +54,367 @@ function formatRelativeTime(ts) {
 
 let notificationsUnsub = null;
 
+/**
+ * Check if weather notification was already shown today
+ * @param {string} userId - User ID
+ * @returns {boolean} True if notification was already shown today
+ */
+function hasWeatherNotificationToday(userId) {
+  const todayKey = new Date().toISOString().split('T')[0];
+  const lastNotificationDate = localStorage.getItem(`weatherNotification_${userId}`);
+  return lastNotificationDate === todayKey;
+}
+
+/**
+ * Mark weather notification as shown for today
+ * @param {string} userId - User ID
+ */
+function markWeatherNotificationShown(userId) {
+  const todayKey = new Date().toISOString().split('T')[0];
+  localStorage.setItem(`weatherNotification_${userId}`, todayKey);
+}
+
+/**
+ * Get weather data and determine work advisory status
+ * @returns {Promise<{isSafe: boolean, message: string}>}
+ */
+async function getWeatherAdvisory() {
+  try {
+    const apiKey = "2d59a2816a02c3178386f3d51233b2ea";
+    const lat = 11.0064; // Ormoc City latitude
+    const lon = 124.6075; // Ormoc City longitude
+
+    const urls = {
+      current: `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`,
+      forecast: `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`,
+    };
+
+    const [curRes, fRes] = await Promise.all([
+      fetch(urls.current),
+      fetch(urls.forecast),
+    ]);
+
+    if (!curRes.ok || !fRes.ok) {
+      throw new Error(`Weather API error: current(${curRes.status}) forecast(${fRes.status})`);
+    }
+
+    const cur = await curRes.json();
+    const fdata = await fRes.json();
+
+    // Try to get OneCall for UV index
+    let onecall = null;
+    try {
+      const onecallUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&units=metric&exclude=minutely,hourly,alerts&appid=${apiKey}`;
+      const ocRes = await fetch(onecallUrl);
+      if (ocRes.ok) onecall = await ocRes.json();
+    } catch (_) {
+      /* ignore onecall failures */
+    }
+
+    // Calculate work advisory (same logic as lobby.js)
+    const windKmh = typeof cur.wind?.speed === 'number' ? cur.wind.speed * 3.6 : 0;
+    
+    let rainPop = 0;
+    if (onecall && onecall.daily && onecall.daily[0] && typeof onecall.daily[0].pop === 'number') {
+      rainPop = onecall.daily[0].pop;
+    } else if (fdata && Array.isArray(fdata.list) && fdata.list.length > 0) {
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const todayForecasts = fdata.list.filter(item => {
+        const itemDate = new Date(item.dt * 1000);
+        return itemDate.toISOString().split('T')[0] === todayStr;
+      });
+      if (todayForecasts.length > 0) {
+        const avgPop = todayForecasts.reduce((sum, item) => sum + (item.pop || 0), 0) / todayForecasts.length;
+        rainPop = avgPop;
+      }
+    }
+    
+    const rainPercent = Math.round(rainPop * 100);
+    const uvi = onecall && onecall.current && typeof onecall.current.uvi === 'number' ? onecall.current.uvi : null;
+    const hasStorm = (onecall && Array.isArray(onecall.alerts) && onecall.alerts.length > 0) || false;
+    
+    const weatherMain = cur.weather?.[0]?.main || '';
+    const weatherCondition = cur.weather?.[0]?.description || '';
+    const isRaining = weatherMain.toLowerCase().includes('rain') || 
+                     weatherMain.toLowerCase().includes('drizzle') ||
+                     weatherMain.toLowerCase().includes('shower') ||
+                     weatherCondition.toLowerCase().includes('rain') ||
+                     weatherCondition.toLowerCase().includes('drizzle') ||
+                     weatherCondition.toLowerCase().includes('shower');
+    
+    let safe = true;
+    let reasons = [];
+
+    if (hasStorm) {
+      safe = false;
+      reasons.push('Storm advisory active');
+    }
+    
+    if (isRaining) {
+      safe = false;
+      reasons.push('Currently raining');
+    } else if (rainPop >= 0.4) {
+      safe = false;
+      reasons.push(`High rain chance (${rainPercent}%)`);
+    }
+    
+    if (windKmh >= 30) {
+      safe = false;
+      reasons.push(`Strong winds (${windKmh.toFixed(1)} km/h)`);
+    }
+    
+    if (uvi !== null && uvi >= 8) {
+      reasons.push(`Very high UV (${uvi.toFixed(1)})`);
+    }
+
+    const message = safe
+      ? 'Weather conditions are safe for field work today. Conditions are acceptable for work.'
+      : `Weather advisory: ${reasons.length > 0 ? reasons.join(', ') : 'Conditions may not be ideal for field work today.'}`;
+
+    return { isSafe: safe, message };
+  } catch (error) {
+    console.error('Error fetching weather advisory:', error);
+    // Return safe default if API fails
+    return { 
+      isSafe: true, 
+      message: 'Weather data unavailable. Please check weather conditions before starting field work.' 
+    };
+  }
+}
+
+/**
+ * Check if floating weather notification was already shown today
+ * @param {string} userId - User ID
+ * @returns {boolean} True if floating notification was already shown today
+ */
+function hasFloatingWeatherNotificationToday(userId) {
+  const todayKey = new Date().toISOString().split('T')[0];
+  const lastNotificationDate = localStorage.getItem(`floatingWeatherNotification_${userId}`);
+  return lastNotificationDate === todayKey;
+}
+
+/**
+ * Mark floating weather notification as shown for today
+ * @param {string} userId - User ID
+ */
+function markFloatingWeatherNotificationShown(userId) {
+  const todayKey = new Date().toISOString().split('T')[0];
+  localStorage.setItem(`floatingWeatherNotification_${userId}`, todayKey);
+}
+
+/**
+ * Show floating weather forecast notification on Handler Dashboard
+ * @param {string} userId - Handler user ID
+ */
+async function showFloatingWeatherNotification(userId) {
+  try {
+    // Check if floating notification was already shown today
+    if (hasFloatingWeatherNotificationToday(userId)) {
+      console.log('✅ Floating weather notification already shown today');
+      return;
+    }
+
+    // Get weather advisory
+    const { isSafe, message } = await getWeatherAdvisory();
+
+    // Create and display floating notification
+    createFloatingWeatherNotification(isSafe, message);
+
+    // Mark as shown for today
+    markFloatingWeatherNotificationShown(userId);
+
+    console.log(`✅ Floating weather advisory notification displayed: ${isSafe ? 'Safe' : 'Unsafe'}`);
+  } catch (error) {
+    console.error('❌ Error in showFloatingWeatherNotification:', error);
+  }
+}
+
+/**
+ * Create and display floating weather notification on dashboard
+ * @param {boolean} isSafe - Whether work is safe today
+ * @param {string} advisoryMessage - Work advisory message
+ */
+function createFloatingWeatherNotification(isSafe, advisoryMessage) {
+  // Remove existing floating notification if any
+  const existing = document.getElementById('floatingWeatherNotification');
+  if (existing) {
+    existing.remove();
+  }
+
+  // Colors matching work advisory (from lobby.js) - FULLY OPAQUE for maximum visibility
+  const safeBgColor = 'rgba(220,252,231,1)'; // Light green background - fully opaque
+  const safeBorderColor = 'rgba(22,163,74,1)'; // Green border - fully opaque
+  const unsafeBgColor = 'rgba(254,226,226,1)'; // Light red background - fully opaque
+  const unsafeBorderColor = 'rgba(220,38,38,1)'; // Red border - fully opaque
+
+  const bgColor = isSafe ? safeBgColor : unsafeBgColor;
+  const borderColor = isSafe ? safeBorderColor : unsafeBorderColor;
+  const iconColor = isSafe ? 'text-green-700' : 'text-red-700';
+  const iconBg = isSafe ? 'bg-green-100' : 'bg-red-100';
+  const lineColor = isSafe ? 'bg-green-400' : 'bg-red-400';
+  const statusText = isSafe ? 'Safe to work' : 'Not recommended';
+  const statusIcon = isSafe 
+    ? '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.536-10.95a1 1 0 00-1.414-1.414L10 7.586 7.879 5.464A1 1 0 106.464 6.88L8.586 9l-2.122 2.121a1 1 0 101.415 1.415L10 10.414l2.121 2.122a1 1 0 101.415-1.415L11.414 9l2.122-2.121z" clip-rule="evenodd"/></svg>';
+
+  // Calculate header height dynamically to position notification below header
+  const header = document.querySelector('header');
+  const headerHeight = header ? header.offsetHeight : 64; // Default to 64px if header not found
+  const topPosition = headerHeight + 16; // 16px spacing below header
+
+  // Create notification element - positioned below header with highest z-index
+  const notification = document.createElement('div');
+  notification.id = 'floatingWeatherNotification';
+  notification.className = 'fixed right-4 z-[600] max-w-md w-[calc(100vw-2rem)] animate-slideInRight';
+  notification.style.cssText = `
+    top: ${topPosition}px;
+    background: ${bgColor};
+    border: 2px solid ${borderColor};
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 1 !important;
+  `;
+  notification.innerHTML = `
+    <div class="flex items-start gap-3">
+      <div class="flex-shrink-0 w-12 h-12 rounded-full ${iconBg} flex items-center justify-center">
+        <i class="fas fa-cloud-sun ${iconColor} text-xl"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <h3 class="text-base font-bold text-gray-900">Weather Forecast / Work Advisory</h3>
+          <button id="closeFloatingWeatherBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-full text-sm font-semibold" 
+             style="background: ${isSafe ? 'rgba(34,197,94,1)' : 'rgba(239,68,68,1)'}; color: white;">
+          <span class="flex items-center justify-center rounded-full w-5 h-5" 
+                style="background: ${isSafe ? 'rgba(22,163,74,1)' : 'rgba(220,38,38,1)'};">
+            ${statusIcon}
+          </span>
+          ${statusText}
+        </div>
+        <p class="text-sm text-gray-700 mb-3 leading-relaxed">${escapeHtml(advisoryMessage)}</p>
+        <div class="flex items-center gap-1 mb-2" id="weatherCooldownContainer">
+          <div class="weather-cooldown-line h-1.5 rounded-full ${lineColor}" style="width: 0%;"></div>
+          <div class="weather-cooldown-line h-1.5 rounded-full ${lineColor}" style="width: 0%;"></div>
+          <div class="weather-cooldown-line h-1.5 rounded-full ${lineColor}" style="width: 0%;"></div>
+          <div class="weather-cooldown-line h-1.5 rounded-full ${lineColor}" style="width: 0%;"></div>
+          <div class="weather-cooldown-line h-1.5 rounded-full ${lineColor}" style="width: 0%;"></div>
+        </div>
+        <p class="text-xs text-gray-500">Click to view full weather forecast</p>
+      </div>
+    </div>
+  `;
+
+  // Add CSS animation if not already added
+  if (!document.getElementById('floating-weather-cooldown-animation')) {
+    const style = document.createElement('style');
+    style.id = 'floating-weather-cooldown-animation';
+    style.textContent = `
+      @keyframes cooldown {
+        from { width: 0%; }
+        to { width: 100%; }
+      }
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(100%);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      .animate-slideInRight {
+        animation: slideInRight 0.4s ease-out;
+      }
+      .weather-cooldown-line {
+        flex: 1;
+        max-width: 20%;
+      }
+      #floatingWeatherNotification:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Add to body first
+  document.body.appendChild(notification);
+
+  // Start cooldown animation after notification is added to DOM
+  setTimeout(() => {
+    const cooldownLines = notification.querySelectorAll('.weather-cooldown-line');
+    const totalDuration = 5000; // 5 seconds total
+    const lineDuration = totalDuration / cooldownLines.length; // Each line takes equal time (1000ms each)
+    
+    cooldownLines.forEach((line, index) => {
+      const delay = (index * lineDuration) / 1000; // Convert to seconds
+      line.style.animation = `cooldown ${lineDuration}ms linear ${delay}s forwards`;
+    });
+  }, 100); // Small delay to ensure DOM is ready
+
+  // Close button handler
+  const closeBtn = notification.querySelector('#closeFloatingWeatherBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+      setTimeout(() => notification.remove(), 300);
+    });
+  }
+
+  // Click handler to navigate to lobby
+  notification.addEventListener('click', () => {
+    window.location.href = '../../frontend/Common/lobby.html#weatherForecast';
+  });
+
+  // Auto-remove after 5 seconds (when cooldown animation completes)
+  setTimeout(() => {
+    if (document.getElementById('floatingWeatherNotification')) {
+      notification.style.animation = 'slideInRight 0.3s ease-out reverse';
+      setTimeout(() => {
+        if (document.getElementById('floatingWeatherNotification')) {
+          notification.remove();
+        }
+      }, 300);
+    }
+  }, 5000); // 5 seconds to match cooldown animation
+}
+
+/**
+ * Check and create weather forecast notification if needed
+ * @param {string} userId - Handler user ID
+ */
+async function checkAndCreateWeatherNotification(userId) {
+  try {
+    // Check if notification was already shown today
+    if (hasWeatherNotificationToday(userId)) {
+      console.log('✅ Weather notification already shown today');
+      return;
+    }
+
+    // Get weather advisory
+    const { isSafe, message } = await getWeatherAdvisory();
+
+    // Create notification
+    await notifyWeatherAdvisory(userId, isSafe, message);
+
+    // Mark as shown for today
+    markWeatherNotificationShown(userId);
+
+    console.log(`✅ Weather advisory notification created: ${isSafe ? 'Safe' : 'Unsafe'}`);
+  } catch (error) {
+    console.error('❌ Error in checkAndCreateWeatherNotification:', error);
+  }
+}
+
 async function initNotifications(userId) {
   const bellBtn = document.getElementById("notificationBellBtn");
   const dropdown = document.getElementById("notificationDropdown");
@@ -63,51 +424,127 @@ async function initNotifications(userId) {
 
   if (!bellBtn || !dropdown || !badge || !list) return;
 
+  // Ensure dropdown is hidden by default on initialization
+  dropdown.classList.add("hidden");
+
   const removeBackdrop = () => {
     const backdrop = document.getElementById('notificationBackdrop');
     if (backdrop) backdrop.remove();
   };
 
+  // Function to manage weather notification z-index when dropdown is open
+  const manageWeatherNotificationZIndex = (isOpen) => {
+    const weatherNotif = document.getElementById('floatingWeatherNotification');
+    if (weatherNotif) {
+      if (isOpen) {
+        // Lower weather notification z-index when dropdown is open
+        weatherNotif.style.zIndex = '500';
+      } else {
+        // Restore weather notification z-index when dropdown is closed
+        weatherNotif.style.zIndex = '600';
+      }
+    }
+  };
+
   const closeDropdown = (event) => {
     if (!dropdown.contains(event.target) && !bellBtn.contains(event.target)) {
       dropdown.classList.add("hidden");
+      bellBtn.classList.remove("text-white");
       removeBackdrop();
+      manageWeatherNotificationZIndex(false);
+      
+      // Move dropdown back to original parent if it was moved to body on mobile
+      if (window.innerWidth >= 640) {
+        const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                              document.querySelector('#notificationBellBtn')?.parentElement;
+        if (bellContainer && dropdown.parentElement === document.body) {
+          bellContainer.appendChild(dropdown);
+        }
+      }
     }
   };
 
   bellBtn.addEventListener("click", (event) => {
     event.stopPropagation();
     const isOpen = !dropdown.classList.contains("hidden");
+    
+    // Toggle the dropdown visibility
     dropdown.classList.toggle("hidden");
+    
+    // Check if dropdown is now open or closed
+    const isNowOpen = !dropdown.classList.contains("hidden");
 
-    if (!dropdown.classList.contains("hidden")) {
+    if (isNowOpen) {
+      // Opening dropdown
       bellBtn.classList.add("text-white");
+      // Ensure dropdown is above weather notification
+      dropdown.style.zIndex = '700';
+      // Lower weather notification z-index when dropdown is open
+      manageWeatherNotificationZIndex(true);
+      
       // Center dropdown on mobile view
       if (window.innerWidth < 640) {
-        // Create backdrop overlay for mobile
+        // Create backdrop overlay for mobile - BELOW dropdown (z-index 650)
         let backdrop = document.getElementById('notificationBackdrop');
         if (!backdrop) {
           backdrop = document.createElement('div');
           backdrop.id = 'notificationBackdrop';
-          backdrop.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 49;';
+          backdrop.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 650; pointer-events: auto;';
           backdrop.addEventListener('click', () => {
             dropdown.classList.add('hidden');
+            bellBtn.classList.remove("text-white");
             removeBackdrop();
+            manageWeatherNotificationZIndex(false);
+            
+            // Move dropdown back to original parent if it was moved to body on mobile
+            const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                                  document.querySelector('#notificationBellBtn')?.parentElement;
+            if (bellContainer && dropdown.parentElement === document.body) {
+              bellContainer.appendChild(dropdown);
+            }
           });
+          // Append backdrop FIRST (so it's behind dropdown)
           document.body.appendChild(backdrop);
         }
 
-        // Center the dropdown on mobile
+        // Position dropdown on mobile - ensure it fits within screen with proper margins
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const margin = 16; // 1rem = 16px margin on all sides
+        const maxWidth = Math.min(320, viewportWidth - (margin * 2)); // Max 320px or screen width minus margins
+        const maxHeight = viewportHeight - (margin * 2); // Full height minus margins
+        
+        // Move dropdown to body on mobile to ensure proper stacking context
+        const dropdownParent = dropdown.parentElement;
+        if (dropdownParent && dropdownParent.tagName !== 'BODY') {
+          document.body.appendChild(dropdown);
+        }
+        
+        // Set dropdown styles - MUST be after backdrop to ensure proper stacking
         dropdown.style.position = 'fixed';
         dropdown.style.left = '50%';
         dropdown.style.top = '50%';
         dropdown.style.right = 'auto';
         dropdown.style.transform = 'translate(-50%, -50%)';
-        dropdown.style.width = 'calc(100vw - 2rem)';
-        dropdown.style.maxWidth = '20rem';
+        dropdown.style.width = `${maxWidth}px`;
+        dropdown.style.maxWidth = `${maxWidth}px`;
+        dropdown.style.maxHeight = `${maxHeight}px`;
         dropdown.style.marginTop = '0';
+        dropdown.style.marginLeft = '0';
+        dropdown.style.marginRight = '0';
+        dropdown.style.boxSizing = 'border-box';
+        dropdown.style.zIndex = '750'; // Higher than backdrop (650) to ensure it's on top
+        dropdown.style.isolation = 'isolate'; // Create new stacking context
+        dropdown.style.pointerEvents = 'auto'; // Ensure dropdown is clickable
       } else {
         // Desktop: reset to original positioning
+        // Move dropdown back to original parent if it was moved to body on mobile
+        const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                              document.querySelector('#notificationBellBtn')?.parentElement;
+        if (bellContainer && dropdown.parentElement === document.body) {
+          bellContainer.appendChild(dropdown);
+        }
+        
         dropdown.style.position = 'absolute';
         dropdown.style.left = 'auto';
         dropdown.style.right = '0';
@@ -115,11 +552,30 @@ async function initNotifications(userId) {
         dropdown.style.transform = 'none';
         dropdown.style.width = '20rem';
         dropdown.style.maxWidth = 'none';
+        dropdown.style.maxHeight = 'calc(100vh - 6rem)';
         dropdown.style.marginTop = '0.5rem';
+        dropdown.style.marginLeft = '';
+        dropdown.style.marginRight = '';
+        dropdown.style.boxSizing = '';
+        dropdown.style.zIndex = '700';
+        dropdown.style.isolation = ''; // Remove isolation for desktop
+        dropdown.style.pointerEvents = ''; // Reset pointer events
         removeBackdrop();
       }
     } else {
+      // Closing dropdown
+      bellBtn.classList.remove("text-white");
       removeBackdrop();
+      manageWeatherNotificationZIndex(false);
+      
+      // Move dropdown back to original parent if it was moved to body on mobile
+      if (window.innerWidth >= 640) {
+        const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                              document.querySelector('#notificationBellBtn')?.parentElement;
+        if (bellContainer && dropdown.parentElement === document.body) {
+          bellContainer.appendChild(dropdown);
+        }
+      }
     }
   });
 
@@ -127,7 +583,18 @@ async function initNotifications(userId) {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       dropdown.classList.add("hidden");
+      bellBtn.classList.remove("text-white");
       removeBackdrop();
+      manageWeatherNotificationZIndex(false);
+      
+      // Move dropdown back to original parent if it was moved to body on mobile
+      if (window.innerWidth >= 640) {
+        const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                              document.querySelector('#notificationBellBtn')?.parentElement;
+        if (bellContainer && dropdown.parentElement === document.body) {
+          bellContainer.appendChild(dropdown);
+        }
+      }
     }
   });
 
@@ -211,12 +678,21 @@ Array.from(list.querySelectorAll("button[data-id]"))
         // Defensive helper: close the notifications dropdown & backdrop
         const closeNotifDropdown = () => {
           const dropdown = document.getElementById('notificationDropdown');
-          if (dropdown) dropdown.classList.add('hidden');
+          if (dropdown) {
+            dropdown.classList.add('hidden');
+            // Remove text-white class from bell button
+            const bellBtn = document.getElementById('notificationBellBtn');
+            if (bellBtn) bellBtn.classList.remove("text-white");
+          }
           // remove backdrop if you have a function or element — replicate existing behaviour
           if (typeof removeBackdrop === 'function') removeBackdrop();
           else {
-            const backdrop = document.querySelector('.notification-backdrop');
+            const backdrop = document.querySelector('.notification-backdrop') || document.getElementById('notificationBackdrop');
             if (backdrop) backdrop.remove();
+          }
+          // Restore weather notification z-index when closing dropdown
+          if (typeof manageWeatherNotificationZIndex === 'function') {
+            manageWeatherNotificationZIndex(false);
           }
         };
 
@@ -367,7 +843,18 @@ Array.from(list.querySelectorAll("button[data-id]"))
     closeBtn.addEventListener('click', (event) => {
       event.stopPropagation();
       dropdown.classList.add('hidden');
+      bellBtn.classList.remove("text-white");
       removeBackdrop();
+      manageWeatherNotificationZIndex(false);
+      
+      // Move dropdown back to original parent if it was moved to body on mobile
+      if (window.innerWidth >= 640) {
+        const bellContainer = document.querySelector('header .relative:has(#notificationBellBtn)') || 
+                              document.querySelector('#notificationBellBtn')?.parentElement;
+        if (bellContainer && dropdown.parentElement === document.body) {
+          bellContainer.appendChild(dropdown);
+        }
+      }
     });
   }
 
@@ -1645,6 +2132,13 @@ Please register a field and wait for SRA approval to become a Handler.`);
     await initNotifications(user.uid);
   } catch (error) {
     console.error('❌ Failed to initialize notifications:', error);
+  }
+
+  // ✅ Show floating weather forecast notification on first login of the day
+  try {
+    await showFloatingWeatherNotification(user.uid);
+  } catch (error) {
+    console.error('❌ Failed to show floating weather notification:', error);
   }
 
   // Dashboard content removed - leaving blank
@@ -3482,17 +3976,6 @@ window.confirmDeleteTask = async function (taskId) {
         const field = allFieldsMap.get(task.fieldId);
         if (field) {
           fieldName = field.name;
-        }
-      }
-
-      // Notify assigned workers/drivers before deleting
-      if (task.assignedTo && Array.isArray(task.assignedTo) && task.assignedTo.length > 0) {
-        try {
-          await notifyTaskDeletion(task.assignedTo, taskTitle, fieldName, taskId);
-          console.log(`✅ Sent deletion notifications to ${task.assignedTo.length} assigned user(s)`);
-        } catch (notifErr) {
-          console.error('⚠️ Failed to send deletion notifications:', notifErr);
-          // Continue with deletion even if notifications fail
         }
       }
 

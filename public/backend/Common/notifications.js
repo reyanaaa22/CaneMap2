@@ -1,5 +1,4 @@
 // Notification System for CaneMap
-// Implements REQ-6: Task Notifications & Driver Assignment
 
 import { db } from './firebase-config.js';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp, onSnapshot, orderBy, limit } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
@@ -49,8 +48,8 @@ import { getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-fires
  * Create a notification for a user
  * @param {string} userId - User ID to send notification to
  * @param {string} message - Notification message
- * @param {string} type - Notification type (task_assigned, rental_approved, report_requested, field_approved, etc.)
- * @param {string} relatedEntityId - ID of related entity (taskId, rentalId, reportId, etc.)
+ * @param {string} type - Notification type (report_requested, field_approved, etc.)
+ * @param {string} relatedEntityId - ID of related entity (reportId, fieldId, etc.)
  * @returns {Promise<string>} Notification ID
  */
 export async function createNotification(userId, message, type, relatedEntityId = null) {
@@ -119,7 +118,7 @@ export async function createBatchNotifications(userIds, message, type, relatedEn
  * Create a broadcast notification for all users with a specific role
  * This creates a SINGLE notification document with 'role' field instead of 'userId'
  * Used for announcements that should be visible to all users of a role (e.g., all SRA officers)
- * @param {string} role - Role to broadcast to ('sra', 'handler', 'worker', 'driver', etc.)
+ * @param {string} role - Role to broadcast to ('sra', 'handler', etc.)
  * @param {string} message - Notification message
  * @param {string} type - Notification type
  * @param {string} relatedEntityId - Related entity ID
@@ -150,90 +149,6 @@ export async function createBroadcastNotification(role, message, type, relatedEn
   } catch (error) {
     console.error('Error creating broadcast notification:', error);
     throw new Error(`Failed to create broadcast notification: ${error.message}`);
-  }
-}
-
-/**
- * Create task assignment notifications
- * @param {Array<string>} assignedTo - Array of user IDs assigned to the task
- * @param {string} taskType - Type of task
- * @param {string} fieldName - Name of the field
- * @param {string} taskId - Task document ID
- * @returns {Promise<Array<string>>} Array of notification IDs
- */
-export async function notifyTaskAssignment(assignedTo, taskType, fieldName, taskId) {
-  try {
-    if (!Array.isArray(assignedTo) || assignedTo.length === 0) {
-      console.warn('No users to notify for task assignment');
-      return [];
-    }
-
-    const message = `New task: ${taskType} at ${fieldName}`;
-    return await createBatchNotifications(assignedTo, message, 'task_assigned', taskId);
-
-  } catch (error) {
-    console.error('Error notifying task assignment:', error);
-    throw error;
-  }
-}
-
-/**
- * Create rental approval notification
- * @param {string} driverId - Driver user ID
- * @param {string} handlerName - Handler's name
- * @param {string} rentalId - Rental request ID
- * @returns {Promise<string>} Notification ID
- */
-export async function notifyRentalApproval(driverId, handlerName, rentalId) {
-  try {
-    const message = `${handlerName} approved your rental request`;
-    return await createNotification(driverId, message, 'rental_approved', rentalId);
-
-  } catch (error) {
-    console.error('Error notifying rental approval:', error);
-    throw error;
-  }
-}
-
-/**
- * Create rental rejection notification
- * @param {string} driverId - Driver user ID
- * @param {string} handlerName - Handler's name
- * @param {string} rentalId - Rental request ID
- * @returns {Promise<string>} Notification ID
- */
-export async function notifyRentalRejection(driverId, handlerName, rentalId) {
-  try {
-    const message = `${handlerName} declined your rental request`;
-    return await createNotification(driverId, message, 'rental_rejected', rentalId);
-
-  } catch (error) {
-    console.error('Error notifying rental rejection:', error);
-    throw error;
-  }
-}
-
-/**
- * Create task deletion notifications
- * @param {Array<string>} assignedTo - Array of user IDs who were assigned to the task
- * @param {string} taskTitle - Title of the deleted task
- * @param {string} fieldName - Name of the field
- * @param {string} taskId - Task document ID
- * @returns {Promise<Array<string>>} Array of notification IDs
- */
-export async function notifyTaskDeletion(assignedTo, taskTitle, fieldName, taskId) {
-  try {
-    if (!Array.isArray(assignedTo) || assignedTo.length === 0) {
-      console.warn('No users to notify for task deletion');
-      return [];
-    }
-
-    const message = `Task cancelled: "${taskTitle}" at ${fieldName}`;
-    return await createBatchNotifications(assignedTo, message, 'task_deleted', taskId);
-
-  } catch (error) {
-    console.error('Error notifying task deletion:', error);
-    throw error;
   }
 }
 
@@ -325,6 +240,43 @@ export async function notifyReportRejection(handlerId, reportType, reportId, rea
 
   } catch (error) {
     console.error('Error notifying report rejection:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create weather forecast / work advisory notification for Handler
+ * @param {string} handlerId - Handler user ID
+ * @param {boolean} isSafe - Whether work is safe today
+ * @param {string} advisoryMessage - Work advisory message
+ * @returns {Promise<string>} Notification ID
+ */
+export async function notifyWeatherAdvisory(handlerId, isSafe, advisoryMessage) {
+  try {
+    const title = 'Weather Forecast / Work Advisory';
+    const message = advisoryMessage || (isSafe 
+      ? 'Weather conditions are safe for field work today.' 
+      : 'Weather conditions may not be ideal for field work today. Please review the advisory.');
+    
+    const notificationData = {
+      userId: handlerId,
+      title,
+      message,
+      type: 'weather_advisory',
+      description: advisoryMessage,
+      isSafe,
+      read: false,
+      timestamp: serverTimestamp()
+    };
+
+    const notificationsRef = collection(db, 'notifications');
+    const docRef = await addDoc(notificationsRef, notificationData);
+
+    console.log(`✅ Weather advisory notification created for handler ${handlerId}: ${isSafe ? 'Safe' : 'Unsafe'}`);
+    return docRef.id;
+
+  } catch (error) {
+    console.error('Error creating weather advisory notification:', error);
     throw error;
   }
 }
@@ -519,15 +471,12 @@ if (typeof window !== 'undefined') {
     createNotification,
     createBatchNotifications,
     createBroadcastNotification,
-    notifyTaskAssignment,
-    notifyTaskDeletion,
-    notifyRentalApproval,
-    notifyRentalRejection,
     notifyReportRequest,
     notifyReportApproval,
     notifyReportRejection,
     notifyFieldApproval,
     notifyFieldRejection,
+    notifyWeatherAdvisory,
     markNotificationAsRead,
     markAllNotificationsAsRead,
     getUnreadNotificationCount,
