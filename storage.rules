@@ -56,6 +56,21 @@ service firebase.storage {
       allow read, write: if request.auth != null;
     }
 
+    // --- Reports (Field Reports sent to SRA) ---
+    match /reports/{handlerId}/{fieldId}/{allPaths=**} {
+      // Allow read for:
+      // - the handler who created it
+      // - assigned SRA officer (checked via Firestore)
+      // - Admins and System Admins
+      allow read: if request.auth != null && (
+        request.auth.uid == handlerId ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+      );
+
+      // Allow write (upload) only by the handler
+      allow write: if request.auth != null && request.auth.uid == handlerId;
+    }
+
     // --- Deny everything else explicitly ---
     match /{allPaths=**} {
       allow read, write: if false;

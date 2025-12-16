@@ -850,5 +850,30 @@ allow read: if request.auth != null && (
       }
     }
 
+    // === REPORTS COLLECTION (Field Reports sent to SRA) ===
+    match /reports/{reportId} {
+      // Handler: can read and create reports for their own fields
+      allow read: if request.auth != null && (
+        resource.data.handlerId == request.auth.uid ||
+        // SRA officer assigned to this report
+        resource.data.sraOfficerId == request.auth.uid ||
+        // Admins can read all reports
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        )
+      );
+
+      // Handler: can create reports only for their own fields
+      allow create: if request.auth != null && 
+        request.resource.data.handlerId == request.auth.uid &&
+        'fieldId' in request.resource.data &&
+        'reportStatus' in request.resource.data &&
+        'sraOfficerId' in request.resource.data;
+
+      // Reports are read-only after creation (no updates/deletes)
+      allow update, delete: if false;
+    }
+
   }
 }

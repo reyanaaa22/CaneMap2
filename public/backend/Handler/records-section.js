@@ -1,7 +1,7 @@
 // Records Section Implementation for Handler Dashboard
 // Fetches and displays all Input Records used by Growth Tracker Timeline
 
-import { db } from '../Common/firebase-config.js';
+import { db, storage } from '../Common/firebase-config.js';
 import { collection, query, where, getDocs, deleteDoc, doc, orderBy, onSnapshot, getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
 // Status color mapping (matching Growth Tracker)
@@ -54,8 +54,8 @@ export async function initializeRecordsSection(userId) {
     // Load and display records (this will use cached fields)
     await loadRecords(userId);
     
-    // Check if user has SRA role for "Send to SRA" button (non-blocking)
-    checkSRARole(userId).catch(err => console.debug('SRA role check failed:', err));
+    // Enable "Send Report to SRA" button for handlers (not SRA role)
+    enableSendToSRAButton();
     
     console.log('✅ Records section initialized successfully');
   } catch (error) {
@@ -99,6 +99,14 @@ async function loadFieldsForFilter(userId) {
     });
     
     console.log(`✅ Cached ${fieldsSnapshot.size} fields for faster loading`);
+    
+    // Enable Send to SRA button if fields exist
+    if (fieldsSnapshot.size > 0) {
+      const sendToSRABtn = document.getElementById('recordsSendToSRA');
+      if (sendToSRABtn) {
+        sendToSRABtn.disabled = false;
+      }
+    }
   } catch (error) {
     console.error('Error loading fields for filter:', error);
   }
@@ -443,16 +451,15 @@ function calculateTotalCost(record) {
   
   // 3. Add bought items costs
   const boughtItemsCost = (record.boughtItems || []).reduce((sum, item) => {
-    // Sum totalCost from each item
-    let itemTotal = parseFloat(item.totalCost || 0) || 0;
+    // Sum totalCost or total from each item (support both field name variants)
+    let itemTotal = parseFloat(item.totalCost || item.total || 0) || 0;
     
-    // Also check for other cost fields in the item
+    // Also check for other cost fields in the item (but don't double-count)
     if (item && typeof item === 'object') {
       for (const [key, value] of Object.entries(item)) {
-        if (key === 'totalCost') continue; // Already added
+        if (key === 'totalCost' || key === 'total') continue; // Already added
         const keyLower = key.toLowerCase();
         if ((keyLower.includes('cost') || 
-             keyLower.includes('price') || 
              keyLower.includes('amount')) && 
             typeof value === 'number') {
           itemTotal += parseFloat(value) || 0;
@@ -773,7 +780,8 @@ function renderRecordDetails(record) {
   // Break down for display in modal
   const taskCost = parseFloat(record.data?.totalCost || 0) || 0;
   const boughtItemsCost = (record.boughtItems || []).reduce((sum, item) => {
-    return sum + (parseFloat(item.totalCost || 0) || 0);
+    // Support both field name variants: totalCost or total
+    return sum + (parseFloat(item.totalCost || item.total || 0) || 0);
   }, 0);
   const vehicleCost = parseFloat(record.vehicleUpdates?.totalCost || 0) || 0;
   
@@ -815,10 +823,10 @@ function renderRecordDetails(record) {
   (record.boughtItems || []).forEach(item => {
     if (item && typeof item === 'object') {
       for (const [key, value] of Object.entries(item)) {
-        if (key === 'totalCost') continue;
+        // Skip totalCost, total, and price (price is per-unit, not additional cost)
+        if (key === 'totalCost' || key === 'total' || key === 'price' || key === 'pricePerUnit') continue;
         const keyLower = key.toLowerCase();
         if ((keyLower.includes('cost') || 
-             keyLower.includes('price') || 
              keyLower.includes('amount')) && 
             typeof value === 'number') {
           additionalBoughtItemsCosts += parseFloat(value) || 0;
@@ -904,8 +912,8 @@ function renderRecordDetails(record) {
                     <td class="px-4 py-2">${escapeHtml(item.itemName || 'N/A')}</td>
                     <td class="px-4 py-2">${escapeHtml(item.quantity || '0')}</td>
                     <td class="px-4 py-2">${escapeHtml(item.unit || 'N/A')}</td>
-                    <td class="px-4 py-2 text-right">₱${parseFloat(item.pricePerUnit || 0).toFixed(2)}</td>
-                    <td class="px-4 py-2 text-right font-semibold">₱${parseFloat(item.totalCost || 0).toFixed(2)}</td>
+                    <td class="px-4 py-2 text-right">₱${parseFloat(item.price || item.pricePerUnit || 0).toFixed(2)}</td>
+                    <td class="px-4 py-2 text-right font-semibold">₱${parseFloat(item.totalCost || item.total || 0).toFixed(2)}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -1699,60 +1707,118 @@ function getFilteredRecords() {
   return currentFilteredRecords.length > 0 ? currentFilteredRecords : recordsCache;
 }
 
-// Send to SRA
+// Enable "Send Report to SRA" button
+function enableSendToSRAButton() {
+  const sendToSRABtn = document.getElementById('recordsSendToSRA');
+  if (sendToSRABtn) {
+    // Enable button if user has fields
+    if (Object.keys(fieldsCache).length > 0) {
+      sendToSRABtn.disabled = false;
+    } else {
+      // Re-enable after fields are loaded
+      setTimeout(() => {
+        if (Object.keys(fieldsCache).length > 0) {
+          sendToSRABtn.disabled = false;
+        }
+      }, 1000);
+    }
+  }
+}
+
+// Send to SRA - Opens field selection modal (Step 1)
 async function sendToSRA() {
-  const records = getFilteredRecords();
-  
-  if (records.length === 0) {
-    alert('No records to send. Please apply filters to select records.');
+  // Check if user has fields
+  if (Object.keys(fieldsCache).length === 0) {
+    showErrorMessage('No fields available. Please register a field first.');
     return;
   }
   
-  if (!confirm(`Send ${records.length} record(s) to SRA officer?`)) {
-    return;
-  }
+  // Show field selection modal
+  showFieldSelectionModal();
+}
+
+// Show field selection modal (Step 1)
+function showFieldSelectionModal() {
+  const existingModal = document.getElementById('sraFieldSelectionModal');
+  if (existingModal) existingModal.remove();
   
-  try {
-    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+  const modal = document.createElement('div');
+  modal.id = 'sraFieldSelectionModal';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4';
+  
+  const fieldsList = Object.entries(fieldsCache).map(([fieldId, fieldData]) => {
+    const fieldName = fieldData.field_name || fieldData.fieldName || 'Unnamed Field';
+    const location = fieldData.barangay || fieldData.location || 'N/A';
+    const status = fieldData.status || 'active';
     
-    // Get current user to find assigned SRA officer
-    const userDoc = await getDoc(doc(db, 'users', currentUserId));
-    if (!userDoc.exists()) {
-      alert('User not found');
-      return;
+    return `
+      <option value="${fieldId}">${escapeHtml(fieldName)} - ${escapeHtml(location)} (${escapeHtml(status)})</option>
+    `;
+  }).join('');
+  
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md animate-modalSlideIn">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold text-[var(--cane-900)]">Select Field to Generate Report</h2>
+          <button id="sraFieldSelectClose" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Field</label>
+          <select id="sraFieldSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)] text-sm">
+            <option value="">-- Select a Field --</option>
+            ${fieldsList}
+          </select>
+        </div>
+        
+        <div class="flex gap-3 justify-end">
+          <button id="sraFieldSelectCancel" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold text-sm">
+            Cancel
+          </button>
+          <button id="sraFieldSelectGenerate" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Generate Report
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  const fieldSelect = modal.querySelector('#sraFieldSelect');
+  const generateBtn = modal.querySelector('#sraFieldSelectGenerate');
+  const cancelBtn = modal.querySelector('#sraFieldSelectCancel');
+  const closeBtn = modal.querySelector('#sraFieldSelectClose');
+  
+  // Enable/disable generate button based on selection
+  fieldSelect.addEventListener('change', () => {
+    generateBtn.disabled = !fieldSelect.value;
+  });
+  
+  // Generate report when button clicked
+  generateBtn.addEventListener('click', async () => {
+    const fieldId = fieldSelect.value;
+    if (!fieldId) return;
+    
+    modal.remove();
+    await generateAndPreviewReport(fieldId);
+  });
+  
+  // Close modal
+  const closeModal = () => modal.remove();
+  cancelBtn.addEventListener('click', closeModal);
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape' && document.getElementById('sraFieldSelectionModal')) {
+      closeModal();
+      document.removeEventListener('keydown', escHandler);
     }
-    
-    const userData = userDoc.data();
-    const assignedSRA = userData.assignedSRA || userData.sraOfficer;
-    
-    if (!assignedSRA) {
-      alert('No SRA officer assigned to your account. Please contact system administrator.');
-      return;
-    }
-    
-    // Generate CSV content
-    const csvContent = generateCSVContent(records);
-    
-    // Create notification for SRA officer
-    await addDoc(collection(db, 'notifications'), {
-      userId: assignedSRA,
-      role: 'sra', // Also broadcast
-      title: 'Records Report Received',
-      message: `Handler has sent ${records.length} record(s) for review.`,
-      type: 'records_report',
-      csvData: csvContent,
-      recordCount: records.length,
-      sentBy: currentUserId,
-      timestamp: serverTimestamp(),
-      read: false,
-      status: 'unread'
-    });
-    
-    alert(`Successfully sent ${records.length} record(s) to SRA officer.`);
-  } catch (error) {
-    console.error('Error sending to SRA:', error);
-    alert('Failed to send records to SRA. Please try again.');
-  }
+  });
 }
 
 // Generate CSV content for SRA
@@ -1782,21 +1848,874 @@ function generateCSVContent(records) {
   ].join('\n');
 }
 
-// Check if user has SRA role
-async function checkSRARole(userId) {
+// Generate and preview report (Step 2 & 3)
+async function generateAndPreviewReport(fieldId) {
   try {
-    const userDoc = await getDoc(doc(db, 'users', userId));
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      if (userData.role === 'sra') {
-        const sendToSRABtn = document.getElementById('recordsSendToSRA');
-        if (sendToSRABtn) {
-          sendToSRABtn.classList.remove('hidden');
+    // Verify field ownership
+    const fieldRef = doc(db, 'fields', fieldId);
+    const fieldSnap = await getDoc(fieldRef);
+    if (!fieldSnap.exists()) {
+      showErrorMessage('Field not found.');
+      return;
+    }
+    
+    const fieldData = fieldSnap.data();
+    const fieldOwnerId = fieldData.userId || fieldData.user_id || fieldData.landowner_id;
+    
+    if (fieldOwnerId !== currentUserId) {
+      showErrorMessage('You do not have permission to generate reports for this field.');
+      return;
+    }
+    
+    showSuccessMessage('Generating report... Please wait.');
+    
+    // Gather all report data
+    const reportData = await gatherReportData(fieldId);
+    
+    // Show preview modal
+    showReportPreviewModal(reportData);
+  } catch (error) {
+    console.error('Error generating report:', error);
+    showErrorMessage(error.message || 'Failed to generate report. Please try again.');
+  }
+}
+
+// Gather comprehensive report data for a field (Step 2)
+async function gatherReportData(fieldId) {
+  const { calculateDAP, getGrowthStage } = await import('./growth-tracker.js');
+  
+  // 1. Fetch field profile data
+  const fieldRef = doc(db, 'fields', fieldId);
+  const fieldSnap = await getDoc(fieldRef);
+  if (!fieldSnap.exists()) {
+    throw new Error('Field not found');
+  }
+  const field = { id: fieldSnap.id, ...fieldSnap.data() };
+  
+  // 2. Fetch all records for this field with subcollections
+  const recordsQuery = query(
+    collection(db, 'records'),
+    where('fieldId', '==', fieldId),
+    orderBy('createdAt', 'desc')
+  );
+  
+  let records = [];
+  try {
+    const recordsSnapshot = await getDocs(recordsQuery);
+    records = await Promise.all(recordsSnapshot.docs.map(async (recordDoc) => {
+      const recordData = recordDoc.data();
+      
+      // Load bought items
+      let boughtItems = [];
+      try {
+        const boughtItemsSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'bought_items'));
+        boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+      } catch (e) {
+        console.debug('No bought items:', e);
+      }
+      
+      // Load vehicle updates
+      let vehicleUpdates = null;
+      try {
+        const vehicleUpdatesSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates'));
+        vehicleUpdates = vehicleUpdatesSnapshot.docs.length > 0 ? vehicleUpdatesSnapshot.docs[0].data() : null;
+      } catch (e) {
+        console.debug('No vehicle updates:', e);
+      }
+      
+      return {
+        id: recordDoc.id,
+        ...recordData,
+        boughtItems,
+        vehicleUpdates
+      };
+    }));
+  } catch (e) {
+    // Fallback: query without orderBy
+    console.warn('OrderBy failed, using fallback query:', e);
+    const fallbackQuery = query(collection(db, 'records'), where('fieldId', '==', fieldId));
+    const fallbackSnapshot = await getDocs(fallbackQuery);
+    records = await Promise.all(fallbackSnapshot.docs.map(async (recordDoc) => {
+      const recordData = recordDoc.data();
+      
+      let boughtItems = [];
+      try {
+        const boughtItemsSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'bought_items'));
+        boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+      } catch (e) {}
+      
+      let vehicleUpdates = null;
+      try {
+        const vehicleUpdatesSnapshot = await getDocs(collection(db, 'records', recordDoc.id, 'vehicle_updates'));
+        vehicleUpdates = vehicleUpdatesSnapshot.docs.length > 0 ? vehicleUpdatesSnapshot.docs[0].data() : null;
+      } catch (e) {}
+      
+      return {
+        id: recordDoc.id,
+        ...recordData,
+        boughtItems,
+        vehicleUpdates
+      };
+    }));
+    
+    // Sort manually by date
+    records.sort((a, b) => {
+      const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+      return dateB - dateA;
+    });
+  }
+  
+  // 3. Build growth tracker timeline
+  const plantingDateObj = field.plantingDate?.toDate?.() || field.plantingDate;
+  let growthTimeline = [];
+  if (plantingDateObj && records.length > 0) {
+    const dap = calculateDAP(plantingDateObj);
+    const currentStage = getGrowthStage(dap);
+    
+    // Group records by growth stage
+    const recordsByStage = {};
+    records.forEach(record => {
+      const stage = record.status || 'Unknown';
+      if (!recordsByStage[stage]) {
+        recordsByStage[stage] = [];
+      }
+      recordsByStage[stage].push(record);
+    });
+    
+    // Build timeline entries
+    growthTimeline = Object.entries(recordsByStage).map(([stage, stageRecords]) => {
+      if (stageRecords.length === 0) return null;
+      const firstRecord = stageRecords[0];
+      const recordDate = firstRecord.recordDate?.toDate?.() || firstRecord.createdAt?.toDate?.() || new Date();
+      return {
+        stage,
+        date: recordDate,
+        recordCount: stageRecords.length
+      };
+    }).filter(entry => entry !== null);
+    
+    growthTimeline.sort((a, b) => a.date - b.date);
+  }
+  
+  // 4. Calculate cost summaries
+  let totalTaskCost = 0;
+  let totalBoughtItemsCost = 0;
+  let totalVehicleCost = 0;
+  
+  records.forEach(record => {
+    // Task cost
+    totalTaskCost += parseFloat(record.data?.totalCost || 0) || 0;
+    
+    // Scan for additional cost fields in record.data
+    if (record.data && typeof record.data === 'object') {
+      for (const [key, value] of Object.entries(record.data)) {
+        if (key === 'totalCost') continue;
+        const keyLower = key.toLowerCase();
+        if ((keyLower.includes('cost') || keyLower.includes('price') || keyLower.includes('amount')) && typeof value === 'number') {
+          totalTaskCost += parseFloat(value) || 0;
         }
       }
     }
+    
+    // Bought items cost
+    (record.boughtItems || []).forEach(item => {
+      // Support both field name variants: totalCost or total
+      totalBoughtItemsCost += parseFloat(item.totalCost || item.total || 0) || 0;
+      // Also check for other cost fields (but don't double-count)
+      if (item && typeof item === 'object') {
+        for (const [key, value] of Object.entries(item)) {
+          if (key === 'totalCost' || key === 'total') continue; // Already counted
+          const keyLower = key.toLowerCase();
+          if ((keyLower.includes('cost') || keyLower.includes('amount')) && typeof value === 'number') {
+            totalBoughtItemsCost += parseFloat(value) || 0;
+          }
+        }
+      }
+    });
+    
+    // Vehicle cost
+    if (record.vehicleUpdates) {
+      totalVehicleCost += parseFloat(record.vehicleUpdates.totalCost || 0) || 0;
+      if (typeof record.vehicleUpdates === 'object') {
+        for (const [key, value] of Object.entries(record.vehicleUpdates)) {
+          if (key === 'totalCost') continue;
+          const keyLower = key.toLowerCase();
+          if ((keyLower.includes('cost') || keyLower.includes('price') || keyLower.includes('amount')) && typeof value === 'number') {
+            totalVehicleCost += parseFloat(value) || 0;
+          }
+        }
+      }
+    }
+  });
+  
+  const grandTotal = totalTaskCost + totalBoughtItemsCost + totalVehicleCost;
+  
+  // 5. Format field information
+  const formatFirestoreDate = (dateValue) => {
+    if (!dateValue) return '—';
+    if (typeof dateValue === 'string') return dateValue;
+    if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+      return dateValue.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    if (dateValue instanceof Date) {
+      return dateValue.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    return String(dateValue);
+  };
+  
+  const plantingDateObj2 = field.plantingDate?.toDate?.() || field.plantingDate;
+  let growthStage = '—';
+  if (plantingDateObj2) {
+    const dap = calculateDAP(plantingDateObj2);
+    growthStage = dap !== null ? getGrowthStage(dap) : 'Not Planted';
+  }
+  
+  return {
+    fieldId,
+    field: {
+      fieldName: field.field_name || field.fieldName || 'Unnamed Field',
+      owner: field.owner || field.applicant_name || field.applicantName || 'N/A',
+      street: field.street || '—',
+      barangay: field.barangay || '—',
+      size: field.field_size || field.area_size || field.area || field.size || 'N/A',
+      terrain: field.terrain_type || field.field_terrain || 'N/A',
+      status: field.status || 'active',
+      latitude: field.latitude || field.lat || 'N/A',
+      longitude: field.longitude || field.lng || 'N/A',
+      variety: field.sugarcane_variety || field.variety || 'N/A',
+      soilType: field.soil_type || field.soilType || 'N/A',
+      irrigationMethod: field.irrigation_method || field.irrigationMethod || 'N/A',
+      previousCrop: field.previous_crop || field.previousCrop || 'N/A',
+      growthStage,
+      plantingDate: formatFirestoreDate(field.planting_date || field.plantingDate),
+      expectedHarvestDate: formatFirestoreDate(field.expected_harvest_date || field.expectedHarvestDate),
+      delayDays: field.delay_days || field.delayDays || '—',
+      createdOn: formatFirestoreDate(field.created_on || field.createdOn || field.timestamp)
+    },
+    records,
+    growthTimeline,
+    costSummary: {
+      totalTaskCost,
+      totalBoughtItemsCost,
+      totalVehicleCost,
+      grandTotal
+    },
+    generatedAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  };
+}
+
+// Show report preview modal (Step 3)
+function showReportPreviewModal(reportData) {
+  const existingModal = document.getElementById('sraReportPreviewModal');
+  if (existingModal) existingModal.remove();
+  
+  const modal = document.createElement('div');
+  modal.id = 'sraReportPreviewModal';
+  modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex flex-col';
+  
+  // Render report content with bond-paper layout
+  const reportHTML = renderReportContent(reportData);
+  
+  modal.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col h-full max-h-screen m-4 sm:m-6 overflow-hidden">
+      <!-- Header - Fixed -->
+      <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+        <h2 class="text-xl font-bold text-[var(--cane-900)]">Report Preview</h2>
+        <button id="sraReportPreviewClose" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+      
+      <!-- Scrollable Content Area - Flexible -->
+      <div class="flex-1 overflow-y-auto p-4 sm:p-6 min-h-0" style="min-height: 0;">
+        <div id="sraReportContent" class="bg-white mx-auto" style="padding: 20px 30px; max-width: 210mm; width: 100%; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          ${reportHTML}
+        </div>
+      </div>
+      
+      <!-- Footer - Fixed -->
+      <div class="p-4 sm:p-6 border-t border-gray-200 flex items-center justify-end gap-3 flex-wrap flex-shrink-0 bg-white">
+        <button id="sraReportPreviewBack" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold text-sm">
+          Back
+        </button>
+        <button id="sraReportPreviewPrint" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold text-sm flex items-center gap-2">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button id="sraReportPreviewSend" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-sm flex items-center gap-2">
+          <i class="fas fa-paper-plane"></i> Send to SRA
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Wait for DOM to be ready before querying
+  setTimeout(() => {
+    setupReportPreviewModalHandlers(modal, reportData);
+  }, 0);
+}
+
+// Setup handlers for report preview modal
+function setupReportPreviewModalHandlers(modal, reportData) {
+  const closeBtn = modal.querySelector('#sraReportPreviewClose');
+  const backBtn = modal.querySelector('#sraReportPreviewBack');
+  const printBtn = modal.querySelector('#sraReportPreviewPrint');
+  const sendBtn = modal.querySelector('#sraReportPreviewSend');
+  
+  if (!sendBtn) {
+    console.error('Send button not found in report preview modal');
+    return;
+  }
+  
+  // Close modal
+  const closeModal = () => {
+    modal.remove();
+    window.sendingReportToSRA = false; // Reset flag when modal closes
+  };
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeModal);
+  }
+  
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      closeModal();
+      showFieldSelectionModal();
+    });
+  }
+  
+  // Print report
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      const reportContent = modal.querySelector('#sraReportContent');
+      if (reportContent) {
+        printReport(reportContent);
+      }
+    });
+  }
+  
+  // Send to SRA
+  sendBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Send to SRA button clicked');
+    
+    // Prevent duplicate clicks
+    if (window.sendingReportToSRA) {
+      console.warn('Report send already in progress');
+      return;
+    }
+    
+    try {
+      await sendReportToSRA(reportData);
+    } catch (error) {
+      console.error('Error in send button handler:', error);
+      // Error handling is done in sendReportToSRA function
+    }
+  });
+  
+  // Close modal on backdrop click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || (e.target.classList && e.target.classList.contains('bg-black'))) {
+      closeModal();
+    }
+  });
+  
+  // Prevent content clicks from closing modal
+  const modalContent = modal.querySelector('.bg-white.rounded-xl');
+  if (modalContent) {
+    modalContent.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+  
+  // ESC key handler
+  const escHandler = (e) => {
+    if (e.key === 'Escape' && document.getElementById('sraReportPreviewModal')) {
+      closeModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
+}
+
+// Render report content with bond-paper format
+function renderReportContent(data) {
+  const { field, records, growthTimeline, costSummary, generatedAt } = data;
+  
+  // Use the comprehensive calculateTotalCost function for each record
+  
+  // Group records by growth stage, then sort records within each stage by date
+  const recordsByStage = {};
+  records.forEach(record => {
+    const stage = record.status || 'Unknown';
+    if (!recordsByStage[stage]) {
+      recordsByStage[stage] = [];
+    }
+    recordsByStage[stage].push(record);
+  });
+  
+  // Sort records within each stage by date (oldest first for chronological order)
+  Object.keys(recordsByStage).forEach(stage => {
+    recordsByStage[stage].sort((a, b) => {
+      const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+      const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+      return dateA - dateB; // Oldest first for chronological order
+    });
+  });
+  
+  return `
+    <!-- Report Header -->
+    <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #2c5a0b; padding-bottom: 20px;">
+      <h1 style="font-size: 24px; font-weight: bold; color: #2c5a0b; margin-bottom: 10px;">CaneMap</h1>
+      <h2 style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 5px;">Field Growth & Operations Report</h2>
+      <p style="font-size: 12px; color: #666;">Generated: ${escapeHtml(generatedAt)}</p>
+    </div>
+    
+    <!-- Field Information -->
+    <div style="margin-bottom: 30px;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Field Information</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <tr>
+          <td style="padding: 6px; font-weight: bold; width: 30%;">Field Name:</td>
+          <td style="padding: 6px; width: 20%;">${escapeHtml(field.fieldName)}</td>
+          <td style="padding: 6px; font-weight: bold; width: 25%;">Owner:</td>
+          <td style="padding: 6px; width: 25%;">${escapeHtml(field.owner)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Street / Sitio:</td>
+          <td style="padding: 6px;">${escapeHtml(field.street)}</td>
+          <td style="padding: 6px; font-weight: bold;">Barangay:</td>
+          <td style="padding: 6px;">${escapeHtml(field.barangay)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Size (HA):</td>
+          <td style="padding: 6px;">${escapeHtml(String(field.size))}</td>
+          <td style="padding: 6px; font-weight: bold;">Field Terrain:</td>
+          <td style="padding: 6px;">${escapeHtml(field.terrain)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Status:</td>
+          <td style="padding: 6px;">${escapeHtml(field.status)}</td>
+          <td style="padding: 6px; font-weight: bold;">Latitude:</td>
+          <td style="padding: 6px;">${typeof field.latitude === 'number' ? field.latitude.toFixed(6) : escapeHtml(String(field.latitude))}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Longitude:</td>
+          <td style="padding: 6px;">${typeof field.longitude === 'number' ? field.longitude.toFixed(6) : escapeHtml(String(field.longitude))}</td>
+          <td style="padding: 6px; font-weight: bold;">Sugarcane Variety:</td>
+          <td style="padding: 6px;">${escapeHtml(field.variety)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Soil Type:</td>
+          <td style="padding: 6px;">${escapeHtml(field.soilType)}</td>
+          <td style="padding: 6px; font-weight: bold;">Irrigation Method:</td>
+          <td style="padding: 6px;">${escapeHtml(field.irrigationMethod)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Previous Crop:</td>
+          <td style="padding: 6px;">${escapeHtml(field.previousCrop)}</td>
+          <td style="padding: 6px; font-weight: bold;">Current Growth Stage:</td>
+          <td style="padding: 6px;">${escapeHtml(field.growthStage)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Planting Date:</td>
+          <td style="padding: 6px;">${escapeHtml(field.plantingDate)}</td>
+          <td style="padding: 6px; font-weight: bold;">Expected Harvest Date:</td>
+          <td style="padding: 6px;">${escapeHtml(field.expectedHarvestDate)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; font-weight: bold;">Delay Days:</td>
+          <td style="padding: 6px;">${escapeHtml(String(field.delayDays))}</td>
+          <td style="padding: 6px; font-weight: bold;">Created On:</td>
+          <td style="padding: 6px;">${escapeHtml(field.createdOn)}</td>
+        </tr>
+      </table>
+    </div>
+    
+    <!-- Growth Tracker Timeline -->
+    ${growthTimeline.length > 0 ? `
+    <div style="margin-bottom: 30px; page-break-inside: avoid;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Growth Tracker Timeline</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #ddd;">
+        <thead>
+          <tr style="background-color: #f5f5f5;">
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Stage</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Date</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Records Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${growthTimeline.map(timeline => `
+            <tr>
+              <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(timeline.stage)}</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${timeline.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+              <td style="padding: 8px; border: 1px solid #ddd;">${timeline.recordCount}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    ` : ''}
+    
+    <!-- Records Breakdown by Growth Stage -->
+    <div style="margin-bottom: 30px;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">Records Breakdown</h3>
+      ${Object.keys(recordsByStage).length > 0 ? Object.entries(recordsByStage).map(([stage, stageRecords]) => `
+        <div style="margin-bottom: 25px; page-break-inside: avoid;">
+          <h4 style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px;">${escapeHtml(stage)}</h4>
+          ${stageRecords.map(record => {
+            const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+            const dateStr = recordDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            
+            // Calculate comprehensive cost using the same function as Records Section
+            const recordCost = calculateTotalCost(record);
+            
+            return `
+              <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <p style="font-weight: bold; font-size: 12px; margin-bottom: 5px;">${escapeHtml(record.taskType || 'Unknown Task')} - ${dateStr}</p>
+                <p style="font-size: 11px; color: #666; margin-bottom: 5px;">Operation: ${escapeHtml(record.operation || 'N/A')}</p>
+                ${record.boughtItems && record.boughtItems.length > 0 ? `
+                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 8px; margin-bottom: 8px;">
+                    <thead>
+                      <tr style="background-color: #f9f9f9;">
+                        <th style="padding: 4px; text-align: left; border: 1px solid #ddd;">Item</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Qty</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Price</th>
+                        <th style="padding: 4px; text-align: right; border: 1px solid #ddd;">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${record.boughtItems.map(item => `
+                        <tr>
+                          <td style="padding: 4px; border: 1px solid #ddd;">${escapeHtml(item.itemName || 'N/A')}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">${escapeHtml(String(item.quantity || 0))} ${escapeHtml(item.unit || '')}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">₱${parseFloat(item.price || item.pricePerUnit || 0).toFixed(2)}</td>
+                          <td style="padding: 4px; text-align: right; border: 1px solid #ddd;">₱${parseFloat(item.totalCost || item.total || 0).toFixed(2)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                ` : ''}
+                ${record.vehicleUpdates ? `
+                  <p style="font-size: 10px; color: #666; margin-top: 5px;">Vehicle: ${escapeHtml(record.vehicleUpdates.vehicleType || 'N/A')} | Boxes: ${record.vehicleUpdates.boxes || 0} | Weight: ${record.vehicleUpdates.weight || 0} kg</p>
+                ` : ''}
+                <p style="font-size: 11px; font-weight: bold; margin-top: 5px;">Cost: ₱${recordCost.toFixed(2)}</p>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `).join('') : `
+        <p style="font-size: 12px; color: #666; font-style: italic; padding: 15px; text-align: center; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+          No records found for this field.
+        </p>
+      `}
+    </div>
+    
+    <!-- Cost Summary -->
+    <div style="margin-top: 30px; padding: 15px; background-color: #f9f9f9; border: 2px solid #2c5a0b; page-break-inside: avoid;">
+      <h3 style="font-size: 16px; font-weight: bold; color: #2c5a0b; margin-bottom: 15px;">Cost Summary</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Task Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalTaskCost.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Bought Items Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalBoughtItemsCost.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; font-weight: bold;">Total Vehicle Cost:</td>
+          <td style="padding: 8px; text-align: right;">₱${costSummary.totalVehicleCost.toFixed(2)}</td>
+        </tr>
+        <tr style="border-top: 2px solid #2c5a0b;">
+          <td style="padding: 10px; font-weight: bold; font-size: 14px;">Grand Total:</td>
+          <td style="padding: 10px; text-align: right; font-weight: bold; font-size: 14px;">₱${costSummary.grandTotal.toFixed(2)}</td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+// Print report
+function printReport(contentElement) {
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Field Growth & Operations Report</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+        @media print {
+          body { margin: 0; }
+        }
+      </style>
+    </head>
+    <body>
+      ${contentElement.innerHTML}
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => {
+    printWindow.print();
+  }, 250);
+}
+
+// Send report to SRA (Step 4)
+async function sendReportToSRA(reportData) {
+  console.log('sendReportToSRA called', { fieldId: reportData?.fieldId, fieldName: reportData?.field?.fieldName });
+  
+  // Prevent duplicate submissions
+  if (window.sendingReportToSRA) {
+    console.warn('Report send already in progress');
+    return;
+  }
+  
+  // Validate reportData
+  if (!reportData || !reportData.fieldId) {
+    throw new Error('Invalid report data');
+  }
+  
+  const modal = document.getElementById('sraReportPreviewModal');
+  const sendBtn = document.getElementById('sraReportPreviewSend');
+  const backBtn = document.getElementById('sraReportPreviewBack');
+  const printBtn = document.getElementById('sraReportPreviewPrint');
+  const closeBtn = document.getElementById('sraReportPreviewClose');
+  
+  try {
+    // Mark as sending to prevent duplicates
+    window.sendingReportToSRA = true;
+    
+    // Hide preview content immediately
+    const previewContent = document.getElementById('sraReportContent');
+    if (previewContent) {
+      previewContent.style.display = 'none';
+    }
+    
+    // Disable all buttons immediately
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.style.opacity = '0.5';
+      sendBtn.style.cursor = 'not-allowed';
+    }
+    if (backBtn) backBtn.disabled = true;
+    if (printBtn) printBtn.disabled = true;
+    if (closeBtn) closeBtn.disabled = true;
+    
+    // Create and show centered loading indicator (modal-level, blocking)
+    const loadingModal = document.createElement('div');
+    loadingModal.id = 'sraReportLoadingModal';
+    loadingModal.className = 'fixed inset-0 bg-black bg-opacity-75 z-[101] flex items-center justify-center';
+    loadingModal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
+        <div class="mb-4">
+          <i class="fas fa-spinner fa-spin text-4xl text-[var(--cane-600)]"></i>
+        </div>
+        <h3 class="text-xl font-bold text-[var(--cane-900)] mb-2">Sending Report to SRA</h3>
+        <p class="text-gray-600 text-sm">Please wait while we generate and send the report...</p>
+      </div>
+    `;
+    document.body.appendChild(loadingModal);
+    
+    const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    
+    // Get current user to find assigned SRA officer
+    const userDoc = await getDoc(doc(db, 'users', currentUserId));
+    if (!userDoc.exists()) {
+      throw new Error('User not found');
+    }
+    
+    const userData = userDoc.data();
+    const assignedSRA = userData.assignedSRA || userData.sraOfficer;
+    
+    if (!assignedSRA) {
+      throw new Error('No SRA officer assigned to your account. Please contact system administrator.');
+    }
+    
+    // Generate PDF content (using the same HTML structure)
+    // Re-show content temporarily for PDF generation
+    if (previewContent) {
+      previewContent.style.display = 'block';
+    }
+    
+    if (!previewContent) {
+      throw new Error('Report content not found');
+    }
+    
+    // Create PDF using html2pdf.js (already loaded globally in HTML via script tag)
+    if (typeof window === 'undefined' || !window.html2pdf) {
+      throw new Error('PDF generation library not loaded. Please refresh the page.');
+    }
+    
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `Field_Report_${reportData.field.fieldName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // Generate PDF blob
+    const pdfBlob = await window.html2pdf()
+      .set(opt)
+      .from(previewContent)
+      .outputPdf('blob');
+    
+    // Hide content again after PDF generation
+    if (previewContent) {
+      previewContent.style.display = 'none';
+    }
+    
+    // Update loading message
+    const loadingText = loadingModal.querySelector('p');
+    if (loadingText) {
+      loadingText.textContent = 'Uploading PDF to storage...';
+    }
+    
+    // Store PDF in Firebase Storage
+    const { ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-storage.js');
+    const storageRef = ref(storage, `reports/${currentUserId}/${reportData.fieldId}/${Date.now()}_report.pdf`);
+    await uploadBytes(storageRef, pdfBlob);
+    const pdfUrl = await getDownloadURL(storageRef);
+    
+    // Update loading message
+    if (loadingText) {
+      loadingText.textContent = 'Saving report metadata...';
+    }
+    
+    // Store report metadata in Firestore
+    const reportRef = await addDoc(collection(db, 'reports'), {
+      fieldId: reportData.fieldId,
+      handlerId: currentUserId,
+      timestamp: serverTimestamp(),
+      reportStatus: 'sent',
+      sraOfficerId: assignedSRA,
+      fieldName: reportData.field.fieldName,
+      recordCount: reportData.records.length,
+      costSummary: reportData.costSummary,
+      pdfUrl: pdfUrl,
+      generatedAt: serverTimestamp(),
+      createdAt: serverTimestamp()
+    });
+    
+    // Update loading message
+    if (loadingText) {
+      loadingText.textContent = 'Sending notification to SRA officer...';
+    }
+    
+    // Create notification for SRA officer
+    await addDoc(collection(db, 'notifications'), {
+      userId: assignedSRA,
+      role: 'sra',
+      title: 'Field Report Received',
+      message: `Handler has sent a field report for "${reportData.field.fieldName}".`,
+      type: 'report_sent',
+      relatedEntityId: reportRef.id,
+      reportId: reportRef.id,
+      fieldId: reportData.fieldId,
+      handlerId: currentUserId,
+      handlerName: userData.fullname || userData.name || 'Handler',
+      fieldName: reportData.field.fieldName,
+      timestamp: serverTimestamp(),
+      read: false,
+      status: 'unread',
+      createdAt: serverTimestamp()
+    });
+    
+    // Remove loading indicator
+    if (loadingModal) {
+      loadingModal.remove();
+    }
+    
+    // Close preview modal
+    if (modal) {
+      modal.remove();
+    }
+    
+    // Show success message with detailed confirmation
+    const successModal = document.createElement('div');
+    successModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center';
+    successModal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 text-center animate-modalSlideIn">
+        <div class="mb-4">
+          <i class="fas fa-check-circle text-5xl text-green-500"></i>
+        </div>
+        <h3 class="text-xl font-bold text-[var(--cane-900)] mb-3">Report Sent Successfully!</h3>
+        <p class="text-gray-600 mb-6">The report has been sent to your assigned SRA officer. They have been notified and will review it shortly.</p>
+        <button id="successModalClose" class="w-full px-6 py-3 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition font-semibold">
+          Close
+        </button>
+      </div>
+    `;
+    document.body.appendChild(successModal);
+    
+    // Close success modal on button click or after 5 seconds
+    const successCloseBtn = successModal.querySelector('#successModalClose');
+    const closeSuccessModal = () => {
+      successModal.remove();
+      // Refresh records if needed
+      if (typeof loadRecords === 'function') {
+        loadRecords();
+      }
+    };
+    
+    if (successCloseBtn) {
+      successCloseBtn.addEventListener('click', closeSuccessModal);
+    }
+    
+    setTimeout(() => {
+      if (document.body.contains(successModal)) {
+        closeSuccessModal();
+      }
+    }, 5000);
+    
+    // Also show banner notification
+    showSuccessMessage('Report sent successfully. The SRA officer has been notified.');
+    
   } catch (error) {
-    console.error('Error checking SRA role:', error);
+    console.error('Error sending report to SRA:', error);
+    
+    // Remove loading indicator
+    const loadingModal = document.getElementById('sraReportLoadingModal');
+    if (loadingModal) {
+      loadingModal.remove();
+    }
+    
+    // Re-show preview content on error
+    const previewContent = document.getElementById('sraReportContent');
+    if (previewContent) {
+      previewContent.style.display = 'block';
+    }
+    
+    // Re-enable buttons on error
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.style.opacity = '1';
+      sendBtn.style.cursor = 'pointer';
+      sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to SRA';
+    }
+    if (backBtn) backBtn.disabled = false;
+    if (printBtn) printBtn.disabled = false;
+    if (closeBtn) closeBtn.disabled = false;
+    
+    // Show error message
+    showErrorMessage(error.message || 'Failed to send report to SRA. Please try again.');
+    
+  } finally {
+    // Always clear the sending flag
+    window.sendingReportToSRA = false;
   }
 }
 

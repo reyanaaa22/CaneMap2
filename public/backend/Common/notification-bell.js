@@ -166,6 +166,7 @@ function getNotificationTitle(notification) {
   // Otherwise, generate title from type
   const typeToTitle = {
     'report_requested': 'Report Requested',
+    'report_sent': 'Field Report Received',
     'report_approved': 'Report Approved',
     'report_rejected': 'Report Rejected',
     'task_assigned': 'New Task Assigned',
@@ -261,6 +262,9 @@ function getNotificationIcon(type) {
     'rental_approved': 'fa-check-circle',
     'rental_rejected': 'fa-times-circle',
     'report_requested': 'fa-file-alt',
+    'report_sent': 'fa-paper-plane',
+    'report_approved': 'fa-check-circle',
+    'report_rejected': 'fa-times-circle',
     'field_approved': 'fa-check',
     'field_rejected': 'fa-times',
     'rental_request': 'fa-car'
@@ -302,7 +306,11 @@ function handleNotificationClick(notificationId, notification) {
     'rental_approved': '/frontend/Handler/sections/rent-driver.html',
     'rental_rejected': '/frontend/Handler/sections/rent-driver.html',
     'field_approved': '/frontend/Handler/sections/fields.html',
-    'field_rejected': '/frontend/Handler/sections/fields.html'
+    'field_rejected': '/frontend/Handler/sections/fields.html',
+    'report_sent': '/frontend/SRA/SRA_Dashboard.html?section=reports',
+    'report_requested': '/frontend/SRA/SRA_Dashboard.html?section=reports',
+    'report_approved': '/frontend/Handler/dashboard.html?section=activityLogs',
+    'report_rejected': '/frontend/Handler/dashboard.html?section=activityLogs'
   };
 
   const route = routes[notification.type];
@@ -311,7 +319,18 @@ function handleNotificationClick(notificationId, notification) {
     document.getElementById('notificationDropdown')?.classList.add('hidden');
 
     // Navigate if not already on the page
-    if (!window.location.pathname.includes(route.split('?')[0])) {
+    // For SRA dashboard, check if we're on SRA dashboard already
+    const isSRA = window.location.pathname.includes('SRA_Dashboard');
+    const isHandler = window.location.pathname.includes('Handler');
+    
+    if (notification.type.startsWith('report') && isSRA) {
+      // If on SRA dashboard, just switch to reports section
+      if (typeof showSection === 'function') {
+        showSection('reports');
+      } else {
+        window.location.href = route;
+      }
+    } else if (!window.location.pathname.includes(route.split('?')[0])) {
       window.location.href = route;
     }
   }
