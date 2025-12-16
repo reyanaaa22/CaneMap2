@@ -16,8 +16,12 @@
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="../../css/output.css">
-    <script>
-        // Bind handler name in header and sidebar from localStorage (no backend changes)
+    <script type="module">
+        // Bind handler name and profile image in header and sidebar from localStorage/Firebase
+        import { auth, db } from '../../backend/Common/firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
+        import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+        
         (function () {
             function getDisplayName() {
                 try {
@@ -32,6 +36,36 @@
                     return (nick && nick.trim()) || (email ? email.split('@')[0] : 'Handler');
                 } catch (_) { return 'Handler'; }
             }
+            
+            function displayProfilePhoto(photoUrl) {
+                if (!photoUrl) {
+                    console.log('No photo URL provided');
+                    return;
+                }
+                
+                console.log('Setting profile photo URL:', photoUrl);
+                
+                // Header profile photo
+                const headerIconDefault = document.getElementById('profileIconDefault');
+                const headerProfilePhoto = document.getElementById('profilePhoto');
+                if (headerProfilePhoto && headerIconDefault) {
+                    headerProfilePhoto.src = photoUrl;
+                    headerProfilePhoto.classList.remove('hidden');
+                    headerIconDefault.classList.add('hidden');
+                    console.log('Header profile photo set');
+                }
+                
+                // Sidebar profile photo
+                const sidebarIconDefault = document.getElementById('sidebarProfileIconDefault');
+                const sidebarProfilePhoto = document.getElementById('sidebarProfilePhoto');
+                if (sidebarProfilePhoto && sidebarIconDefault) {
+                    sidebarProfilePhoto.src = photoUrl;
+                    sidebarProfilePhoto.classList.remove('hidden');
+                    sidebarIconDefault.classList.add('hidden');
+                    console.log('Sidebar profile photo set');
+                }
+            }
+            
             function apply() {
                 const display = getDisplayName();
                 const headerEl = document.getElementById('topUserNameHeader');
@@ -39,7 +73,50 @@
                 const sideEl = document.getElementById('sidebarUserName');
                 if (sideEl && sideEl.textContent && sideEl.textContent.toLowerCase().includes('loading')) sideEl.textContent = display;
             }
-            document.addEventListener('DOMContentLoaded', apply);
+            
+            // Fetch profile photo from Firebase
+            async function fetchAndDisplayProfilePhoto() {
+                try {
+                    onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            console.log('User authenticated:', user.uid);
+                            // Try to get photoURL from Firebase Auth first
+                            if (user.photoURL) {
+                                console.log('Found photoURL in Auth:', user.photoURL);
+                                displayProfilePhoto(user.photoURL);
+                                return;
+                            }
+                            
+                            console.log('No photoURL in Auth, checking Firestore...');
+                            // If not in Auth, try to get from Firestore
+                            const userRef = doc(db, 'users', user.uid);
+                            const userSnap = await getDoc(userRef);
+                            if (userSnap.exists()) {
+                                const userData = userSnap.data();
+                                console.log('Firestore user data:', userData);
+                                if (userData.photoURL) {
+                                    console.log('Found photoURL in Firestore:', userData.photoURL);
+                                    displayProfilePhoto(userData.photoURL);
+                                } else {
+                                    console.log('No photoURL in Firestore');
+                                }
+                            } else {
+                                console.log('User document not found in Firestore');
+                            }
+                        } else {
+                            console.log('No user authenticated');
+                        }
+                    });
+                } catch (err) {
+                    console.error('Failed to fetch profile photo from Firebase:', err);
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                apply();
+                fetchAndDisplayProfilePhoto();
+            });
+            
             window.addEventListener('storage', function (e) {
                 if (['farmerNickname', 'farmerName', 'userEmail'].includes(e.key)) apply();
             });
@@ -396,7 +473,7 @@
         .section-card {
             background: linear-gradient(135deg, #ffffff, var(--cane-50));
             border: 1px solid var(--cane-200);
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .section-card:hover {
@@ -407,7 +484,7 @@
         .metric-card {
             background: linear-gradient(135deg, #ffffff, #f8faf7);
             border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             padding: 1.5rem;
             margin-bottom: 1.25rem;
@@ -480,7 +557,7 @@
 
         /* Sidebar animation */
         #sidebar {
-            transition: transform 300ms ease, opacity 300ms ease;
+            transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #sidebar.closed {
@@ -502,7 +579,7 @@
 
         /* Submenu arrow animation */
         [id$="-arrow"] {
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Active menu item styling */
@@ -514,8 +591,14 @@
             font-weight: 600;
         }
 
-        .nav-item.active i {
-            color: #212529;
+        /* Profile image styling - ensure it stays within circular container */
+        #profilePhoto,
+        #sidebarProfilePhoto {
+            display: block !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         #handlerFieldsMap {
@@ -546,7 +629,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
             padding: 0.5rem 0.75rem;
             z-index: 20;
-            transition: all 0.25s ease;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #mapLegend h4 {
@@ -683,7 +766,7 @@
         .btn-register-field {
             background: linear-gradient(to right, var(--cane-500), var(--cane-600));
             color: #fff;
-            transition: transform 0.2s ease, filter 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 12px rgba(44, 90, 11, 0.2);
         }
 
@@ -698,7 +781,7 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(6px);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .summary-card::before {
@@ -710,7 +793,7 @@
             height: 4px;
             background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 55%);
             opacity: 0;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .summary-card:hover {
@@ -767,7 +850,7 @@
             background: #ffffff;
             font-size: 0.85rem;
             color: var(--text-medium);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .search-input:focus {
@@ -788,7 +871,7 @@
             font-size: 0.8rem;
             font-weight: 600;
             box-shadow: 0 10px 18px rgba(76, 140, 0, 0.2);
-            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.2s ease;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), filter 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .action-btn:hover {
@@ -806,7 +889,7 @@
         }
 
         #workers table tbody tr {
-            transition: background-color 0.18s ease, transform 0.18s ease;
+            transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers table tbody tr:hover {
@@ -830,7 +913,7 @@
 
         #workers .request-item {
             border: 1px solid rgba(148, 214, 59, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .request-item:hover {
@@ -843,7 +926,7 @@
             border-radius: 0.75rem;
             font-weight: 600;
             font-size: 0.8rem;
-            transition: transform 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #workers .request-btn:hover {
@@ -875,7 +958,7 @@
             border-radius: 18px;
             padding: 0.65rem 1.95rem;
             font-weight: 600;
-            transition: background 0.2s ease, transform 0.2s ease;
+            transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-task-cancel:hover {
@@ -890,7 +973,7 @@
             padding: 0.65rem 1.95rem;
             font-weight: 700;
             box-shadow: 0 18px 30px rgba(76, 140, 0, 0.25);
-            transition: transform 0.2s ease, filter 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-task-submit:hover {
@@ -1440,10 +1523,10 @@
                     <div class="relative">
                         <button id="handlerHeaderMenuBtn"
                             class="flex items-center space-x-2 text-gray-800 hover:text-gray-600 transition-colors">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-md border border-gray-300 overflow-hidden"
-                                id="profileIconContainer">
-                                <i class="fas fa-user text-gray-700 text-sm" id="profileIconDefault"></i>
-                                <img id="profilePhoto" class="w-full h-full object-cover hidden" alt="Profile" />
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center shadow-md border border-gray-300 overflow-hidden flex-shrink-0 relative"
+                                id="profileIconContainer" style="min-width: 32px; min-height: 32px;">
+                                <i class="fas fa-user text-gray-700 text-sm absolute" id="profileIconDefault"></i>
+                                <img id="profilePhoto" class="absolute inset-0 w-full h-full object-cover hidden" alt="Profile" />
                             </div>
                             <span class="font-medium text-gray-800" id="topUserNameHeader">Handler</span>
                             <i class="fas fa-chevron-down text-xs text-gray-800 transition-transform duration-200"></i>
@@ -1498,10 +1581,10 @@
                     <span class="lg:hidden"></span>
                 </div>
                 <div class="flex items-center space-x-3 mb-4">
-                    <div class="w-14 h-14 bg-[var(--cane-500)] rounded-full flex items-center justify-center shadow-md ring-2 ring-white/10 overflow-hidden"
-                        id="sidebarProfileIconContainer">
-                        <i class="fas fa-user text-white text-xl" id="sidebarProfileIconDefault"></i>
-                        <img id="sidebarProfilePhoto" class="w-full h-full object-cover hidden" alt="Profile" />
+                    <div class="w-14 h-14 bg-[var(--cane-500)] rounded-full flex items-center justify-center shadow-md ring-2 ring-white/10 overflow-hidden relative flex-shrink-0"
+                        id="sidebarProfileIconContainer" style="min-width: 56px; min-height: 56px;">
+                        <i class="fas fa-user text-white text-xl absolute" id="sidebarProfileIconDefault"></i>
+                        <img id="sidebarProfilePhoto" class="absolute inset-0 w-full h-full object-cover hidden" alt="Profile" />
                     </div>
                     <div>
                         <h3 id="sidebarUserName" class="text-white font-semibold text-lg">Loading...</h3>
@@ -1578,7 +1661,7 @@
                         </a>
                     </div>
 
-                    <p class="px-4 text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Overview</p>
+                    <p class="px-4 text-xs font-semibold uppercase tracking-wide text-white/90 mb-2">Overview</p>
 
 
                     <!-- Analytics -->
@@ -1621,7 +1704,7 @@
                 <div class="px-2 lg:px-0 py-3 mb-3">
                     <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Dashboard</h2>
                     <p class="text-gray-600 text-sm lg:text-base mt-1">Manage your fields and view field summary</p>
-                    <div class="w-16 h-1 bg-[var(--cane-700)] my-2"></div>
+                    <div class="w-16 h-1 bg-[var(--cane-700)] mt-4 mb-2"></div>
                 </div>
 
                 <!-- Fields Layout: Map + Summary -->
@@ -1642,7 +1725,7 @@
                                 <div class="flex gap-1.5">
                                     <div class="relative">
                                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
-                                        <input id="handlerFieldsSearch" type="text" placeholder="Search fields..." class="pl-7 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cane-500)] focus:border-transparent w-36" />
+                                        <input id="handlerFieldsSearch" type="text" placeholder="Search fields..." class="pl-7 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cane-500)] focus:border-transparent w-64" />
                                     </div>
                                 </div>
                             </div>
