@@ -418,6 +418,9 @@ function renderRecords(records) {
   container.innerHTML = '';
   container.appendChild(fragment);
   
+  // Populate Task Type filter dropdown with unique task types from records
+  populateTaskTypeFilter(records);
+  
   // Use event delegation for better performance
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-record-id]');
@@ -432,6 +435,40 @@ function renderRecords(records) {
       confirmDeleteRecord(recordId);
     }
   });
+}
+
+// Populate Task Type filter dropdown
+function populateTaskTypeFilter(records) {
+  const taskTypeFilter = document.getElementById('recordsTaskTypeFilter');
+  if (!taskTypeFilter) return;
+  
+  // Get unique task types from records
+  const taskTypes = new Set();
+  records.forEach(record => {
+    if (record.taskType) {
+      taskTypes.add(record.taskType);
+    }
+  });
+  
+  // Sort task types alphabetically
+  const sortedTaskTypes = Array.from(taskTypes).sort();
+  
+  // Store current selection
+  const currentValue = taskTypeFilter.value;
+  
+  // Clear and repopulate (keep "All Task Types" option)
+  taskTypeFilter.innerHTML = '<option value="all">All Task Types</option>';
+  sortedTaskTypes.forEach(taskType => {
+    const option = document.createElement('option');
+    option.value = taskType;
+    option.textContent = taskType;
+    taskTypeFilter.appendChild(option);
+  });
+  
+  // Restore selection if it still exists
+  if (currentValue && Array.from(taskTypeFilter.options).some(opt => opt.value === currentValue)) {
+    taskTypeFilter.value = currentValue;
+  }
 }
 
 // Calculate total cost from all cost inputs in the record
@@ -588,6 +625,7 @@ function applyFilters() {
   const dateFilter = document.getElementById('recordsDateFilter')?.value || 'all';
   const fieldFilter = document.getElementById('recordsFieldFilter')?.value || 'all';
   const operationFilter = document.getElementById('recordsOperationFilter')?.value || 'all';
+  const taskTypeFilter = document.getElementById('recordsTaskTypeFilter')?.value || 'all';
   const costMin = parseFloat(document.getElementById('recordsCostMin')?.value) || 0;
   const costMax = parseFloat(document.getElementById('recordsCostMax')?.value) || Infinity;
   
@@ -652,6 +690,11 @@ function applyFilters() {
     filtered = filtered.filter(record => record.operation === operationFilter);
   }
   
+  // Task Type filter
+  if (taskTypeFilter !== 'all') {
+    filtered = filtered.filter(record => record.taskType === taskTypeFilter);
+  }
+  
   // Cost filter
   if (costMin > 0 || (costMax !== Infinity && costMax > 0)) {
     filtered = filtered.filter(record => {
@@ -679,6 +722,7 @@ function clearFilters() {
   const dateFilter = document.getElementById('recordsDateFilter');
   const fieldFilter = document.getElementById('recordsFieldFilter');
   const operationFilter = document.getElementById('recordsOperationFilter');
+  const taskTypeFilter = document.getElementById('recordsTaskTypeFilter');
   const costMin = document.getElementById('recordsCostMin');
   const costMax = document.getElementById('recordsCostMax');
   const customDateRange = document.getElementById('recordsCustomDateRange');
@@ -686,6 +730,7 @@ function clearFilters() {
   if (dateFilter) dateFilter.value = 'all';
   if (fieldFilter) fieldFilter.value = 'all';
   if (operationFilter) operationFilter.value = 'all';
+  if (taskTypeFilter) taskTypeFilter.value = 'all';
   if (costMin) costMin.value = '';
   if (costMax) costMax.value = '';
   if (customDateRange) customDateRange.classList.add('hidden');
@@ -696,6 +741,7 @@ function clearFilters() {
 // Setup action buttons
 function setupActionButtons() {
   const exportBtn = document.getElementById('recordsExportCSV');
+  const downloadPDFBtn = document.getElementById('recordsDownloadPDF');
   const printBtn = document.getElementById('recordsPrint');
   const sendToSRABtn = document.getElementById('recordsSendToSRA');
   const modalCloseBtn = document.getElementById('recordDetailsModalClose');
@@ -704,8 +750,12 @@ function setupActionButtons() {
     exportBtn.addEventListener('click', exportToCSV);
   }
   
+  if (downloadPDFBtn) {
+    downloadPDFBtn.addEventListener('click', downloadCostRecordsPDF);
+  }
+  
   if (printBtn) {
-    printBtn.addEventListener('click', printRecords);
+    printBtn.addEventListener('click', printCostRecords);
   }
   
   if (sendToSRABtn) {
@@ -1029,6 +1079,42 @@ function renderRecordDetails(record) {
               </div>
     </div>
   `;
+}
+
+// Get task-specific fields for print/PDF (simple HTML without Tailwind classes)
+function getTaskFieldsForPrint(taskType, data) {
+  if (!data || !taskType) return '';
+  
+  const fields = [];
+  const skipFields = ['totalCost', 'notes', 'remarks', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates'];
+  
+  for (const [key, value] of Object.entries(data)) {
+    // Skip internal fields and empty values
+    if (skipFields.includes(key)) continue;
+    if (value === null || value === undefined || value === '') continue;
+    
+    // Skip if it's an object (unless it's a date/timestamp)
+    if (typeof value === 'object' && !(value instanceof Date) && !(value && typeof value.toDate === 'function')) {
+      // Skip nested objects and arrays (except if they're simple)
+      if (!Array.isArray(value) || value.length === 0) {
+        continue;
+      }
+      // If it's an array, try to display it
+      if (Array.isArray(value)) {
+        const label = formatFieldLabel(key);
+        const displayValue = value.map(v => escapeHtml(String(v))).join(', ');
+        fields.push(`<div style="font-size: 10px; color: #666; margin-top: 3px;"><strong>${escapeHtml(label)}:</strong> ${displayValue}</div>`);
+      }
+      continue;
+    }
+    
+    const label = formatFieldLabel(key);
+    const displayValue = formatFieldValue(key, value);
+    
+    fields.push(`<div style="font-size: 10px; color: #666; margin-top: 3px;"><strong>${escapeHtml(label)}:</strong> ${escapeHtml(displayValue)}</div>`);
+  }
+  
+  return fields.length > 0 ? `<div style="margin-top: 5px; padding-left: 5px;">${fields.join('')}</div>` : '';
 }
 
 // Get task-specific fields for display
@@ -1717,6 +1803,279 @@ function printRecords() {
 function getFilteredRecords() {
   // Return currently displayed records (after filters are applied)
   return currentFilteredRecords.length > 0 ? currentFilteredRecords : recordsCache;
+}
+
+// Get date range string based on active filter
+function getDateRangeString() {
+  const dateFilter = document.getElementById('recordsDateFilter')?.value || 'all';
+  const now = new Date();
+  
+  if (dateFilter === 'today') {
+    const today = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return today;
+  } else if (dateFilter === 'week') {
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const startStr = weekAgo.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const endStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return `${startStr} - ${endStr}`;
+  } else if (dateFilter === 'month') {
+    const monthAgo = new Date(now);
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    const startStr = monthAgo.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const endStr = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    return `${startStr} - ${endStr}`;
+  } else if (dateFilter === 'custom') {
+    const startDate = document.getElementById('recordsDateStart')?.value;
+    const endDate = document.getElementById('recordsDateEnd')?.value;
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const startStr = start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const endStr = end.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      return `${startStr} - ${endStr}`;
+    } else if (startDate) {
+      const start = new Date(startDate);
+      return `From ${start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+    } else if (endDate) {
+      const end = new Date(endDate);
+      return `Until ${end.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`;
+    }
+  }
+  return 'All Dates';
+}
+
+// Print Cost Records
+function printCostRecords() {
+  const records = getFilteredRecords();
+  
+  if (records.length === 0) {
+    alert('No records to print');
+    return;
+  }
+  
+  // Calculate total cost
+  const totalCost = records.reduce((sum, record) => {
+    return sum + calculateTotalCost(record);
+  }, 0);
+  
+  // Get date range
+  const dateRange = getDateRangeString();
+  
+  // Create print-friendly HTML
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Cost Records</title>
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          padding: 20px; 
+          margin: 0;
+        }
+        h1 {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 5px;
+          color: #2c5a0b;
+        }
+        .date-range {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 20px;
+        }
+        table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          margin-top: 20px; 
+          font-size: 12px;
+        }
+        th, td { 
+          border: 1px solid #ddd; 
+          padding: 8px; 
+          text-align: left; 
+        }
+        th { 
+          background-color: #f2f2f2; 
+          font-weight: bold; 
+        }
+        .task-inputs {
+          font-size: 10px;
+          color: #666;
+          margin-top: 5px;
+          padding-left: 5px;
+        }
+        .task-inputs div {
+          margin: 3px 0;
+        }
+        .cost-total {
+          font-weight: bold;
+          font-size: 14px;
+          background-color: #f9f9f9;
+        }
+        @media print {
+          body { margin: 0; padding: 15px; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Cost Records</h1>
+      <div class="date-range">Date Range: ${dateRange}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Task Type</th>
+            <th>Operation Name</th>
+            <th>Field</th>
+            <th>Date</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.map(record => {
+            const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+            const dateStr = recordDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+            
+            const cost = calculateTotalCost(record);
+            
+            // Get task-specific inputs (formatted for print)
+            const taskInputs = getTaskFieldsForPrint(record.taskType, record.data);
+            
+            return `
+              <tr>
+                <td>${escapeHtml(record.taskType || 'N/A')}</td>
+                <td>
+                  <div>${escapeHtml(record.operation || 'N/A')}</div>
+                  ${taskInputs}
+                </td>
+                <td>${escapeHtml(record.fieldName || 'Unknown Field')}</td>
+                <td>${dateStr}</td>
+                <td>₱${cost.toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
+          <tr class="cost-total">
+            <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
+            <td>₱${totalCost.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+// Download Cost Records as PDF
+async function downloadCostRecordsPDF() {
+  const records = getFilteredRecords();
+  
+  if (records.length === 0) {
+    alert('No records to download');
+    return;
+  }
+  
+  // Check if html2pdf is available
+  if (typeof window === 'undefined' || !window.html2pdf) {
+    alert('PDF generation library not loaded. Please refresh the page.');
+    return;
+  }
+  
+  // Calculate total cost
+  const totalCost = records.reduce((sum, record) => {
+    return sum + calculateTotalCost(record);
+  }, 0);
+  
+  // Get date range
+  const dateRange = getDateRangeString();
+  
+  // Create HTML content for PDF
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; padding: 20px;">
+      <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #2c5a0b;">Cost Records</h1>
+      <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Date Range: ${dateRange}</div>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;">
+        <thead>
+          <tr>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Task Type</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Operation Name</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Field</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Date</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${records.map(record => {
+            const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+            const dateStr = recordDate.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+            
+            const cost = calculateTotalCost(record);
+            
+            // Get task-specific inputs (formatted for PDF)
+            const taskInputs = getTaskFieldsForPrint(record.taskType, record.data);
+            
+            return `
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(record.taskType || 'N/A')}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">
+                  <div>${escapeHtml(record.operation || 'N/A')}</div>
+                  ${taskInputs}
+                </td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(record.fieldName || 'Unknown Field')}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${dateStr}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">₱${cost.toFixed(2)}</td>
+              </tr>
+            `;
+          }).join('')}
+          <tr style="font-weight: bold; font-size: 14px; background-color: #f9f9f9;">
+            <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: right; padding-right: 15px;">Total:</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">₱${totalCost.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  // Create temporary container
+  const tempContainer = document.createElement('div');
+  tempContainer.innerHTML = htmlContent;
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  document.body.appendChild(tempContainer);
+  
+  try {
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `Cost_Records_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    await window.html2pdf()
+      .set(opt)
+      .from(tempContainer)
+      .save();
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('Failed to generate PDF. Please try again.');
+  } finally {
+    // Remove temporary container
+    if (tempContainer.parentNode) {
+      tempContainer.parentNode.removeChild(tempContainer);
+    }
+  }
 }
 
 // Enable "Send Report to SRA" button
