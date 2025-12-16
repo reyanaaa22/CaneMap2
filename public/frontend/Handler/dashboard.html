@@ -578,13 +578,46 @@
             z-index: 30;
         }
 
+        /* My Fields List Container - Fixed height with scroll */
+        #handlerFieldsList {
+            scrollbar-width: thin;
+            scrollbar-color: var(--cane-300) transparent;
+        }
+
+        #handlerFieldsList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #handlerFieldsList::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 10px;
+        }
+
+        #handlerFieldsList::-webkit-scrollbar-thumb {
+            background: var(--cane-300);
+            border-radius: 10px;
+        }
+
+        #handlerFieldsList::-webkit-scrollbar-thumb:hover {
+            background: var(--cane-400);
+        }
+
         @media (min-width: 1025px) {
             #fieldsDefault > .section-card:first-child {
                 position: sticky;
                 top: 6rem;
                 align-self: start;
-                height: calc(100vh - 8rem);
+                height: 650px;
+                max-height: 650px;
                 overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            #fieldsDefault > .section-card:last-child {
+                height: 650px;
+                max-height: 650px;
+                display: flex;
+                flex-direction: column;
             }
             #handlerFieldsMap {
                 height: 100%;
@@ -1573,17 +1606,17 @@
         <main id="handlerMain" class="flex-1 px-3 sm:px-4 lg:ml-64 transition-transform duration-300">
             <div id="dashboard" class="content-section p-2">
                 <!-- Dashboard Header -->
-                <div class="px-2 lg:px-0 py-2 mb-2">
-                    <h2 class="text-xl lg:text-2xl font-extrabold text-gray-900">Dashboard</h2>
-                    <p class="text-gray-600 text-xs mt-0.5">Manage your fields and view field summary</p>
-                    <div class="w-12 h-0.5 bg-[var(--cane-700)] my-1"></div>
+                <div class="px-2 lg:px-0 py-3 mb-3">
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Dashboard</h2>
+                    <p class="text-gray-600 text-sm lg:text-base mt-1">Manage your fields and view field summary</p>
+                    <div class="w-16 h-1 bg-[var(--cane-700)] my-2"></div>
                 </div>
 
                 <!-- Fields Layout: Map + Summary -->
                 <div id="fieldsDefault" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-2">
                     <!-- Left: Map Section -->
-                    <div class="section-card rounded-lg p-2 shadow-sm">
-                        <div class="mb-1.5 pb-1.5 border-b border-gray-200">
+                    <div class="section-card rounded-lg shadow-sm flex flex-col" style="padding: 0.5rem 0.5rem 0 0.5rem;">
+                        <div class="mb-1.5 pb-1.5 border-b border-gray-200 flex-shrink-0">
                             <div class="flex items-center justify-between mb-1">
                                 <div class="flex items-center gap-1.5">
                                     <div class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs">
@@ -1603,8 +1636,8 @@
                             </div>
                         </div>
 
-                        <div class="relative rounded-xl overflow-hidden border-2 border-[var(--cane-200)] shadow-md">
-                            <div id="handlerFieldsMap" class="h-[22rem] w-full bg-gray-100" style="min-height: 352px; position: relative;">
+                        <div class="relative rounded-xl overflow-hidden border-2 border-[var(--cane-200)] shadow-md flex-1" style="min-height: 0;">
+                            <div id="handlerFieldsMap" class="w-full bg-gray-100" style="height: 100%; position: relative;">
                                 <div id="mapLoadingIndicator" class="absolute inset-0 flex items-center justify-center bg-gray-100 z-[500]">
                                     <div class="text-center">
                                         <i class="fas fa-spinner fa-spin text-3xl text-[var(--cane-600)] mb-1.5"></i>
@@ -1645,8 +1678,8 @@
                     </div>
 
                     <!-- Right: Fields Summary Section -->
-                    <div class="section-card rounded-lg p-2 shadow-sm">
-                        <div class="mb-1.5 pb-1.5 border-b border-gray-200">
+                    <div class="section-card rounded-lg shadow-sm flex flex-col h-full" style="padding: 0.5rem 0.5rem 0 0.5rem;">
+                        <div class="mb-1.5 pb-1.5 border-b border-gray-200 flex-shrink-0">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1.5">
                                     <div class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs">
@@ -1662,7 +1695,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div id="handlerFieldsList" class="space-y-1.5 pr-1 max-h-[280px] overflow-y-auto">
+                        <div id="handlerFieldsList" class="space-y-1.5 pr-1 overflow-y-auto flex-1" style="min-height: 0;">
                             <!-- Field items will be populated here -->
                             <div class="p-3 bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg hover:shadow-md transition-all cursor-pointer">
                                 <div class="flex items-start justify-between">
