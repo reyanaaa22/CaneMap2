@@ -49,10 +49,9 @@ service firebase.storage {
       allow read, write: if request.auth != null;
     }
 
-    // --- Task Photos (Work Log Photos - Offline Sync Support) ---
+    // --- Task Photos (Work Log Photos) ---
     match /task_photos/{allPaths=**} {
       // Allow read and write for all authenticated users
-      // This supports both online and offline sync uploads
       allow read, write: if request.auth != null;
     }
 

@@ -2021,18 +2021,6 @@ window.addEventListener("message", (e) => {
 
 // Initialize everything when page loads
 document.addEventListener("DOMContentLoaded", function () {
-  // Initialize mobile offline sync for Worker and Driver accounts
-  try {
-    import('../Common/mobile-offline-adapter.js').then(module => {
-      module.initMobileOfflineSync();
-      console.log('Mobile offline sync initialized on lobby page');
-    }).catch(err => {
-      console.error('Failed to initialize mobile offline sync on lobby:', err);
-    });
-  } catch (error) {
-    console.error('Error loading mobile offline sync module:', error);
-  }
-
   setTimeout(() => {
     initMap();
   }, 100);

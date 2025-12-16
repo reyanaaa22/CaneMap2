@@ -1,5 +1,5 @@
 // Service Worker for CaneMap Offline Support
-// Caches essential pages for Worker and Driver offline work logging ONLY
+// Caches essential pages for Worker and Driver
 
 const CACHE_NAME = 'canemap-offline-v2';
 const OFFLINE_PAGES = [
@@ -9,8 +9,6 @@ const OFFLINE_PAGES = [
   '/backend/Driver/Driver_Dashboard.js',
   '/backend/Driver/driver-ui.js',
   '/backend/Driver/driver-init.js',
-  '/backend/Common/offline-db.js',
-  '/backend/Common/offline-sync.js',
   '/backend/Common/ui-popup.js',
   '/backend/Common/firebase-config.js'
 ];
