@@ -497,7 +497,8 @@ const operationMap = {
 // FULL TASK → INPUT FIELD MAP (from PDF)
 const taskFieldMap = {
 "Land Assessment": [
-  { id:'assessmentDate', label:'Assessment Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { id:'fieldArea', label:'Field Area (hectare)', type:'number', step:'0.01' },
 
@@ -555,7 +556,8 @@ const taskFieldMap = {
 
 
 "Sub-Soiling": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'depth', label:'Depth (cm)', type:'number' },
   { 
     id:'equipment', 
@@ -577,7 +579,8 @@ const taskFieldMap = {
 ],
 
 "Soil Analysis": [
-  { id:'samplingDate', label:'Sampling Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'samplingDepth', label:'Sampling Depth (cm)', type:'number', step:'0.01' },
   { 
     id:'soilTexture', 
@@ -607,8 +610,8 @@ const taskFieldMap = {
 
 
 "Plowing": [
-    { id:'date', label:'Date', type:'date' },
-    { id:'depth', label:'Depth (cm)', type:'number' },
+    { id:'startDate', label:'Start Date', type:'date' },
+    { id:'endDate', label:'End Date', type:'date' },
     { 
       id:'equipment', 
       label:'Equipment / Method', 
@@ -622,7 +625,8 @@ const taskFieldMap = {
   ],
 
 "Harrowing": [
-    { id:'date', label:'Date', type:'date' },
+    { id:'startDate', label:'Start Date', type:'date' },
+    { id:'endDate', label:'End Date', type:'date' },
     { id:'passes', label:'Passes (No. of times harrowed)', type:'number' },
     { 
       id:'equipment', 
@@ -636,9 +640,8 @@ const taskFieldMap = {
   ],
 
 "Furrow Making": [
-  { id:'date', label:'Date', type:'date' },
-  { id:'rowSpacing', label:'Row Spacing (cm)', type:'number' },
-  { id:'furrowDepth', label:'Furrow Depth (cm)', type:'number' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { 
     id:'method', 
     label:'Method', 
@@ -650,7 +653,8 @@ const taskFieldMap = {
   ],
 
 "Lime Application": [
-  { id:'applicationDate', label:'Application Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'limeType', 
@@ -701,7 +705,8 @@ const taskFieldMap = {
 
 
 "Pre-Planting Fertilization (basal)": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { id:'fertilizerType', label:'Fertilizer Type', type:'select',
     options:[
@@ -732,10 +737,6 @@ const taskFieldMap = {
     ] 
   },
 
-  // New fields for hauling & mixing, and spraying
-  { id:'haulingMixingCost', label:'Hauling & Mixing Cost', type:'number', step:'0.01' },
-  { id:'sprayingCost', label:'Spraying Cost', type:'number', step:'0.01' },
-
   { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
@@ -744,9 +745,24 @@ const taskFieldMap = {
 
 
 "Seed Cane Preparation": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
-  { id:'variety', label:'Variety', type:'text' },
+  { 
+    id:'variety', 
+    label:'Variety', 
+    type:'select',
+    options:[
+      'PHIL 99-1793',
+      'PHIL 80-13',
+      'VMC 84-524',
+      'VMC 84-947',
+      'PHIL 93-1601',
+      'PHIL 94-0913',
+      'PHIL 92-0577',
+      'Others'
+    ]
+  },
   { id:'workers', label:'Number of Workers', type:'number' },
   { id:'seedSource', label:'Seed Source', type:'text' },
   { id:'seedAge', label:'Seed Age (months)', type:'number' },
@@ -770,7 +786,20 @@ const taskFieldMap = {
 ],
 
 "Planting Operation": [
-  { id:'plantingDate', label:'Planting Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
+  { 
+    id:'growthStage', 
+    label:'Growth Stage / Status', 
+    type:'select',
+    options:[
+      'Germination',
+      'Tillering',
+      'Grand Growth',
+      'Maturing / Ripening',
+      'Harvest'
+    ]
+  },
   { 
     id:'variety', 
     label:'Variety', 
@@ -787,9 +816,8 @@ const taskFieldMap = {
     ]
   },
   { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
-
-  // Cost of cane points
-  { id:'canePointsCost', label:'Cost of Cane Points', type:'number', step:'0.01' },
+  { id:'numberOfSetts', label:'Number of Setts', type:'number', step:'0.01' },
+  { id:'totalCaneRequired', label:'Total Cane Required (auto-calculated)', type:'number', step:'0.01', readonly: true, computed: 'numberOfSetts * seedRate' },
 
   // Labor for preparation of cane points
   { id:'prepLabor', label:'Labor for Preparation of Cane Points', type:'number', step:'0.01' },
@@ -797,27 +825,8 @@ const taskFieldMap = {
   // Hauling of cane points
   { id:'haulingCost', label:'Hauling of Cane Points', type:'number', step:'0.01' },
 
-  // Detrashing
-  { id:'detrashingCost', label:'Detrashing Cost', type:'number', step:'0.01' },
-
   // Selection & counting of cane points
   { id:'selectionCountingCost', label:'Selection & Counting of Cane Points', type:'number', step:'0.01' },
-
-  // Cane points treatment
-  { 
-    id:'caneTreatment', 
-    label:'Cane Points Treatment', 
-    type:'select',
-    options:[
-      'None',
-      'Fungicide',
-      'Insecticide',
-      'Hot Water',
-      'Biological',
-      'Others'
-    ]
-  },
-  { id:'treatmentCost', label:'Treatment Cost (Labor, Chemicals etc.)', type:'number', step:'0.01' },
 
   // Planting of cane points
   { 
@@ -837,7 +846,20 @@ const taskFieldMap = {
 ],
 
 "Replanting Operation": [
-  { id:'replantingDate', label:'Replanting Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
+  { 
+    id:'growthStage', 
+    label:'Growth Stage / Status', 
+    type:'select',
+    options:[
+      'Germination',
+      'Tillering',
+      'Grand Growth',
+      'Maturing / Ripening',
+      'Harvest'
+    ]
+  },
   { 
     id:'variety', 
     label:'Variety', 
@@ -854,15 +876,19 @@ const taskFieldMap = {
     ]
   },
   { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
+  { id:'numberOfSetts', label:'Number of Setts', type:'number', step:'0.01' },
+  { id:'totalCaneRequired', label:'Total Cane Required (auto-calculated)', type:'number', step:'0.01', readonly: true, computed: 'numberOfSetts * seedRate' },
 
-  // Cost of materials
-  { id:'canePointsCost', label:'Cost of Cane Points', type:'number', step:'0.01' },
-  { id:'chippedTillersCost', label:'Cost of Chipped Tillers', type:'number', step:'0.01' },
+  // Labor for preparation of cane points
+  { id:'prepLabor', label:'Labor for Preparation of Cane Points', type:'number', step:'0.01' },
 
-  // Labor for preparation of materials
-  { id:'prepLabor', label:'Labor for Preparation of Materials', type:'number', step:'0.01' },
+  // Hauling of cane points
+  { id:'haulingCost', label:'Hauling of Cane Points', type:'number', step:'0.01' },
 
-  // Planting method
+  // Selection & counting of cane points
+  { id:'selectionCountingCost', label:'Selection & Counting of Cane Points', type:'number', step:'0.01' },
+
+  // Planting of cane points
   { 
     id:'plantingMethod', 
     label:'Planting Method', 
@@ -870,10 +896,9 @@ const taskFieldMap = {
     options:['Manual','Mechanical','Others'] 
   },
 
-  // Number of workers
+    // Number of workers
   { id:'workers', label:'Number of Workers', type:'number' },
 
-  // Labor cost for planting
   { id:'plantingLaborCost', label:'Labor Cost for Planting', type:'number', step:'0.01' },
 
   // Total cost
@@ -881,7 +906,8 @@ const taskFieldMap = {
 ],
 
 "Germination Monitoring": [
-  { id:'observationDate', label:'Observation Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'germinationRate', label:'Germination Rate (%)', type:'number', step:'0.01' },
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
   { id:'workers', label:'Number of Workers / Observers', type:'number' },
@@ -889,7 +915,8 @@ const taskFieldMap = {
 ],
 
 "Growth Monitoring": [
-  { id:'observationDate', label:'Observation Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
   { id:'growthStage', label:'Current Growth Stage', type:'select',
     options:['Germination', 'Tillering', 'Grand Growth', 'Maturing / Ripening', 'Harvest']
@@ -901,7 +928,8 @@ const taskFieldMap = {
 ],
 
 "Pre-Harvest Assessment": [
-  { id:'assessmentDate', label:'Assessment Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
   { id:'maturityLevel', label:'Maturity Level', type:'select',
     options:['Early Mature', 'Mature', 'Over Mature']
@@ -913,7 +941,8 @@ const taskFieldMap = {
 ],
 
 "Post-Planting Fertilization": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { id:'fertilizerType', label:'Fertilizer Type', type:'select',
     options:[
@@ -944,10 +973,6 @@ const taskFieldMap = {
     ] 
   },
 
-  // New fields for hauling & mixing, and spraying
-  { id:'haulingMixingCost', label:'Hauling & Mixing Cost', type:'number', step:'0.01' },
-  { id:'sprayingCost', label:'Spraying Cost', type:'number', step:'0.01' },
-
   { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
@@ -955,7 +980,8 @@ const taskFieldMap = {
 ],
 
 "Cultivation": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'method', 
@@ -990,7 +1016,8 @@ const taskFieldMap = {
 ],
 
 "Weeding": [
-  { id:'date', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'method', 
@@ -1029,7 +1056,8 @@ const taskFieldMap = {
 
 
 "Drainage": [
-  { id:'drainageDate', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   
   { 
     id:'drainageType', 
@@ -1067,7 +1095,8 @@ const taskFieldMap = {
 
 
 "Irrigation": [
-  { id:'irrigationDate', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'irrigationMethod', 
@@ -1094,8 +1123,6 @@ const taskFieldMap = {
       'Others'
     ]
   },
-
-  { id:'duration', label:'Duration (hours)', type:'number', step:'0.01' },
   { id:'workers', label:'Number of Workers', type:'number' },
 
   { 
@@ -1118,7 +1145,8 @@ const taskFieldMap = {
 
 
 "Side Cleaning": [
-  { id:'cleaningDate', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'cleaningMethod', 
@@ -1156,7 +1184,8 @@ const taskFieldMap = {
 ],
 
 "Control of Pest & Diseases": [
-  { id:'cpdDate', label:'Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
   { id:'workers', label:'Number of Workers', type:'number' },
 
   { 
@@ -1223,7 +1252,8 @@ const taskFieldMap = {
 ],
 
 "Earthing-Up": [
-  { id:'earthingDate', label:'Date of Earthing-Up', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'method', 
@@ -1280,7 +1310,8 @@ const taskFieldMap = {
 ],
 
 "Harvesting": [
-  { id:'harvestDate', label:'Harvest Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'harvestMethod', 
@@ -1368,7 +1399,8 @@ const taskFieldMap = {
 ], 
 
 "Hauling": [
-  { id:'haulingDate', label:'Hauling Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'caneType', 
@@ -1441,7 +1473,8 @@ const taskFieldMap = {
 ],
 
 "Ratooning": [
-  { id:'ratoonDate', label:'Ratooning Date', type:'date' },
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
 
   { 
     id:'ratoonOperation', 
@@ -1519,7 +1552,8 @@ const taskFieldMap = {
 ],
 
  "Vehicle Updates": [
-    {id:'date', label:'Date', type:'date'},
+    {id:'startDate', label:'Start Date', type:'date'},
+    {id:'endDate', label:'End Date', type:'date'},
     {id:'activeDrivers', label:'Active Drivers', type:'number'},
     {id:'returningDrivers', label:'Returning Drivers', type:'number'},
     {id:'boxes', label:'Boxes Transported', type:'number'},
@@ -1679,7 +1713,8 @@ function renderForm(type){
           </div>
         `;
       } else {
-        inputHTML = `<input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+        const readonlyAttr = f.readonly ? 'readonly' : '';
+        inputHTML = `<input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="w-full border rounded px-3 py-2" value="0" ${readonlyAttr} ${readonlyAttr ? '' : 'required'} />`;
       }
     }
 
@@ -1722,6 +1757,63 @@ function renderForm(type){
 
   // --- SPECIAL HANDLING ---
 
+  // --- Universal Auto-calculate Total Cost ---
+  // This function calculates totalCost by summing ALL cost-related fields
+  // Defined first so it's available to other functions
+  function updateTotalCost(){
+    const totalCostInput = document.getElementById('totalCost');
+    if(!totalCostInput) return;
+    
+    let total = 0;
+    
+    // List of all possible cost-related field IDs
+    const costFieldIds = [
+      // Standard cost fields
+      'fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
+      'haulingCost', 'harvestCost', 'transportCost', 'cost',
+      // Special labor cost fields
+      'prepLabor', 'plantingLaborCost', 'selectionCountingCost',
+      // Other expense fields
+      'haulingExpense'
+    ];
+    
+    // Also check for 'fuel' field (special dynamic input case)
+    const fuelInput = document.getElementById('fuel');
+    if(fuelInput) {
+      total += parseFloat(fuelInput.value) || 0;
+    }
+    
+    // Check for 'laborCost' container (special dynamic input case)
+    const laborCostContainer = document.getElementById('laborCostContainer');
+    const hasLaborCostContainer = !!laborCostContainer;
+    if(hasLaborCostContainer) {
+      const laborCostHidden = document.getElementById('laborCost');
+      if(laborCostHidden) {
+        total += parseFloat(laborCostHidden.value) || 0;
+      }
+    }
+    
+    // Sum all cost-related fields that exist in the form
+    costFieldIds.forEach(fieldId => {
+      // Skip laborCost if it's in a container (already handled above)
+      if(fieldId === 'laborCost' && hasLaborCostContainer) {
+        return;
+      }
+      
+      const field = document.getElementById(fieldId);
+      if(field && field.type === 'number' && !field.readonly) {
+        // Skip if it's inside a dynamic container (handled separately above)
+        const container = field.closest('#' + fieldId + 'Container');
+        if(!container) {
+          total += parseFloat(field.value) || 0;
+        }
+      }
+    });
+    
+    // Update totalCost with 2 decimal places
+    totalCostInput.value = total.toFixed(2);
+  }
+
   // 1️⃣ Dynamic inputs handler (weight, laborCost, fuel)
   ['weight','laborCost','fuel'].forEach(field => {
     const container = document.getElementById(field + 'Container');
@@ -1751,6 +1843,10 @@ function renderForm(type){
       document.getElementById(field + 'Sum').innerText = `Total ${field === 'weight' ? 'Cane Weight' : field==='laborCost' ? 'Labor Cost' : 'Fuel Cost'}: ${sum}`;
       const hiddenInput = document.getElementById(field);
       if(hiddenInput) hiddenInput.value = sum;
+      // Trigger totalCost recalculation when dynamic fields change
+      if(field === 'fuel' || field === 'laborCost') {
+        updateTotalCost();
+      }
     }
 
     // Initial attach
@@ -1758,28 +1854,137 @@ function renderForm(type){
     updateSum();
   });
 
-  // --- 3️Auto-calculate Total Cost ---
-    function updateTotalCost(){
-    const fuel = Number(document.getElementById('fuel')?.value) || 0;
-    const labor = Number(document.getElementById('laborCost')?.value) || 0;
-    const totalCostInput = document.getElementById('totalCost');
-    if(totalCostInput){
-        totalCostInput.value = fuel + labor;
+  // 2️⃣ Attach listeners to all cost-related fields for auto-calculation
+  const costFieldIds = ['fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost', 
+                        'haulingCost', 'harvestCost', 'transportCost', 'cost', 'prepLabor', 
+                        'plantingLaborCost', 'selectionCountingCost', 'haulingExpense'];
+  
+  // Handle dynamic container fields (fuel, laborCost) - listeners already added in updateSum
+  // Just need to make sure they trigger updateTotalCost, which is already done in updateSum
+  
+  // Attach listeners to all regular cost fields
+  costFieldIds.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if(field && field.type === 'number' && !field.readonly) {
+      field.addEventListener('input', updateTotalCost);
+      field.addEventListener('change', updateTotalCost);
     }
-    }
+  });
+  
+  // Also listen for any cost-related fields that might be dynamically created
+  // Use event delegation on the form container
+  const dynamicFormEl = document.getElementById('dynamicForm');
+  if(dynamicFormEl) {
+    // Remove any existing listener to avoid duplicates
+    const newHandler = (e) => {
+      if(e.target.type === 'number' && !e.target.readonly) {
+        const fieldId = e.target.id;
+        // Check if it's a cost-related field
+        if(costFieldIds.includes(fieldId) || 
+           (fieldId.toLowerCase().includes('cost') && fieldId !== 'totalCost') || 
+           fieldId === 'prepLabor' || 
+           fieldId === 'plantingLaborCost' || 
+           fieldId === 'selectionCountingCost') {
+          updateTotalCost();
+        }
+      }
+    };
+    dynamicFormEl.addEventListener('input', newHandler);
+  }
+  
+  // Initial calculation
+  updateTotalCost();
 
-    // Call updateTotalCost whenever fuel or laborCost changes
-    ['fuel','laborCost'].forEach(field => {
-    const container = document.getElementById(field + 'Container');
-    if(container){
-        container.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', updateTotalCost);
-        });
-    }
-    });
+  // --- Handle computed fields ---
+  // Total Cane Required = Number of Setts × Seed Rate
+  const numberOfSettsInput = document.getElementById('numberOfSetts');
+  const seedRateInput = document.getElementById('seedRate');
+  const totalCaneRequiredInput = document.getElementById('totalCaneRequired');
+  
+  if (numberOfSettsInput && seedRateInput && totalCaneRequiredInput) {
+    const updateTotalCaneRequired = () => {
+      const setts = parseFloat(numberOfSettsInput.value) || 0;
+      const rate = parseFloat(seedRateInput.value) || 0;
+      totalCaneRequiredInput.value = (setts * rate).toFixed(2);
+    };
+    
+    numberOfSettsInput.addEventListener('input', updateTotalCaneRequired);
+    seedRateInput.addEventListener('input', updateTotalCaneRequired);
+    updateTotalCaneRequired();
+  }
 
-    // Also update once initially in case of prefilled values
-    updateTotalCost();
+  // --- Handle Mechanical selection to show "Was a truck rented?" ---
+  const mechanicalFields = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod'];
+  mechanicalFields.forEach(fieldId => {
+    const select = document.getElementById(fieldId);
+    if (select && (select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical')))) {
+      select.addEventListener('change', function() {
+        const truckRentedContainer = document.getElementById('truckRentedContainer');
+        if (this.value === 'Mechanical' || this.value.includes('Mechanical')) {
+          // Check if container already exists
+          if (!truckRentedContainer) {
+            // Find the parent div and insert after the current field
+            const currentFieldDiv = this.closest('.mb-4');
+            if (currentFieldDiv) {
+              const newDiv = document.createElement('div');
+              newDiv.id = 'truckRentedContainer';
+              newDiv.className = 'mb-4';
+              newDiv.innerHTML = `
+                <label class="text-xs font-medium">Was a truck rented? <span class="text-red-500">*</span></label>
+                <select id="truckRented" class="w-full border rounded px-3 py-2" required>
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              `;
+              currentFieldDiv.parentNode.insertBefore(newDiv, currentFieldDiv.nextSibling);
+            }
+          } else {
+            truckRentedContainer.classList.remove('hidden');
+          }
+        } else {
+          if (truckRentedContainer) {
+            truckRentedContainer.classList.add('hidden');
+            const truckRentedSelect = document.getElementById('truckRented');
+            if (truckRentedSelect) truckRentedSelect.value = '';
+          }
+        }
+      });
+    }
+  });
+
+  // --- Calculate labor cost from dates (Rate per day × Number of days) ---
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+  const laborRateInput = document.getElementById('laborRatePerDay');
+  const laborCostInput = document.getElementById('laborCost');
+  
+  if (startDateInput && endDateInput && laborCostInput && !laborCostInput.closest('#' + laborCostInput.id + 'Container')) {
+    // Only if laborCost is a regular input, not the dynamic container type
+    const updateLaborCostFromDates = () => {
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
+      const laborRate = laborRateInput ? (parseFloat(laborRateInput.value) || 0) : 0;
+      
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+        
+        if (laborRate > 0) {
+          laborCostInput.value = (laborRate * diffDays).toFixed(2);
+        }
+      }
+    };
+    
+    if (laborRateInput) {
+      laborRateInput.addEventListener('input', updateLaborCostFromDates);
+    }
+    startDateInput.addEventListener('change', updateLaborCostFromDates);
+    endDateInput.addEventListener('change', updateLaborCostFromDates);
+    updateLaborCostFromDates();
+  }
 
 }
 
@@ -1787,12 +1992,13 @@ function renderForm(type){
 function handleOtherSelect(id){
   const select = document.getElementById(id);
   const otherInput = document.getElementById(`${id}_other`);
-  if(select.value === 'Other'){
+  if(select.value === 'Other' || select.value === 'Others'){
     otherInput.classList.remove('hidden');
     otherInput.required = true;
   } else {
     otherInput.classList.add('hidden');
     otherInput.required = false;
+    otherInput.value = '';
   }
 }
 
@@ -1920,7 +2126,14 @@ function updateVehicleTotalCost() {
   vehicleTotalCostEl.value = (fuel + labor).toFixed(2);
 }
 
-// Attach event listeners when elements exist
+// Attach event listeners using event delegation (works even if elements are added dynamically)
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'vehicleFuelCost' || e.target.id === 'vehicleLaborCost') {
+    updateVehicleTotalCost();
+  }
+});
+
+// Also attach on initial load if elements exist
 const vehicleFuelCostEl = document.getElementById('vehicleFuelCost');
 const vehicleLaborCostEl = document.getElementById('vehicleLaborCost');
 if (vehicleFuelCostEl) vehicleFuelCostEl.addEventListener('input', updateVehicleTotalCost);
@@ -1947,12 +2160,22 @@ submitBtn.onclick = async () => {
 
   if(hasEmpty) return;
 
-  const fields = taskFieldMap[taskType.value] || [];
+  // Map display name to taskFieldMap key (same logic as in taskType.onchange)
+  const taskDisplayName = taskType.value;
+  const taskKey = taskNameAliases[taskDisplayName] || taskDisplayName;
+  const fields = taskFieldMap[taskKey] || [];
   const recordData = {};
 
 for(const f of fields){
   const value = getFinalValue(f.id);
+  
+  // Include readonly fields in data (computed or not), but skip validation
+  if(f.readonly) {
+    recordData[f.id] = value;
+    continue;
+  }
 
+  // Validate non-readonly fields
   // allow 0 for numbers, but not empty string for text
   if(value === '' || value === null){
     const el = document.getElementById(f.id);
@@ -1975,6 +2198,24 @@ for(const f of fields){
 
   recordData[f.id] = value;
 }
+
+  // Also collect truckRented if it exists (from Mechanical selection)
+  // Validate it if it's visible (required field)
+  const truckRented = document.getElementById('truckRented');
+  const truckRentedContainer = document.getElementById('truckRentedContainer');
+  if(truckRented && truckRentedContainer && !truckRentedContainer.classList.contains('hidden')) {
+    if(!truckRented.value) {
+      truckRented.classList.add('border-red-500');
+      truckRented.focus();
+      const removeRed = () => {
+        truckRented.classList.remove('border-red-500');
+        truckRented.removeEventListener('change', removeRed);
+      };
+      truckRented.addEventListener('change', removeRed);
+      return;
+    }
+    recordData.truckRented = truckRented.value;
+  }
 
   // Collect optional bought items
   const boughtItems = [];
@@ -2027,9 +2268,9 @@ for(const f of fields){
     }
   }
 
-  // Extract date from record data for timeline sorting
+  // Extract date from record data for timeline sorting (prefer startDate, fallback to endDate)
   let recordDate = null;
-  const dateFields = ['date', 'observationDate', 'assessmentDate', 'plantingDate', 'harvestDate', 'startDate', 'replantingDate', 'harvestDate'];
+  const dateFields = ['startDate', 'endDate', 'date', 'observationDate', 'assessmentDate', 'plantingDate', 'harvestDate', 'replantingDate'];
   for (const dateField of dateFields) {
     if (recordData[dateField]) {
       const dateValue = recordData[dateField];
@@ -2108,8 +2349,8 @@ window.confirmSave = async () => {
     if (pendingPayload.status === 'Germination' && 
         (pendingPayload.taskType === 'Planting Operation' || pendingPayload.taskType === 'Replanting / Gap Filling')) {
       try {
-        // Get planting date - check both plantingDate (for Planting Operation) and replantingDate (for Replanting)
-        const plantingDate = pendingPayload.data.plantingDate || pendingPayload.data.replantingDate || pendingPayload.data.date;
+        // Get planting date - check startDate (new standard), then old field names for backward compatibility
+        const plantingDate = pendingPayload.data.startDate || pendingPayload.data.plantingDate || pendingPayload.data.replantingDate || pendingPayload.data.date;
         const variety = pendingPayload.data.variety;
         
         if (plantingDate && variety) {
