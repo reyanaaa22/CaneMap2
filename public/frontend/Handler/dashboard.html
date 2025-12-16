@@ -1591,13 +1591,13 @@
                         </a>
                     </div>
 
-                    <!-- Activity Logs -->
+                    <!-- Records -->
                     <div class="mb-4">
                         <a href="#"
                             class="nav-item flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white rounded-lg transition-colors"
                             data-section="activityLogs">
                             <i class="fas fa-history w-5 h-5"></i>
-                            <span>Activity Logs</span>
+                            <span>Records</span>
                         </a>
                     </div>
 
@@ -1751,162 +1751,11 @@
             <!-- Reports Section -->
             <div id="reports" class="content-section hidden"></div>
 
-            <!-- Activity Logs Section -->
+            <!-- Records Section -->
             <div id="activityLogs" class="content-section hidden p-4">
-
                 <div class="px-4 lg:px-0 py-4 mb-2">
-                    <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Activity Logs</h2>
-                    <p class="text-gray-600 text-sm mt-1">All logs submitted by your farmers</p>
+                    <h2 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Records</h2>
                     <div class="w-16 h-0.5 bg-[var(--cane-700)] my-3"></div>
-                </div>
-
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold flex items-center text-gray-900">
-                        <i class="fas fa-history mr-3 text-[var(--cane-700)]"></i>
-                        Farmer Activity Logs
-                    </h3>
-
-                    <button id="refreshActivityLogs"
-                        class="px-3 py-2 bg-[var(--cane-700)] text-white rounded-md hover:bg-[var(--cane-800)] shadow-sm transition flex items-center gap-2">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-
-                <!-- COLLAPSIBLE FILTER BAR -->
-                <div class="mb-4">
-
-                    <!-- Filter Options Toggle -->
-                    <button id="toggleActivityFilters" class="w-full flex justify-between items-center px-4 py-3 bg-[var(--cane-700)]
-            text-white rounded-md shadow-md hover:bg-[var(--cane-800)] transition">
-                        <span id="filterToggleText" class="font-semibold text-sm">OPEN FILTERS</span>
-                        <span id="filterToggleIcon" class="text-sm font-bold">v</span>
-                    </button>
-
-                    <!-- Filter Options Wrapper -->
-                    <div id="activityFiltersWrapper"
-                        class="hidden border border-gray-200 bg-white rounded-b-lg p-4 mt-1 shadow-md">
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                            <!-- Field -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">Field</label>
-                                <select id="filterField"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition">
-                                    <option value="all">All fields</option>
-                                </select>
-                            </div>
-
-                            <!-- Role -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">Role</label>
-                                <select id="filterRole"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition">
-                                    <option value="all">All roles</option>
-                                    <option value="worker">Worker</option>
-                                    <option value="driver">Driver</option>
-                                </select>
-                            </div>
-
-                            <!-- User -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">User</label>
-                                <select id="filterUser"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition">
-                                    <option value="all">All users</option>
-                                </select>
-                            </div>
-
-                            <!-- Activity Type -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">Activity Type</label>
-                                <select id="filterType"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition">
-                                    <option value="all">All types</option>
-                                </select>
-                            </div>
-
-                            <!-- Start Date -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">Start Date</label>
-                                <input id="filterStartDate" type="date"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition" />
-                            </div>
-
-                            <!-- End Date -->
-                            <div>
-                                <label class="text-xs font-semibold text-gray-600">End Date</label>
-                                <input id="filterEndDate" type="date"
-                                    class="w-full p-2 border rounded text-sm hover:shadow-sm transition" />
-                            </div>
-
-                            <!-- Quick Presets -->
-                            <div class="col-span-1 md:col-span-2 flex gap-2 mt-1">
-                                <button id="presetToday"
-                                    class="px-3 py-2 text-xs bg-gray-100 border rounded hover:bg-gray-200 hover:shadow-md transition">Today</button>
-                                <button id="presetThisWeek"
-                                    class="px-3 py-2 text-xs bg-gray-100 border rounded hover:bg-gray-200 hover:shadow-md transition">This
-                                    Week</button>
-                                <button id="presetThisMonth"
-                                    class="px-3 py-2 text-xs bg-gray-100 border rounded hover:bg-gray-200 hover:shadow-md transition">This
-                                    Month</button>
-                            </div>
-
-                            <!-- ACTION BUTTONS -->
-                            <div class="col-span-1 md:col-span-2 flex flex-wrap gap-2 mt-3">
-
-                                <!-- Apply -->
-                                <button id="applyActivityFilters" class="flex-1 px-3 py-2 bg-[var(--cane-700)] text-white rounded text-sm font-semibold
-                    shadow-md hover:bg-[var(--cane-800)] hover:shadow-lg transition">
-                                    Apply Filters
-                                </button>
-
-                                <!-- Clear -->
-                                <button id="clearActivityFilters"
-                                    class="px-3 py-2 border rounded text-sm bg-gray-50 hover:bg-gray-100 hover:shadow-md transition">
-                                    Clear
-                                </button>
-
-                                <!-- DOWNLOAD TOGGLE -->
-                                <div class="relative">
-                                    <button id="downloadToggle"
-                                        class="px-3 py-2 bg-gray-100 border rounded text-sm flex items-center gap-2 hover:bg-gray-200 hover:shadow-md transition">
-                                        <i class="fas fa-download"></i> Download
-                                    </button>
-
-                                    <!-- Dropdown -->
-                                    <div id="downloadMenu"
-                                        class="absolute right-0 mt-1 w-36 bg-white border rounded shadow-lg hidden z-20">
-
-                                        <button id="exportActivityCSV"
-                                            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2">
-                                            <i class="fas fa-file-csv text-[var(--cane-700)]"></i> CSV
-                                        </button>
-
-                                        <button id="printActivityLogs"
-                                            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2">
-                                            <i class="fas fa-print text-[var(--cane-700)]"></i> Print
-                                        </button>
-
-                                        <button id="clearActivityFilters2"
-                                            class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2">
-                                            <i class="fas fa-broom text-[var(--cane-700)]"></i> Clear
-                                        </button>
-
-                                    </div>
-                                </div>
-
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div id="activityLogsContainer" class="space-y-3">
-                    <div class="text-center py-8">
-                        <i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i>
-                        <p class="text-gray-500 mt-2">Loading logs.</p>
-                    </div>
                 </div>
             </div>
 
@@ -1976,148 +1825,7 @@
             }
         });
 
-        // FILTER OPTIONS 
-        document.getElementById("toggleActivityFilters").addEventListener("click", () => {
-            const wrap = document.getElementById("activityFiltersWrapper");
-            const text = document.getElementById("filterToggleText");
-            const icon = document.getElementById("filterToggleIcon");
-
-            const isHidden = wrap.classList.contains("hidden");
-
-  if (isHidden) {
-    wrap.classList.remove("hidden");
-    text.textContent = "CLOSE FILTERS";
-    icon.textContent = "^";
-  } else {
-    wrap.classList.add("hidden");
-    text.textContent = "OPEN FILTERS";
-    icon.textContent = "v";
-  }
-});
-
-
-        // DOWNLOAD DROPDOWN
-        const downloadToggle = document.getElementById("downloadToggle");
-        const downloadMenu = document.getElementById("downloadMenu");
-
-        if (downloadToggle && downloadMenu) {
-            downloadToggle.addEventListener("click", () => {
-                downloadMenu.classList.toggle("hidden");
-            });
-
-            // close when clicking outside
-            document.addEventListener("click", (e) => {
-                if (!downloadToggle.contains(e.target) && !downloadMenu.contains(e.target)) {
-                    downloadMenu.classList.add("hidden");
-                }
-            });
-        }
-
-        // Close modal when clicking outside
-        const activityLogDetailsModal = document.getElementById("activityLogDetailsModal");
-        if (activityLogDetailsModal) {
-            activityLogDetailsModal.addEventListener("click", (e) => {
-                if (e.target.id === "activityLogDetailsModal") {
-                    closeActivityLogDetails();
-                }
-            });
-        }
-
-        // Activity Log Modal Functions
-        function openActivityLogDetails(logId) {
-            const log = window.activityLogCache?.[logId];
-            if (!log) return;
-
-            const modal = document.getElementById("activityLogDetailsModal");
-            const content = document.getElementById("activityLogDetailsContent");
-
-            const date = (log.logged_at && log.logged_at.toDate) ? log.logged_at.toDate().toLocaleString() :
-                (log.logged_at ? new Date(log.logged_at).toLocaleString() : "—");
-
-            const tag = log.type === "driver"
-                ? `<span class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">Driver</span>`
-                : `<span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Worker</span>`;
-
-            let photoContent = '';
-            if (log.selfie_path) {
-                photoContent += `
-      <div class="mb-4">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">Selfie Photo</h4>
-        <img src="${log.selfie_path}" alt="Selfie" class="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm" style="max-height: 300px; object-fit: contain;">
-      </div>`;
-            }
-
-            if (log.field_photo_path) {
-                photoContent += `
-      <div class="mb-4">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">Field Photo</h4>
-        <img src="${log.field_photo_path}" alt="Field Photo" class="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm" style="max-height: 300px; object-fit: contain;">
-      </div>`;
-            }
-
-            content.innerHTML = `
-    <h3 class="text-xl font-bold text-gray-900 mb-4">Activity Log Details</h3>
-    <div class="space-y-4">
-      <div class="flex justify-between items-start">
-        <h4 class="text-lg font-semibold text-gray-900">${log.task_name || "Untitled Task"}</h4>
-        <div class="flex items-center gap-2">
-          ${tag}
-          <span class="text-sm text-gray-500">${date}</span>
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">User</label>
-          <p class="text-gray-900">${log.user_name || "Unknown User"}</p>
-        </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Field</label>
-          <p class="text-gray-900">${log.field_name || "Unknown Field"}</p>
-        </div>
-      </div>
-      
-      ${log.description ? `
-        <div>
-          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Description</label>
-          <p class="text-gray-900 whitespace-pre-wrap">${log.description}</p>
-        </div>` : ''}
-      
-      ${photoContent}
-      
-      <div class="pt-4 flex justify-end gap-2">
-        ${log.selfie_path ? `<a href="${log.selfie_path}" target="_blank" class="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">View Selfie</a>` : ''}
-        ${log.field_photo_path ? `<a href="${log.field_photo_path}" target="_blank" class="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">View Field Photo</a>` : ''}
-        <button onclick="closeActivityLogDetails()" class="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">Close</button>
-      </div>
-    </div>
-  `;
-
-            modal.classList.remove("hidden");
-            document.body.style.overflow = "hidden"; // Prevent background scrolling
-        }
-
-        function closeActivityLogDetails() {
-            const modal = document.getElementById("activityLogDetailsModal");
-            modal.classList.add("hidden");
-            document.body.style.overflow = "auto"; // Restore scrolling
-        }
     </script>
-
-
-    <!-- Activity Log Details Modal -->
-    <div id="activityLogDetailsModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden overflow-y-auto p-4">
-        <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
-            <button onclick="closeActivityLogDetails()"
-                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="p-6" id="activityLogDetailsContent">
-                <!-- Content will be populated by JavaScript -->
-            </div>
-        </div>
-    </div>
 
 </body>
 
