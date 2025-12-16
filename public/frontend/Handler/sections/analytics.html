@@ -9,7 +9,7 @@
             </span>
             Analytics Dashboard
         </h2>
-        <p class="text-[var(--cane-700)] text-sm">Track task completion, field progress, and worker productivity</p>
+        <p class="text-[var(--cane-700)] text-sm">Track task completion and field progress</p>
     </div>
 
     <!-- Key Metrics -->
@@ -41,14 +41,6 @@
             <p class="text-xs text-gray-600 mt-1">Hectares managed</p>
         </div>
 
-        <div class="bg-gradient-to-br from-amber-50 to-white border border-amber-200 rounded-xl p-6 hover:shadow-md transition">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-semibold text-amber-700">Avg Tasks/Worker</span>
-                <i class="fas fa-user-clock text-amber-600 text-xl"></i>
-            </div>
-            <p id="analyticsAvgTasksPerWorker" class="text-3xl font-bold text-amber-900">0</p>
-            <p class="text-xs text-gray-600 mt-1">Worker productivity</p>
-        </div>
     </div>
 
     <!-- Charts Row -->
@@ -64,16 +56,6 @@
             </div>
         </div>
 
-        <!-- Task Type Distribution -->
-        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
-            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-tasks text-[var(--cane-600)]"></i>
-                Task Type Breakdown
-            </h3>
-            <div style="position: relative; height: 300px; max-height: 300px;">
-                <canvas id="taskTypeChart"></canvas>
-            </div>
-        </div>
     </div>
 
     <!-- Field Variety Breakdown -->
