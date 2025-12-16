@@ -727,6 +727,52 @@ async function initNotifications(userId) {
                                         window.__caneMarkers = []; // store markers for searching later
 
                                         fields.forEach(f => {
+                                            // Add field boundary polygon if coordinates exist (same as lobby and handler dashboard)
+                                            const coords = Array.isArray(f.raw?.coordinates) ? f.raw.coordinates : null;
+                                            
+                                            if (coords && coords.length >= 3) {
+                                                try {
+                                                    // Convert coordinates to LatLng array format
+                                                    let polygonCoords = [];
+                                                    
+                                                    // Handle different coordinate formats
+                                                    if (Array.isArray(coords[0])) {
+                                                        // Handle array of [lat, lng] arrays
+                                                        polygonCoords = coords.map(c => [c[0], c[1]]);
+                                                    } else if (typeof coords[0] === 'object' && coords[0].lat !== undefined) {
+                                                        // Handle array of {lat, lng} objects
+                                                        polygonCoords = coords.map(c => [c.lat, c.lng]);
+                                                    } else if (coords[0].latitude !== undefined) {
+                                                        // Handle array of {latitude, longitude} objects
+                                                        polygonCoords = coords.map(c => [c.latitude, c.longitude]);
+                                                    }
+
+                                                    // Only create polygon if we have valid coordinates
+                                                    if (polygonCoords.length >= 3) {
+                                                        const polygon = L.polygon(polygonCoords, {
+                                                            color: '#16a34a',
+                                                            fillColor: '#22c55e',
+                                                            fillOpacity: 0.25,
+                                                            weight: 2
+                                                        }).addTo(group);
+
+                                                        // Bind popup to polygon
+                                                        polygon.bindPopup(`
+                                                            <div style="font-size:12px; line-height:1.4; color:#14532d;">
+                                                                <b style="font-size:14px;">${f.fieldName}</b><br/>
+                                                                Brgy. ${f.barangay}<br/>
+                                                                Ormoc City
+                                                            </div>
+                                                        `);
+
+                                                        // Make polygon clickable to open modal (same as lobby)
+                                                        polygon.on('click', () => openFieldDetailsModal(f));
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Error creating field boundary polygon:', error);
+                                                }
+                                            }
+
                                             if (!f.lat || !f.lng) return;
 
                                             const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(group);
@@ -1115,9 +1161,23 @@ async function initNotifications(userId) {
                                         scrollWheelZoom: false,
                                     }).setView([11.0064, 124.6075], 12);
 
-                                    const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                        attribution: '© OpenStreetMap contributors',
-                                    }).addTo(map);
+                                    // Add Esri World Imagery layers (same as handler dashboard and lobby)
+                                    const satellite = L.tileLayer(
+                                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: 'Tiles © Esri' }
+                                    ).addTo(map);
+
+                                    const roads = L.tileLayer(
+                                        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: '© Esri' }
+                                    ).addTo(map);
+
+                                    const labels = L.tileLayer(
+                                        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: '© Esri' }
+                                    ).addTo(map);
+
+                                    const tileLayer = satellite; // Keep reference for redraw functionality
 
                                     const bounds = L.latLngBounds(L.latLng(10.85, 124.45), L.latLng(11.20, 124.80));
                                     map.setMaxBounds(bounds);
@@ -1340,6 +1400,52 @@ async function initNotifications(userId) {
                                     window.__caneMarkers = [];
 
                                     fields.forEach(f => {
+                                        // Add field boundary polygon if coordinates exist (same as lobby and handler dashboard)
+                                        const coords = Array.isArray(f.raw?.coordinates) ? f.raw.coordinates : null;
+                                        
+                                        if (coords && coords.length >= 3) {
+                                            try {
+                                                // Convert coordinates to LatLng array format
+                                                let polygonCoords = [];
+                                                
+                                                // Handle different coordinate formats
+                                                if (Array.isArray(coords[0])) {
+                                                    // Handle array of [lat, lng] arrays
+                                                    polygonCoords = coords.map(c => [c[0], c[1]]);
+                                                } else if (typeof coords[0] === 'object' && coords[0].lat !== undefined) {
+                                                    // Handle array of {lat, lng} objects
+                                                    polygonCoords = coords.map(c => [c.lat, c.lng]);
+                                                } else if (coords[0].latitude !== undefined) {
+                                                    // Handle array of {latitude, longitude} objects
+                                                    polygonCoords = coords.map(c => [c.latitude, c.longitude]);
+                                                }
+
+                                                // Only create polygon if we have valid coordinates
+                                                if (polygonCoords.length >= 3) {
+                                                    const polygon = L.polygon(polygonCoords, {
+                                                        color: '#16a34a',
+                                                        fillColor: '#22c55e',
+                                                        fillOpacity: 0.25,
+                                                        weight: 2
+                                                    }).addTo(group);
+
+                                                    // Bind popup to polygon
+                                                    polygon.bindPopup(`
+                                                        <div style="font-size:12px; line-height:1.4; color:#14532d;">
+                                                            <b style="font-size:14px;">${f.fieldName}</b><br/>
+                                                            Brgy. ${f.barangay}<br/>
+                                                            Ormoc City
+                                                        </div>
+                                                    `);
+
+                                                    // Make polygon clickable to open modal (same as lobby)
+                                                    polygon.on('click', () => openFieldDetailsModalGlobal(f));
+                                                }
+                                            } catch (error) {
+                                                console.error('Error creating field boundary polygon:', error);
+                                            }
+                                        }
+
                                         if (!f.lat || !f.lng) return;
 
                                         const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(group);
@@ -1614,7 +1720,22 @@ async function initNotifications(userId) {
                                     await ensureLeafletGlobal();
                                     const { db } = await import('../Common/firebase-config.js');
                                     const map2 = L.map(mapContainer2, { zoomControl: true, scrollWheelZoom: false }).setView([11.0064, 124.6075], 12);
-                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors' }).addTo(map2);
+                                    
+                                    // Add Esri World Imagery layers (same as handler dashboard and lobby)
+                                    const satellite2 = L.tileLayer(
+                                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: 'Tiles © Esri' }
+                                    ).addTo(map2);
+
+                                    const roads2 = L.tileLayer(
+                                        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: '© Esri' }
+                                    ).addTo(map2);
+
+                                    const labels2 = L.tileLayer(
+                                        'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                                        { attribution: '© Esri' }
+                                    ).addTo(map2);
                                     const bounds2 = L.latLngBounds(L.latLng(10.85, 124.45), L.latLng(11.20, 124.80));
                                     map2.setMaxBounds(bounds2);
                                     map2.on('drag', () => map2.panInsideBounds(bounds2, { animate: true }));
