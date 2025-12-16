@@ -194,7 +194,8 @@ export async function submitReport(reportType, reportData, fieldId = null) {
         message: `A new ${reportLabel} report has been submitted and requires review.`,
         type: 'report_submitted',
         relatedEntityId: docRef.id,
-        status: 'unread',
+        read: false, // New format
+        status: 'unread', // Legacy format for compatibility
         timestamp: serverTimestamp(),
         createdAt: serverTimestamp()
       });

@@ -504,7 +504,8 @@ document.addEventListener("DOMContentLoaded", () => {
           message: `A new field "${fieldName}" has been registered in ${barangay} and requires review.`,
           type: 'field_registration',
           relatedEntityId: fieldDocRef.id,
-          status: 'unread',
+          read: false, // New format
+          status: 'unread', // Legacy format for compatibility
           timestamp: serverTimestamp(),
           createdAt: serverTimestamp()
         }).catch(err => {

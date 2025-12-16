@@ -9,13 +9,40 @@ import { renderReportsTable, showRequestReportModal } from './reports-sra.js';
 // =============================
 
 function formatRelativeTime(ts) {
-  const date = ts && ts.toDate ? ts.toDate() : ts ? new Date(ts) : new Date();
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  // Handle null/undefined
+  if (!ts) return 'Just now';
+  
+  // Handle Firestore Timestamp objects
+  let date;
+  if (ts.seconds) {
+    date = new Date(ts.seconds * 1000);
+  } else if (ts.toDate && typeof ts.toDate === 'function') {
+    date = ts.toDate();
+  } else if (ts instanceof Date) {
+    date = ts;
+  } else if (typeof ts === 'number') {
+    date = new Date(ts);
+  } else {
+    return 'Just now';
+  }
+  
+  // If date is invalid, return fallback
+  if (isNaN(date.getTime())) {
+    return 'Just now';
+  }
+  
+  const now = new Date();
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
 
-  if (diff < 60) return "Just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} day${Math.floor(diff / 86400) > 1 ? "s" : ""} ago`;
+  if (diffSec < 60) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHour < 24) return `${diffHour}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
+  
   return date.toLocaleDateString();
 }
 
@@ -119,8 +146,11 @@ async function initNotifications(userId) {
           ...broadcastSnap.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
         ];
         
-        // Filter unread notifications
-        const unreadNotifications = allNotifications.filter(notif => !notif.read);
+        // Filter unread notifications - support both new (read: boolean) and legacy (status: string) formats
+        const unreadNotifications = allNotifications.filter(notif => {
+          const isRead = notif.read === true || notif.status === 'read';
+          return !isRead;
+        });
         
         // Mark all as read
         const updatePromises = unreadNotifications.map(notif =>
@@ -153,21 +183,31 @@ async function initNotifications(userId) {
     // Otherwise, generate title from type
     const typeToTitle = {
       'report_requested': 'Report Requested',
+      'report_submitted': 'New Report Submitted',
       'report_approved': 'Report Approved',
       'report_rejected': 'Report Rejected',
       'field_approved': 'Field Registration Approved',
       'field_rejected': 'Field Registration Rejected',
       'field_registration': 'New Field Registration',
+      'field_updated': 'Field Updated for Review',
       'badge_approved': 'Driver Badge Approved',
-      'badge_rejected': 'Driver Badge Rejected'
+      'badge_rejected': 'Driver Badge Rejected',
+      'task_assigned': 'Task Assigned',
+      'task_deleted': 'Task Cancelled',
+      'rental_approved': 'Rental Approved',
+      'rental_rejected': 'Rental Rejected'
     };
 
     return typeToTitle[notification.type] || 'Notification';
   };
 
   const renderNotifications = (docs = []) => {
-    // Fix: use 'read' boolean field instead of 'status' string field
-    const unread = docs.filter((doc) => !doc.read);
+    // Fix: Check both 'read' boolean field and 'status' string field for compatibility
+    const unread = docs.filter((doc) => {
+      // Support both new (read: boolean) and legacy (status: string) formats
+      const isRead = doc.read === true || doc.status === 'read';
+      return !isRead;
+    });
 
     if (unread.length > 0) {
       badge.textContent = String(unread.length);
@@ -188,8 +228,16 @@ async function initNotifications(userId) {
       .map((item) => {
         const title = getNotificationTitle(item);
         const message = item.message || "";
-        const meta = formatRelativeTime(item.timestamp || item.createdAt);
-        const isRead = item.read === true;
+        // Handle timestamp - support both Firestore Timestamp and regular date
+        let timestamp = item.timestamp || item.createdAt;
+        if (timestamp && timestamp.seconds) {
+          timestamp = { seconds: timestamp.seconds, nanoseconds: timestamp.nanoseconds };
+        } else if (timestamp && timestamp.toDate) {
+          timestamp = timestamp.toDate();
+        }
+        const meta = formatRelativeTime(timestamp);
+        // Support both new (read: boolean) and legacy (status: string) formats
+        const isRead = item.read === true || item.status === 'read';
         const statusClass = isRead ? "bg-gray-100" : "bg-[var(--cane-50)]";
         const safeMessage = typeof message === "string" ? message : "";
 
@@ -324,10 +372,36 @@ async function initNotifications(userId) {
       const allNotifs = [...personalNotifs, ...broadcastNotifs];
       const uniqueNotifs = Array.from(new Map(allNotifs.map(n => [n.id, n])).values());
 
-      // Sort by timestamp (newest first)
+      // Sort by timestamp (newest first) - handle both Firestore Timestamp and regular dates
       uniqueNotifs.sort((a, b) => {
-        const ta = a.timestamp && a.timestamp.seconds ? a.timestamp.seconds : 0;
-        const tb = b.timestamp && b.timestamp.seconds ? b.timestamp.seconds : 0;
+        let ta = 0;
+        let tb = 0;
+        
+        // Handle timestamp field
+        if (a.timestamp) {
+          if (a.timestamp.seconds) ta = a.timestamp.seconds;
+          else if (a.timestamp.toDate) ta = a.timestamp.toDate().getTime() / 1000;
+          else if (a.timestamp instanceof Date) ta = a.timestamp.getTime() / 1000;
+          else if (typeof a.timestamp === 'number') ta = a.timestamp;
+        } else if (a.createdAt) {
+          if (a.createdAt.seconds) ta = a.createdAt.seconds;
+          else if (a.createdAt.toDate) ta = a.createdAt.toDate().getTime() / 1000;
+          else if (a.createdAt instanceof Date) ta = a.createdAt.getTime() / 1000;
+          else if (typeof a.createdAt === 'number') ta = a.createdAt;
+        }
+        
+        if (b.timestamp) {
+          if (b.timestamp.seconds) tb = b.timestamp.seconds;
+          else if (b.timestamp.toDate) tb = b.timestamp.toDate().getTime() / 1000;
+          else if (b.timestamp instanceof Date) tb = b.timestamp.getTime() / 1000;
+          else if (typeof b.timestamp === 'number') tb = b.timestamp;
+        } else if (b.createdAt) {
+          if (b.createdAt.seconds) tb = b.createdAt.seconds;
+          else if (b.createdAt.toDate) tb = b.createdAt.toDate().getTime() / 1000;
+          else if (b.createdAt instanceof Date) tb = b.createdAt.getTime() / 1000;
+          else if (typeof b.createdAt === 'number') tb = b.createdAt;
+        }
+        
         return tb - ta;
       });
 

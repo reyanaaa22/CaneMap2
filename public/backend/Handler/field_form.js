@@ -1021,14 +1021,14 @@ await notifySRAFieldUpdate(newData.field_name);
 async function notifySRAFieldUpdate(fieldName, SRA_UID = null) {
   try {
     await addDoc(collection(db, 'notifications'), {
-      role: 'sra', // Broadcast to all SRA officers if you want
+      role: 'sra', // Broadcast to all SRA officers
       title: 'Field Updated for Review',
-      message: `A user has updated their field <b>${fieldName}</b> and resubmitted it for SRA review.`,
-      type: 'field_updated', // optional, for filtering notification types
+      message: `A user has updated their field "${fieldName}" and resubmitted it for SRA review.`,
+      type: 'field_updated',
       relatedEntity: 'field',
       relatedEntityName: fieldName,
-      status: 'unread',
-      read: false,
+      read: false, // New format
+      status: 'unread', // Legacy format for compatibility
       readAt: null,
       timestamp: serverTimestamp(),
       createdAt: serverTimestamp(),
