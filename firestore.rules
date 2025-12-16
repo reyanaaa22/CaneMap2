@@ -865,14 +865,27 @@ allow read: if request.auth != null && (
       );
 
       // Handler: can create reports only for their own fields
+      // sraOfficerId is optional (reports can be broadcast to all SRA officers)
       allow create: if request.auth != null && 
         request.resource.data.handlerId == request.auth.uid &&
         'fieldId' in request.resource.data &&
-        'reportStatus' in request.resource.data &&
-        'sraOfficerId' in request.resource.data;
+        'reportStatus' in request.resource.data;
 
-      // Reports are read-only after creation (no updates/deletes)
-      allow update, delete: if false;
+      // SRA officers and admins can update report status (approve/reject)
+      allow update: if request.auth != null && (
+        (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin']
+        ) &&
+        // Only allow updating reportStatus, status, reviewedBy, reviewedAt, and remarks fields
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportStatus', 'status', 'reviewedBy', 'reviewedAt', 'remarks']) &&
+        // Ensure handlerId and fieldId cannot be changed
+        request.resource.data.handlerId == resource.data.handlerId &&
+        request.resource.data.fieldId == resource.data.fieldId
+      );
+
+      // No deletes allowed
+      allow delete: if false;
     }
 
   }

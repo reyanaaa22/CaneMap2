@@ -2,7 +2,7 @@
 // Fetches and displays all Input Records used by Growth Tracker Timeline
 
 import { db, storage } from '../Common/firebase-config.js';
-import { collection, query, where, getDocs, deleteDoc, doc, orderBy, onSnapshot, getDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+import { collection, query, where, getDocs, deleteDoc, doc, orderBy, onSnapshot, getDoc, limit } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
 // Status color mapping (matching Growth Tracker)
 const STATUS_COLORS = {
@@ -116,6 +116,18 @@ async function loadFieldsForFilter(userId) {
 async function loadRecords(userId) {
   const container = document.getElementById('recordsContainer');
   if (!container) return;
+  
+  // Validate userId before proceeding
+  if (!userId) {
+    console.error('loadRecords called without userId');
+    container.innerHTML = `
+      <div class="text-center py-12">
+        <i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-3"></i>
+        <p class="text-gray-500">Error: User ID not available. Please refresh the page.</p>
+      </div>
+    `;
+    return;
+  }
   
   try {
     container.innerHTML = `
@@ -2489,19 +2501,39 @@ async function sendReportToSRA(reportData) {
   }
   
   const modal = document.getElementById('sraReportPreviewModal');
+  if (!modal) {
+    throw new Error('Preview modal not found');
+  }
+  
   const sendBtn = document.getElementById('sraReportPreviewSend');
   const backBtn = document.getElementById('sraReportPreviewBack');
   const printBtn = document.getElementById('sraReportPreviewPrint');
   const closeBtn = document.getElementById('sraReportPreviewClose');
   
+  // Get preview container elements - defined outside try block for error handling
+  const previewContainer = modal.querySelector('.bg-white.rounded-xl');
+  const previewContentArea = modal.querySelector('.flex-1.overflow-y-auto');
+  const previewContentDiv = document.getElementById('sraReportContent');
+  
   try {
     // Mark as sending to prevent duplicates
     window.sendingReportToSRA = true;
     
-    // Hide preview content immediately
-    const previewContent = document.getElementById('sraReportContent');
-    if (previewContent) {
-      previewContent.style.display = 'none';
+    // Hide only the preview content area (bond paper), keep modal structure visible
+    
+    if (previewContentArea) {
+      // Replace the preview content with loading animation inside the same container
+      previewContentArea.innerHTML = `
+        <div class="flex items-center justify-center h-full">
+          <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="mb-4">
+              <i class="fas fa-spinner fa-spin text-4xl text-[var(--cane-600)]"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[var(--cane-900)] mb-2">Sending Report to SRA</h3>
+            <p class="text-gray-600 text-sm" id="sraLoadingMessage">Please wait while we generate and send the report...</p>
+          </div>
+        </div>
+      `;
     }
     
     // Disable all buttons immediately
@@ -2514,20 +2546,7 @@ async function sendReportToSRA(reportData) {
     if (printBtn) printBtn.disabled = true;
     if (closeBtn) closeBtn.disabled = true;
     
-    // Create and show centered loading indicator (modal-level, blocking)
-    const loadingModal = document.createElement('div');
-    loadingModal.id = 'sraReportLoadingModal';
-    loadingModal.className = 'fixed inset-0 bg-black bg-opacity-75 z-[101] flex items-center justify-center';
-    loadingModal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
-        <div class="mb-4">
-          <i class="fas fa-spinner fa-spin text-4xl text-[var(--cane-600)]"></i>
-        </div>
-        <h3 class="text-xl font-bold text-[var(--cane-900)] mb-2">Sending Report to SRA</h3>
-        <p class="text-gray-600 text-sm">Please wait while we generate and send the report...</p>
-      </div>
-    `;
-    document.body.appendChild(loadingModal);
+    // Store reference to previewContentDiv for PDF generation (we'll need to restore it temporarily)
     
     const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
     
@@ -2538,17 +2557,32 @@ async function sendReportToSRA(reportData) {
     }
     
     const userData = userDoc.data();
-    const assignedSRA = userData.assignedSRA || userData.sraOfficer;
+    let assignedSRA = userData.assignedSRA || userData.sraOfficer;
     
+    // If no assigned SRA officer, we'll proceed without one
+    // Notifications are broadcast to all SRA officers via role='sra', so all SRA officers will receive it
     if (!assignedSRA) {
-      throw new Error('No SRA officer assigned to your account. Please contact system administrator.');
+      console.log('No assigned SRA officer found. Report will be broadcast to all SRA officers via role-based notification.');
     }
     
     // Generate PDF content (using the same HTML structure)
-    // Re-show content temporarily for PDF generation
-    if (previewContent) {
-      previewContent.style.display = 'block';
+    // We need the original report HTML for PDF generation
+    // The reportData contains the original HTML structure, but we need to regenerate it
+    // OR we can restore the preview content temporarily
+    
+    // Restore preview content temporarily for PDF generation
+    let tempReportHTML = null;
+    if (previewContentArea && previewContentDiv) {
+      // Store the original content if it still exists
+      tempReportHTML = previewContentDiv.outerHTML;
     }
+    
+    // Generate the report HTML from reportData for PDF
+    const reportHTML = renderReportContent(reportData);
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = `<div id="tempReportContent" style="padding: 20px 30px; max-width: 210mm; width: 100%;">${reportHTML}</div>`;
+    document.body.appendChild(tempContainer);
+    const previewContent = tempContainer.querySelector('#tempReportContent');
     
     if (!previewContent) {
       throw new Error('Report content not found');
@@ -2567,21 +2601,27 @@ async function sendReportToSRA(reportData) {
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
+    // Update loading message
+    const loadingTextGen = previewContentArea?.querySelector('#sraLoadingMessage');
+    if (loadingTextGen) {
+      loadingTextGen.textContent = 'Generating PDF...';
+    }
+    
     // Generate PDF blob
     const pdfBlob = await window.html2pdf()
       .set(opt)
       .from(previewContent)
       .outputPdf('blob');
     
-    // Hide content again after PDF generation
-    if (previewContent) {
-      previewContent.style.display = 'none';
+    // Remove temporary container after PDF generation
+    if (tempContainer && tempContainer.parentNode) {
+      tempContainer.remove();
     }
     
     // Update loading message
-    const loadingText = loadingModal.querySelector('p');
-    if (loadingText) {
-      loadingText.textContent = 'Uploading PDF to storage...';
+    const loadingTextUpload = previewContentArea?.querySelector('#sraLoadingMessage');
+    if (loadingTextUpload) {
+      loadingTextUpload.textContent = 'Uploading PDF to storage...';
     }
     
     // Store PDF in Firebase Storage
@@ -2591,34 +2631,42 @@ async function sendReportToSRA(reportData) {
     const pdfUrl = await getDownloadURL(storageRef);
     
     // Update loading message
-    if (loadingText) {
-      loadingText.textContent = 'Saving report metadata...';
+    const loadingTextMeta = previewContentArea?.querySelector('#sraLoadingMessage');
+    if (loadingTextMeta) {
+      loadingTextMeta.textContent = 'Saving report metadata...';
     }
     
     // Store report metadata in Firestore
-    const reportRef = await addDoc(collection(db, 'reports'), {
+    const reportDataToStore = {
       fieldId: reportData.fieldId,
       handlerId: currentUserId,
       timestamp: serverTimestamp(),
       reportStatus: 'sent',
-      sraOfficerId: assignedSRA,
       fieldName: reportData.field.fieldName,
       recordCount: reportData.records.length,
       costSummary: reportData.costSummary,
       pdfUrl: pdfUrl,
       generatedAt: serverTimestamp(),
       createdAt: serverTimestamp()
-    });
+    };
     
-    // Update loading message
-    if (loadingText) {
-      loadingText.textContent = 'Sending notification to SRA officer...';
+    // Only include sraOfficerId if we found one
+    if (assignedSRA) {
+      reportDataToStore.sraOfficerId = assignedSRA;
     }
     
-    // Create notification for SRA officer
-    await addDoc(collection(db, 'notifications'), {
-      userId: assignedSRA,
-      role: 'sra',
+    const reportRef = await addDoc(collection(db, 'reports'), reportDataToStore);
+    
+    // Update loading message
+    const loadingTextFinal = previewContentArea?.querySelector('#sraLoadingMessage');
+    if (loadingTextFinal) {
+      loadingTextFinal.textContent = 'Sending notification to SRA officers...';
+    }
+    
+    // Create notification for SRA officers (broadcast to all SRA officers)
+    // This ensures all SRA officers see the notification regardless of assignment
+    const notificationData = {
+      role: 'sra', // Broadcast to all SRA officers
       title: 'Field Report Received',
       message: `Handler has sent a field report for "${reportData.field.fieldName}".`,
       type: 'report_sent',
@@ -2632,11 +2680,19 @@ async function sendReportToSRA(reportData) {
       read: false,
       status: 'unread',
       createdAt: serverTimestamp()
-    });
+    };
     
-    // Remove loading indicator
-    if (loadingModal) {
-      loadingModal.remove();
+    // Also include userId if we have an assigned SRA (for personal notification)
+    if (assignedSRA) {
+      notificationData.userId = assignedSRA;
+    }
+    
+    await addDoc(collection(db, 'notifications'), notificationData);
+    
+    // Update loading message to success
+    const loadingTextSuccess = previewContentArea?.querySelector('#sraLoadingMessage');
+    if (loadingTextSuccess) {
+      loadingTextSuccess.textContent = 'Report sent successfully!';
     }
     
     // Close preview modal
@@ -2665,9 +2721,9 @@ async function sendReportToSRA(reportData) {
     const successCloseBtn = successModal.querySelector('#successModalClose');
     const closeSuccessModal = () => {
       successModal.remove();
-      // Refresh records if needed
-      if (typeof loadRecords === 'function') {
-        loadRecords();
+      // Refresh records if needed (use currentUserId from scope)
+      if (typeof loadRecords === 'function' && currentUserId) {
+        loadRecords(currentUserId);
       }
     };
     
@@ -2687,16 +2743,34 @@ async function sendReportToSRA(reportData) {
   } catch (error) {
     console.error('Error sending report to SRA:', error);
     
-    // Remove loading indicator
-    const loadingModal = document.getElementById('sraReportLoadingModal');
-    if (loadingModal) {
-      loadingModal.remove();
+    // Re-show preview content on error (restore original content)
+    if (previewContentArea) {
+      // Restore the original preview content
+      const reportHTML = renderReportContent(reportData);
+      previewContentArea.innerHTML = `
+        <div id="sraReportContent" class="bg-white mx-auto" style="padding: 20px 30px; max-width: 210mm; width: 100%; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          ${reportHTML}
+        </div>
+      `;
+    } else {
+      // If we don't have the original, at least show error message
+      previewContentArea.innerHTML = `
+        <div class="flex items-center justify-center h-full">
+          <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="mb-4">
+              <i class="fas fa-exclamation-triangle text-4xl text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-bold text-[var(--cane-900)] mb-2">Error</h3>
+            <p class="text-gray-600 text-sm">Failed to send report. Please try again.</p>
+          </div>
+        </div>
+      `;
     }
     
-    // Re-show preview content on error
-    const previewContent = document.getElementById('sraReportContent');
-    if (previewContent) {
-      previewContent.style.display = 'block';
+    // Remove temporary container if it exists
+    const tempContainer = document.getElementById('tempReportContent')?.parentElement;
+    if (tempContainer) {
+      tempContainer.remove();
     }
     
     // Re-enable buttons on error

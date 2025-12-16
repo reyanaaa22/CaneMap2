@@ -4,38 +4,72 @@
 import { db, auth } from '../Common/firebase-config.js';
 import { collection, getDocs, getDoc, doc, query, where, orderBy, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
-import { notifyReportRequest } from '../Common/notifications.js';
+import { notifyReportRequest, notifyReportApproval, notifyReportRejection } from '../Common/notifications.js';
 
 let currentUserId = null;
 onAuthStateChanged(auth, user => { currentUserId = user ? user.uid : null; });
 
 /**
  * Get all submitted reports with optional filters
- * @param {Object} filters - Filter options { status, reportType, handlerId, startDate, endDate }
+ * @param {Object} filters - Filter options { status, handlerId, startDate, endDate }
  * @returns {Promise<Array>} Array of reports
  */
 export async function getAllReports(filters = {}) {
   try {
-    // Start with base query
-    let reportsQuery = query(
-      collection(db, 'reports'),
-      orderBy('submittedDate', 'desc')
-    );
-
-    // Apply status filter if provided
-    if (filters.status) {
+    // Only query for NEW reports (those with pdfUrl field - new Field Report structure)
+    // Filter out old reports that have reportType or don't have pdfUrl
+    let reportsQuery = null;
+    let snapshot = null;
+    
+    // Default to "sent" status if no status filter specified
+    const statusFilter = filters.status || 'sent';
+    
+    // Strategy 1: Try with createdAt (new reports structure)
+    try {
       reportsQuery = query(
         collection(db, 'reports'),
-        where('status', '==', filters.status),
-        orderBy('submittedDate', 'desc')
+        where('reportStatus', '==', statusFilter),
+        orderBy('createdAt', 'desc')
       );
+      snapshot = await getDocs(reportsQuery);
+    } catch (error1) {
+      // Strategy 2: Try with timestamp
+      if (error1.code === 'failed-precondition' || error1.code === 9) {
+        try {
+          reportsQuery = query(
+            collection(db, 'reports'),
+            where('reportStatus', '==', statusFilter),
+            orderBy('timestamp', 'desc')
+          );
+          snapshot = await getDocs(reportsQuery);
+        } catch (error2) {
+          // Strategy 3: Try without orderBy
+          try {
+            reportsQuery = query(
+              collection(db, 'reports'),
+              where('reportStatus', '==', statusFilter)
+            );
+            snapshot = await getDocs(reportsQuery);
+          } catch (error3) {
+            console.error('Error querying reports:', error3);
+            return [];
+          }
+        }
+      } else {
+        throw error1;
+      }
     }
-
-    const snapshot = await getDocs(reportsQuery);
     let reports = [];
 
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
+
+      // ✅ FILTER: Only include NEW reports (those with pdfUrl - new Field Report structure)
+      // Skip old reports that have reportType or don't have pdfUrl
+      if (data.reportType || !data.pdfUrl) {
+        console.log(`⏭️ Skipping old report: ${docSnap.id} (has reportType: ${!!data.reportType}, has pdfUrl: ${!!data.pdfUrl})`);
+        continue; // Skip old reports
+      }
 
       // Fetch handler details
       const handlerName = await getHandlerName(data.handlerId);
@@ -46,27 +80,55 @@ export async function getAllReports(filters = {}) {
         fieldName = await getFieldName(data.fieldId);
       }
 
+      // Normalize status field (use reportStatus if available, fallback to status)
+      const normalizedStatus = data.reportStatus || data.status || 'sent';
+      
       reports.push({
         id: docSnap.id,
         ...data,
+        reportStatus: normalizedStatus,
+        status: normalizedStatus, // Keep both for compatibility
         handlerName,
         fieldName
       });
     }
 
     // Apply client-side filters (Firestore doesn't support multiple where clauses on different fields without composite indexes)
-    if (filters.reportType) {
-      reports = reports.filter(r => r.reportType === filters.reportType);
+    // Note: Status filter is already applied in Firestore query, but we need to handle both reportStatus and status fields
+    // Also ensure we only show new reports (with pdfUrl, no reportType)
+    if (filters.status) {
+      reports = reports.filter(r => {
+        const reportStatus = r.reportStatus || r.status;
+        return reportStatus === filters.status;
+      });
     }
-
+    
+    // ✅ Additional filter: Ensure all reports are new structure (have pdfUrl, no reportType)
+    reports = reports.filter(r => {
+      return r.pdfUrl && !r.reportType;
+    });
+    
     if (filters.handlerId) {
       reports = reports.filter(r => r.handlerId === filters.handlerId);
     }
+    
+    // Sort reports by date (client-side if needed, in case query didn't include orderBy)
+    reports.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() :
+                    a.timestamp?.toDate ? a.timestamp.toDate().getTime() :
+                    a.submittedDate?.toDate ? a.submittedDate.toDate().getTime() : 0;
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() :
+                    b.timestamp?.toDate ? b.timestamp.toDate().getTime() :
+                    b.submittedDate?.toDate ? b.submittedDate.toDate().getTime() : 0;
+      return dateB - dateA; // Newest first
+    });
 
     if (filters.startDate) {
       const startTime = new Date(filters.startDate).getTime();
       reports = reports.filter(r => {
-        const reportTime = r.submittedDate?.toDate ? r.submittedDate.toDate().getTime() : 0;
+        const reportTime = r.createdAt?.toDate ? r.createdAt.toDate().getTime() :
+                          r.timestamp?.toDate ? r.timestamp.toDate().getTime() :
+                          r.submittedDate?.toDate ? r.submittedDate.toDate().getTime() : 0;
         return reportTime >= startTime;
       });
     }
@@ -74,7 +136,9 @@ export async function getAllReports(filters = {}) {
     if (filters.endDate) {
       const endTime = new Date(filters.endDate).getTime() + (24 * 60 * 60 * 1000); // End of day
       reports = reports.filter(r => {
-        const reportTime = r.submittedDate?.toDate ? r.submittedDate.toDate().getTime() : 0;
+        const reportTime = r.createdAt?.toDate ? r.createdAt.toDate().getTime() :
+                          r.timestamp?.toDate ? r.timestamp.toDate().getTime() :
+                          r.submittedDate?.toDate ? r.submittedDate.toDate().getTime() : 0;
         return reportTime <= endTime;
       });
     }
@@ -134,7 +198,7 @@ async function getFieldName(fieldId) {
 /**
  * Update report status
  * @param {string} reportId - Report document ID
- * @param {string} newStatus - New status ('approved', 'rejected', 'pending_review')
+ * @param {string} newStatus - New status ('approved', 'rejected', 'pending_review', 'sent')
  * @param {string} remarks - Optional remarks
  * @returns {Promise<void>}
  */
@@ -147,11 +211,15 @@ export async function updateReportStatus(reportId, newStatus, remarks = '') {
     const reportRef = doc(db, 'reports', reportId);
 
     const updates = {
-      status: newStatus,
+      reportStatus: newStatus,
+      status: newStatus, // Keep both for compatibility
       reviewedBy: currentUserId,
-      reviewedAt: serverTimestamp(),
-      remarks: remarks
+      reviewedAt: serverTimestamp()
     };
+    
+    if (remarks) {
+      updates.remarks = remarks;
+    }
 
     await updateDoc(reportRef, updates);
 
@@ -164,26 +232,31 @@ export async function updateReportStatus(reportId, newStatus, remarks = '') {
 }
 
 /**
- * Request a report from a handler
+ * Request a report from a handler for a specific field
  * @param {string} handlerId - Handler user ID
- * @param {string} reportType - Type of report to request
+ * @param {string} fieldId - Field ID to request report for
  * @param {string} notes - Optional notes for the handler
  * @returns {Promise<string>} Request ID
  */
-export async function requestReport(handlerId, reportType, notes = '') {
+export async function requestReport(handlerId, fieldId, notes = '') {
   try {
     if (!currentUserId) {
       throw new Error('User not authenticated');
     }
 
-    // Get SRA user name
+    if (!handlerId || !fieldId) {
+      throw new Error('Handler and Field are required');
+    }
+
+    // Get field name for notification
+    const fieldName = await getFieldName(fieldId);
     const sraName = await getSRAName(currentUserId);
 
     // Create notification for handler
-    const message = `SRA requested a ${getReportTypeLabel(reportType)} report${notes ? ': ' + notes : ''}`;
-    await notifyReportRequest(handlerId, reportType, message);
+    const message = `SRA requested a Field Report for "${fieldName}"${notes ? ': ' + notes : ''}`;
+    await notifyReportRequest(handlerId, 'field_report', message);
 
-    console.log(`✅ Report request sent to handler ${handlerId}`);
+    console.log(`✅ Field report request sent to handler ${handlerId} for field ${fieldId}`);
     return 'success';
 
   } catch (error) {
@@ -212,20 +285,29 @@ async function getSRAName(sraId) {
 }
 
 /**
- * Get report type label
+ * Get fields for a handler
+ * @param {string} handlerId - Handler user ID
+ * @returns {Promise<Array>} Array of fields { id, field_name }
  */
-function getReportTypeLabel(reportType) {
-  const labels = {
-    'crop_planting_records': 'Crop Planting Records',
-    'growth_updates': 'Growth Updates',
-    'harvest_schedules': 'Harvest Schedules',
-    'fertilizer_usage': 'Fertilizer Usage',
-    'land_titles': 'Land Titles',
-    'barangay_certifications': 'Barangay Certifications',
-    'production_costs': 'Production Costs'
-  };
-
-  return labels[reportType] || reportType;
+async function getHandlerFields(handlerId) {
+  try {
+    if (!handlerId) return [];
+    
+    const fieldsQuery = query(
+      collection(db, 'fields'),
+      where('userId', '==', handlerId)
+    );
+    
+    const snapshot = await getDocs(fieldsQuery);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      field_name: doc.data().field_name || doc.data().fieldName || 'Unnamed Field',
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error getting handler fields:', error);
+    return [];
+  }
 }
 
 /**
@@ -239,13 +321,14 @@ export async function getReportStatistics() {
 
     const stats = {
       total: snapshot.size,
+      sent: 0,
       pending_review: 0,
       approved: 0,
       rejected: 0
     };
 
     snapshot.docs.forEach(doc => {
-      const status = doc.data().status || 'pending_review';
+      const status = doc.data().reportStatus || doc.data().status || 'sent';
       if (stats[status] !== undefined) {
         stats[status]++;
       }
@@ -255,7 +338,7 @@ export async function getReportStatistics() {
 
   } catch (error) {
     console.error('Error getting report statistics:', error);
-    return { total: 0, pending_review: 0, approved: 0, rejected: 0 };
+    return { total: 0, sent: 0, pending_review: 0, approved: 0, rejected: 0 };
   }
 }
 
@@ -334,6 +417,10 @@ function setupFilterDropdown(inputId, btnId, menuId, labelId, iconId) {
  * @param {Object} filters - Filter options
  */
 export async function renderReportsTable(containerId, filters = {}) {
+  // Default to showing only "sent" status reports if no status filter specified
+  if (!filters.status) {
+    filters.status = 'sent';
+  }
   const container = document.getElementById(containerId);
   if (!container) {
     console.error(`Container #${containerId} not found`);
@@ -352,44 +439,22 @@ export async function renderReportsTable(containerId, filters = {}) {
   // Render filter controls
   const handlers = await getAllHandlers();
   filterContainer.innerHTML = `
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 min-w-0">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 min-w-0">
       <!-- Status Filter -->
       <div class="min-w-0">
         <label class="block text-xs font-medium text-gray-700 mb-1">Status</label>
         <div class="relative">
           <button type="button" id="filterStatusBtn" class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-[var(--cane-500)] focus:outline-none focus:border-[var(--cane-600)] focus:ring-2 focus:ring-[var(--cane-600)] focus:ring-opacity-20 transition-all">
-            <span id="filterStatusLabel" class="text-gray-700">All Status</span>
+            <span id="filterStatusLabel" class="text-gray-700">${filters.status === 'sent' ? 'Sent' : filters.status === 'pending_review' ? 'Pending Review' : filters.status === 'approved' ? 'Approved' : filters.status === 'rejected' ? 'Rejected' : 'Sent'}</span>
             <i class="fas fa-chevron-down text-gray-400 transition-transform text-xs" id="filterStatusIcon"></i>
           </button>
           <div id="filterStatusMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-            <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="">All Status</button>
+            <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="sent">Sent</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="pending_review">Pending Review</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="approved">Approved</button>
             <button type="button" class="filter-status-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="rejected">Rejected</button>
           </div>
-          <input type="hidden" id="filterStatus">
-        </div>
-      </div>
-
-      <!-- Report Type Filter -->
-      <div class="min-w-0">
-        <label class="block text-xs font-medium text-gray-700 mb-1">Report Type</label>
-        <div class="relative">
-          <button type="button" id="filterReportTypeBtn" class="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-[var(--cane-500)] focus:outline-none focus:border-[var(--cane-600)] focus:ring-2 focus:ring-[var(--cane-600)] focus:ring-opacity-20 transition-all">
-            <span id="filterReportTypeLabel" class="text-gray-700">All Types</span>
-            <i class="fas fa-chevron-down text-gray-400 transition-transform text-xs" id="filterReportTypeIcon"></i>
-          </button>
-          <div id="filterReportTypeMenu" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="">All Types</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="crop_planting_records">Crop Planting Records</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="growth_updates">Growth Updates</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="harvest_schedules">Harvest Schedules</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="fertilizer_usage">Fertilizer Usage</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="land_titles">Land Titles</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="barangay_certifications">Barangay Certifications</button>
-            <button type="button" class="filter-report-type-option w-full text-left px-3 py-2 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0 text-sm" data-value="production_costs">Production Costs</button>
-          </div>
-          <input type="hidden" id="filterReportType">
+          <input type="hidden" id="filterStatus" value="${filters.status || 'sent'}">
         </div>
       </div>
 
@@ -433,14 +498,12 @@ export async function renderReportsTable(containerId, filters = {}) {
 
   // Setup custom dropdown handlers
   setupFilterDropdown('filterStatus', 'filterStatusBtn', 'filterStatusMenu', 'filterStatusLabel', 'filterStatusIcon');
-  setupFilterDropdown('filterReportType', 'filterReportTypeBtn', 'filterReportTypeMenu', 'filterReportTypeLabel', 'filterReportTypeIcon');
   setupFilterDropdown('filterHandler', 'filterHandlerBtn', 'filterHandlerMenu', 'filterHandlerLabel', 'filterHandlerIcon');
 
   // Setup filter event listeners
   document.getElementById('applyFiltersBtn').addEventListener('click', () => {
     const filters = {
       status: document.getElementById('filterStatus').value,
-      reportType: document.getElementById('filterReportType').value,
       handlerId: document.getElementById('filterHandler').value,
       startDate: document.getElementById('filterStartDate').value,
       endDate: document.getElementById('filterEndDate').value
@@ -449,16 +512,14 @@ export async function renderReportsTable(containerId, filters = {}) {
   });
 
   document.getElementById('clearFiltersBtn').addEventListener('click', () => {
-    document.getElementById('filterStatus').value = '';
-    document.getElementById('filterReportType').value = '';
+    document.getElementById('filterStatus').value = 'sent';
     document.getElementById('filterHandler').value = '';
     document.getElementById('filterStartDate').value = '';
     document.getElementById('filterEndDate').value = '';
     // Reset dropdown labels
-    document.getElementById('filterStatusLabel').textContent = 'All Status';
-    document.getElementById('filterReportTypeLabel').textContent = 'All Types';
+    document.getElementById('filterStatusLabel').textContent = 'Sent';
     document.getElementById('filterHandlerLabel').textContent = 'All Handlers';
-    renderReportsTable(containerId, {});
+    renderReportsTable(containerId, { status: 'sent' });
   });
 
   document.getElementById('exportCSVBtn').addEventListener('click', async () => {
@@ -472,7 +533,6 @@ export async function renderReportsTable(containerId, filters = {}) {
     
     const filters = {
       status: document.getElementById('filterStatus').value,
-      reportType: document.getElementById('filterReportType').value,
       handlerId: document.getElementById('filterHandler').value,
       startDate: document.getElementById('filterStartDate').value,
       endDate: document.getElementById('filterEndDate').value
@@ -509,7 +569,7 @@ export async function renderReportsTable(containerId, filters = {}) {
             <tr>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Date Submitted</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Handler</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Report Type</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Field</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
               <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Actions</th>
             </tr>
@@ -545,14 +605,16 @@ export async function renderReportsTable(containerId, filters = {}) {
  * Render a single report row
  */
 function renderReportRow(report) {
-  const date = report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString() : 'N/A';
-  const statusBadge = getStatusBadge(report.status);
+  const date = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString() : 
+               report.timestamp?.toDate ? report.timestamp.toDate().toLocaleDateString() :
+               report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString() : 'N/A';
+  const statusBadge = getStatusBadge(report.reportStatus || report.status);
 
   return `
     <tr class="hover:bg-gray-50">
       <td class="px-4 py-3 text-sm text-gray-900">${date}</td>
       <td class="px-4 py-3 text-sm text-gray-900">${escapeHtml(report.handlerName)}</td>
-      <td class="px-4 py-3 text-sm text-gray-700">${getReportTypeLabel(report.reportType)}</td>
+      <td class="px-4 py-3 text-sm text-gray-700">${escapeHtml(report.fieldName || 'No field')}</td>
       <td class="px-4 py-3">${statusBadge}</td>
       <td class="px-4 py-3">
         <div class="flex items-center gap-2">
@@ -560,7 +622,10 @@ function renderReportRow(report) {
                   class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition">
             <i class="fas fa-eye mr-1"></i> View
           </button>
-          ${report.status === 'pending_review' ? `
+          ${(() => {
+            const status = report.reportStatus || report.status;
+            return status === 'pending_review' || status === 'sent' || !status;
+          })() ? `
             <button onclick="approveReport('${report.id}')"
                     class="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition">
               <i class="fas fa-check mr-1"></i> Approve
@@ -581,12 +646,13 @@ function renderReportRow(report) {
  */
 function getStatusBadge(status) {
   const badges = {
+    'sent': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Sent</span>',
     'pending_review': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Review</span>',
     'approved': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>',
     'rejected': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Rejected</span>'
   };
 
-  return badges[status] || badges['pending_review'];
+  return badges[status] || badges['sent'];
 }
 
 /**
@@ -613,8 +679,13 @@ function setupActionHandlers() {
         fieldName = await getFieldName(reportData.fieldId);
       }
 
+      // Determine status (new reports use reportStatus, old use status)
+      const reportStatus = reportData.reportStatus || reportData.status || 'sent';
+      
       const report = {
         ...reportData,
+        reportStatus,
+        status: reportStatus, // Keep both for compatibility
         handlerName,
         fieldName
       };
@@ -632,9 +703,39 @@ function setupActionHandlers() {
     if (!confirm('Are you sure you want to approve this report?')) return;
 
     try {
+      // Get report data to send notification
+      const reportRef = doc(db, 'reports', reportId);
+      const reportSnap = await getDoc(reportRef);
+      
+      if (!reportSnap.exists()) {
+        alert('Report not found');
+        return;
+      }
+      
+      const reportData = reportSnap.data();
+      
+      // Update report status
       await updateReportStatus(reportId, 'approved');
+      
+      // Send notification to handler
+      if (reportData.handlerId) {
+        try {
+          await notifyReportApproval(reportData.handlerId, 'Field Report', reportId);
+          console.log('✅ Approval notification sent to handler');
+        } catch (notifError) {
+          console.error('Failed to send approval notification:', notifError);
+          // Don't fail the approval if notification fails
+        }
+      }
+      
       alert('Report approved successfully');
-      location.reload();
+      // Refresh the reports table instead of full page reload
+      const container = document.getElementById('sraReportsTableContainer');
+      if (container) {
+        renderReportsTable('sraReportsTableContainer');
+      } else {
+        location.reload();
+      }
     } catch (error) {
       console.error('Error approving report:', error);
       alert('Failed to approve report');
@@ -647,9 +748,39 @@ function setupActionHandlers() {
     if (remarks === null) return; // User cancelled
 
     try {
+      // Get report data to send notification
+      const reportRef = doc(db, 'reports', reportId);
+      const reportSnap = await getDoc(reportRef);
+      
+      if (!reportSnap.exists()) {
+        alert('Report not found');
+        return;
+      }
+      
+      const reportData = reportSnap.data();
+      
+      // Update report status
       await updateReportStatus(reportId, 'rejected', remarks);
+      
+      // Send notification to handler
+      if (reportData.handlerId) {
+        try {
+          await notifyReportRejection(reportData.handlerId, 'Field Report', reportId, remarks || '');
+          console.log('✅ Rejection notification sent to handler');
+        } catch (notifError) {
+          console.error('Failed to send rejection notification:', notifError);
+          // Don't fail the rejection if notification fails
+        }
+      }
+      
       alert('Report rejected');
-      location.reload();
+      // Refresh the reports table instead of full page reload
+      const container = document.getElementById('sraReportsTableContainer');
+      if (container) {
+        renderReportsTable('sraReportsTableContainer');
+      } else {
+        location.reload();
+      }
     } catch (error) {
       console.error('Error rejecting report:', error);
       alert('Failed to reject report');
@@ -665,16 +796,60 @@ function showReportDetailsModal(reportId, report) {
   modal.id = 'reportDetailsModal';
   modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50';
 
-  const reportDataHTML = Object.entries(report.data || {}).map(([key, value]) => {
-    return `
+  // For new Field Reports, display PDF link and summary info instead of data fields
+  let reportDataHTML = '';
+  
+  if (report.pdfUrl) {
+    // New Field Report structure (from Handler "Send Report to SRA")
+    reportDataHTML = `
       <div class="border-b border-gray-200 py-2">
-        <dt class="text-sm font-medium text-gray-500">${formatFieldName(key)}</dt>
-        <dd class="mt-1 text-sm text-gray-900">${formatFieldValue(value)}</dd>
+        <dt class="text-sm font-medium text-gray-500">PDF Document</dt>
+        <dd class="mt-1">
+          <a href="${report.pdfUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 underline flex items-center gap-2">
+            <i class="fas fa-file-pdf"></i> View Report PDF
+          </a>
+        </dd>
+      </div>
+      ${report.recordCount !== undefined ? `
+        <div class="border-b border-gray-200 py-2">
+          <dt class="text-sm font-medium text-gray-500">Record Count</dt>
+          <dd class="mt-1 text-sm text-gray-900">${report.recordCount} record(s)</dd>
+        </div>
+      ` : ''}
+      ${report.costSummary ? `
+        <div class="border-b border-gray-200 py-2">
+          <dt class="text-sm font-medium text-gray-500">Total Cost</dt>
+          <dd class="mt-1 text-sm text-gray-900">₱${(report.costSummary.grandTotal || 0).toFixed(2)}</dd>
+        </div>
+      ` : ''}
+    `;
+  } else if (report.data && typeof report.data === 'object' && Object.keys(report.data).length > 0) {
+    // Old report structure with data fields
+    reportDataHTML = Object.entries(report.data).map(([key, value]) => {
+      return `
+        <div class="border-b border-gray-200 py-2">
+          <dt class="text-sm font-medium text-gray-500">${formatFieldName(key)}</dt>
+          <dd class="mt-1 text-sm text-gray-900">${formatFieldValue(value)}</dd>
+        </div>
+      `;
+    }).join('');
+  } else {
+    reportDataHTML = `
+      <div class="border-b border-gray-200 py-2">
+        <p class="text-sm text-gray-500 italic">No detailed data available</p>
       </div>
     `;
-  }).join('');
+  }
 
-  const submittedDate = report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString('en-US', {
+  const submittedDate = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : report.timestamp?.toDate ? report.timestamp.toDate().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }) : report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -684,7 +859,7 @@ function showReportDetailsModal(reportId, report) {
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" id="reportDetailsPrintArea">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-xl font-bold text-gray-900">${getReportTypeLabel(report.reportType)}</h3>
+          <h3 class="text-xl font-bold text-gray-900">Field Growth & Operations Report</h3>
           <button onclick="document.getElementById('reportDetailsModal').remove()"
                   class="text-gray-400 hover:text-gray-600 print:hidden">
             <i class="fas fa-times text-xl"></i>
@@ -707,11 +882,11 @@ function showReportDetailsModal(reportId, report) {
           </div>
           <div class="flex items-center text-sm">
             <span class="font-medium text-gray-700 w-32">Status:</span>
-            <span>${getStatusBadge(report.status || 'pending_review')}</span>
+            <span>${getStatusBadge(report.reportStatus || report.status || 'sent')}</span>
           </div>
         </div>
 
-        <!-- Report Data -->
+        <!-- Report Data or PDF Link -->
         <h4 class="text-sm font-semibold text-gray-700 mb-2">Report Details</h4>
         <dl class="divide-y divide-gray-200">
           ${reportDataHTML}
@@ -726,7 +901,7 @@ function showReportDetailsModal(reportId, report) {
 
         <!-- Export Actions -->
         <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-gray-200 print:hidden">
-          <button onclick="downloadSRAReportPDF('${reportId}', '${escapeHtml(getReportTypeLabel(report.reportType))}')"
+          <button onclick="downloadSRAReportPDF('${reportId}', '${escapeHtml(report.fieldName || 'Field Report')}')"
                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition flex items-center gap-2">
             <i class="fas fa-download"></i> Download PDF
           </button>
@@ -806,16 +981,6 @@ export async function showRequestReportModal() {
   modal.id = 'requestReportModal';
   modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50';
 
-  const reportTypes = [
-    { value: 'crop_planting_records', label: 'Crop Planting Records' },
-    { value: 'growth_updates', label: 'Growth Updates' },
-    { value: 'harvest_schedules', label: 'Harvest Schedules' },
-    { value: 'fertilizer_usage', label: 'Fertilizer Usage' },
-    { value: 'land_titles', label: 'Land Titles' },
-    { value: 'barangay_certifications', label: 'Barangay Certifications' },
-    { value: 'production_costs', label: 'Production Costs' }
-  ];
-
   modal.innerHTML = `
     <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
       <div class="p-4 sm:p-6">
@@ -859,29 +1024,36 @@ export async function showRequestReportModal() {
             </div>
           </div>
 
-          <!-- Report Type Dropdown -->
-          <div>
+          <!-- Field Selection -->
+          <div id="fieldSelectionContainer" class="hidden">
             <label class="block text-sm font-medium text-gray-700 mb-2">
-              Report Type <span class="text-red-500">*</span>
+              Select Field <span class="text-red-500">*</span>
             </label>
             <div class="relative">
-              <button type="button" id="reportTypeDropdownBtn" 
+              <button type="button" id="fieldDropdownBtn" 
                       class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg text-left flex items-center justify-between hover:border-[var(--cane-500)] focus:outline-none focus:border-[var(--cane-600)] focus:ring-2 focus:ring-[var(--cane-600)] focus:ring-opacity-20 transition-all">
-                <span id="reportTypeDropdownLabel" class="text-gray-600">Choose report type</span>
-                <i class="fas fa-chevron-down text-gray-400 transition-transform" id="reportTypeDropdownIcon"></i>
+                <span id="fieldDropdownLabel" class="text-gray-600">Choose a field</span>
+                <i class="fas fa-chevron-down text-gray-400 transition-transform" id="fieldDropdownIcon"></i>
               </button>
               
-              <!-- Custom Dropdown Menu -->
-              <div id="reportTypeDropdownMenu" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                <div id="reportTypeOptionsList" class="py-1">
-                  ${reportTypes.map(rt => `
-                    <button type="button" class="report-type-option w-full text-left px-4 py-3 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0" data-value="${rt.value}">
-                      <div class="font-medium text-gray-900">${rt.label}</div>
-                    </button>
-                  `).join('')}
+              <!-- Field Dropdown Menu -->
+              <div id="fieldDropdownMenu" class="hidden absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-300 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                <div id="fieldOptionsList" class="py-1">
+                  <!-- Field options will be populated dynamically -->
                 </div>
               </div>
-              <input type="hidden" id="reportTypeSelect" required>
+              <input type="hidden" id="fieldSelect" required>
+            </div>
+          </div>
+          
+          <!-- Single Field Display (when handler has only 1 field) -->
+          <div id="singleFieldDisplay" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Field <span class="text-red-500">*</span>
+            </label>
+            <div class="px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-lg">
+              <span id="singleFieldName" class="text-gray-900 font-medium"></span>
+              <input type="hidden" id="singleFieldId">
             </div>
           </div>
 
@@ -952,9 +1124,9 @@ export async function showRequestReportModal() {
     });
   });
 
-  // Handler option selection
+  // Handler option selection with field loading logic
   handlerOptions.forEach(option => {
-    option.addEventListener('click', (e) => {
+    option.addEventListener('click', async (e) => {
       e.preventDefault();
       const value = option.getAttribute('data-value');
       const name = option.querySelector('.font-medium').textContent;
@@ -962,38 +1134,121 @@ export async function showRequestReportModal() {
       handlerDropdownLabel.textContent = name;
       handlerDropdownMenu.classList.add('hidden');
       handlerDropdownIcon.style.transform = 'rotate(0deg)';
+      
+      // Load fields for selected handler
+      await loadFieldsForHandler(value);
     });
   });
-
-  // Report Type Dropdown Setup
-  const reportTypeDropdownBtn = modal.querySelector('#reportTypeDropdownBtn');
-  const reportTypeDropdownMenu = modal.querySelector('#reportTypeDropdownMenu');
-  const reportTypeDropdownLabel = modal.querySelector('#reportTypeDropdownLabel');
-  const reportTypeDropdownIcon = modal.querySelector('#reportTypeDropdownIcon');
-  const reportTypeOptionsList = modal.querySelector('#reportTypeOptionsList');
-  const reportTypeSelect = modal.querySelector('#reportTypeSelect');
-  const reportTypeOptions = modal.querySelectorAll('.report-type-option');
-
-  // Toggle report type dropdown
-  reportTypeDropdownBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    const isHidden = reportTypeDropdownMenu.classList.contains('hidden');
-    reportTypeDropdownMenu.classList.toggle('hidden');
-    reportTypeDropdownIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-  });
-
-  // Report type option selection
-  reportTypeOptions.forEach(option => {
-    option.addEventListener('click', (e) => {
+  
+  // Field loading function
+  async function loadFieldsForHandler(handlerId) {
+    const fieldSelectionContainer = modal.querySelector('#fieldSelectionContainer');
+    const singleFieldDisplay = modal.querySelector('#singleFieldDisplay');
+    const fieldDropdownMenu = modal.querySelector('#fieldDropdownMenu');
+    const fieldOptionsList = modal.querySelector('#fieldOptionsList');
+    const fieldSelect = modal.querySelector('#fieldSelect');
+    const singleFieldId = modal.querySelector('#singleFieldId');
+    const singleFieldName = modal.querySelector('#singleFieldName');
+    
+    // Hide both initially
+    fieldSelectionContainer.classList.add('hidden');
+    singleFieldDisplay.classList.add('hidden');
+    
+    // Reset field selection
+    fieldSelect.value = '';
+    singleFieldId.value = '';
+    
+    if (!handlerId) {
+      return;
+    }
+    
+    try {
+      // Show loading state
+      const fieldDropdownLabel = modal.querySelector('#fieldDropdownLabel');
+      if (fieldDropdownLabel) {
+        fieldDropdownLabel.textContent = 'Loading fields...';
+      }
+      
+      // Fetch fields for handler
+      const fields = await getHandlerFields(handlerId);
+      
+      if (fields.length === 0) {
+        // Handler has no fields
+        fieldSelectionContainer.classList.add('hidden');
+        singleFieldDisplay.classList.add('hidden');
+        if (fieldDropdownLabel) {
+          fieldDropdownLabel.textContent = 'No fields available';
+        }
+        fieldSelect.required = false;
+        return;
+      }
+      
+      if (fields.length === 1) {
+        // Auto-select and lock single field
+        singleFieldId.value = fields[0].id;
+        singleFieldName.textContent = fields[0].field_name;
+        singleFieldDisplay.classList.remove('hidden');
+        fieldSelectionContainer.classList.add('hidden');
+        fieldSelect.required = false;
+      } else {
+        // Show dropdown for multiple fields
+        fieldOptionsList.innerHTML = fields.map(field => `
+          <button type="button" class="field-option w-full text-left px-4 py-3 hover:bg-[var(--cane-50)] transition-colors border-b border-gray-100 last:border-b-0" data-value="${field.id}" data-name="${escapeHtml(field.field_name)}">
+            <div class="font-medium text-gray-900">${escapeHtml(field.field_name)}</div>
+          </button>
+        `).join('');
+        
+        singleFieldDisplay.classList.add('hidden');
+        fieldSelectionContainer.classList.remove('hidden');
+        fieldSelect.required = true;
+        
+        if (fieldDropdownLabel) {
+          fieldDropdownLabel.textContent = 'Choose a field';
+        }
+        
+        // Setup field option click handlers
+        fieldOptionsList.querySelectorAll('.field-option').forEach(option => {
+          option.addEventListener('click', (e) => {
+            e.preventDefault();
+            const value = option.getAttribute('data-value');
+            const name = option.getAttribute('data-name');
+            fieldSelect.value = value;
+            if (fieldDropdownLabel) {
+              fieldDropdownLabel.textContent = name;
+            }
+            fieldDropdownMenu.classList.add('hidden');
+            const fieldDropdownIcon = modal.querySelector('#fieldDropdownIcon');
+            if (fieldDropdownIcon) {
+              fieldDropdownIcon.style.transform = 'rotate(0deg)';
+            }
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error loading fields:', error);
+      if (fieldDropdownLabel) {
+        fieldDropdownLabel.textContent = 'Error loading fields';
+      }
+    }
+  }
+  
+  // Field Dropdown Setup
+  const fieldDropdownBtn = modal.querySelector('#fieldDropdownBtn');
+  const fieldDropdownMenu = modal.querySelector('#fieldDropdownMenu');
+  const fieldDropdownLabel = modal.querySelector('#fieldDropdownLabel');
+  const fieldDropdownIcon = modal.querySelector('#fieldDropdownIcon');
+  
+  if (fieldDropdownBtn && fieldDropdownMenu) {
+    // Toggle field dropdown
+    fieldDropdownBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      const value = option.getAttribute('data-value');
-      const label = option.querySelector('.font-medium').textContent;
-      reportTypeSelect.value = value;
-      reportTypeDropdownLabel.textContent = label;
-      reportTypeDropdownMenu.classList.add('hidden');
-      reportTypeDropdownIcon.style.transform = 'rotate(0deg)';
+      const isHidden = fieldDropdownMenu.classList.contains('hidden');
+      fieldDropdownMenu.classList.toggle('hidden');
+      if (fieldDropdownIcon) {
+        fieldDropdownIcon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
     });
-  });
+  }
 
   // Close dropdowns when clicking outside
   document.addEventListener('click', (e) => {
@@ -1001,9 +1256,11 @@ export async function showRequestReportModal() {
       handlerDropdownMenu.classList.add('hidden');
       handlerDropdownIcon.style.transform = 'rotate(0deg)';
     }
-    if (!reportTypeDropdownBtn.contains(e.target) && !reportTypeDropdownMenu.contains(e.target)) {
-      reportTypeDropdownMenu.classList.add('hidden');
-      reportTypeDropdownIcon.style.transform = 'rotate(0deg)';
+    if (fieldDropdownBtn && !fieldDropdownBtn.contains(e.target) && fieldDropdownMenu && !fieldDropdownMenu.contains(e.target)) {
+      fieldDropdownMenu.classList.add('hidden');
+      if (fieldDropdownIcon) {
+        fieldDropdownIcon.style.transform = 'rotate(0deg)';
+      }
     }
   });
 
@@ -1011,11 +1268,13 @@ export async function showRequestReportModal() {
     e.preventDefault();
 
     const handlerId = handlerSelect.value;
-    const reportType = reportTypeSelect.value;
+    const fieldSelectEl = modal.querySelector('#fieldSelect');
+    const singleFieldIdEl = modal.querySelector('#singleFieldId');
+    const fieldId = fieldSelectEl?.value || singleFieldIdEl?.value;
     const notes = modal.querySelector('#requestNotes').value;
 
-    if (!handlerId || !reportType) {
-      alert('Please select both handler and report type');
+    if (!handlerId || !fieldId) {
+      alert('Please select both handler and field');
       return;
     }
 
@@ -1024,7 +1283,7 @@ export async function showRequestReportModal() {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
 
     try {
-      await requestReport(handlerId, reportType, notes);
+      await requestReport(handlerId, fieldId, notes);
 
       // Show success message
       const successDiv = document.createElement('div');
@@ -1133,9 +1392,10 @@ window.downloadSRAReportPDF = async function(reportId, reportTypeName) {
 
     // Configure PDF options
     const timestamp = new Date().toLocaleDateString().replace(/\//g, '-');
+    const safeName = (reportTypeName || 'Field_Report').replace(/\s+/g, '_');
     const opt = {
       margin: 10,
-      filename: `SRA_Report_${reportTypeName.replace(/\s+/g, '_')}_${timestamp}.pdf`,
+      filename: `Field_Report_${safeName}_${timestamp}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: {
         scale: 2,
@@ -1214,10 +1474,9 @@ window.exportReportCSV = async function(reportId) {
     // CSV structure: Field, Value
     const rows = [
       ['Field', 'Value'],
-      ['Report Type', getReportTypeLabel(reportData.reportType)],
       ['Handler', handlerName],
       ['Field', fieldName],
-      ['Status', reportData.status || 'pending_review'],
+      ['Status', reportData.reportStatus || reportData.status || 'sent'],
       ['Submitted Date', submittedDate],
       ['Remarks', reportData.remarks || ''],
       [''], // Empty row separator
@@ -1262,8 +1521,8 @@ window.exportReportCSV = async function(reportId) {
     const url = URL.createObjectURL(blob);
 
     const timestamp = new Date().toISOString().split('T')[0];
-    const reportType = reportData.reportType || 'report';
-    const filename = `report_${reportType}_${timestamp}.csv`;
+    const fieldNameSafe = (fieldName || 'field_report').replace(/\s+/g, '_');
+    const filename = `field_report_${fieldNameSafe}_${timestamp}.csv`;
 
     link.setAttribute('href', url);
     link.setAttribute('download', filename);
@@ -1301,15 +1560,16 @@ export async function exportReportsToCSV(filters = {}, exportBtn = null, origina
     }
 
     // Prepare CSV headers
-    const headers = ['Date Submitted', 'Handler', 'Field', 'Report Type', 'Status', 'Remarks'];
+    const headers = ['Date Submitted', 'Handler', 'Field', 'Status', 'Remarks'];
 
     // Prepare CSV rows
     const rows = reports.map(report => {
-      const date = report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString() : 'N/A';
+      const date = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString() : 
+                   report.timestamp?.toDate ? report.timestamp.toDate().toLocaleDateString() :
+                   report.submittedDate?.toDate ? report.submittedDate.toDate().toLocaleDateString() : 'N/A';
       const handler = report.handlerName || 'Unknown';
       const field = report.fieldName || 'No field';
-      const reportType = getReportTypeLabel(report.reportType);
-      const status = report.status || 'pending_review';
+      const status = report.reportStatus || report.status || 'sent';
       const remarks = report.remarks || '';
 
       // Escape CSV values (handle commas and quotes)
@@ -1321,7 +1581,7 @@ export async function exportReportsToCSV(filters = {}, exportBtn = null, origina
         return value;
       };
 
-      return [date, handler, field, reportType, status, remarks].map(escapeCSV).join(',');
+      return [date, handler, field, status, remarks].map(escapeCSV).join(',');
     });
 
     // Combine headers and rows
