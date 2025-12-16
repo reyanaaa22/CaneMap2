@@ -659,6 +659,17 @@
                 box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
             }
 
+            /* Mobile: Limit fields list to show ~4 entries with scrolling */
+            #fieldsDefault .section-card:last-child {
+                display: flex;
+                flex-direction: column;
+            }
+
+            #handlerFieldsList {
+                max-height: 450px;
+                overflow-y: auto;
+            }
+
             .leaflet-pane,
             .leaflet-tile-pane,
             .leaflet-overlay-pane,
