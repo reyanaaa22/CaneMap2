@@ -3619,26 +3619,41 @@ async function renderHandlerFields(userId) {
     const firstWithCoords = fields.find(field => toLatLng(field).lat && toLatLng(field).lng);
     const initialCenter = firstWithCoords ? [toLatLng(firstWithCoords).lat, toLatLng(firstWithCoords).lng] : DEFAULT_HANDLER_MAP_CENTER;
 
+    // Define map bounds for Ormoc City
+    const ormocBounds = L.latLngBounds(
+      [10.95, 124.5], // southwest
+      [11.2, 124.8]  // northeast
+    );
+
     const map = L.map(mapContainer, {
       maxZoom: 18,
-      minZoom: 11
-    }).setView(initialCenter, 12);
+      minZoom: 11,
+      maxBounds: ormocBounds,
+      maxBoundsViscosity: 1.0
+    }).setView([11.0064, 124.6075], 12);
     
-    // Add the same three layers as in lobby.js
+    // Add satellite imagery layer
     const satellite = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { attribution: 'Tiles © Esri' }
+      { attribution: 'Tiles &copy; Esri' }
     ).addTo(map);
 
+    // Add road layer
     const roads = L.tileLayer(
       'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '© Esri' }
+      { attribution: '&copy; Esri' }
     ).addTo(map);
 
+    // Add labels layer
     const labels = L.tileLayer(
       'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-      { attribution: '© Esri' }
+      { attribution: '&copy; Esri' }
     ).addTo(map);
+
+    // Keep map within Ormoc bounds
+    map.on('drag', function() {
+      map.panInsideBounds(ormocBounds, { animate: false });
+    });
 
     handlerFieldsMapInstance = map;
     handlerFieldsLastBounds = null;
@@ -4016,10 +4031,20 @@ export function initializeFieldsSection() {
 
       console.log('📍 Creating Leaflet map instance...');
       
+      // Ormoc City boundary coordinates (southwest and northeast points)
+      const ormocBounds = L.latLngBounds(
+        [10.95, 124.5], // southwest
+        [11.2, 124.8]  // northeast
+      );
+
       fieldsMap = L.map('handlerFieldsMap', {
         zoomControl: false,
-        preferCanvas: true
-      }).setView(defaultCenter, defaultZoom);
+        preferCanvas: true,
+        maxZoom: 18,
+        minZoom: 11,
+        maxBounds: ormocBounds,
+        maxBoundsViscosity: 1.0
+      }).setView([11.0064, 124.6075], 12);
 
       console.log('🗺️ Map instance created, adding tile layer...');
 
@@ -4043,6 +4068,11 @@ export function initializeFieldsSection() {
         'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
         { attribution: '© Esri' }
       ).addTo(fieldsMap);
+
+      // Keep map within Ormoc bounds
+      fieldsMap.on('drag', function() {
+        fieldsMap.panInsideBounds(ormocBounds, { animate: false });
+      });
 
       satellite.on('loading', () => console.log('🔄 Loading map tiles...'));
       satellite.on('load', () => console.log('✅ Map tiles loaded'));
@@ -4242,6 +4272,47 @@ export function initializeFieldsSection() {
 
     if (!markersLayer) {
       markersLayer = L.layerGroup().addTo(fieldsMap);
+    }
+
+    // Add field boundary polygon if coordinates exist
+    if (field.coordinates && field.coordinates.length >= 3) {
+      try {
+        // Convert coordinates to LatLng array format
+        const latLngs = [];
+        
+        // Handle different coordinate formats
+        if (Array.isArray(field.coordinates[0])) {
+          // Handle array of [lat, lng] arrays
+          latLngs.push(...field.coordinates.map(coord => [coord[0], coord[1]]));
+        } else if (typeof field.coordinates[0] === 'object' && field.coordinates[0].lat !== undefined) {
+          // Handle array of {lat, lng} objects
+          latLngs.push(...field.coordinates.map(coord => [coord.lat, coord.lng]));
+        } else if (field.coordinates[0].latitude !== undefined) {
+          // Handle array of {latitude, longitude} objects
+          latLngs.push(...field.coordinates.map(coord => [coord.latitude, coord.longitude]));
+        }
+
+        console.log('Field boundary coordinates:', latLngs);
+
+        // Only create polygon if we have valid coordinates
+        if (latLngs.length >= 3) {
+          L.polygon(latLngs, {
+            color: '#16a34a',
+            weight: 2,
+            fillColor: '#22c55e',
+            fillOpacity: 0.25,
+            interactive: false
+          }).addTo(markersLayer);
+          
+          console.log('Added polygon for field:', field.field_name || field.id);
+        }
+      } catch (error) {
+        console.error('Error creating field boundary:', error);
+        console.error('Field data:', field);
+      }
+    } else {
+      console.log('No valid coordinates found for field:', field.field_name || field.id);
+      console.log('Coordinates data:', field.coordinates);
     }
 
     const marker = L.marker([lat, lng], { icon: fieldIcon }).addTo(markersLayer);
