@@ -4462,7 +4462,15 @@ export function initializeFieldsSection() {
       const soilType = field.soil_type || field.soilType || 'N/A';
       const irrigationMethod = field.irrigation_method || field.irrigationMethod || 'N/A';
       const previousCrop = field.previous_crop || field.previousCrop || 'N/A';
-      const growthStage = field.current_growth_stage || field.growthStage || '—';
+      
+      // Calculate growth stage from planting date
+      let growthStage = '—';
+      const { calculateDAP, getGrowthStage } = await import('./growth-tracker.js');
+      const plantingDateObj = field.plantingDate?.toDate?.() || field.plantingDate;
+      if (plantingDateObj) {
+        const dap = calculateDAP(plantingDateObj);
+        growthStage = dap !== null ? getGrowthStage(dap) : 'Not Planted';
+      }
       
       // Format dates from Firestore Timestamps
       const formatFirestoreDate = (dateValue) => {
@@ -4583,10 +4591,22 @@ export function initializeFieldsSection() {
 
             <div>
               <h3 class="text-sm font-bold text-[var(--cane-700)] uppercase tracking-wide mb-4 flex items-center gap-2">
-                <i class="fas fa-file-alt text-[var(--cane-600)]"></i>Documents & Photos
+                <i class="fas fa-leaf text-[var(--cane-600)]"></i>Growth Tracker Status
               </h3>
-              <div id="fd_documents_container" class="space-y-4">
-                <p class="text-xs text-[var(--cane-600)]">Loading documents...</p>
+              <div id="fd_growth_tracker_container" class="bg-gradient-to-br from-[var(--cane-50)] to-[var(--cane-100)] rounded-lg border border-[var(--cane-200)] p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div>
+                    <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Current Stage</p>
+                    <p class="text-sm font-bold text-[var(--cane-900)] mt-1" id="fd_growth_stage">—</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Days After Planting</p>
+                    <p class="text-sm font-bold text-[var(--cane-900)] mt-1" id="fd_dap">—</p>
+                  </div>
+                </div>
+                <button id="fd_view_growth_tracker_btn" class="px-3 py-1.5 rounded-lg font-semibold text-sm bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors flex items-center justify-center gap-2">
+                  <i class="fas fa-chart-line text-xs"></i>View Full Growth Tracker
+                </button>
               </div>
             </div>
           </div>
@@ -4615,148 +4635,57 @@ export function initializeFieldsSection() {
       document.addEventListener('keydown', escHandler);
       modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); });
 
-      // Load documents from field document
+      // Load growth tracker status from Firebase
       try {
-        console.log('Loading documents for fieldId:', fieldId);
-        const documentsContainer = modal.querySelector('#fd_documents_container');
+        const { calculateDAP, getGrowthStage } = await import('./growth-tracker.js');
         
-        // Build documents list from field URLs
-        const docsList = [];
+        // Get the latest field data from Firestore to ensure we have current growth tracking info
+        const fieldRef = doc(db, 'fields', fieldId);
+        const fieldSnap = await getDoc(fieldRef);
         
-        if (field.validFrontUrl) {
-          docsList.push({
-            name: 'Valid ID Front',
-            url: field.validFrontUrl
-          });
-        }
-        if (field.validBackUrl) {
-          docsList.push({
-            name: 'Valid ID Back',
-            url: field.validBackUrl
-          });
-        }
-        if (field.selfieUrl) {
-          docsList.push({
-            name: 'Selfie with ID',
-            url: field.selfieUrl
-          });
-        }
-        if (field.barangayCertUrl) {
-          docsList.push({
-            name: 'Barangay Certificate',
-            url: field.barangayCertUrl
-          });
-        }
-        if (field.landTitleUrl) {
-          docsList.push({
-            name: 'Land Title',
-            url: field.landTitleUrl
-          });
+        if (fieldSnap.exists()) {
+          const latestField = fieldSnap.data();
+          
+          // Use stored growth stage if available, otherwise calculate from planting date
+          let growthStageValue = latestField.currentGrowthStage || '—';
+          let dapValue = '—';
+          
+          const plantingDateObj = latestField.plantingDate?.toDate?.() || latestField.plantingDate;
+          if (plantingDateObj) {
+            const dap = calculateDAP(plantingDateObj);
+            dapValue = dap !== null ? `${dap} days` : '—';
+            
+            // If no stored growth stage, calculate it
+            if (!latestField.currentGrowthStage || latestField.currentGrowthStage === '—') {
+              growthStageValue = dap !== null ? getGrowthStage(dap) : 'Not Planted';
+            }
+          }
+          
+          const growthStageEl = modal.querySelector('#fd_growth_stage');
+          const dapEl = modal.querySelector('#fd_dap');
+          
+          if (growthStageEl) growthStageEl.textContent = growthStageValue;
+          if (dapEl) dapEl.textContent = dapValue;
         }
         
-        console.log('Documents found:', docsList.length);
-        
-        if (docsList.length === 0) {
-          console.log('No documents in field');
-          documentsContainer.innerHTML = '<p class="text-xs text-[var(--cane-600)] col-span-2">No documents uploaded</p>';
-        } else {
-          // Create organized layout: 2 rows of 2, then 1 centered
-          let html = '';
-          
-          // Row 1: Valid ID Front - Valid ID Back
-          html += '<div class="grid grid-cols-2 gap-4 mb-4">';
-          const frontDoc = docsList.find(d => d.name.includes('Front'));
-          const backDoc = docsList.find(d => d.name.includes('Back'));
-          
-          if (frontDoc) {
-            html += `
-              <div class="flex flex-col gap-2 cursor-pointer">
-                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(frontDoc.url)}', '${escapeHtml(frontDoc.name)}')">
-                  <img src="${escapeHtml(frontDoc.url)}" alt="${escapeHtml(frontDoc.name)}" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <i class="fas fa-eye text-white text-2xl"></i>
-                  </div>
-                </div>
-                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(frontDoc.name)}</p>
-              </div>
-            `;
-          }
-          
-          if (backDoc) {
-            html += `
-              <div class="flex flex-col gap-2 cursor-pointer">
-                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(backDoc.url)}', '${escapeHtml(backDoc.name)}')">
-                  <img src="${escapeHtml(backDoc.url)}" alt="${escapeHtml(backDoc.name)}" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <i class="fas fa-eye text-white text-2xl"></i>
-                  </div>
-                </div>
-                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(backDoc.name)}</p>
-              </div>
-            `;
-          }
-          html += '</div>';
-          
-          // Row 2: Barangay Certificate - Land Title
-          html += '<div class="grid grid-cols-2 gap-4 mb-4">';
-          const barangayDoc = docsList.find(d => d.name.includes('Barangay'));
-          const landDoc = docsList.find(d => d.name.includes('Land'));
-          
-          if (barangayDoc) {
-            html += `
-              <div class="flex flex-col gap-2 cursor-pointer">
-                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(barangayDoc.url)}', '${escapeHtml(barangayDoc.name)}')">
-                  <img src="${escapeHtml(barangayDoc.url)}" alt="${escapeHtml(barangayDoc.name)}" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <i class="fas fa-eye text-white text-2xl"></i>
-                  </div>
-                </div>
-                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(barangayDoc.name)}</p>
-              </div>
-            `;
-          }
-          
-          if (landDoc) {
-            html += `
-              <div class="flex flex-col gap-2 cursor-pointer">
-                <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(landDoc.url)}', '${escapeHtml(landDoc.name)}')">
-                  <img src="${escapeHtml(landDoc.url)}" alt="${escapeHtml(landDoc.name)}" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <i class="fas fa-eye text-white text-2xl"></i>
-                  </div>
-                </div>
-                <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(landDoc.name)}</p>
-              </div>
-            `;
-          }
-          html += '</div>';
-          
-          // Row 3: Selfie with ID (centered)
-          const selfieDoc = docsList.find(d => d.name.includes('Selfie'));
-          if (selfieDoc) {
-            html += `
-              <div class="flex justify-center">
-                <div class="w-1/2 flex flex-col gap-2 cursor-pointer">
-                  <div class="relative group w-full aspect-video bg-gradient-to-br from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg border-2 border-[var(--cane-200)] overflow-hidden flex items-center justify-center hover:border-[var(--cane-600)] transition-all hover:shadow-md" onclick="openDocumentModal('${escapeHtml(selfieDoc.url)}', '${escapeHtml(selfieDoc.name)}')">
-                    <img src="${escapeHtml(selfieDoc.url)}" alt="${escapeHtml(selfieDoc.name)}" class="w-full h-full object-cover" />
-                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-lg transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <i class="fas fa-eye text-white text-2xl"></i>
-                    </div>
-                  </div>
-                  <p class="text-xs font-semibold text-[var(--cane-900)] line-clamp-2 text-center">${escapeHtml(selfieDoc.name)}</p>
-                </div>
-              </div>
-            `;
-          }
-          
-          documentsContainer.innerHTML = html;
+        // Add click handler for growth tracker button
+        const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');
+        if (growthTrackerBtn) {
+          growthTrackerBtn.addEventListener('click', () => {
+            window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
+          });
         }
-      } catch (docErr) {
-        console.error('Failed to load documents:', docErr);
-        console.error('Error details:', docErr.message);
-        const documentsContainer = modal.querySelector('#fd_documents_container');
-        documentsContainer.innerHTML = '<p class="text-xs text-[var(--cane-600)] col-span-2">Unable to load documents</p>';
+      } catch (growthErr) {
+        console.warn('Failed to load growth tracker status:', growthErr);
+        // Still set up the button even if data loading fails
+        const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');
+        if (growthTrackerBtn) {
+          growthTrackerBtn.addEventListener('click', () => {
+            window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
+          });
+        }
       }
+
 
     } catch (outerErr) {
       console.error('viewFieldDetails failed', outerErr);
