@@ -865,6 +865,154 @@
           'VMC 87-95': { min: 9, max: 10 }
         };
 
+        // DAP (Days After Planting) stage ranges for each variety
+        const DAP_STAGE_RANGES = {
+          'K 88-65': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 130 },
+            'Grand Growth': { min: 130, max: 300 },
+            Maturity: { min: 300, max: 420 }
+          },
+          'K 88-87': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 130 },
+            'Grand Growth': { min: 130, max: 300 },
+            Maturity: { min: 300, max: 420 }
+          },
+          'PS 1': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 270 },
+            Maturity: { min: 270, max: 360 }
+          },
+          'VMC 84-947': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 270 },
+            Maturity: { min: 270, max: 360 }
+          },
+          'PS 2': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 100 },
+            'Grand Growth': { min: 100, max: 240 },
+            Maturity: { min: 240, max: 300 }
+          },
+          'VMC 88-354': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 100 },
+            'Grand Growth': { min: 100, max: 240 },
+            Maturity: { min: 240, max: 300 }
+          },
+          'PS 3': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 260 },
+            Maturity: { min: 260, max: 330 }
+          },
+          'VMC 84-524': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 260 },
+            Maturity: { min: 260, max: 330 }
+          },
+          'CADP Sc1': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 260 },
+            Maturity: { min: 260, max: 330 }
+          },
+          'PS 4': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'VMC 95-152': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'PS 5': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'VMC 95-09': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'PSR 2000-161': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 270 },
+            Maturity: { min: 270, max: 360 }
+          },
+          'PSR 2000-343': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 260 },
+            Maturity: { min: 260, max: 350 }
+          },
+          'PSR 2000-34': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 270 },
+            Maturity: { min: 270, max: 360 }
+          },
+          'PSR 97-41': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 250 },
+            Maturity: { min: 250, max: 330 }
+          },
+          'PSR 97-45': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 250 },
+            Maturity: { min: 250, max: 330 }
+          },
+          'Ps 862': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'VMC 71-39': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'VMC 84-549': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 100 },
+            'Grand Growth': { min: 100, max: 240 },
+            Maturity: { min: 240, max: 300 }
+          },
+          'VMC 86-550': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 270 },
+            Maturity: { min: 270, max: 360 }
+          },
+          'VMC 87-599': {
+            Germination: { min: 0, max: 35 },
+            Tillering: { min: 35, max: 120 },
+            'Grand Growth': { min: 120, max: 280 },
+            Maturity: { min: 280, max: 360 }
+          },
+          'VMC 87-95': {
+            Germination: { min: 0, max: 30 },
+            Tillering: { min: 30, max: 110 },
+            'Grand Growth': { min: 110, max: 250 },
+            Maturity: { min: 250, max: 330 }
+          }
+        };
+
         // Auth state listener
         onAuthStateChanged(auth, async (user) => {
           if (user) {
@@ -1398,54 +1546,72 @@
           });
         }
 
+        // Get current growth stage based on DAP and variety
+        function getGrowthStageByDAP(variety, DAP) {
+          const stageRanges = DAP_STAGE_RANGES[variety];
+          if (!stageRanges) return 'Unknown';
+          for (const [stageName, range] of Object.entries(stageRanges)) {
+            if (DAP >= range.min && DAP <= range.max) return stageName;
+          }
+          return 'Maturity';
+        }
+
+        // Get stage completion percentage
+        function getStageCompletionPercentage(variety, DAP) {
+          const stageRanges = DAP_STAGE_RANGES[variety];
+          if (!stageRanges) return 0;
+          for (const [stageName, range] of Object.entries(stageRanges)) {
+            if (DAP >= range.min && DAP <= range.max) {
+              const stageDuration = range.max - range.min;
+              const daysIntoStage = DAP - range.min;
+              return Math.round((daysIntoStage / stageDuration) * 100);
+            }
+          }
+          return 100;
+        }
+
+        // Get all stage progress for a variety
+        function getAllStageProgress(variety, DAP) {
+          const stageRanges = DAP_STAGE_RANGES[variety];
+          if (!stageRanges) return {};
+          const progress = {};
+          for (const [stageName, range] of Object.entries(stageRanges)) {
+            if (DAP >= range.max) {
+              progress[stageName] = 100;
+            } else if (DAP >= range.min) {
+              const stageDuration = range.max - range.min;
+              const daysIntoStage = DAP - range.min;
+              progress[stageName] = Math.round((daysIntoStage / stageDuration) * 100);
+            } else {
+              progress[stageName] = 0;
+            }
+          }
+          return progress;
+        }
+
         // Show warnings for delays and overdue harvests
         function showWarnings(growthData) {
           const warningsContainer = document.createElement('div');
           warningsContainer.className = 'mt-4 space-y-2';
           warningsContainer.id = 'growthWarnings';
-
-          // Remove existing warnings
           const existingWarnings = document.getElementById('growthWarnings');
           if (existingWarnings) existingWarnings.remove();
-
           let hasWarnings = false;
-
-          // Check for fertilization delays
           if (growthData.delayInfo && growthData.delayInfo.isDelayed) {
             hasWarnings = true;
             const delayWarning = document.createElement('div');
             delayWarning.className = 'px-4 py-3 rounded-lg bg-yellow-50 border border-yellow-200';
-            delayWarning.innerHTML = `
-          <div class="flex items-center gap-2">
-            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-            <div class="text-sm">
-              <p class="font-semibold text-yellow-800">Fertilization Delayed</p>
-              <p class="text-yellow-700">${growthData.delayInfo.delayType === 'basal' ? 'Basal' : growthData.delayInfo.delayType === 'main' ? 'Main' : 'Both'} fertilization is delayed by ${growthData.delayInfo.delayDays} days. This may affect yield.</p>
-            </div>
-          </div>
-        `;
+            delayWarning.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-exclamation-triangle text-yellow-600"></i><div class="text-sm"><p class="font-semibold text-yellow-800">Fertilization Delayed</p><p class="text-yellow-700">${growthData.delayInfo.delayType === 'basal' ? 'Basal' : growthData.delayInfo.delayType === 'main' ? 'Main' : 'Both'} fertilization is delayed by ${growthData.delayInfo.delayDays} days.</p></div></div>`;
             warningsContainer.appendChild(delayWarning);
           }
-
-          // Check for overdue harvest
           if (growthData.overdueInfo && growthData.overdueInfo.isOverdue) {
             hasWarnings = true;
             const overdueWarning = document.createElement('div');
             overdueWarning.className = 'px-4 py-3 rounded-lg bg-red-50 border border-red-200';
-            overdueWarning.innerHTML = `
-          <div class="flex items-center gap-2">
-            <i class="fas fa-exclamation-circle text-red-600"></i>
-            <div class="text-sm">
-              <p class="font-semibold text-red-800">Harvest Overdue</p>
-              <p class="text-red-700">This field is ${growthData.overdueInfo.overdueDays} days overdue for harvest. Immediate harvesting recommended.</p>
-            </div>
-          </div>
-        `;
+            overdueWarning.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-exclamation-circle text-red-600"></i><div class="text-sm"><p class="font-semibold text-red-800">Harvest Overdue</p><p class="text-red-700">This field is ${growthData.overdueInfo.overdueDays} days overdue for harvest.</p></div></div>`;
             warningsContainer.appendChild(overdueWarning);
           }
-
           if (hasWarnings) {
-            // Insert warnings after the growth status card
             const growthCard = document.querySelector('.section-card');
             if (growthCard && growthCard.parentNode) {
               growthCard.parentNode.insertBefore(warningsContainer, growthCard.nextSibling);
@@ -1463,7 +1629,6 @@
           const uiMonths = document.getElementById('uiMonths');
           const tlBar = document.getElementById('tlBar');
           const tlPct = document.getElementById('tlPct');
-
           if (uiDays) uiDays.textContent = '—';
           if (uiStage) uiStage.textContent = 'Not Planted';
           if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
@@ -1472,21 +1637,12 @@
           if (uiMonths) uiMonths.textContent = '—';
           if (tlBar) tlBar.style.width = '0%';
           if (tlPct) tlPct.textContent = '0';
-
-          // Show info message
           const existing = document.getElementById('notPlantedInfo');
           if (existing) existing.remove();
-
           const infoDiv = document.createElement('div');
           infoDiv.className = 'mt-4 px-4 py-3 rounded-lg bg-blue-50 border border-blue-200';
-          infoDiv.innerHTML = `
-        <div class="flex items-center gap-2">
-          <i class="fas fa-info-circle text-blue-600"></i>
-          <p class="text-sm text-blue-800">This field has not been planted yet. Growth tracking will begin once a planting task is completed.</p>
-        </div>
-      `;
+          infoDiv.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-info-circle text-blue-600"></i><p class="text-sm text-blue-800">This field has not been planted yet. Growth tracking will begin once a planting task is completed.</p></div>`;
           infoDiv.id = 'notPlantedInfo';
-
           const growthCard = document.querySelector('.section-card');
           if (growthCard && growthCard.parentNode) {
             growthCard.parentNode.insertBefore(infoDiv, growthCard.nextSibling);
@@ -1497,19 +1653,9 @@
         function showNoFieldsMessage() {
           const messageDiv = document.createElement('div');
           messageDiv.className = 'mt-6 px-4 py-8 rounded-lg bg-gray-50 border border-gray-200 text-center';
-          messageDiv.innerHTML = `
-        <i class="fas fa-map-marker-alt text-4xl text-gray-400 mb-3"></i>
-        <p class="text-gray-600 font-medium">No reviewed fields found</p>
-        <p class="text-sm text-gray-500 mt-2">Please register a field and wait for SRA approval.</p>
-        <a href="Register-field.html" class="mt-4 inline-block px-4 py-2 bg-[var(--cane-700)] text-white rounded-lg hover:bg-[var(--cane-800)] transition">
-          Register a Field
-        </a>
-      `;
-
+          messageDiv.innerHTML = `<i class="fas fa-map-marker-alt text-4xl text-gray-400 mb-3"></i><p class="text-gray-600 font-medium">No reviewed fields found</p><p class="text-sm text-gray-500 mt-2">Please register a field and wait for SRA approval.</p><a href="Register-field.html" class="mt-4 inline-block px-4 py-2 bg-[var(--cane-700)] text-white rounded-lg hover:bg-[var(--cane-800)] transition">Register a Field</a>`;
           const mainSection = document.querySelector('main section');
-          if (mainSection) {
-            mainSection.appendChild(messageDiv);
-          }
+          if (mainSection) mainSection.appendChild(messageDiv);
         }
 
         // Show error message
@@ -1518,7 +1664,6 @@
           errorDiv.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
           errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
           document.body.appendChild(errorDiv);
-
           setTimeout(() => errorDiv.remove(), 4000);
         }
 
