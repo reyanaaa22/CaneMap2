@@ -7,6 +7,7 @@ import { doc, getDoc, collection, query, where, getDocs, updateDoc, deleteDoc, s
 import { notifyTaskDeletion, createBatchNotifications } from "../Common/notifications.js";
 import { calculateDAP, handleRatooning, handleReplanting, VARIETY_HARVEST_DAYS } from "./growth-tracker.js";
 import { openCreateTaskModal } from "./create-task.js";
+import { initializeRecordsSection, cleanupRecordsSection } from "./records-section.js";
 import './analytics.js';
 
 const NAME_PLACEHOLDERS = new Set([
