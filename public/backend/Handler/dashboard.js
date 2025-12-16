@@ -4484,119 +4484,149 @@ export function initializeFieldsSection() {
       modal.className = 'fixed inset-0 z-[20000] flex items-center justify-center p-4';
       modal.innerHTML = `
         <div id="fieldDetailsBackdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <div class="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-[var(--cane-200)] overflow-y-auto max-h-[90vh]">
-          <header class="sticky top-0 bg-white border-b border-[var(--cane-200)] p-6 flex items-start justify-between">
+        <div class="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-[var(--cane-200)] overflow-y-auto max-h-[90vh]">
+          <header class="sticky top-0 bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-500)] border-b-4 border-[var(--cane-300)] p-4 flex items-start justify-between">
             <div>
-              <h2 class="text-2xl font-bold text-[var(--cane-900)]">${escapeHtml(fieldName)}</h2>
+              <h2 class="text-xl font-bold text-white">${escapeHtml(fieldName)}</h2>
+              <p class="text-[var(--cane-100)] text-xs mt-0.5 flex items-center gap-1">
+                <i class="fas fa-map-pin text-xs"></i>${escapeHtml(barangay)}, Ormoc City
+              </p>
             </div>
-            <button id="fd_close_btn" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            <button id="fd_close_btn" class="text-white hover:text-[var(--cane-100)] text-2xl leading-none transition-colors">&times;</button>
           </header>
 
-          <div class="p-6 space-y-6">
+          <div class="p-5 space-y-4">
+            <!-- Field Information Section -->
             <div>
-              <h3 class="text-sm font-bold text-[var(--cane-700)] uppercase tracking-wide mb-4 flex items-center gap-2">
-                <i class="fas fa-info-circle text-[var(--cane-600)]"></i>Field Information
-              </h3>
-              <div class="grid grid-cols-2 gap-6">
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Field Name</p>
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--cane-300)]">
+                <div class="w-6 h-6 rounded-full bg-[var(--cane-600)] text-white flex items-center justify-center text-xs font-bold">
+                  <i class="fas fa-info-circle text-xs"></i>
+                </div>
+                <h3 class="text-sm font-bold text-[var(--cane-900)]">Field Information</h3>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Field Name</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(fieldName)}</p>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Owner</p>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Owner</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(owner)}</p>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Street / Sitio</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(street)}</p>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">📍 Location</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(street)}, ${escapeHtml(barangay)}</p>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Barangay</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(barangay)}</p>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">📐 Size</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(size))} ha</p>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Size (HA)</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(size))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Field Terrain</p>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Terrain</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(terrain)}</p>
                 </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Status</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1 capitalize">${escapeHtml(status)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Latitude</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${typeof latitude === 'number' ? latitude.toFixed(6) : escapeHtml(String(latitude))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Longitude</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${typeof longitude === 'number' ? longitude.toFixed(6) : escapeHtml(String(longitude))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Sugarcane Variety</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(variety)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Soil Type</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(soilType)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Irrigation Method</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(irrigationMethod)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Previous Crop</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(previousCrop)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Current Growth Stage</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(growthStage)}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Planting Date</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(plantingDate))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Expected Harvest Date</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(expectedHarvestDate))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Delay Days</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(delayDays))}</p>
-                </div>
-                <div>
-                  <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Created On</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(createdOn))}</p>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Status</p>
+                  <p class="text-sm font-semibold text-[var(--cane-700)] mt-1 capitalize inline-block px-2 py-0.5 bg-[var(--cane-200)] rounded-full text-xs">${escapeHtml(status)}</p>
                 </div>
               </div>
             </div>
 
+            <!-- Agricultural Details Section -->
             <div>
-              <h3 class="text-sm font-bold text-[var(--cane-700)] uppercase tracking-wide mb-4 flex items-center gap-2">
-                <i class="fas fa-leaf text-[var(--cane-600)]"></i>Growth Tracker Status
-              </h3>
-              <div id="fd_growth_tracker_container" class="bg-gradient-to-br from-[var(--cane-50)] to-[var(--cane-100)] rounded-lg border border-[var(--cane-200)] p-4">
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--cane-300)]">
+                <div class="w-6 h-6 rounded-full bg-[var(--cane-600)] text-white flex items-center justify-center text-xs font-bold">
+                  <i class="fas fa-leaf text-xs"></i>
+                </div>
+                <h3 class="text-sm font-bold text-[var(--cane-900)]">Agricultural Details</h3>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded p-3 border border-green-200">
+                  <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Variety</p>
+                  <p class="text-sm font-semibold text-green-900 mt-1">${escapeHtml(variety)}</p>
+                </div>
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded p-3 border border-blue-200">
+                  <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Soil Type</p>
+                  <p class="text-sm font-semibold text-blue-900 mt-1">${escapeHtml(soilType)}</p>
+                </div>
+                <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded p-3 border border-amber-200">
+                  <p class="text-xs font-bold text-amber-700 uppercase tracking-wide">Irrigation</p>
+                  <p class="text-sm font-semibold text-amber-900 mt-1">${escapeHtml(irrigationMethod)}</p>
+                </div>
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded p-3 border border-purple-200">
+                  <p class="text-xs font-bold text-purple-700 uppercase tracking-wide">Previous Crop</p>
+                  <p class="text-sm font-semibold text-purple-900 mt-1">${escapeHtml(previousCrop)}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coordinates Section -->
+            <div>
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--cane-300)]">
+                <div class="w-6 h-6 rounded-full bg-[var(--cane-600)] text-white flex items-center justify-center text-xs font-bold">
+                  <i class="fas fa-map text-xs"></i>
+                </div>
+                <h3 class="text-sm font-bold text-[var(--cane-900)]">Coordinates</h3>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Latitude</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1 font-mono text-xs">${typeof latitude === 'number' ? latitude.toFixed(6) : escapeHtml(String(latitude))}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Longitude</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1 font-mono text-xs">${typeof longitude === 'number' ? longitude.toFixed(6) : escapeHtml(String(longitude))}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Growth & Planting Section -->
+            <div>
+              <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--cane-300)]">
+                <div class="w-6 h-6 rounded-full bg-[var(--cane-600)] text-white flex items-center justify-center text-xs font-bold">
+                  <i class="fas fa-chart-line text-xs"></i>
+                </div>
+                <h3 class="text-sm font-bold text-[var(--cane-900)]">Growth & Planting</h3>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Growth Stage</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(growthStage)}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Planting Date</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(plantingDate))}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Expected Harvest</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(expectedHarvestDate))}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Delay Days</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(delayDays))}</p>
+                </div>
+              </div>
+              <div id="fd_growth_tracker_container" class="bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-700)] rounded p-3 border border-[var(--cane-400)]">
                 <div class="flex items-center justify-between mb-3">
                   <div>
-                    <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Current Stage</p>
-                    <p class="text-sm font-bold text-[var(--cane-900)] mt-1" id="fd_growth_stage">—</p>
+                    <p class="text-xs font-bold text-[var(--cane-100)] uppercase tracking-wide">Current Stage</p>
+                    <p class="text-lg font-bold text-white mt-0.5" id="fd_growth_stage">—</p>
                   </div>
                   <div class="text-right">
-                    <p class="text-xs font-semibold text-[var(--cane-600)] uppercase tracking-wide">Days After Planting</p>
-                    <p class="text-sm font-bold text-[var(--cane-900)] mt-1" id="fd_dap">—</p>
+                    <p class="text-xs font-bold text-[var(--cane-100)] uppercase tracking-wide">Days After Planting</p>
+                    <p class="text-lg font-bold text-white mt-0.5" id="fd_dap">—</p>
                   </div>
                 </div>
-                <button id="fd_view_growth_tracker_btn" class="px-3 py-1.5 rounded-lg font-semibold text-sm bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors flex items-center justify-center gap-2">
-                  <i class="fas fa-chart-line text-xs"></i>View Full Growth Tracker
+                <button id="fd_view_growth_tracker_btn" class="w-full px-3 py-2 rounded font-semibold text-xs bg-white hover:bg-[var(--cane-100)] text-[var(--cane-700)] transition-colors flex items-center justify-center gap-1">
+                  <i class="fas fa-chart-line text-xs"></i>View Growth Tracker
                 </button>
               </div>
             </div>
+
           </div>
 
-          <footer class="sticky bottom-0 bg-white border-t border-[var(--cane-200)] p-6 flex justify-end gap-3">
-            <button id="fd_close_btn_footer" class="px-6 py-2 rounded-lg font-semibold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors">
+          <footer class="sticky bottom-0 bg-gradient-to-r from-gray-50 to-gray-100 border-t-2 border-[var(--cane-200)] p-6 flex justify-end gap-3">
+            <button id="fd_close_btn_footer" class="px-8 py-3 rounded-lg font-bold bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white transition-colors shadow-md hover:shadow-lg">
               Close
             </button>
           </footer>
