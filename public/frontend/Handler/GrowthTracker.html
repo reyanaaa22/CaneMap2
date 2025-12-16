@@ -111,6 +111,115 @@
       50% { opacity: 0.7; }
     }
 
+    /* Modal Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .animate-slideUp {
+      animation: slideUp 0.3s ease-out;
+    }
+
+    /* Record Modal Styles */
+    .record-info-card {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s;
+    }
+
+    .record-info-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .record-info-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.375rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .record-info-value {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    .record-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #111827;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--cane-200);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .status-badge.germination {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-badge.tillering {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.grand-growth {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-badge.maturing {
+      background: #fce7f3;
+      color: #9f1239;
+    }
+
+    .status-badge.harvest {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
     .activity-node {
       background: white;
       border: 1px solid var(--cane-200);
@@ -418,9 +527,7 @@
           <!-- Desktop: Native Select -->
           <div class="native-select-wrapper relative">
             <select id="gtField" class="appearance-none w-full px-4 py-2 pr-10 text-sm bg-white focus:outline-none">
-              <option>Field A</option>
-              <option>Field B</option>
-              <option>Field C</option>
+              <!-- Options will be populated dynamically by JavaScript -->
             </select>
             <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-[var(--cane-600)] text-base"></i>
           </div>
@@ -520,12 +627,12 @@
                 </div>
                 <div class="flex-1 pt-0.5">
                   <div class="flex items-center justify-between mb-2">
-                    <div>
+              <div>
                       <p class="font-semibold text-sm">Germination</p>
                       <p class="text-xs text-gray-600" id="tlGerm">Status: -</p>
-                    </div>
+              </div>
                     <span class="badge badge-done text-xs" id="badge-germination" style="display: none;">Active</span>
-                  </div>
+            </div>
                   <div id="activities-germination" class="mt-3 space-y-2">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
@@ -542,15 +649,15 @@
                 </div>
                 <div class="flex-1 pt-0.5">
                   <div class="flex items-center justify-between mb-2">
-                    <div>
+              <div>
                       <p class="font-semibold text-sm">Tillering</p>
                       <p class="text-xs text-gray-600" id="tlTill">Status: - <span id="tlPct">0</span>% Complete</p>
-                    </div>
+              </div>
                     <span class="badge badge-progress text-xs" id="badge-tillering" style="display: none;">In Progress</span>
-                  </div>
+            </div>
                   <div id="activities-tillering" class="mt-3 space-y-2">
                     <!-- Activity records for this stage will be inserted here -->
-                  </div>
+            </div>
                 </div>
               </div>
             </div>
@@ -564,12 +671,12 @@
                 </div>
                 <div class="flex-1 pt-0.5">
                   <div class="flex items-center justify-between mb-2">
-                    <div>
+              <div>
                       <p class="font-semibold text-sm">Grand Growth</p>
                       <p class="text-xs text-gray-600" id="tlGrand">Status: -</p>
-                    </div>
+              </div>
                     <span class="badge badge-not text-xs" id="badge-grand" style="display: none;">Expected</span>
-                  </div>
+            </div>
                   <div id="activities-grand" class="mt-3 space-y-2">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
@@ -586,12 +693,12 @@
                 </div>
                 <div class="flex-1 pt-0.5">
                   <div class="flex items-center justify-between mb-2">
-                    <div>
+              <div>
                       <p class="font-semibold text-sm">Maturing / Ripening</p>
                       <p class="text-xs text-gray-600" id="tlMat">Status: -</p>
-                    </div>
+              </div>
                     <span class="badge badge-not text-xs" id="badge-maturing" style="display: none;">Expected</span>
-                  </div>
+            </div>
                   <div id="activities-maturing" class="mt-3 space-y-2">
                     <!-- Activity records for this stage will be inserted here -->
                   </div>
@@ -666,15 +773,25 @@
       </div>
 
       <!-- Record Detail Modal -->
-      <div id="recordDetailModal" class="fixed inset-0 flex items-center justify-center bg-black/40 hidden z-50 p-4">
-        <div class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <div class="px-6 py-4 border-b flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Record Details</h3>
-            <button id="closeRecordModal" class="text-gray-500 hover:text-gray-700">
-              <i class="fas fa-times text-xl"></i>
+      <div id="recordDetailModal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden z-50 p-4 animate-fadeIn">
+        <div class="bg-white rounded-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col shadow-2xl transform transition-all">
+          <!-- Modal Header -->
+          <div class="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-[var(--cane-50)] to-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-[var(--cane-600)] flex items-center justify-center">
+                <i class="fas fa-file-alt text-white text-lg"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900">Record Details</h3>
+                <p class="text-xs text-gray-500 mt-0.5">View complete record information</p>
+              </div>
+            </div>
+            <button id="closeRecordModal" class="w-9 h-9 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition-colors">
+              <i class="fas fa-times text-lg"></i>
             </button>
           </div>
-          <div id="recordDetailContent" class="px-6 py-4 overflow-y-auto flex-1">
+          <!-- Modal Content -->
+          <div id="recordDetailContent" class="px-6 py-6 overflow-y-auto flex-1 bg-gray-50">
             <!-- Record details will be rendered here -->
           </div>
         </div>
@@ -711,7 +828,13 @@
         // Load user's fields (all fields, same as Input Records)
         async function loadUserFields() {
           try {
-            // Load all fields for the user (no status filter, same as Input Records)
+            if (!currentUserId) {
+              console.error('❌ No currentUserId available');
+              return;
+            }
+
+            // Load ALL fields for the user (no status filter, same as Input Records)
+            // This ensures handlers see all their fields regardless of status
             const fieldsQuery = query(
               collection(db, 'fields'),
               where('userId', '==', currentUserId)
@@ -719,16 +842,23 @@
 
             const snapshot = await getDocs(fieldsQuery);
             userFields = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            console.log(`📋 Loaded ${userFields.length} fields for user`);
 
+            console.log(`📋 Loaded ${userFields.length} fields for handler (userId: ${currentUserId})`);
+            console.log('📋 Field details:', userFields.map(f => ({ 
+              id: f.id, 
+              name: f.field_name || f.fieldName || 'Unnamed',
+              status: f.status 
+            })));
+
+            // Always populate dropdown with ALL fields first
             populateFieldDropdown();
 
             if (userFields.length > 0) {
-              // Check if fieldId is in URL
+              // Check if fieldId is in URL (from success banner redirect)
               const urlFieldId = getFieldIdFromURL();
+              
               if (urlFieldId) {
-                // Check if the field exists in user's fields
+                // Auto-select field from URL parameter
                 const fieldExists = userFields.find(f => f.id === urlFieldId);
                 if (fieldExists) {
                   selectedFieldId = urlFieldId;
@@ -740,13 +870,13 @@
                     fieldSelect.value = urlFieldId;
                   }
                   
-                  // Update custom dropdown
+                  // Update custom dropdown trigger text
                   const dropdownTriggerText = document.getElementById('dropdownTriggerText');
                   if (dropdownTriggerText) {
                     dropdownTriggerText.textContent = fieldExists.field_name || fieldExists.fieldName || 'Unnamed Field';
                   }
                   
-                  // Update selected state in custom dropdown
+                  // Update selected state in custom dropdown options
                   document.querySelectorAll('.dropdown-option').forEach(opt => {
                     opt.classList.remove('selected');
                     if (opt.dataset.value === urlFieldId) {
@@ -757,18 +887,39 @@
                   // Load field data
                   await displayFieldGrowthData(selectedFieldId);
                   
-                  // Clean up URL parameter (optional - keeps URL clean)
+                  // Clean up URL parameter (keeps URL clean after auto-selection)
                   const newUrl = window.location.pathname;
                   window.history.replaceState({}, '', newUrl);
                 } else {
-                  console.warn(`⚠️ Field ${urlFieldId} not found in user's fields`);
-                  // Fallback to first field
-                  selectedFieldId = userFields[0].id;
-                  await displayFieldGrowthData(selectedFieldId);
+                  console.warn(`⚠️ Field ${urlFieldId} not found in handler's fields`);
+                  // Fallback to first field if URL fieldId doesn't exist
+              selectedFieldId = userFields[0].id;
+              await displayFieldGrowthData(selectedFieldId);
                 }
               } else {
-                // No URL parameter, use first field
+                // Normal navigation (no URL parameter) - select first field
                 selectedFieldId = userFields[0].id;
+                
+                // Ensure dropdowns are set to first field
+                const fieldSelect = document.getElementById('gtField');
+                if (fieldSelect) {
+                  fieldSelect.value = selectedFieldId;
+                }
+                
+                const dropdownTriggerText = document.getElementById('dropdownTriggerText');
+                const firstField = userFields[0];
+                if (dropdownTriggerText && firstField) {
+                  dropdownTriggerText.textContent = firstField.field_name || firstField.fieldName || 'Unnamed Field';
+                }
+                
+                // Update selected state in custom dropdown
+                document.querySelectorAll('.dropdown-option').forEach((opt, index) => {
+                  opt.classList.remove('selected');
+                  if (index === 0) {
+                    opt.classList.add('selected');
+                  }
+                });
+                
                 await displayFieldGrowthData(selectedFieldId);
               }
             } else {
@@ -782,59 +933,72 @@
         }
 
         // Populate field dropdown (both native and custom)
+        // This function ALWAYS shows ALL fields - selection logic is handled separately
         function populateFieldDropdown() {
           const fieldSelect = document.getElementById('gtField');
           const dropdownOptions = document.getElementById('dropdownOptions');
           const dropdownTrigger = document.getElementById('dropdownTrigger');
           const dropdownTriggerText = document.getElementById('dropdownTriggerText');
 
-          if (!fieldSelect) return;
+          if (!fieldSelect) {
+            console.error('❌ Field select element not found');
+            return;
+          }
 
+          console.log(`🔄 Populating dropdown with ${userFields.length} fields`);
+
+          // Clear existing options
           fieldSelect.innerHTML = '';
           if (dropdownOptions) dropdownOptions.innerHTML = '';
 
           if (userFields.length === 0) {
+            console.warn('⚠️ No fields available to populate');
             fieldSelect.innerHTML = '<option>No fields available</option>';
             fieldSelect.disabled = true;
             if (dropdownTriggerText) dropdownTriggerText.textContent = 'No fields available';
             return;
           }
 
-          // Populate native select
-          userFields.forEach(field => {
+          // Populate native select with ALL fields
+          userFields.forEach((field, index) => {
             const option = document.createElement('option');
             option.value = field.id;
-            option.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+            const fieldName = field.field_name || field.fieldName || 'Unnamed Field';
+            option.textContent = fieldName;
             fieldSelect.appendChild(option);
+            console.log(`  ✓ Added field ${index + 1}: ${fieldName} (${field.id})`);
           });
 
-          // Populate custom dropdown
+          // Populate custom dropdown with ALL fields
           if (dropdownOptions) {
-            // Get fieldId from URL to determine which should be selected
-            const urlFieldId = getFieldIdFromURL();
-            const defaultSelectedId = urlFieldId && userFields.find(f => f.id === urlFieldId) ? urlFieldId : (userFields[0]?.id || null);
-            
             userFields.forEach((field, index) => {
               const optionBtn = document.createElement('button');
               optionBtn.type = 'button';
-              const isSelected = field.id === defaultSelectedId;
-              optionBtn.className = 'dropdown-option' + (isSelected ? ' selected' : '');
+              // Don't set selected state here - it will be set by loadUserFields after checking URL
+              optionBtn.className = 'dropdown-option';
               optionBtn.textContent = field.field_name || field.fieldName || 'Unnamed Field';
               optionBtn.dataset.value = field.id;
 
               optionBtn.addEventListener('click', async () => {
                 try {
-                  selectedFieldId = field.id;
+                selectedFieldId = field.id;
+                  
+                  // Update native select
+                  if (fieldSelect) {
+                    fieldSelect.value = selectedFieldId;
+                  }
+                  
+                  // Update custom dropdown trigger text
                   if (dropdownTriggerText) {
-                    dropdownTriggerText.textContent = field.field_name || field.fieldName || 'Unnamed Field';
+                dropdownTriggerText.textContent = field.field_name || field.fieldName || 'Unnamed Field';
                   }
 
-                  // Update selected state
-                  document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                  optionBtn.classList.add('selected');
+                // Update selected state
+                document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
+                optionBtn.classList.add('selected');
 
-                  // Close dropdown
-                  closeDropdown();
+                // Close dropdown
+                closeDropdown();
 
                   // Unsubscribe from previous field's listener
                   if (recordsUnsubscribe) {
@@ -842,8 +1006,8 @@
                     recordsUnsubscribe = null;
                   }
 
-                  // Load data
-                  await displayFieldGrowthData(selectedFieldId);
+                // Load data
+                await displayFieldGrowthData(selectedFieldId);
                 } catch (error) {
                   console.error('Error selecting field:', error);
                   showError('Failed to load field data. Please try again.');
@@ -852,26 +1016,18 @@
 
               dropdownOptions.appendChild(optionBtn);
             });
-            
-            // Update dropdown trigger text if URL fieldId exists
-            if (urlFieldId && dropdownTriggerText) {
-              const urlField = userFields.find(f => f.id === urlFieldId);
-              if (urlField) {
-                dropdownTriggerText.textContent = urlField.field_name || urlField.fieldName || 'Unnamed Field';
-              }
-            }
           }
 
           // Native select change handler
           fieldSelect.addEventListener('change', async (e) => {
             try {
-              selectedFieldId = e.target.value;
+            selectedFieldId = e.target.value;
               if (!selectedFieldId) return;
               
-              const selectedField = userFields.find(f => f.id === selectedFieldId);
-              if (dropdownTriggerText && selectedField) {
-                dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
-              }
+            const selectedField = userFields.find(f => f.id === selectedFieldId);
+            if (dropdownTriggerText && selectedField) {
+              dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
+            }
               
               // Unsubscribe from previous field's listener
               if (recordsUnsubscribe) {
@@ -879,7 +1035,7 @@
                 recordsUnsubscribe = null;
               }
               
-              await displayFieldGrowthData(selectedFieldId);
+            await displayFieldGrowthData(selectedFieldId);
             } catch (error) {
               console.error('Error changing field:', error);
               showError('Failed to load field data. Please try again.');
@@ -998,9 +1154,9 @@
             // Update expected harvest date
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
-              if (growthData.expectedHarvestDate) {
+            if (growthData.expectedHarvestDate) {
                 uiHarvest.textContent = growthData.expectedHarvestDate.toLocaleDateString();
-              } else {
+            } else {
                 uiHarvest.textContent = '—';
               }
             }
@@ -1009,10 +1165,10 @@
             const uiRemain = document.getElementById('uiRemain');
             const uiMonths = document.getElementById('uiMonths');
             if (uiRemain && uiMonths) {
-              if (growthData.daysRemaining !== null) {
+            if (growthData.daysRemaining !== null) {
                 uiRemain.textContent = Math.max(0, growthData.daysRemaining).toString();
                 uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30)).toString();
-              } else {
+            } else {
                 uiRemain.textContent = '—';
                 uiMonths.textContent = '—';
               }
@@ -1806,6 +1962,34 @@
           }
         }
 
+        // Helper function to format status badge
+        function getStatusBadge(status) {
+          const statusLower = (status || '').toLowerCase().replace(/\s+/g, '-');
+          const statusClass = statusLower.includes('germination') ? 'germination' :
+                             statusLower.includes('tillering') ? 'tillering' :
+                             statusLower.includes('grand') ? 'grand-growth' :
+                             statusLower.includes('maturing') || statusLower.includes('ripening') ? 'maturing' :
+                             statusLower.includes('harvest') ? 'harvest' : 'germination';
+          return `<span class="status-badge ${statusClass}">${escapeHtml(status || 'N/A')}</span>`;
+        }
+
+        // Helper function to format date
+        function formatDate(date) {
+          if (!date) return 'N/A';
+          const d = date.toDate ? date.toDate() : new Date(date);
+          return d.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+        }
+
+        // Helper function to format currency
+        function formatCurrency(amount) {
+          if (!amount && amount !== 0) return '₱0.00';
+          return `₱${parseFloat(amount).toFixed(2)}`;
+        }
+
         // Render record modal content
         function renderRecordModal(record) {
           const content = document.getElementById('recordDetailContent');
@@ -1815,52 +1999,121 @@
           }
           
           const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+          const statusBadge = getStatusBadge(record.status);
           
           let html = `
-            <div class="space-y-4">
-              <!-- Basic Info -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="text-xs font-medium text-gray-600">Field</label>
-                  <p class="text-sm font-semibold">${record.fieldName}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-medium text-gray-600">Date Submitted</label>
-                  <p class="text-sm font-semibold">${recordDate.toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-medium text-gray-600">Status</label>
-                  <p class="text-sm font-semibold">${record.status}</p>
-                </div>
-                <div>
-                  <label class="text-xs font-medium text-gray-600">Field Operation</label>
-                  <p class="text-sm font-semibold">${record.operation}</p>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="text-xs font-medium text-gray-600">Task Type</label>
-                  <p class="text-sm font-semibold">${record.taskType}</p>
+            <div class="space-y-6 animate-slideUp">
+              <!-- Basic Information Card -->
+              <div class="record-info-card">
+                <h4 class="record-section-title">
+                  <i class="fas fa-info-circle text-[var(--cane-600)]"></i>
+                  Basic Information
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-map-marker-alt text-[var(--cane-600)]"></i>
+                      Field Name
+                    </div>
+                    <p class="record-info-value">${escapeHtml(record.fieldName || 'N/A')}</p>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-calendar-alt text-[var(--cane-600)]"></i>
+                      Date Submitted
+                    </div>
+                    <p class="record-info-value">${formatDate(recordDate)}</p>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-tag text-[var(--cane-600)]"></i>
+                      Growth Stage / Status
+                    </div>
+                    <div class="mt-1">${statusBadge}</div>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-cogs text-[var(--cane-600)]"></i>
+                      Field Operation
+                    </div>
+                    <p class="record-info-value">${escapeHtml(record.operation || 'N/A')}</p>
+                  </div>
+                  <div class="md:col-span-2">
+                    <div class="record-info-label">
+                      <i class="fas fa-tasks text-[var(--cane-600)]"></i>
+                      Task Type
+                    </div>
+                    <p class="record-info-value text-base">${escapeHtml(record.taskType || 'N/A')}</p>
+                  </div>
                 </div>
               </div>
 
-              <!-- Task-specific fields -->
-              <div class="border-t pt-4">
-                <h4 class="font-semibold text-sm mb-3">Task Details</h4>
+              <!-- Task Details Card -->
+              <div class="record-info-card">
+                <h4 class="record-section-title">
+                  <i class="fas fa-clipboard-list text-[var(--cane-600)]"></i>
+                  Task Details
+                </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           `;
 
           // Render task-specific data fields
-          if (record.data) {
+          if (record.data && Object.keys(record.data).length > 0) {
             Object.entries(record.data).forEach(([key, value]) => {
               if (value !== null && value !== undefined && value !== '') {
-                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+                const iconMap = {
+                  'date': 'fa-calendar',
+                  'Date': 'fa-calendar',
+                  'workers': 'fa-users',
+                  'Workers': 'fa-users',
+                  'operators': 'fa-user-tie',
+                  'Operators': 'fa-user-tie',
+                  'equipment': 'fa-tractor',
+                  'Equipment': 'fa-tractor',
+                  'notes': 'fa-sticky-note',
+                  'Notes': 'fa-sticky-note',
+                  'remarks': 'fa-comment',
+                  'Remarks': 'fa-comment',
+                  'variety': 'fa-seedling',
+                  'Variety': 'fa-seedling',
+                  'quantity': 'fa-hashtag',
+                  'Quantity': 'fa-hashtag',
+                  'cost': 'fa-peso-sign',
+                  'Cost': 'fa-peso-sign'
+                };
+                
+                const iconKey = Object.keys(iconMap).find(k => label.toLowerCase().includes(k.toLowerCase()));
+                const icon = iconKey ? iconMap[iconKey] : 'fa-circle';
+                
+                // Format value based on type
+                let formattedValue = value;
+                if (typeof value === 'number' && label.toLowerCase().includes('cost')) {
+                  formattedValue = formatCurrency(value);
+                } else if (value instanceof Date || (typeof value === 'object' && value.toDate)) {
+                  formattedValue = formatDate(value);
+                } else {
+                  formattedValue = escapeHtml(String(value));
+                }
+                
                 html += `
                   <div>
-                    <label class="text-xs font-medium text-gray-600">${label}</label>
-                    <p class="text-sm">${value}</p>
+                    <div class="record-info-label">
+                      <i class="fas ${icon} text-[var(--cane-600)]"></i>
+                      ${escapeHtml(label)}
+                    </div>
+                    <p class="record-info-value">${formattedValue}</p>
                   </div>
                 `;
               }
             });
+          } else {
+            html += `
+              <div class="md:col-span-2 text-center py-4 text-gray-500">
+                <i class="fas fa-inbox text-3xl mb-2 opacity-50"></i>
+                <p class="text-sm">No task details available</p>
+              </div>
+            `;
           }
 
           html += `
@@ -1871,27 +2124,61 @@
           // Bought Items section
           if (record.boughtItems && record.boughtItems.length > 0) {
             html += `
-              <div class="border-t pt-4">
-                <h4 class="font-semibold text-sm mb-3">Bought Items</h4>
-                <div class="space-y-2">
+              <div class="record-info-card">
+                <h4 class="record-section-title">
+                  <i class="fas fa-shopping-cart text-[var(--cane-600)]"></i>
+                  Bought Items (${record.boughtItems.length})
+                </h4>
+                <div class="space-y-3">
             `;
             
             record.boughtItems.forEach((item, index) => {
               html += `
-                <div class="bg-gray-50 rounded-lg p-3">
-                  <p class="font-medium text-sm mb-2">Item ${index + 1}: ${item.itemName || 'N/A'}</p>
-                  <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div><span class="text-gray-600">Quantity:</span> ${item.quantity} ${item.unit}</div>
-                    <div><span class="text-gray-600">Price:</span> ₱${item.price.toFixed(2)}</div>
-                    <div><span class="text-gray-600">Total:</span> ₱${item.total.toFixed(2)}</div>
-                    <div><span class="text-gray-600">Supplier:</span> ${item.supplier || 'N/A'}</div>
-                    ${item.notes ? `<div class="col-span-2"><span class="text-gray-600">Notes:</span> ${item.notes}</div>` : ''}
+                <div class="bg-gradient-to-r from-[var(--cane-50)] to-white rounded-lg p-4 border border-[var(--cane-200)] hover:shadow-md transition-shadow">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-lg bg-[var(--cane-600)] flex items-center justify-center text-white font-bold text-sm">
+                        ${index + 1}
+                      </div>
+                      <div>
+                        <p class="font-bold text-base text-gray-900">${escapeHtml(item.itemName || 'Unnamed Item')}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">${escapeHtml(item.supplier || 'No supplier')}</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-lg font-bold text-[var(--cane-700)]">${formatCurrency(item.total || 0)}</p>
+                      <p class="text-xs text-gray-500">Total</p>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-gray-200">
+                    <div>
+                      <p class="text-xs font-semibold text-gray-600 mb-1">Quantity</p>
+                      <p class="text-sm font-semibold text-gray-900">${item.quantity || 0} ${escapeHtml(item.unit || '')}</p>
+                    </div>
+                    <div>
+                      <p class="text-xs font-semibold text-gray-600 mb-1">Unit Price</p>
+                      <p class="text-sm font-semibold text-gray-900">${formatCurrency(item.price || 0)}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                      ${item.notes ? `
+                        <p class="text-xs font-semibold text-gray-600 mb-1">Notes</p>
+                        <p class="text-sm text-gray-700">${escapeHtml(item.notes)}</p>
+                      ` : ''}
+                    </div>
                   </div>
                 </div>
               `;
             });
             
+            // Calculate total
+            const totalAmount = record.boughtItems.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
             html += `
+                  <div class="mt-4 pt-4 border-t-2 border-[var(--cane-300)]">
+                    <div class="flex justify-between items-center">
+                      <span class="text-base font-bold text-gray-700">Total Amount:</span>
+                      <span class="text-xl font-bold text-[var(--cane-700)]">${formatCurrency(totalAmount)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             `;
@@ -1901,15 +2188,60 @@
           if (record.vehicleUpdates) {
             const vu = record.vehicleUpdates;
             html += `
-              <div class="border-t pt-4">
-                <h4 class="font-semibold text-sm mb-3">Vehicle / Transport Updates</h4>
+              <div class="record-info-card">
+                <h4 class="record-section-title">
+                  <i class="fas fa-truck text-[var(--cane-600)]"></i>
+                  Vehicle / Transport Updates
+                </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><label class="text-xs font-medium text-gray-600">Vehicle Type</label><p class="text-sm">${vu.vehicleType || 'N/A'}</p></div>
-                  <div><label class="text-xs font-medium text-gray-600">Trips/Boxes</label><p class="text-sm">${vu.tripsBoxes || 0}</p></div>
-                  <div><label class="text-xs font-medium text-gray-600">Fuel Cost</label><p class="text-sm">₱${vu.fuelCost?.toFixed(2) || '0.00'}</p></div>
-                  <div><label class="text-xs font-medium text-gray-600">Labor Cost</label><p class="text-sm">₱${vu.laborCost?.toFixed(2) || '0.00'}</p></div>
-                  <div><label class="text-xs font-medium text-gray-600">Total Cost</label><p class="text-sm font-semibold">₱${vu.totalCost?.toFixed(2) || '0.00'}</p></div>
-                  ${vu.route ? `<div class="md:col-span-2"><label class="text-xs font-medium text-gray-600">Route / Field</label><p class="text-sm">${vu.route}</p></div>` : ''}
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-truck-pickup text-[var(--cane-600)]"></i>
+                      Vehicle Type
+                    </div>
+                    <p class="record-info-value">${escapeHtml(vu.vehicleType || 'N/A')}</p>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-boxes text-[var(--cane-600)]"></i>
+                      Trips / Boxes
+                    </div>
+                    <p class="record-info-value">${vu.tripsBoxes || 0}</p>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-gas-pump text-[var(--cane-600)]"></i>
+                      Fuel Cost
+                    </div>
+                    <p class="record-info-value">${formatCurrency(vu.fuelCost || 0)}</p>
+                  </div>
+                  <div>
+                    <div class="record-info-label">
+                      <i class="fas fa-user-hard-hat text-[var(--cane-600)]"></i>
+                      Labor Cost
+                    </div>
+                    <p class="record-info-value">${formatCurrency(vu.laborCost || 0)}</p>
+                  </div>
+                  <div class="md:col-span-2">
+                    <div class="bg-gradient-to-r from-[var(--cane-50)] to-white rounded-lg p-4 border-2 border-[var(--cane-300)]">
+                      <div class="flex justify-between items-center">
+                        <div class="record-info-label mb-0">
+                          <i class="fas fa-calculator text-[var(--cane-600)]"></i>
+                          Total Cost
+                        </div>
+                        <p class="text-2xl font-bold text-[var(--cane-700)]">${formatCurrency(vu.totalCost || 0)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  ${vu.route ? `
+                    <div class="md:col-span-2">
+                      <div class="record-info-label">
+                        <i class="fas fa-route text-[var(--cane-600)]"></i>
+                        Route / Field
+                      </div>
+                      <p class="record-info-value">${escapeHtml(vu.route)}</p>
+                    </div>
+                  ` : ''}
                 </div>
               </div>
             `;
