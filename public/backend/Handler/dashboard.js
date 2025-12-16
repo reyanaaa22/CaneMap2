@@ -1639,6 +1639,14 @@ Please register a field and wait for SRA approval to become a Handler.`);
     return;
   }
 
+  // ✅ Initialize notifications system
+  try {
+    console.log('🔔 Initializing notifications for handler:', user.uid);
+    await initNotifications(user.uid);
+  } catch (error) {
+    console.error('❌ Failed to initialize notifications:', error);
+  }
+
   // Dashboard content removed - leaving blank
 
 

@@ -331,6 +331,217 @@
                 print-color-adjust: exact;
             }
         }
+
+        /* Report Modal Responsive Styles */
+        #reportDetailsModal {
+            z-index: 9999;
+            overflow-y: auto;
+            max-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        #reportDetailsModal .bg-white {
+            max-width: 100%;
+            width: 100%;
+            margin: auto;
+        }
+
+        /* Mobile: Full width with padding */
+        @media (max-width: 640px) {
+            #reportDetailsModal {
+                padding: 0.5rem;
+                align-items: flex-start;
+                padding-top: 1rem;
+            }
+            
+            #reportDetailsModal .bg-white {
+                margin: 0 auto;
+                max-height: calc(100vh - 1rem);
+                border-radius: 0.5rem;
+            }
+            
+            #reportDetailsModal .flex-1 {
+                max-height: calc(100vh - 10rem) !important;
+            }
+            
+            #reportDetailsModal #reportContent {
+                padding: 15px 20px !important;
+                max-width: 100% !important;
+            }
+            
+            #reportDetailsModal #reportContent table {
+                font-size: 10px !important;
+            }
+            
+            #reportDetailsModal #reportContent h1 {
+                font-size: 20px !important;
+            }
+            
+            #reportDetailsModal #reportContent h2 {
+                font-size: 18px !important;
+            }
+            
+            #reportDetailsModal #reportContent h3 {
+                font-size: 14px !important;
+            }
+        }
+
+        /* Tablet: Medium width */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #reportDetailsModal {
+                padding: 1rem;
+                align-items: center;
+            }
+            
+            #reportDetailsModal .bg-white {
+                max-width: 90%;
+                max-height: calc(100vh - 2rem);
+            }
+            
+            #reportDetailsModal .flex-1 {
+                max-height: calc(100vh - 14rem) !important;
+            }
+            
+            #reportDetailsModal #reportContent {
+                padding: 20px 25px !important;
+            }
+        }
+
+        /* Desktop: Full width with max constraint and gap spacing */
+        @media (min-width: 1025px) {
+            #reportDetailsModal {
+                align-items: center;
+                padding: 10px 2rem;
+            }
+            
+            #reportDetailsModal .bg-white {
+                max-width: 90%;
+                max-height: calc(100vh - 20px);
+                margin: 0 auto;
+            }
+            
+            #reportDetailsModal .flex-1 {
+                max-height: calc(100vh - 14rem) !important;
+            }
+        }
+
+        /* Ensure modal content is scrollable */
+        #reportDetailsModal .flex-1,
+        #reportDetailsModal .report-content-scrollable {
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Default max-height for content area */
+        #reportDetailsModal .report-content-scrollable {
+            max-height: calc(100vh - 14rem);
+        }
+
+        /* Bond paper report content styling */
+        #reportDetailsModal #reportContent {
+            min-height: calc(100% - 2rem);
+            height: auto;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Ensure cost summary is inside bond paper background */
+        #reportDetailsModal #reportContent > div:last-child {
+            margin-top: auto;
+            margin-bottom: 0 !important;
+        }
+
+        /* Add spacing between modal container and report */
+        #reportDetailsModal .report-content-scrollable {
+            padding-top: 1.5rem;
+            padding-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Expand scrollable pane to show gap at bottom */
+        #reportDetailsModal .report-content-scrollable {
+            min-height: calc(100vh - 14rem);
+        }
+
+        /* Mobile spacing */
+        @media (max-width: 640px) {
+            #reportDetailsModal .report-content-scrollable {
+                padding-top: 1rem;
+                padding-bottom: 1.5rem;
+                min-height: calc(100vh - 10rem);
+            }
+            
+            #reportDetailsModal #reportContent {
+                min-height: calc(100% - 1.5rem);
+            }
+        }
+
+        /* Tablet spacing */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #reportDetailsModal .report-content-scrollable {
+                min-height: calc(100vh - 14rem);
+            }
+        }
+
+        /* Desktop spacing */
+        @media (min-width: 1025px) {
+            #reportDetailsModal .report-content-scrollable {
+                min-height: calc(100vh - 14rem);
+            }
+        }
+
+        /* Mobile: Adjust content height */
+        @media (max-width: 640px) {
+            #reportDetailsModal .report-content-scrollable {
+                max-height: calc(100vh - 10rem) !important;
+            }
+        }
+
+        /* Tablet: Adjust content height */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #reportDetailsModal .report-content-scrollable {
+                max-height: calc(100vh - 14rem) !important;
+            }
+        }
+
+        /* Desktop: Proper gap spacing with appropriate height */
+        @media (min-width: 1025px) {
+            #reportDetailsModal .report-content-scrollable {
+                max-height: calc(100vh - 14rem) !important;
+            }
+        }
+
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* Print styles for report content */
+        @media print {
+            #reportDetailsModal {
+                position: fixed;
+                inset: 0;
+                background: white;
+                z-index: 99999;
+            }
+            
+            #reportDetailsModal .border-b,
+            #reportDetailsModal button {
+                display: none !important;
+            }
+            
+            #reportDetailsModal #reportContent {
+                box-shadow: none !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-[#eef2f7] min-h-screen">
