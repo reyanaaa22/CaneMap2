@@ -138,9 +138,6 @@ async function initNotifications(userId) {
 
     // Otherwise, generate title from type
     const typeToTitle = {
-      'report_requested': 'Report Requested',
-      'report_approved': 'Report Approved',
-      'report_rejected': 'Report Rejected',
       'task_assigned': 'New Task Assigned',
       'task_completed': 'Task Completed',
       'task_deleted': 'Task Cancelled',
@@ -226,7 +223,7 @@ Array.from(list.querySelectorAll("button[data-id]"))
         // Robust navigation helper: try showSection -> setActiveSection -> click nav item by data-section -> click nav item by name
         const gotoSection = (sectionId, friendlyName) => {
           try {
-            // prefer showSection if present (you already used this for reports)
+            // prefer showSection if present
             if (typeof showSection === 'function') {
               closeNotifDropdown();
               showSection(sectionId);
@@ -309,22 +306,6 @@ Array.from(list.querySelectorAll("button[data-id]"))
           ) {
               gotoSection('fields', 'My Fields');
               return;
-          }
-
-          if (type === 'report_requested' || title.includes('report requested') || title.includes('report request')) {
-            // Reports (and preserve your existing requestedReportType behavior)
-            const reportType = notification.relatedEntityId;
-            if (reportType) {
-              sessionStorage.setItem('requestedReportType', reportType);
-            }
-            gotoSection('reports', 'Reports');
-            return;
-          }
-
-          if (type === 'report_approved' || type === 'report_rejected' || title.includes('report approved') || title.includes('report rejected')) {
-            // Reports
-            gotoSection('reports', 'Reports');
-            return;
           }
 
           if (type === 'driver_status_update' || title.includes('driver status') || title.includes('driver status update')) {
@@ -2316,8 +2297,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Sections that need to be loaded dynamically
   const dynamicSections = {
     'fields': 'sections/fields.html',
-    'analytics': 'sections/analytics.html',
-    'reports': 'sections/reports.html'
+    'analytics': 'sections/analytics.html'
   };
 
   // Track loaded sections

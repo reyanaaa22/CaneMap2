@@ -365,63 +365,6 @@ allow read: if request.auth != null &&
         (resource.data.user_uid == request.auth.uid || 
          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid);
     }
-    
-    // Reports access rules
-    match /reports/{reportId} {
-      // Field owners can read reports for their fields, handlers can read their reports, staff can read all
-      allow read: if request.auth != null && (
-        // Check field_id exists and user owns the field
-        ('field_id' in resource.data &&
-         resource.data.field_id != null &&
-         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
-         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
-        // User created the report
-        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
-        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
-        // Staff roles
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin', 'handler'])
-      );
-
-      // Field owners can create reports for their fields
-      allow create: if request.auth != null && (
-        ('field_id' in request.resource.data &&
-         request.resource.data.field_id != null &&
-         exists(/databases/$(database)/documents/fields/$(request.resource.data.field_id)) &&
-         (get(/databases/$(database)/documents/fields/$(request.resource.data.field_id)).data.landowner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/fields/$(request.resource.data.field_id)).data.userId == request.auth.uid)) ||
-        // Handlers can create reports
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['handler', 'sra', 'admin', 'system_admin'])
-      );
-
-      // Field owners can update reports for their fields
-      allow update: if request.auth != null && (
-        ('field_id' in resource.data &&
-         resource.data.field_id != null &&
-         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
-         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
-        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
-        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'])
-      );
-
-      // Field owners can delete reports for their fields
-      allow delete: if request.auth != null && (
-        ('field_id' in resource.data &&
-         resource.data.field_id != null &&
-         exists(/databases/$(database)/documents/fields/$(resource.data.field_id)) &&
-         (get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.landowner_id == request.auth.uid ||
-          get(/databases/$(database)/documents/fields/$(resource.data.field_id)).data.userId == request.auth.uid)) ||
-        ('handlerId' in resource.data && resource.data.handlerId == request.auth.uid) ||
-        ('created_by' in resource.data && resource.data.created_by == request.auth.uid) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin'])
-      );
-    }
 
   // Drivers Badge applications
   match /Drivers_Badge/{docId} {

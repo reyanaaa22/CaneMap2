@@ -301,7 +301,6 @@ function handleNotificationClick(notificationId, notification) {
     'task_assigned': `/frontend/Handler/sections/tasks.html${notification.relatedEntityId ? '?taskId=' + notification.relatedEntityId : ''}`,
     'rental_approved': '/frontend/Handler/sections/rent-driver.html',
     'rental_rejected': '/frontend/Handler/sections/rent-driver.html',
-    'report_requested': '/frontend/Handler/sections/reports.html',
     'field_approved': '/frontend/Handler/sections/fields.html',
     'field_rejected': '/frontend/Handler/sections/fields.html'
   };

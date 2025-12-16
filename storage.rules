@@ -56,18 +56,6 @@ service firebase.storage {
       allow read, write: if request.auth != null;
     }
 
-    // --- Report Photos (Handler Report Submissions) ---
-    match /report_photos/{userId}/{reportId}/{allPaths=**} {
-      // Allow read for owner, SRA officers, and admins
-      allow read: if request.auth != null && (
-        request.auth.uid == userId ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['sra', 'admin', 'system_admin', 'handler']
-      );
-
-      // Allow write (upload) by the owner only
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-
     // --- Deny everything else explicitly ---
     match /{allPaths=**} {
       allow read, write: if false;
