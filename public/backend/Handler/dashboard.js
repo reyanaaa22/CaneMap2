@@ -3754,7 +3754,8 @@ function updateHandlerFieldsView(rawTerm = "") {
 
     item.addEventListener("click", () => {
       if (!lat || !lng) return;
-      handlerFieldsMapInstance.setView([lat, lng], 14, { animate: true });
+      // Zoom to maximum zoom level (18) for fullest zoom
+      handlerFieldsMapInstance.setView([lat, lng], 18, { animate: true });
     });
 
     listContainer.appendChild(item);
@@ -4084,7 +4085,10 @@ export function initializeFieldsSection() {
         window.location.href = '../Handler/Register-field.html';
       });
 
-      document.getElementById('mapZoomIn')?.addEventListener('click', () => fieldsMap.zoomIn());
+      document.getElementById('mapZoomIn')?.addEventListener('click', () => {
+        // Zoom to maximum zoom level (18)
+        fieldsMap.setZoom(18);
+      });
       document.getElementById('mapZoomOut')?.addEventListener('click', () => fieldsMap.zoomOut());
       
       document.getElementById('mapLocate')?.addEventListener('click', () => {
@@ -4402,7 +4406,8 @@ export function initializeFieldsSection() {
     const lng = field.longitude || field.lng;
     if (!lat || !lng) return;
 
-    fieldsMap.setView([lat, lng], 16);
+    // Zoom to maximum zoom level (18) for fullest super zoom
+    fieldsMap.setView([lat, lng], 18, { animate: true });
 
     markersLayer.eachLayer(layer => {
       if (layer instanceof L.Marker) {
