@@ -52,8 +52,8 @@ export const VARIETY_HARVEST_DAYS_RANGE = (() => {
   const daysRange = {};
   for (const [variety, months] of Object.entries(VARIETY_HARVEST_MONTHS_RANGE)) {
     daysRange[variety] = {
-      min: Math.round(months.min * 30.44),
-      max: Math.round(months.max * 30.44)
+      min: Math.round(months.min * 30.5),
+      max: Math.round(months.max * 30.5)
     };
   }
   // Add default fallback
@@ -118,21 +118,28 @@ export function getGrowthStage(DAP) {
 
 /**
  * Calculate expected harvest date based on variety
- * Uses the max value from the harvest days range for conservative planning
+ * Uses the average of min and max for accurate harvest prediction
  * @param {Date} plantingDate - The date when the field was planted
  * @param {string} variety - Sugarcane variety
- * @param {string} useMin - If true, uses min value; otherwise uses max (default: false)
+ * @param {string} useMin - If true, uses min value; if 'max' uses max; otherwise uses average (default: average)
  * @returns {Date|null} Expected harvest date
  */
 export function calculateExpectedHarvestDate(plantingDate, variety, useMin = false) {
   if (!plantingDate || !variety) return null;
 
   // Get harvest days range for the variety
-  const range = VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 335, max: 365 };
+  const range = VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 305, max: 365 };
   
-  // Use max for conservative planning (better to predict later than earlier)
-  // Use min if explicitly requested
-  const harvestDays = useMin ? range.min : range.max;
+  // Use average of min and max for accurate prediction
+  // This gives the midpoint of the expected harvest window
+  let harvestDays;
+  if (useMin === true) {
+    harvestDays = range.min;
+  } else if (useMin === 'max') {
+    harvestDays = range.max;
+  } else {
+    harvestDays = Math.round((range.min + range.max) / 2);
+  }
   
   if (!VARIETY_HARVEST_DAYS_RANGE[variety]) {
     console.warn(`Unknown variety: "${variety}". Using default range (335-365 days).`);

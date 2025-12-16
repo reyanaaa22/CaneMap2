@@ -1416,7 +1416,7 @@
             if (uiRemain && uiMonths) {
             if (growthData.daysRemaining !== null) {
                 uiRemain.textContent = Math.max(0, growthData.daysRemaining).toString();
-                uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30)).toString();
+                uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30.5)).toString();
             } else {
                 uiRemain.textContent = '—';
                 uiMonths.textContent = '—';
