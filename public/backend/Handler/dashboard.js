@@ -5143,6 +5143,23 @@ export function initializeFieldsSection() {
         return `${day}/${month}/${year}`;
       };
       
+      // Format Firestore date for display (Month Day, Year format)
+      const formatFirestoreDate = (dateValue) => {
+        if (!dateValue) return '—';
+        if (typeof dateValue === 'string') return dateValue;
+        if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+          return dateValue.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        if (dateValue instanceof Date) {
+          return dateValue.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        // Handle Firestore timestamp with seconds property
+        if (dateValue.seconds) {
+          return new Date(dateValue.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+        return String(dateValue);
+      };
+      
       // CRITICAL: Get Expected Harvest Date from Input Record first, then fallback to field data
       let expectedHarvestDate = '—';
       try {
