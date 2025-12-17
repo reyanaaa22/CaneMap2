@@ -2,7 +2,7 @@
 // Implements REQ-5: Growth Tracking System
 
 import { db } from '../Common/firebase-config.js';
-import { doc, updateDoc, getDoc, serverTimestamp, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+import { doc, updateDoc, getDoc, serverTimestamp, Timestamp, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 import { generateCropCycleTasks } from './task-automation.js';
 
 /**
@@ -1034,6 +1034,88 @@ export async function getFieldGrowthData(fieldId) {
     const basalFertilizationDate = fieldData.basalFertilizationDate?.toDate ? fieldData.basalFertilizationDate.toDate() : fieldData.basalFertilizationDate;
     const mainFertilizationDate = fieldData.mainFertilizationDate?.toDate ? fieldData.mainFertilizationDate.toDate() : fieldData.mainFertilizationDate;
 
+    // Fetch seed rate and fertilizers from records
+    let seedRate = null;
+    let fertilizersUsed = null;
+    
+    try {
+      // Find Planting Operation record for this field
+      const recordsQuery = query(
+        collection(db, 'records'),
+        where('fieldId', '==', fieldId),
+        where('taskType', '==', 'Planting Operation')
+      );
+      const recordsSnap = await getDocs(recordsQuery);
+      
+      if (!recordsSnap.empty) {
+        // Get the first planting record (should be only one)
+        const plantingRecordDoc = recordsSnap.docs[0];
+        const plantingRecord = plantingRecordDoc.data();
+        
+        // Extract seed rate from record data
+        if (plantingRecord.data && plantingRecord.data.seedRate) {
+          seedRate = plantingRecord.data.seedRate;
+        }
+        
+        // Extract fertilizers from bought items subcollection
+        try {
+          const boughtItemsSnapshot = await getDocs(collection(db, 'records', plantingRecordDoc.id, 'bought_items'));
+          const boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+          
+          if (boughtItems.length > 0) {
+            const fertilizerItems = boughtItems.filter(item => 
+              item.itemName && item.itemName.toLowerCase().includes('fertilizer')
+            );
+            if (fertilizerItems.length > 0) {
+              fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
+            }
+          }
+        } catch (boughtItemsError) {
+          console.debug('No bought items subcollection for planting record:', boughtItemsError);
+        }
+        
+        // If no fertilizers found in bought items, check basal fertilizer record
+        if (!fertilizersUsed) {
+          const basalQuery = query(
+            collection(db, 'records'),
+            where('fieldId', '==', fieldId),
+            where('taskType', '==', 'basal_fertilizer')
+          );
+          const basalSnap = await getDocs(basalQuery);
+          
+          if (!basalSnap.empty) {
+            const basalRecordDoc = basalSnap.docs[0];
+            const basalRecord = basalRecordDoc.data();
+            
+            // Check fertilizer type in record data
+            if (basalRecord.data && basalRecord.data.fertilizerType) {
+              fertilizersUsed = basalRecord.data.fertilizerType;
+            } else {
+              // Check bought items subcollection
+              try {
+                const basalBoughtItemsSnapshot = await getDocs(collection(db, 'records', basalRecordDoc.id, 'bought_items'));
+                const basalBoughtItems = basalBoughtItemsSnapshot.docs.map(doc => doc.data());
+                
+                if (basalBoughtItems.length > 0) {
+                  const fertilizerItems = basalBoughtItems.filter(item => 
+                    item.itemName && item.itemName.toLowerCase().includes('fertilizer')
+                  );
+                  if (fertilizerItems.length > 0) {
+                    fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
+                  }
+                }
+              } catch (basalBoughtItemsError) {
+                console.debug('No bought items subcollection for basal fertilizer record:', basalBoughtItemsError);
+              }
+            }
+          }
+        }
+      }
+    } catch (recordsError) {
+      console.debug('Error fetching seed rate and fertilizers from records:', recordsError);
+      // Continue without these fields if records query fails
+    }
+
     // CRITICAL: Only calculate growth data if planting date exists
     // Planting record is the single source of truth for growth tracking
     if (!plantingDate) {
@@ -1052,7 +1134,9 @@ export async function getFieldGrowthData(fieldId) {
         overdueInfo: { isOverdue: false, overdueDays: 0 },
         fieldStatus: 'not_planted',
         status: fieldData.status,
-        area: fieldData.area || fieldData.field_size
+        area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
+        seedRate: seedRate,
+        fertilizersUsed: fertilizersUsed
       };
     }
 
@@ -1094,7 +1178,9 @@ export async function getFieldGrowthData(fieldId) {
       overdueInfo,
       fieldStatus,
       status: fieldData.status, // Include actual database status field
-      area: fieldData.area || fieldData.field_size
+      area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
+      seedRate: seedRate,
+      fertilizersUsed: fertilizersUsed
     };
 
   } catch (error) {

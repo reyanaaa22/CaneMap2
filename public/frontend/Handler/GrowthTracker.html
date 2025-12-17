@@ -701,7 +701,7 @@
             </div>
             <div>
               <div class="text-[var(--cane-800)] mb-1">Area Size:</div>
-              <div class="inner-box rounded px-3 py-1.5">2.5</div>
+              <div class="inner-box rounded px-3 py-1.5" id="uiAreaSize">—</div>
             </div>
           </div>
 
@@ -1495,7 +1495,22 @@
             // Update seed rate
             const uiSeedRate = document.getElementById('uiSeedRate');
             if (uiSeedRate) {
-              uiSeedRate.textContent = growthData.seedRate || '—';
+              if (growthData.seedRate) {
+                // Format seed rate with units if it's a number
+                const seedRateValue = typeof growthData.seedRate === 'number' 
+                  ? growthData.seedRate.toLocaleString('en-US', { maximumFractionDigits: 2 })
+                  : growthData.seedRate;
+                uiSeedRate.textContent = seedRateValue;
+              } else {
+                uiSeedRate.textContent = '—';
+              }
+            }
+
+            // Update area size
+            const uiAreaSize = document.getElementById('uiAreaSize');
+            if (uiAreaSize) {
+              const areaValue = growthData.area || growthData.field_size || growthData.area_size || growthData.size;
+              uiAreaSize.textContent = areaValue ? `${areaValue} ha` : '—';
             }
 
             // CRITICAL: Check if field has been planted FIRST
@@ -2422,12 +2437,14 @@
             }
           }
 
-          // Helper function to calculate DAP for a record date
-          const calculateDAPForRecord = (recordDate) => {
-            if (!plantingDate || !recordDate) return null;
+          // Helper function to calculate DAP using Current Date - Planting Date
+          // This ensures all records (including Germination stage) display correct DAP
+          const calculateDAPForRecord = () => {
+            if (!plantingDate) return null;
             const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
-            const record = recordDate instanceof Date ? recordDate : new Date(recordDate);
-            const diffTime = record - planting;
+            // Use current date for DAP calculation: Current Date - Planting Date
+            const currentDate = new Date();
+            const diffTime = currentDate - planting;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             return Math.max(0, diffDays);
           };
@@ -2475,8 +2492,8 @@
                               record.startDate || 
                               new Date();
             
-            // Calculate DAP for this record
-            const dap = calculateDAPForRecord(recordDate);
+            // Calculate DAP for this record using Current Date - Planting Date
+            const dap = calculateDAPForRecord();
             
             // Determine stage: Use status field if available, otherwise fall back to DAP-based mapping
             let stage = null;
