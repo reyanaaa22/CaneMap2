@@ -873,7 +873,6 @@ const taskFieldMap = {
       options:['Manual','Mechanical','Animal-Drawn','Herbicide'] },
 
     { id:'equipment', label:'Equipment Used', type:'text' },
-    { id:'workers', label:'Number of Workers', type:'number' },
     { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
     { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1062,7 +1061,6 @@ const taskFieldMap = {
     ] 
   },
 
-  { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1276,7 +1274,6 @@ const taskFieldMap = {
     ] 
   },
 
-  { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1312,7 +1309,6 @@ const taskFieldMap = {
     ]
   },
 
-  { id:'workers', label:'Number of Workers', type:'number' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1348,7 +1344,6 @@ const taskFieldMap = {
   { id:'dosage', label:'Dosage', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] }, hasUnit: true, unitOptions: ['Liter', 'Kilogram'] },
 
   { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01', autoFill: true },
-  { id:'workers', label:'Number of Workers', type:'number' },
 
   // Costs
   { id:'chemicalQuantity', label:'Quantity (pieces/units)', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
@@ -1481,7 +1476,6 @@ const taskFieldMap = {
 
   { id:'dosage', label:'Dosage (L or kg)', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
   { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01' },
-  { id:'workers', label:'Number of Workers', type:'number' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'chemicalCost', label:'Chemical Cost', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
@@ -1491,7 +1485,6 @@ const taskFieldMap = {
 "Control of Pest & Diseases": [
   { id:'startDate', label:'Start Date', type:'date' },
   { id:'endDate', label:'End Date', type:'date' },
-  { id:'workers', label:'Number of Workers', type:'number' },
 
   { 
     id:'pestDisease', 
@@ -2285,7 +2278,8 @@ function renderForm(type){
       }
       // Special handling for enhanced Labor Cost
       else if(f.id === 'laborCost' && f.enhanced){
-        // Enhanced Labor Cost structure with Rate, Workers, Dates, and calculated total
+        // Enhanced Labor Cost structure with Rate, Workers, and calculated total
+        // Uses external Start Date and End Date for calculations
         inputHTML = `
           <div id="laborCostEnhancedContainer" class="space-y-3 p-3 border rounded-lg bg-gray-50">
             <div class="text-xs font-semibold text-gray-700 mb-2">${f.label} Details</div>
@@ -2298,16 +2292,8 @@ function renderForm(type){
                 <label class="text-xs font-medium">Number of Workers</label>
                 <input type="number" id="laborWorkers" class="w-full border rounded px-3 py-2" value="0" required />
               </div>
-              <div>
-                <label class="text-xs font-medium">Start Date</label>
-                <input type="date" id="laborStartDate" class="w-full border rounded px-3 py-2" required />
-              </div>
-              <div>
-                <label class="text-xs font-medium">End Date</label>
-                <input type="date" id="laborEndDate" class="w-full border rounded px-3 py-2" required />
-              </div>
               <div class="md:col-span-2">
-                <label class="text-xs font-medium">Working Days (auto-calculated)</label>
+                <label class="text-xs font-medium">Working Days (auto-calculated from Start Date and End Date)</label>
                 <input type="number" id="laborWorkingDays" class="w-full border rounded px-3 py-2 bg-gray-100" readonly />
               </div>
               <div class="md:col-span-2">
@@ -2590,17 +2576,19 @@ function renderForm(type){
   if (laborCostEnhancedContainer) {
     const laborRatePerDayInput = document.getElementById('laborRatePerDay');
     const laborWorkersInput = document.getElementById('laborWorkers');
-    const laborStartDateInput = document.getElementById('laborStartDate');
-    const laborEndDateInput = document.getElementById('laborEndDate');
+    // Use external Start Date and End Date instead of internal ones
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
     const laborWorkingDaysInput = document.getElementById('laborWorkingDays');
     const laborCostTotalInput = document.getElementById('laborCost');
     
     // Function to calculate working days (inclusive of both dates)
+    // Uses external Start Date and End Date
     const calculateWorkingDays = () => {
-      if (!laborStartDateInput || !laborEndDateInput) return 0;
+      if (!startDateInput || !endDateInput) return 0;
       
-      const startDate = laborStartDateInput.value;
-      const endDate = laborEndDateInput.value;
+      const startDate = startDateInput.value;
+      const endDate = endDateInput.value;
       
       if (!startDate || !endDate) {
         if (laborWorkingDaysInput) laborWorkingDaysInput.value = '';
@@ -2612,14 +2600,14 @@ function renderForm(type){
       const end = new Date(endDate);
       
       if (end < start) {
-        // Show validation error
-        laborEndDateInput.classList.add('border-red-500');
-        laborEndDateInput.setCustomValidity('End Date must be on or after Start Date');
+        // Show validation error on external end date input
+        endDateInput.classList.add('border-red-500');
+        endDateInput.setCustomValidity('End Date must be on or after Start Date');
         if (laborWorkingDaysInput) laborWorkingDaysInput.value = '';
         return 0;
       } else {
-        laborEndDateInput.classList.remove('border-red-500');
-        laborEndDateInput.setCustomValidity('');
+        endDateInput.classList.remove('border-red-500');
+        endDateInput.setCustomValidity('');
       }
       
       // Calculate days (inclusive): difference + 1
@@ -2657,24 +2645,15 @@ function renderForm(type){
       laborWorkersInput.addEventListener('input', calculateTotalLaborCost);
       laborWorkersInput.addEventListener('change', calculateTotalLaborCost);
     }
-    if (laborStartDateInput) {
-      laborStartDateInput.addEventListener('change', calculateTotalLaborCost);
+    // Listen to external Start Date and End Date changes
+    if (startDateInput) {
+      startDateInput.addEventListener('change', calculateTotalLaborCost);
     }
-    if (laborEndDateInput) {
-      laborEndDateInput.addEventListener('change', calculateTotalLaborCost);
-    }
-    
-    // Pre-populate labor dates from existing startDate/endDate if available
-    const existingStartDate = document.getElementById('startDate');
-    const existingEndDate = document.getElementById('endDate');
-    if (existingStartDate && existingStartDate.value && !laborStartDateInput.value) {
-      laborStartDateInput.value = existingStartDate.value;
-    }
-    if (existingEndDate && existingEndDate.value && !laborEndDateInput.value) {
-      laborEndDateInput.value = existingEndDate.value;
+    if (endDateInput) {
+      endDateInput.addEventListener('change', calculateTotalLaborCost);
     }
     
-    // Initial calculation
+    // Initial calculation if dates are already set
     calculateTotalLaborCost();
   }
   
@@ -3253,9 +3232,10 @@ for(const f of fields){
   if (laborCostEnhancedContainer) {
     const laborRatePerDay = document.getElementById('laborRatePerDay');
     const laborWorkers = document.getElementById('laborWorkers');
-    const laborStartDate = document.getElementById('laborStartDate');
-    const laborEndDate = document.getElementById('laborEndDate');
     const laborWorkingDays = document.getElementById('laborWorkingDays');
+    // Use external Start Date and End Date for validation
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
     
     // Validate enhanced labor cost fields
     if (!laborRatePerDay || !laborRatePerDay.value || parseFloat(laborRatePerDay.value) <= 0) {
@@ -3284,45 +3264,44 @@ for(const f of fields){
       return;
     }
     
-    if (!laborStartDate || !laborStartDate.value) {
-      laborStartDate?.classList.add('border-red-500');
-      laborStartDate?.focus();
+    // Validate external Start Date and End Date are present
+    if (!startDate || !startDate.value) {
+      startDate?.classList.add('border-red-500');
+      startDate?.focus();
       const removeRed = () => {
-        laborStartDate?.classList.remove('border-red-500');
-        laborStartDate?.removeEventListener('change', removeRed);
+        startDate?.classList.remove('border-red-500');
+        startDate?.removeEventListener('change', removeRed);
       };
-      laborStartDate?.addEventListener('change', removeRed);
+      startDate?.addEventListener('change', removeRed);
       return;
     }
     
-    if (!laborEndDate || !laborEndDate.value) {
-      laborEndDate?.classList.add('border-red-500');
-      laborEndDate?.focus();
+    if (!endDate || !endDate.value) {
+      endDate?.classList.add('border-red-500');
+      endDate?.focus();
       const removeRed = () => {
-        laborEndDate?.classList.remove('border-red-500');
-        laborEndDate?.removeEventListener('change', removeRed);
+        endDate?.classList.remove('border-red-500');
+        endDate?.removeEventListener('change', removeRed);
       };
-      laborEndDate?.addEventListener('change', removeRed);
+      endDate?.addEventListener('change', removeRed);
       return;
     }
     
-    // Validate date range
-    if (new Date(laborEndDate.value) < new Date(laborStartDate.value)) {
-      laborEndDate.classList.add('border-red-500');
-      laborEndDate.focus();
+    // Validate date range using external dates
+    if (new Date(endDate.value) < new Date(startDate.value)) {
+      endDate.classList.add('border-red-500');
+      endDate.focus();
       const removeRed = () => {
-        laborEndDate.classList.remove('border-red-500');
-        laborEndDate.removeEventListener('change', removeRed);
+        endDate.classList.remove('border-red-500');
+        endDate.removeEventListener('change', removeRed);
       };
-      laborEndDate.addEventListener('change', removeRed);
+      endDate.addEventListener('change', removeRed);
       return;
     }
     
-    // Collect values
+    // Collect values (dates are already in recordData from main loop as startDate and endDate)
     if (laborRatePerDay) recordData.laborRatePerDay = parseFloat(laborRatePerDay.value) || 0;
     if (laborWorkers) recordData.laborWorkers = parseFloat(laborWorkers.value) || 0;
-    if (laborStartDate) recordData.laborStartDate = laborStartDate.value || '';
-    if (laborEndDate) recordData.laborEndDate = laborEndDate.value || '';
     if (laborWorkingDays) recordData.laborWorkingDays = parseFloat(laborWorkingDays.value) || 0;
   }
 
