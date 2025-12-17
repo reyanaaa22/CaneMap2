@@ -101,7 +101,8 @@ const landTitle = pickFirst(raw, [
     applicantName: pickFirst(raw, ['applicantName', 'requestedBy', 'userId', 'requester']) || '—',
     barangay: pickFirst(raw, ['barangay', 'location']) || '—',
     fieldName: pickFirst(raw, ['field_name', 'fieldName']) || '—',
-    terrain: pickFirst(raw, ['terrain_type', 'terrain']) || '—',
+    // Terrain: prioritize fieldTerrain from field collection; avoid legacy terrain_type
+    terrain: pickFirst(raw, ['fieldTerrain', 'terrain']) || '—',
     variety: pickFirst(raw, ['sugarcane_variety', 'variety']) || '—',
     street: pickFirst(raw, ['street']) || '—',
     size: pickFirst(raw, ['field_size', 'size', 'fieldSize']) || '—',
@@ -452,14 +453,92 @@ async function openModal(app) {
   modal.classList.remove('hidden');
   modal.classList.add('flex');
 
-  // Initialize map
+  // Initialize map (match system-wide Esri implementation + field geometry)
   try {
-    if (typeof app.lat === 'number' && typeof app.lng === 'number') {
-      await ensureLeafletLoaded();
-      const map = L.map(mapBox).setView([app.lat, app.lng], 14);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
+    const hasLatLng = typeof app.lat === 'number' && typeof app.lng === 'number';
+    const raw = app.raw || {};
+
+    // If there is no geometry at all, show message and skip Leaflet init
+    const coords = Array.isArray(raw.coordinates) ? raw.coordinates : null;
+    if (!hasLatLng && !(coords && coords.length >= 3)) {
+      mapBox.innerHTML =
+        '<div class="w-full h-full flex items-center justify-center text-gray-600 text-sm">No coordinates provided</div>';
+      return;
+    }
+
+    await ensureLeafletLoaded();
+
+    // Ormoc City bounds (same as lobby/handler/SRA dashboard)
+    const ormocBounds = L.latLngBounds(
+      [10.95, 124.5],
+      [11.2, 124.8]
+    );
+
+    const map = L.map(mapBox, {
+      maxBounds: ormocBounds,
+      maxBoundsViscosity: 1.0,
+      minZoom: 11,
+      maxZoom: 18,
+      zoomControl: true,
+      scrollWheelZoom: false
+    }).setView([11.0064, 124.6075], 12);
+
+    // Esri World Imagery + reference layers (system-wide base)
+    const satellite = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles © Esri' }
+    ).addTo(map);
+
+    const roads = L.tileLayer(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri' }
+    ).addTo(map);
+
+    const labels = L.tileLayer(
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '© Esri' }
+    ).addTo(map);
+
+    // Keep map inside Ormoc bounds
+    map.on('drag', () => {
+      map.panInsideBounds(ormocBounds, { animate: false });
+    });
+
+    let boundsToFit = null;
+
+    // Field polygon from registered geometry (same logic as SRA dashboard map)
+    if (coords && coords.length >= 3) {
+      try {
+        let polygonCoords = [];
+
+        if (Array.isArray(coords[0])) {
+          // [[lat, lng], ...]
+          polygonCoords = coords.map(c => [c[0], c[1]]);
+        } else if (typeof coords[0] === 'object' && coords[0] !== null) {
+          if (coords[0].lat !== undefined && coords[0].lng !== undefined) {
+            // [{lat, lng}, ...]
+            polygonCoords = coords.map(c => [c.lat, c.lng]);
+          } else if (coords[0].latitude !== undefined && coords[0].longitude !== undefined) {
+            // [{latitude, longitude}, ...]
+            polygonCoords = coords.map(c => [c.latitude, c.longitude]);
+          }
+        }
+
+        if (polygonCoords.length >= 3) {
+          const polygon = L.polygon(polygonCoords, {
+            color: '#16a34a',
+            fillColor: '#22c55e',
+            fillOpacity: 0.25,
+            weight: 2
+          }).addTo(map);
+          boundsToFit = polygon.getBounds();
+        }
+      } catch (e) {
+        console.warn('Failed to render field polygon in review modal:', e);
+      }
+    }
+
+    if (hasLatLng) {
       const caneIcon = L.icon({
         iconUrl: '../img/PIN.png',
         iconSize: [32, 32],
@@ -467,34 +546,42 @@ async function openModal(app) {
         popupAnchor: [0, -28]
       });
 
-    // ✅ Build professional dynamic popup text (Field Name first, then Barangay)
-    const fieldNameText = app.fieldName && app.fieldName !== '—' ? app.fieldName : 'Registered Field';
-    const barangayText = app.barangay && app.barangay !== '—' ? ` (${app.barangay})` : '';
-    const streetText = app.street && app.street !== '—' ? `<br>🏠︎ <i>${app.street}</i>` : '';
-    const coordText =
-      typeof app.lat === 'number' && typeof app.lng === 'number'
-        ? `<br>⟟ <i>Lat: ${app.lat.toFixed(5)}, Lng: ${app.lng.toFixed(5)}</i>`
-        : '';
+      // Build popup text consistent with other maps
+      const fieldNameText = app.fieldName && app.fieldName !== '—' ? app.fieldName : 'Registered Field';
+      const barangayText = app.barangay && app.barangay !== '—' ? ` (${app.barangay})` : '';
+      const streetText = app.street && app.street !== '—' ? `<br>🏠︎ <i>${app.street}</i>` : '';
+      const coordText = `<br>⟟ <i>Lat: ${app.lat.toFixed(5)}, Lng: ${app.lng.toFixed(5)}</i>`;
 
-    const popupText = `
-      <div style="font-size:13px; line-height:1.4">
-        <b>${fieldNameText}${barangayText}</b>
-        ${streetText}
-        ${coordText}
-      </div>
-    `;
+      const popupText = `
+        <div style="font-size:13px; line-height:1.4">
+          <b>${fieldNameText}${barangayText}</b>
+          ${streetText}
+          ${coordText}
+        </div>
+      `;
 
-    L.marker([app.lat, app.lng], { icon: caneIcon })
-      .addTo(map)
-      .bindPopup(popupText)
-      .openPopup();
+      const marker = L.marker([app.lat, app.lng], { icon: caneIcon }).addTo(map);
+      marker.bindPopup(popupText).openPopup();
 
+      if (!boundsToFit) {
+        boundsToFit = L.latLngBounds([ [app.lat, app.lng] ]);
+      } else {
+        boundsToFit.extend([app.lat, app.lng]);
+      }
+    }
 
-      setTimeout(() => map.invalidateSize(), 100);
-    } else {
+    if (boundsToFit) {
+      try {
+        map.fitBounds(boundsToFit, { padding: [20, 20] });
+      } catch (_) {}
+    } else if (!hasLatLng) {
       mapBox.innerHTML =
         '<div class="w-full h-full flex items-center justify-center text-gray-600 text-sm">No coordinates provided</div>';
     }
+
+    setTimeout(() => {
+      try { map.invalidateSize(); } catch (_) {}
+    }, 100);
   } catch (err) {
     console.warn('Map init error:', err);
     mapBox.innerHTML =
@@ -765,7 +852,8 @@ async function renderFromSnapshot(snapshot, status = 'all') {
       applicantName: pickFirst(raw, ['applicantName', 'requestedBy', 'userId', 'requester']) || '—',
       barangay: pickFirst(raw, ['barangay', 'location']) || '—',
       fieldName: pickFirst(raw, ['field_name', 'fieldName']) || '—',
-      terrain: pickFirst(raw, ['terrain_type', 'terrain']) || '—',
+      // Terrain: prioritize fieldTerrain from field collection; avoid legacy terrain_type
+      terrain: pickFirst(raw, ['fieldTerrain', 'terrain']) || '—',
       variety: pickFirst(raw, ['sugarcane_variety', 'variety']) || '—',
       street: pickFirst(raw, ['street']) || '—',
       size: pickFirst(raw, ['field_size', 'size', 'fieldSize']) || '—',
