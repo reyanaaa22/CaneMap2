@@ -16,6 +16,61 @@ import {
 
 console.log("Register-field.js loaded ✅");
 
+// --------------------------------------------------
+// 🗜️ Lightweight client-side image compression helper
+// --------------------------------------------------
+/**
+ * Compress a base64 image data URL to a JPEG with smaller dimensions.
+ * Falls back to the original data URL on any error.
+ */
+async function compressImageDataUrlIfNeeded(dataUrl, {
+  maxWidth = 1280,
+  maxHeight = 1280,
+  quality = 0.72
+} = {}) {
+  try {
+    if (!dataUrl || typeof dataUrl !== "string") return dataUrl;
+    // Only attempt to compress image types
+    if (!dataUrl.startsWith("data:image/")) return dataUrl;
+
+    const img = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = dataUrl;
+    });
+
+    let { width, height } = img;
+    if (!width || !height) return dataUrl;
+
+    // If already within bounds, no need to re-encode
+    if (width <= maxWidth && height <= maxHeight) return dataUrl;
+
+    const ratio = Math.min(maxWidth / width, maxHeight / height);
+    const targetWidth = Math.round(width * ratio);
+    const targetHeight = Math.round(height * ratio);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return dataUrl;
+
+    ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+    // Always prefer JPEG for better compression; browsers will handle it fine.
+    const compressed = canvas.toDataURL("image/jpeg", quality);
+    // Safety: only use if we got something that still looks like a data URL
+    if (compressed && compressed.startsWith("data:image/")) {
+      return compressed;
+    }
+    return dataUrl;
+  } catch (err) {
+    console.warn("Image compression failed, using original image.", err);
+    return dataUrl;
+  }
+}
+
 // ---------------------------------------------
 // 🧾 Barangay Certificate & Land Title Upload Fix
 // ---------------------------------------------
@@ -26,7 +81,7 @@ function setupDocUpload(fileInputId, base64InputId, nameDisplayId) {
 
   if (!fileInput) return;
 
-  fileInput.addEventListener("change", () => {
+  fileInput.addEventListener("change", async () => {
     const file = fileInput.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -36,8 +91,15 @@ function setupDocUpload(fileInputId, base64InputId, nameDisplayId) {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
-      base64Holder.value = e.target.result;
+    reader.onload = async (e) => {
+      let dataUrl = e.target.result;
+
+      // Only compress image uploads. PDFs or other docs are kept as-is.
+      if (file.type && file.type.startsWith("image/")) {
+        dataUrl = await compressImageDataUrlIfNeeded(dataUrl);
+      }
+
+      base64Holder.value = dataUrl;
       if (nameDisplay) nameDisplay.textContent = file.name;
     };
     reader.readAsDataURL(file);
@@ -168,13 +230,16 @@ function setupCameraAndUpload(config) {
     }
 
     // Capture image with preview
-    captureBtn.onclick = () => {
+    captureBtn.onclick = async () => {
       const canvas = document.createElement("canvas");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL("image/png");
+      let dataUrl = canvas.toDataURL("image/png");
+
+      // Compress captured camera frame before we store and upload it.
+      dataUrl = await compressImageDataUrlIfNeeded(dataUrl);
 
       // Pause video to freeze frame
       video.pause();
@@ -208,19 +273,19 @@ function setupCameraAndUpload(config) {
 
       // Use Photo button handler
       document.getElementById("usePhotoBtn").onclick = () => {
-      // Save dataURL
-      base64Holder.value = dataUrl;
+        // Save dataURL
+        base64Holder.value = dataUrl;
 
-      // Display filename only
-      const fileName = `${takeBtnId}_${Date.now()}.png`;
-      if (nameDisplay) nameDisplay.textContent = fileName;
+        // Display filename only
+        const fileName = `${takeBtnId}_${Date.now()}.jpg`;
+        if (nameDisplay) nameDisplay.textContent = fileName;
 
-      // Stop camera and close
-      stream.getTracks().forEach((t) => t.stop());
-      cameraDiv.remove();
+        // Stop camera and close
+        stream.getTracks().forEach((t) => t.stop());
+        cameraDiv.remove();
 
-      // Reset file input (so the camera photo is the one that counts)
-      fileInput.value = "";
+        // Reset file input (so the camera photo is the one that counts)
+        fileInput.value = "";
       };
     };
 
