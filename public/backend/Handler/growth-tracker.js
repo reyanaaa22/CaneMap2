@@ -1074,7 +1074,63 @@ export async function getFieldGrowthData(fieldId) {
           console.debug('No bought items subcollection for planting record:', boughtItemsError);
         }
         
-        // If no fertilizers found in bought items, check basal fertilizer record
+        // If no fertilizers found in bought items, check Post-Planting Fertilization record (Fertilizer Application)
+        // Check both possible taskType values: "Post-Planting Fertilization" and "Fertilizer Application"
+        if (!fertilizersUsed) {
+          const possibleTaskTypes = ['Post-Planting Fertilization', 'Fertilizer Application', 'Fertilizer Application (Top Dressing)'];
+          
+          for (const taskTypeValue of possibleTaskTypes) {
+            const fertilizerAppQuery = query(
+              collection(db, 'records'),
+              where('fieldId', '==', fieldId),
+              where('taskType', '==', taskTypeValue)
+            );
+            const fertilizerAppSnap = await getDocs(fertilizerAppQuery);
+            
+            if (!fertilizerAppSnap.empty) {
+              // Get the most recent fertilizer application record (sort by recordDate if available)
+              let fertilizerAppRecordDoc = fertilizerAppSnap.docs[0];
+              let fertilizerAppRecord = fertilizerAppRecordDoc.data();
+              
+              // If multiple records, get the most recent one
+              if (fertilizerAppSnap.docs.length > 1) {
+                const sortedDocs = fertilizerAppSnap.docs.sort((a, b) => {
+                  const dateA = a.data().recordDate?.toDate?.() || a.data().createdAt?.toDate?.() || new Date(0);
+                  const dateB = b.data().recordDate?.toDate?.() || b.data().createdAt?.toDate?.() || new Date(0);
+                  return dateB - dateA; // Most recent first
+                });
+                fertilizerAppRecordDoc = sortedDocs[0];
+                fertilizerAppRecord = fertilizerAppRecordDoc.data();
+              }
+              
+              // Check fertilizer type in record data (this is the primary source for Fertilizer Used)
+              if (fertilizerAppRecord.data && fertilizerAppRecord.data.fertilizerType) {
+                fertilizersUsed = fertilizerAppRecord.data.fertilizerType;
+                break; // Found it, no need to check other task types
+              } else {
+                // Check bought items subcollection as fallback
+                try {
+                  const fertilizerAppBoughtItemsSnapshot = await getDocs(collection(db, 'records', fertilizerAppRecordDoc.id, 'bought_items'));
+                  const fertilizerAppBoughtItems = fertilizerAppBoughtItemsSnapshot.docs.map(doc => doc.data());
+                  
+                  if (fertilizerAppBoughtItems.length > 0) {
+                    const fertilizerItems = fertilizerAppBoughtItems.filter(item => 
+                      item.itemName && item.itemName.toLowerCase().includes('fertilizer')
+                    );
+                    if (fertilizerItems.length > 0) {
+                      fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
+                      break; // Found it, no need to check other task types
+                    }
+                  }
+                } catch (fertilizerAppBoughtItemsError) {
+                  console.debug('No bought items subcollection for fertilizer application record:', fertilizerAppBoughtItemsError);
+                }
+              }
+            }
+          }
+        }
+        
+        // If still no fertilizers found, check basal fertilizer record as last resort
         if (!fertilizersUsed) {
           const basalQuery = query(
             collection(db, 'records'),
