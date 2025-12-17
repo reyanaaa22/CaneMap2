@@ -25,11 +25,165 @@ This file handles ALL functionalities described in the PDF:
       --cane-500:#2c5a0b;--cane-600:#3a7a0f;--cane-700:#2c5a0b;
     }
 
-    .card{background:#fff;border:1px solid var(--cane-200);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .card{background:#fff;border:1px solid var(--cane-200);box-shadow:0 8px 24px rgba(0,0,0,.08);overflow:visible}
     .fade{animation:fade .25s ease}
     @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
     .btn{transition:.2s}
     .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(0,0,0,.15)}
+    
+    /* Custom select styling for consistent responsive dropdowns */
+    .select-control{
+      width:100%;
+      max-width:100%;
+      box-sizing:border-box;
+      min-height:48px;
+      padding:0.65rem 2.5rem 0.65rem 0.9rem;
+      border:1px solid var(--cane-200);
+      border-radius:0.85rem;
+      background:#fff;
+      color:#1f2937;
+      font-weight:500;
+      line-height:1.4;
+      box-shadow:0 6px 16px rgba(32,73,8,0.08);
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease;
+      background-image:
+        linear-gradient(45deg,transparent 50%, var(--cane-600) 50%),
+        linear-gradient(135deg,var(--cane-600) 50%, transparent 50%),
+        linear-gradient(to right,transparent,transparent);
+      background-position:calc(100% - 1.3rem) 55%,calc(100% - .9rem) 55%,0 0;
+      background-size:0.45rem 0.45rem,0.45rem 0.45rem,100% 100%;
+      background-repeat:no-repeat;
+    }
+    .select-control:focus{
+      border-color:var(--cane-600);
+      box-shadow:0 0 0 3px rgba(58,122,15,0.15);
+      outline:none;
+      transform:translateY(-1px);
+    }
+    .select-control option{
+      font-weight:500;
+      color:#111827;
+      white-space:normal;
+      word-break:break-word;
+      text-overflow:ellipsis;
+    }
+    @media(max-width:640px){
+      .select-control{
+        min-height:52px;
+        font-size:1rem;
+        padding-right:2.75rem;
+        border-radius:1rem;
+        width:100%;
+        max-width:100%;
+        margin:0 auto;
+      }
+      .select-control option{
+        font-size:0.95rem;
+        white-space:normal;
+      }
+      .form-card,
+      .card{
+        padding-left:1rem;
+        padding-right:1rem;
+        overflow:visible;
+      }
+    }
+
+    /* Custom dropdown shell */
+    .custom-select-wrapper{
+      position:relative;
+      width:100%;
+      margin-top:0.25rem;
+    }
+    .custom-select-trigger{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0.65rem 0.9rem;
+      min-height:48px;
+      border:1px solid var(--cane-200);
+      border-radius:0.85rem;
+      background:#fff;
+      color:#111827;
+      font-weight:600;
+      box-shadow:0 6px 16px rgba(32,73,8,0.08);
+      transition:box-shadow .2s, border-color .2s, transform .2s;
+    }
+    .custom-select-trigger::after{
+      content:"";
+      width:0.5rem;
+      height:0.5rem;
+      border-right:2px solid var(--cane-600);
+      border-bottom:2px solid var(--cane-600);
+      transform:rotate(45deg);
+      margin-left:0.5rem;
+      transition:transform .2s;
+    }
+    .custom-select.open .custom-select-trigger{
+      border-color:var(--cane-600);
+      box-shadow:0 0 0 3px rgba(58,122,15,0.15);
+    }
+    .custom-select.open .custom-select-trigger::after{
+      transform:rotate(-135deg);
+    }
+    .custom-select-list{
+      position:absolute;
+      top:calc(100% + 0.35rem);
+      left:0;
+      right:0;
+      background:#fff;
+      border-radius:1rem;
+      border:1px solid #e5e7eb;
+      box-shadow:0 18px 35px rgba(15,23,42,0.15);
+      max-height:280px;
+      overflow:auto;
+      z-index:60;
+      padding:0.35rem;
+      display:none;
+    }
+    .custom-select.open .custom-select-list{
+      display:block;
+    }
+    .custom-select-item{
+      width:100%;
+      text-align:left;
+      border:none;
+      background:transparent;
+      padding:0.6rem 0.85rem;
+      border-radius:0.65rem;
+      font-weight:500;
+      color:#111827;
+      transition:background .15s, color .15s;
+    }
+    .custom-select-item:hover,
+    .custom-select-item.active{
+      background:rgba(58,122,15,0.08);
+      color:var(--cane-700);
+    }
+    .custom-select-item:disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+    @media(max-width:640px){
+      .custom-select-list{
+        max-height:220px;
+        border-radius:0.85rem;
+      }
+      .custom-select-trigger{
+        min-height:52px;
+      }
+    }
+    .custom-native-hidden{
+      position:absolute !important;
+      opacity:0 !important;
+      pointer-events:none !important;
+      width:0 !important;
+      height:0 !important;
+    }
     
     /* Modern Notification Banner Styles */
     .notification-banner {
@@ -288,7 +442,15 @@ This file handles ALL functionalities described in the PDF:
   <!-- STATUS / GROWTH STAGE (FIRST FIELD) -->
   <div>
     <label class="text-sm font-medium">Growth Stage / Status <span class="text-red-500">*</span></label>
-    <select id="statusSelect" class="w-full mt-1 px-3 py-2 border rounded" required>
+    <div class="custom-select" data-select-id="statusSelect">
+      <div class="custom-select-wrapper">
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="custom-select-value">Select Growth Stage</span>
+        </button>
+        <div class="custom-select-list" role="listbox"></div>
+      </div>
+    </div>
+    <select id="statusSelect" class="custom-native-hidden" required>
       <option value="">Select Growth Stage</option>
       <option value="Germination">Germination</option>
       <option value="Tillering">Tillering</option>
@@ -301,13 +463,29 @@ This file handles ALL functionalities described in the PDF:
   <!-- FIELD -->
   <div id="fieldWrap" class="hidden">
     <label class="text-sm font-medium">Select a Field</label>
-    <select id="fieldSelect" class="w-full mt-1 px-3 py-2 border rounded"></select>
+    <div class="custom-select" data-select-id="fieldSelect">
+      <div class="custom-select-wrapper">
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="custom-select-value">Select</span>
+        </button>
+        <div class="custom-select-list" role="listbox"></div>
+      </div>
+    </div>
+    <select id="fieldSelect" class="custom-native-hidden"></select>
   </div>
 
   <!-- OPERATION -->
   <div id="operationWrap" class="hidden">
     <label class="text-sm font-medium">Field Operation</label>
-    <select id="operationSelect" class="w-full mt-1 px-3 py-2 border rounded">
+    <div class="custom-select" data-select-id="operationSelect">
+      <div class="custom-select-wrapper">
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="custom-select-value">Select</span>
+        </button>
+        <div class="custom-select-list" role="listbox"></div>
+      </div>
+    </div>
+    <select id="operationSelect" class="custom-native-hidden">
       <option value="">Select</option>
     </select>
   </div>
@@ -315,7 +493,15 @@ This file handles ALL functionalities described in the PDF:
   <!-- TASK TYPE -->
   <div id="taskTypeWrap" class="hidden">
     <label class="text-sm font-medium">Task Type</label>
-    <select id="taskType" class="w-full mt-1 px-3 py-2 border rounded"></select>
+    <div class="custom-select" data-select-id="taskType">
+      <div class="custom-select-wrapper">
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="custom-select-value">Select</span>
+        </button>
+        <div class="custom-select-list" role="listbox"></div>
+      </div>
+    </div>
+    <select id="taskType" class="custom-native-hidden"></select>
   </div>
 
   <!-- DYNAMIC FORM -->
@@ -353,7 +539,15 @@ This file handles ALL functionalities described in the PDF:
       <div id="vehicleUpdatesContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label class="text-xs font-medium">Vehicle Type</label>
-          <select id="vehicleType" class="w-full mt-1 px-3 py-2 border rounded">
+          <div class="custom-select" data-select-id="vehicleType">
+            <div class="custom-select-wrapper">
+              <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+                <span class="custom-select-value">Select</span>
+              </button>
+              <div class="custom-select-list" role="listbox"></div>
+            </div>
+          </div>
+          <select id="vehicleType" class="custom-native-hidden">
             <option value="">Select</option>
             <option>Truck</option>
             <option>Tractor</option>
@@ -440,6 +634,121 @@ initHandlerOfflineSync();
 
 let uid=null
 let pendingPayload=null
+
+const customSelectInstances = new Map();
+
+const closeAllCustomSelects = (except) => {
+  document.querySelectorAll('.custom-select.open').forEach(container => {
+    if (container !== except) {
+      container.classList.remove('open');
+      const trigger = container.querySelector('.custom-select-trigger');
+      if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    }
+  });
+};
+
+function initializeCustomSelect(selectElement) {
+  if (!selectElement || selectElement.dataset.customInitialized === 'true') return;
+  const container = document.querySelector(`.custom-select[data-select-id="${selectElement.id}"]`);
+  if (!container) return;
+
+  selectElement.dataset.customInitialized = 'true';
+  const trigger = container.querySelector('.custom-select-trigger');
+  const valueEl = container.querySelector('.custom-select-value');
+  const listEl = container.querySelector('.custom-select-list');
+
+  const close = () => {
+    container.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  };
+
+  const open = () => {
+    closeAllCustomSelects(container);
+    container.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+  };
+
+  const updateSelectedLabel = () => {
+    const option = selectElement.options[selectElement.selectedIndex];
+    valueEl.textContent = option ? option.textContent : 'Select';
+  };
+
+  const renderOptions = () => {
+    listEl.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    Array.from(selectElement.options).forEach(option => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'custom-select-item';
+      item.textContent = option.textContent || 'Select';
+      item.dataset.value = option.value;
+      if (option.disabled) item.disabled = true;
+      if (option.value === selectElement.value) item.classList.add('active');
+      item.addEventListener('click', () => {
+        if (option.disabled) return;
+        selectElement.value = option.value;
+        selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+        close();
+      });
+      fragment.appendChild(item);
+    });
+    listEl.appendChild(fragment);
+    updateSelectedLabel();
+  };
+
+  trigger.addEventListener('click', (e) => {
+    e.preventDefault();
+    container.classList.contains('open') ? close() : open();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!container.contains(e.target)) {
+      close();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
+
+  selectElement.addEventListener('change', () => {
+    updateSelectedLabel();
+    listEl.querySelectorAll('.custom-select-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.value === selectElement.value);
+    });
+  });
+
+  const observer = new MutationObserver(renderOptions);
+  observer.observe(selectElement, { childList: true, subtree: true });
+
+  renderOptions();
+  customSelectInstances.set(selectElement.id, { renderOptions, updateSelectedLabel });
+}
+
+function initializeAllCustomSelects() {
+  ['statusSelect','fieldSelect','operationSelect','taskType','vehicleType'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) initializeCustomSelect(el);
+  });
+}
+
+initializeAllCustomSelects();
+
+function getCustomSelectTemplate(id, optionsHTML, placeholder = 'Select', extraAttrs = '', extraClasses = '') {
+  return `
+    <div class="custom-select" data-select-id="${id}">
+      <div class="custom-select-wrapper">
+        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="custom-select-value">${placeholder}</span>
+        </button>
+        <div class="custom-select-list" role="listbox"></div>
+      </div>
+    </div>
+    <select id="${id}" class="custom-native-hidden ${extraClasses}" ${extraAttrs}>
+      ${optionsHTML}
+    </select>
+  `;
+}
 
 function showCenterMessage(msg) {
   const existing = document.getElementById('centerMsgModal');
@@ -1703,11 +2012,12 @@ function renderForm(type){
 
     // 🔽 SELECT WITH "Other" OPTION
     if(f.type === 'select'){
+      const optionsHTML = `
+        <option value="">Select</option>
+        ${f.options.map(opt=>`<option value="${opt}">${opt}</option>`).join('')}
+      `;
       inputHTML = `
-        <select id="${f.id}" class="w-full border rounded px-3 py-2" onchange="handleOtherSelect('${f.id}')" required>
-          <option value="">Select</option>
-          ${f.options.map(opt=>`<option value="${opt}">${opt}</option>`).join('')}
-        </select>
+        ${getCustomSelectTemplate(f.id, optionsHTML, 'Select', `required onchange="handleOtherSelect('${f.id}')"`)}
         <input type="text" id="${f.id}_other" placeholder="Please specify" class="w-full border rounded px-3 py-2 mt-2 hidden" />
       `;
     } 
@@ -1769,6 +2079,14 @@ function renderForm(type){
       </div>
     `;
   });
+
+  // Initialize custom selects within the dynamic form
+  fields
+    .filter(f => f.type === 'select')
+    .forEach(f => {
+      const selectEl = document.getElementById(f.id);
+      if (selectEl) initializeCustomSelect(selectEl);
+    });
 
   // --- SPECIAL HANDLING ---
 
@@ -2120,6 +2438,22 @@ if (addBoughtItemBtn && boughtItemsList) {
     boughtItemsCount++;
     const itemDiv = document.createElement('div');
     itemDiv.className = 'border rounded p-3 space-y-2';
+    const unitSelectId = `boughtUnit_${boughtItemsCount}`;
+    const unitOptions = `
+      <option value="">Select unit</option>
+      <option value="kg">Kilogram (kg)</option>
+      <option value="bag">Bag/s</option>
+      <option value="sack">Sack/s</option>
+      <option value="ton">Ton/s</option>
+      <option value="liter">Liter/s</option>
+      <option value="gallon">Gallon/s</option>
+      <option value="pcs">Piece/s</option>
+      <option value="bundle">Bundle/s</option>
+      <option value="box">Box/es</option>
+      <option value="hectare">Hectare/s</option>
+      <option value="others">Others</option>
+    `;
+    
     itemDiv.innerHTML = `
       <div class="flex justify-between items-center mb-2">
         <span class="text-xs font-medium">Item ${boughtItemsCount}</span>
@@ -2136,20 +2470,7 @@ if (addBoughtItemBtn && boughtItemsList) {
         </div>
         <div>
           <label class="text-xs">Unit</label>
-          <select class="bought-item-unit w-full px-2 py-1 border rounded text-sm">
-            <option value="">Select unit</option>
-            <option value="kg">Kilogram (kg)</option>
-            <option value="bag">Bag/s</option>
-            <option value="sack">Sack/s</option>
-            <option value="ton">Ton/s</option>
-            <option value="liter">Liter/s</option>
-            <option value="gallon">Gallon/s</option>
-            <option value="pcs">Piece/s</option>
-            <option value="bundle">Bundle/s</option>
-            <option value="box">Box/es</option>
-            <option value="hectare">Hectare/s</option>
-            <option value="others">Others</option>
-          </select>
+          ${getCustomSelectTemplate(unitSelectId, unitOptions, 'Select unit', '', 'bought-item-unit')}
         </div>
         <div>
           <label class="text-xs">Price</label>
@@ -2185,6 +2506,11 @@ if (addBoughtItemBtn && boughtItemsList) {
     priceInput.addEventListener('input', updateTotal);
     
     boughtItemsList.appendChild(itemDiv);
+
+    const newUnitSelect = document.getElementById(unitSelectId);
+    if (newUnitSelect) {
+      initializeCustomSelect(newUnitSelect);
+    }
   };
 }
 
