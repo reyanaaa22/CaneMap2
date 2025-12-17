@@ -803,7 +803,7 @@
                   <div class="flex items-center justify-between mb-2">
               <div>
                       <p class="font-semibold text-sm">Tillering</p>
-                      <p class="text-xs text-gray-600" id="tlTill">Status: - <span id="tlPct">0</span>% Complete</p>
+                      <p class="text-xs text-gray-600" id="tlTill">0% Complete - Expected</p>
               </div>
                     <span class="badge badge-progress text-xs" id="badge-tillering" style="display: none;">In Progress</span>
             </div>
@@ -1649,7 +1649,8 @@
           }
 
           const DAP = growthData.DAP || 0;
-          const totalDays = VARIETY_HARVEST_DAYS[growthData.variety] || 365;
+          const variety = growthData.variety || '';
+          const totalDays = VARIETY_HARVEST_DAYS[variety] || 365;
 
           // Update progress bar
           const progress = Math.min(100, Math.round((DAP / totalDays) * 100));
@@ -1663,7 +1664,10 @@
           if (progressPercentage) progressPercentage.textContent = progress + '%';
           if (progressCurrent) progressCurrent.textContent = growthData.currentGrowthStage || '—';
 
-          // Update timeline labels and stage indicators
+          // Calculate stage percentages based on DAP and variety-specific ranges
+          const stageProgress = getAllStageProgress(variety, DAP);
+
+          // Update timeline labels and stage indicators with percentages
           const plantingDate = growthData.plantingDate;
           const currentStage = growthData.currentGrowthStage || 'Not Planted';
 
@@ -1674,57 +1678,70 @@
             return;
           }
 
-          const germEnd = new Date(plantingDate.getTime() + 45 * 24 * 60 * 60 * 1000);
-          const tillEnd = new Date(plantingDate.getTime() + 100 * 24 * 60 * 60 * 1000);
-          const grandEnd = new Date(plantingDate.getTime() + 240 * 24 * 60 * 60 * 1000);
-          const matEnd = new Date(plantingDate.getTime() + 300 * 24 * 60 * 60 * 1000);
+          // Get variety-specific DAP ranges
+          const stageRanges = DAP_STAGE_RANGES[variety] || {};
+          const germRange = stageRanges.Germination || { min: 0, max: 35 };
+          const tillRange = stageRanges.Tillering || { min: 35, max: 120 };
+          const grandRange = stageRanges['Grand Growth'] || { min: 120, max: 280 };
+          const matRange = stageRanges.Maturity || { min: 280, max: 360 };
 
-          // Update status text
+          // Calculate end dates based on variety-specific ranges
+          const germEnd = new Date(plantingDate.getTime() + germRange.max * 24 * 60 * 60 * 1000);
+          const tillEnd = new Date(plantingDate.getTime() + tillRange.max * 24 * 60 * 60 * 1000);
+          const grandEnd = new Date(plantingDate.getTime() + grandRange.max * 24 * 60 * 60 * 1000);
+          const matEnd = new Date(plantingDate.getTime() + matRange.max * 24 * 60 * 60 * 1000);
+
+          // Update status text with percentages
           const tlGerm = document.getElementById('tlGerm');
           const tlTill = document.getElementById('tlTill');
           const tlGrand = document.getElementById('tlGrand');
           const tlMat = document.getElementById('tlMat');
 
+          // Helper function to determine status based on DAP and range
+          function getStageStatus(DAP, range, isInRange) {
+            if (DAP >= range.max) return 'Completed';
+            if (isInRange) return 'In Progress';
+            if (DAP < range.min) return 'Expected';
+            return 'Active';
+          }
+
+          // Update Germination stage
           if (tlGerm) {
-            const status = DAP >= 45 ? 'Completed' : (DAP >= 0 ? 'Active' : 'Expected');
-            tlGerm.textContent = `Status: ${status} - ${germEnd.toLocaleDateString()}`;
+            const germPercent = stageProgress.Germination || 0;
+            const isInGermRange = DAP >= germRange.min && DAP < germRange.max;
+            const status = getStageStatus(DAP, germRange, isInGermRange);
+            tlGerm.textContent = `${germPercent}% Complete - ${status}`;
           }
+
+          // Update Tillering stage
           if (tlTill) {
-            const status = DAP >= 100 ? 'Completed' : (DAP >= 45 ? 'In Progress' : 'Expected');
-            // Get existing tlPct element to avoid duplicate ID
-            let existingTlPct = document.getElementById('tlPct');
-            
-            if (existingTlPct && existingTlPct.parentNode === tlTill) {
-              // Update the existing element's text content
-              existingTlPct.textContent = progress.toString();
-              // Update status text by replacing the first text node
-              const childNodes = Array.from(tlTill.childNodes);
-              const textNode = childNodes.find(node => node.nodeType === Node.TEXT_NODE);
-              if (textNode) {
-                textNode.textContent = `Status: ${status} - `;
-              } else {
-                // Insert status text before the span if no text node exists
-                tlTill.insertBefore(document.createTextNode(`Status: ${status} - `), existingTlPct);
+            const tillPercent = stageProgress.Tillering || 0;
+            const isInTillRange = DAP >= tillRange.min && DAP < tillRange.max;
+            const status = getStageStatus(DAP, tillRange, isInTillRange);
+            // Remove any existing percentage spans to avoid duplicates
+            const existingSpans = tlTill.querySelectorAll('span');
+            existingSpans.forEach(span => {
+              if (span.id === 'tlPct' || span.classList.contains('stage-percent')) {
+                span.remove();
               }
-            } else {
-              // If element doesn't exist or is in wrong parent, create new structure
-              // But first remove any existing tlPct to avoid duplicates
-              const allTlPct = document.querySelectorAll('#tlPct');
-              allTlPct.forEach(el => {
-                if (el.id === 'tlPct' && el !== existingTlPct) {
-                  el.removeAttribute('id'); // Remove duplicate ID
-                }
-              });
-              tlTill.innerHTML = `Status: ${status} - <span id="tlPct">${progress}</span>% Complete`;
-            }
+            });
+            tlTill.innerHTML = `<span class="stage-percent font-semibold">${tillPercent}%</span> Complete - ${status}`;
           }
+
+          // Update Grand Growth stage
           if (tlGrand) {
-            const status = DAP >= 240 ? 'Active' : (DAP >= 100 ? 'Starting Soon' : 'Expected');
-            tlGrand.textContent = `Status: ${status} - ${grandEnd.toLocaleDateString()}`;
+            const grandPercent = stageProgress['Grand Growth'] || 0;
+            const isInGrandRange = DAP >= grandRange.min && DAP < grandRange.max;
+            const status = getStageStatus(DAP, grandRange, isInGrandRange);
+            tlGrand.textContent = `${grandPercent}% Complete - ${status}`;
           }
+
+          // Update Maturity/Ripening stage
           if (tlMat) {
-            const status = DAP >= 300 ? 'Active' : (DAP >= 240 ? 'Starting Soon' : 'Expected');
-            tlMat.textContent = `Status: ${status} - ${matEnd.toLocaleDateString()}`;
+            const matPercent = stageProgress.Maturity || 0;
+            const isInMatRange = DAP >= matRange.min && DAP < matRange.max;
+            const status = getStageStatus(DAP, matRange, isInMatRange);
+            tlMat.textContent = `${matPercent}% Complete - ${status}`;
           }
 
           // Update stage indicators and badges
@@ -1833,22 +1850,70 @@
           return 100;
         }
 
-        // Get all stage progress for a variety
+        // Get all stage progress for a variety based on DAP
+        // Returns percentages for each stage: Germination, Tillering, Grand Growth, Maturity
         function getAllStageProgress(variety, DAP) {
           const stageRanges = DAP_STAGE_RANGES[variety];
           if (!stageRanges) return {};
+          
           const progress = {};
-          for (const [stageName, range] of Object.entries(stageRanges)) {
-            if (DAP >= range.max) {
-              progress[stageName] = 100;
-            } else if (DAP >= range.min) {
-              const stageDuration = range.max - range.min;
-              const daysIntoStage = DAP - range.min;
-              progress[stageName] = Math.round((daysIntoStage / stageDuration) * 100);
-            } else {
+          const stages = ['Germination', 'Tillering', 'Grand Growth', 'Maturity'];
+          
+          // Determine if crop is in Maturity stage or beyond
+          const maturityRange = stageRanges.Maturity;
+          const isInMaturityOrBeyond = maturityRange && DAP >= maturityRange.min;
+          
+          for (const stageName of stages) {
+            const range = stageRanges[stageName];
+            if (!range) {
               progress[stageName] = 0;
+              continue;
+            }
+            
+            // Maturity Rule: If crop is in Maturity or beyond, all previous stages = 100%
+            if (isInMaturityOrBeyond && stageName !== 'Maturity') {
+              progress[stageName] = 100;
+            }
+            // For Maturity stage itself, calculate normally
+            else if (stageName === 'Maturity') {
+              // If DAP is beyond maturity end → Maturity = 100%
+              if (DAP >= range.max) {
+                progress[stageName] = 100;
+              }
+              // If DAP has not yet reached maturity → Maturity = 0%
+              else if (DAP < range.min) {
+                progress[stageName] = 0;
+              }
+              // Calculate percentage: ((DAP – Stage Start DAP) / (Stage End DAP – Stage Start DAP)) × 100
+              else {
+                const stageDuration = range.max - range.min;
+                const daysIntoStage = DAP - range.min;
+                const percentage = Math.round((daysIntoStage / stageDuration) * 100);
+                // Clamp between 0% and 100%
+                progress[stageName] = Math.max(0, Math.min(100, percentage));
+              }
+            }
+            // For non-maturity stages (only if not in maturity yet)
+            else {
+              // If DAP is beyond a stage's end → stage = 100%
+              if (DAP >= range.max) {
+                progress[stageName] = 100;
+              }
+              // If DAP has not yet reached a stage → stage = 0%
+              else if (DAP < range.min) {
+                progress[stageName] = 0;
+              }
+              // Calculate percentage: ((DAP – Stage Start DAP) / (Stage End DAP – Stage Start DAP)) × 100
+              else {
+                const stageDuration = range.max - range.min;
+                const daysIntoStage = DAP - range.min;
+                const percentage = Math.round((daysIntoStage / stageDuration) * 100);
+                // Clamp between 0% and 100%
+                progress[stageName] = Math.max(0, Math.min(100, percentage));
+              }
             }
           }
+          
           return progress;
         }
 
