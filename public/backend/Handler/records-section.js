@@ -23,6 +23,8 @@ let recordsUnsubscribe = null;
 let currentUserId = null;
 let fieldsCache = {};
 let deletingRecords = new Set(); // Track records currently being deleted to prevent duplicate attempts
+let currentPage = 1;
+let entriesPerPage = 10;
 
 // Initialize Records Section
 export async function initializeRecordsSection(userId) {
@@ -392,6 +394,7 @@ function renderRecords(records) {
   
   // Store current filtered records for export/print
   currentFilteredRecords = records;
+  currentPage = 1; // Reset to first page when records change
   
   if (records.length === 0) {
     container.innerHTML = `
@@ -401,13 +404,20 @@ function renderRecords(records) {
         <p class="text-gray-400 text-sm mt-1">Start by submitting input records in the Growth Tracker</p>
       </div>
     `;
+    updatePaginationInfo(0, 0);
     return;
   }
+  
+  // Calculate pagination
+  const totalRecords = records.length;
+  const startIndex = (currentPage - 1) * entriesPerPage;
+  const endIndex = Math.min(startIndex + entriesPerPage, totalRecords);
+  const paginatedRecords = records.slice(startIndex, endIndex);
   
   // Use DocumentFragment for faster DOM manipulation
   const fragment = document.createDocumentFragment();
   const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = records.map(record => createRecordCard(record)).join('');
+  tempDiv.innerHTML = paginatedRecords.map(record => createRecordCard(record)).join('');
   
   // Move all nodes to fragment
   while (tempDiv.firstChild) {
@@ -417,6 +427,9 @@ function renderRecords(records) {
   // Clear and append in one operation
   container.innerHTML = '';
   container.appendChild(fragment);
+  
+  // Update pagination info
+  updatePaginationInfo(startIndex + 1, endIndex, totalRecords);
   
   // Populate Task Type filter dropdown with unique task types from records
   populateTaskTypeFilter(records);
@@ -435,6 +448,18 @@ function renderRecords(records) {
       confirmDeleteRecord(recordId);
     }
   });
+}
+
+// Update pagination info display
+function updatePaginationInfo(startEntry, endEntry, totalEntries = 0) {
+  const paginationInfo = document.getElementById('recordsPaginationInfo');
+  if (paginationInfo) {
+    if (totalEntries === 0) {
+      paginationInfo.textContent = 'Showing 0 to 0 of 0 entries';
+    } else {
+      paginationInfo.textContent = `Showing ${startEntry} to ${endEntry} of ${totalEntries} entries`;
+    }
+  }
 }
 
 // Populate Task Type filter dropdown
@@ -587,38 +612,47 @@ function createRecordCard(record) {
   const totalCost = calculateTotalCost(record);
   
   return `
-    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all" 
+    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4" 
          style="border-left-color: ${colors.border};">
-      <div class="p-4">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-3 py-1 rounded-full text-xs font-semibold" 
-                    style="background: ${colors.bg}; color: ${colors.text};">
-                ${escapeHtml(status)}
-              </span>
-              <h3 class="font-semibold text-gray-900">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
-            </div>
-            <div class="space-y-1 text-sm text-gray-600">
-              <p><i class="fas fa-map-marker-alt text-[var(--cane-600)] mr-2"></i>${escapeHtml(record.fieldName || 'Unknown Field')}</p>
-              <p><i class="fas fa-cogs text-[var(--cane-600)] mr-2"></i>${escapeHtml(record.operation || 'N/A')}</p>
-              <p><i class="fas fa-calendar text-[var(--cane-600)] mr-2"></i>${dateStr}</p>
-            </div>
+      <div class="flex items-start justify-between gap-4">
+        <!-- Left Section: Status, Task Type, Details -->
+        <div class="flex-1">
+          <!-- Status Badge and Task Type -->
+          <div class="flex items-center gap-2 mb-3">
+            <span class="px-2 py-1 rounded text-xs font-semibold" 
+                  style="background: ${colors.bg}; color: ${colors.text};">
+              ${escapeHtml(status)}
+            </span>
+            <h3 class="font-bold text-gray-900">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
           </div>
-          <div class="text-right ml-4">
+          
+          <!-- Details with Icons -->
+          <div class="space-y-1 text-sm text-gray-600">
+            <p><i class="fas fa-map-marker-alt text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.fieldName || 'Unknown Field')}</p>
+            <p><i class="fas fa-cogs text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.operation || 'N/A')}</p>
+            <p><i class="fas fa-calendar text-[var(--cane-600)] w-4"></i> ${dateStr}</p>
+          </div>
+        </div>
+        
+        <!-- Right Section: Cost and Buttons -->
+        <div class="flex flex-col items-end gap-3">
+          <!-- Total Cost -->
+          <div class="text-right">
             <p class="text-lg font-bold text-[var(--cane-700)]">₱${totalCost.toFixed(2)}</p>
             <p class="text-xs text-gray-500">Total Cost</p>
           </div>
-        </div>
-        <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
-          <button data-record-id="${record.id}" data-action="view" 
-                  class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition text-sm font-semibold flex items-center gap-2">
-            <i class="fas fa-eye"></i> View Details
-          </button>
-          <button data-record-id="${record.id}" data-action="delete" 
-                  class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm font-semibold flex items-center gap-2">
-            <i class="fas fa-trash"></i> Delete
-          </button>
+          
+          <!-- Action Buttons -->
+          <div class="flex gap-2">
+            <button data-record-id="${record.id}" data-action="view" 
+                    class="px-3 py-1.5 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition text-xs font-semibold flex items-center gap-1">
+              <i class="fas fa-eye"></i> View Details
+            </button>
+            <button data-record-id="${record.id}" data-action="delete" 
+                    class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-semibold flex items-center gap-1">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -631,6 +665,7 @@ function setupFilters() {
   const customDateRange = document.getElementById('recordsCustomDateRange');
   const applyBtn = document.getElementById('recordsApplyFilters');
   const clearBtn = document.getElementById('recordsClearFilters');
+  const entriesPerPageSelect = document.getElementById('recordsEntriesPerPage');
   
   if (dateFilter) {
     dateFilter.addEventListener('change', (e) => {
@@ -648,6 +683,14 @@ function setupFilters() {
   
   if (clearBtn) {
     clearBtn.addEventListener('click', clearFilters);
+  }
+  
+  if (entriesPerPageSelect) {
+    entriesPerPageSelect.addEventListener('change', (e) => {
+      entriesPerPage = parseInt(e.target.value);
+      currentPage = 1;
+      renderRecords(currentFilteredRecords);
+    });
   }
 }
 
