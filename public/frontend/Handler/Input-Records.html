@@ -2437,10 +2437,8 @@ function renderForm(type){
     // List of all possible cost-related field IDs
     const costFieldIds = [
       // Standard cost fields
-      'fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
+      'fuelCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
       'haulingCost', 'harvestCost', 'transportCost', 'cost',
-      // Rent cost field
-      'rentCost',
       // Other expense fields
       'haulingExpense'
     ];
@@ -2461,7 +2459,7 @@ function renderForm(type){
       }
     }
     
-    // Check for enhanced labor cost (readonly calculated field)
+    // Check for enhanced labor cost (readonly calculated field) - ALWAYS include if present
     const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
     const enhancedLaborCostInput = document.getElementById('laborCost');
     if(laborCostEnhancedContainer && enhancedLaborCostInput && enhancedLaborCostInput.readonly) {
@@ -2469,16 +2467,22 @@ function renderForm(type){
       total += parseFloat(enhancedLaborCostInput.value) || 0;
     }
     
+    // Explicitly include Rent Cost if it exists (dynamically created field)
+    const rentCostInput = document.getElementById('rentCost');
+    if(rentCostInput) {
+      total += parseFloat(rentCostInput.value) || 0;
+    }
+    
     // Sum all cost-related fields that exist in the form
     costFieldIds.forEach(fieldId => {
-      // Skip laborCost if it's in a legacy dynamic container (already handled above)
+      // Skip laborCost if it's in a legacy dynamic container or enhanced container (already handled above)
       if(fieldId === 'laborCost' && (hasLaborCostContainer || laborCostEnhancedContainer)) {
         return;
       }
       
       const field = document.getElementById(fieldId);
       if(field && field.type === 'number') {
-        // Include readonly fields (like enhanced laborCost which is calculated)
+        // Include readonly fields (like calculated costs)
         // Skip if it's inside a legacy dynamic container (handled separately above)
         const container = field.closest('#' + fieldId + 'Container');
         if(!container) {
