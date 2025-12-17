@@ -89,13 +89,20 @@
             transform: translateY(0);
         }
 #weatherForecast {
-    max-height: none !important;
-    overflow: visible !important;
     width: 100%;
-    max-width: 100%;
+    max-width: 420px;
     box-sizing: border-box;
     margin: 0;
     padding: 1.25rem; /* p-5 equivalent */
+    max-height: 600px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+#weatherForecast #wxCompact {
+    width: 140px;
+    max-width: 140px;
+    flex-shrink: 0;
 }
 
         /* Inner content area fills available space and becomes column on small screens */
@@ -108,18 +115,11 @@
             width: 100%;
             max-width: 100%;
         }
-        
-        /* Ensure weather forecast container uses full width and centers content */
-        #weatherForecast {
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
-        }
 
         /* Right-side compact forecast becomes a vertical scroll area when content is large */
         #weatherForecast #wxDaily {
             overflow-y: auto;
-            max-height: 340px;
+            max-height: 280px;
             padding-right: 6px; /* allow space for scrollbar */
         }
         /* Ensure next days list is inside the compact container, not beside */
@@ -942,44 +942,8 @@ header nav .flex.items-center.justify-between > div:first-child {
                 
                 <!-- removed get verified section per request -->
             </div>
-<!-- 🔔 Notifications Modal -->
-<div id="notifModal"
-  class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-40 z-50">
-  
-  <div class="bg-white rounded-xl shadow-xl w-11/12 max-w-md p-6 relative">
-    <!-- Close button -->
-    <button id="closeNotifModal"
-      class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">
-      &times;
-    </button>
-
-    <!-- Modal header -->
-    <h2 class="text-xl font-bold text-[var(--cane-950)] mb-4 flex items-center">
-      <i class="fas fa-bell text-[var(--cane-500)] mr-2"></i>
-      All Notifications
-    </h2>
-
-    <!-- Modal actions -->
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-lg font-semibold text-[var(--cane-900)]">Notifications</h3>
-      <div class="flex items-center gap-2">
-        <button id="markAllReadBtn" class="text-sm text-[var(--cane-600)] hover:text-[var(--cane-700)] font-semibold">
-          Mark all as read
-        </button>
-      </div>
-    </div>
-
-    <!-- Modal content -->
-    <div id="allNotificationsList" class="space-y-3 max-h-[70vh] overflow-y-scroll">
-      <p class="text-gray-500 text-sm text-center">Loading notifications...</p>
-    </div>
-  </div>
-
-</div>
-
-
-                                 <!-- Weather Now (glassy dark) -->
-                  <div id="weatherForecast" class="weather-card p-5 text-white">
+            <!-- Weather Now (glassy dark) - Right Panel -->
+            <div id="weatherForecast" class="weather-card p-5 text-white">
                       <div class="relative z-[1]">
                           <div class="flex items-start gap-4 w-full">
                               <!-- Left: Today big -->
@@ -1015,9 +979,9 @@ header nav .flex.items-center.justify-between > div:first-child {
                                   </div>
                               </div>
                               <!-- Right: Upcoming compact -->
-                              <div id="wxCompact" class="w-48 glass p-4 self-stretch flex-shrink-0" aria-hidden="true">
+                              <div id="wxCompact" class="glass p-4 self-stretch flex-shrink-0" aria-hidden="true">
                                   <p class="text-base text-white/95 font-bold mb-4 pt-1">Predicted Forecast</p>
-                                  <div id="wxDaily" style="max-height: 540px; overflow-y: auto;" class="wx-day-list" aria-hidden="true">
+                                  <div id="wxDaily" class="wx-day-list" aria-hidden="true">
                                       <!-- JS will fill this automatically -->
                                   </div>
                                   <div id="wxCompactFooter" class="mt-2"></div>
@@ -1028,6 +992,41 @@ header nav .flex.items-center.justify-between > div:first-child {
             </div>
         </div>
     </main>
+
+<!-- 🔔 Notifications Modal -->
+<div id="notifModal"
+  class="fixed inset-0 hidden flex items-center justify-center bg-black bg-opacity-40 z-50">
+  
+  <div class="bg-white rounded-xl shadow-xl w-11/12 max-w-md p-6 relative">
+    <!-- Close button -->
+    <button id="closeNotifModal"
+      class="absolute top-3 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">
+      &times;
+    </button>
+
+    <!-- Modal header -->
+    <h2 class="text-xl font-bold text-[var(--cane-950)] mb-4 flex items-center">
+      <i class="fas fa-bell text-[var(--cane-500)] mr-2"></i>
+      All Notifications
+    </h2>
+
+    <!-- Modal actions -->
+    <div class="flex justify-between items-center mb-3">
+      <h3 class="text-lg font-semibold text-[var(--cane-900)]">Notifications</h3>
+      <div class="flex items-center gap-2">
+        <button id="markAllReadBtn" class="text-sm text-[var(--cane-600)] hover:text-[var(--cane-700)] font-semibold">
+          Mark all as read
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal content -->
+    <div id="allNotificationsList" class="space-y-3 max-h-[70vh] overflow-y-scroll">
+      <p class="text-gray-500 text-sm text-center">Loading notifications...</p>
+    </div>
+  </div>
+
+</div>
     <!-- Features Section -->
     <section id="features" class="relative bg-gradient-to-br from-[var(--cane-900)] to-[var(--cane-950)]">
         <div id="featuresInner" class="relative w-full py-12 min-h-[80vh] overflow-hidden">

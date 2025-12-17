@@ -390,11 +390,11 @@ async function login() {
       }
     }
 
-    // ✅ SECURITY: Only allow Handler and SRA roles to log in
-    if (userRole !== 'handler' && userRole !== 'sra') {
+    // ✅ SECURITY: Only allow Handler, SRA, and Farmer roles to log in
+    if (userRole !== 'handler' && userRole !== 'sra' && userRole !== 'farmer') {
       await signOut(auth);
       showToast(
-        `Access denied. This login page is only for Handlers and SRA Officers. Your role: ${userRole || 'none'}`,
+        `Access denied. Your role is not authorized to log in. Your role: ${userRole || 'none'}`,
         "error"
       );
       passwordInput.value = "";
@@ -432,11 +432,35 @@ async function login() {
     showToast("Login successful! Redirecting...", "success");
     setButtonState({ loading: true, label: "Redirecting...", disabled: true });
 
-    // Redirect immediately based on role
+    // Redirect based on role
     if (userRole === "handler") {
       window.location.href = "../../frontend/Handler/dashboard.html";
     } else if (userRole === "sra") {
       window.location.href = "../../frontend/SRA/SRA_Dashboard.html";
+    } else if (userRole === "farmer") {
+      // For farmers: check if they have any approved fields
+      try {
+        const fieldsRef = collection(db, "fields");
+        const q = query(
+          fieldsRef,
+          where("userId", "==", user.uid),
+          where("status", "in", ["reviewed", "active", "harvested"])
+        );
+        const fieldsSnapshot = await getDocs(q);
+        
+        if (!fieldsSnapshot.empty) {
+          // Farmer has approved fields → redirect to handler dashboard
+          console.log("✅ Farmer has approved fields, redirecting to handler dashboard");
+          window.location.href = "../../frontend/Handler/dashboard.html";
+        } else {
+          // Farmer has no approved fields → redirect to lobby (register field page)
+          console.log("ℹ️ Farmer has no approved fields, redirecting to lobby");
+          window.location.href = "../Common/lobby.html";
+        }
+      } catch (err) {
+        console.warn("⚠️ Error checking farmer fields, defaulting to lobby:", err);
+        window.location.href = "../Common/lobby.html";
+      }
     }
 
     } catch (error) {
