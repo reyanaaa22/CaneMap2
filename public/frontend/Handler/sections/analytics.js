@@ -1,5 +1,7 @@
-import { db } from "../../backend/Common/firebase-config.js";
+import { db } from "../../Common/firebase-config.js";
 import { collection, query, where, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/+esm";
 
 let chartsInitialized = false;
 let chartInstances = {};
@@ -13,12 +15,14 @@ export async function initializeAnalytics(userId) {
     await loadAnalyticsHTML();
     
     // Fetch all required data
-    const [fields, tasks, growthData, resourceData, environmentalData] = await Promise.all([
+    const [fields, tasks, growthData, resourceData, environmentalData, pendingFields, activeFields] = await Promise.all([
       fetchFieldsData(userId),
       fetchTasksData(userId),
       fetchGrowthStageData(userId),
       fetchResourceData(userId),
-      fetchEnvironmentalData(userId)
+      fetchEnvironmentalData(userId),
+      fetchPendingFieldsData(userId),
+      fetchActiveFieldsData(userId)
     ]);
 
     // Update KPI metrics
@@ -26,7 +30,7 @@ export async function initializeAnalytics(userId) {
 
     // Initialize charts
     if (!chartsInitialized) {
-      initializeCharts(fields, tasks, growthData);
+      initializeCharts(fields, tasks, growthData, pendingFields, activeFields);
       chartsInitialized = true;
     }
 
@@ -66,7 +70,7 @@ async function loadAnalyticsHTML() {
       return;
     }
 
-    const response = await fetch("./analytics.html");
+    const response = await fetch("/frontend/Handler/sections/analytics.html");
     if (!response.ok) {
       throw new Error(`Failed to fetch analytics.html: ${response.status}`);
     }
@@ -109,6 +113,42 @@ async function fetchTasksData(userId) {
     }));
   } catch (error) {
     console.error("Error fetching tasks:", error);
+    return [];
+  }
+}
+
+// Fetch pending fields from field_applications collection
+async function fetchPendingFieldsData(userId) {
+  try {
+    const applicationsRef = collection(db, "field_applications");
+    const q = query(applicationsRef, where("userId", "==", userId));
+    const snapshot = await getDocs(q);
+    
+    console.log("📋 Pending fields fetched:", snapshot.size);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching pending fields:", error);
+    return [];
+  }
+}
+
+// Fetch active fields from fields collection
+async function fetchActiveFieldsData(userId) {
+  try {
+    const fieldsRef = collection(db, "fields");
+    const q = query(fieldsRef, where("userId", "==", userId));
+    const snapshot = await getDocs(q);
+    
+    console.log("✅ Active fields fetched:", snapshot.size);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error("Error fetching active fields:", error);
     return [];
   }
 }
@@ -295,16 +335,24 @@ function updateKPIMetrics(fields, tasks) {
 }
 
 // Initialize charts
-function initializeCharts(fields, tasks, growthData) {
-  // Growth Stage Distribution Chart
-  if (document.getElementById("growthStageChart")) {
-    initializeGrowthStageChart(growthData);
-  }
+function initializeCharts(fields, tasks, growthData, pendingFields, activeFields) {
+  // Small delay to ensure canvas elements are fully rendered
+  setTimeout(() => {
+    // Growth Stage Distribution Chart
+    if (document.getElementById("growthStageChart")) {
+      initializeGrowthStageChart(growthData);
+    }
 
-  // Field Status Chart
-  if (document.getElementById("fieldStatusChart")) {
-    initializeFieldStatusChart(fields);
-  }
+    // Field Lifecycle Overview Chart
+    if (document.getElementById("lifecycleChart")) {
+      initializeFieldLifecycleChart();
+    }
+
+    // Field Status Pie Chart
+    if (document.getElementById("fieldStatusChart")) {
+      initializeFieldStatusChart(fields);
+    }
+  }, 50);
 }
 
 // Growth Stage Chart
@@ -358,7 +406,99 @@ function initializeGrowthStageChart(growthData) {
   });
 }
 
-// Field Status Chart
+// Field Lifecycle Overview Chart - WORKING SOLUTION
+function initializeFieldLifecycleChart() {
+  const auth = getAuth();
+  
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      console.log("❌ User not logged in");
+      return;
+    }
+
+    console.log("✅ User logged in:", user.uid);
+
+    let pendingCount = 0;
+    let activeCount = 0;
+
+    try {
+      // 🔹 PENDING → field_applications with status != "active"
+      console.log("🔍 Fetching pending applications...");
+      const allApplicationsQuery = query(
+        collection(db, "field_applications"),
+        where("requestedBy", "==", user.uid)
+      );
+
+      const allApplicationsSnap = await getDocs(allApplicationsQuery);
+      // Count only applications that are NOT active (pending/rejected/etc)
+      pendingCount = allApplicationsSnap.docs.filter(doc => doc.data().status !== "active").length;
+      console.log("📋 Pending applications found:", pendingCount);
+
+      // 🔹 ACTIVE → field_applications with status == "active" + fields collection
+      console.log("🔍 Fetching active fields...");
+      
+      // Count active applications
+      const activeApplicationsCount = allApplicationsSnap.docs.filter(doc => doc.data().status === "active").length;
+      console.log("📋 Active applications found:", activeApplicationsCount);
+      
+      // Count fields in fields collection
+      const fieldsQuery = query(
+        collection(db, "fields"),
+        where("userId", "==", user.uid)
+      );
+      const fieldsSnap = await getDocs(fieldsQuery);
+      const fieldsCount = fieldsSnap.size;
+      console.log("📋 Fields in collection found:", fieldsCount);
+      
+      // Total active = active applications + fields
+      activeCount = activeApplicationsCount + fieldsCount;
+      console.log("✅ Total active fields found:", activeCount);
+
+      console.log("📊 Pending:", pendingCount);
+      console.log("📊 Active:", activeCount);
+
+      // 🚨 ALLOW CHART EVEN WITH ZERO DATA
+      const ctx = document.getElementById("lifecycleChart");
+      if (!ctx) {
+        console.warn("⚠️ Canvas element lifecycleChart not found");
+        return;
+      }
+
+      if (chartInstances.lifecycle) {
+        chartInstances.lifecycle.destroy();
+      }
+
+      chartInstances.lifecycle = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["Pending", "Active"],
+          datasets: [{
+            data: [pendingCount, activeCount],
+            backgroundColor: ["#f59e0b", "#10b981"],
+            borderColor: "#ffffff",
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "bottom"
+            }
+          }
+        }
+      });
+
+      console.log("✅ Field Lifecycle Overview Chart created successfully");
+    } catch (error) {
+      console.error("❌ Error creating Field Lifecycle Overview Chart:", error);
+      console.error("Error details:", error.message);
+    }
+  });
+}
+
+// Field Status Pie Chart
 function initializeFieldStatusChart(fields) {
   const ctx = document.getElementById("fieldStatusChart");
   if (!ctx) {
@@ -366,19 +506,15 @@ function initializeFieldStatusChart(fields) {
     return;
   }
 
-  console.log("✅ Canvas element found:", ctx);
-  console.log("Canvas dimensions:", ctx.width, "x", ctx.height);
-
   const canvasCtx = ctx.getContext("2d");
   if (!canvasCtx) {
     console.error("❌ Canvas context not found for fieldStatusChart");
     return;
   }
 
-  console.log("✅ Canvas 2D context obtained");
-
-  // Log field data to debug
+  console.log("📊 Initializing field status pie chart");
   console.log("📊 Fields data:", fields);
+  console.log("📊 Number of fields:", fields.length);
   
   // Count fields by status - handle various status field names and values
   const statusCounts = {
@@ -408,7 +544,7 @@ function initializeFieldStatusChart(fields) {
 
   try {
     chartInstances.fieldStatus = new Chart(canvasCtx, {
-      type: "doughnut",
+      type: "pie",
       data: {
         labels: ["Active", "Harvested", "Pending", "Inactive"],
         datasets: [{
@@ -429,122 +565,13 @@ function initializeFieldStatusChart(fields) {
         }
       }
     });
-    console.log("✅ Field Status Chart created successfully");
+    console.log("✅ Field Status Pie Chart created successfully");
   } catch (error) {
-    console.error("❌ Error creating Field Status Chart:", error);
+    console.error("❌ Error creating Field Status Pie Chart:", error);
+    console.error("Error stack:", error.stack);
   }
 }
 
-// Task Completion Timeline Chart
-function initializeTaskTimelineChart(tasks) {
-  const ctx = document.getElementById("taskTimelineChart");
-  if (!ctx) {
-    console.warn("⚠️ Canvas element taskTimelineChart not found");
-    return;
-  }
-
-  const canvasCtx = ctx.getContext("2d");
-  if (!canvasCtx) {
-    console.error("❌ Canvas context not found for taskTimelineChart");
-    return;
-  }
-
-  const last7Days = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    last7Days.push(date.toLocaleDateString("en-US", { month: "short", day: "numeric" }));
-  }
-
-  const completedByDay = last7Days.map(day => {
-    return tasks.filter(t => {
-      const taskDate = t.completedDate?.toDate?.() || new Date(t.completedDate);
-      return taskDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) === day && t.status === "completed";
-    }).length;
-  });
-
-  if (chartInstances.taskTimeline) {
-    chartInstances.taskTimeline.destroy();
-  }
-
-  chartInstances.taskTimeline = new Chart(canvasCtx, {
-    type: "line",
-    data: {
-      labels: last7Days,
-      datasets: [{
-        label: "Tasks Completed",
-        data: completedByDay,
-        borderColor: "#5fab00",
-        backgroundColor: "rgba(95, 171, 0, 0.1)",
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: "#5fab00",
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 2,
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true }
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } }
-      }
-    }
-  });
-}
-
-// Yield Performance Chart
-function initializeYieldPerformanceChart(fields) {
-  const ctx = document.getElementById("yieldPerformanceChart");
-  if (!ctx) {
-    console.warn("⚠️ Canvas element yieldPerformanceChart not found");
-    return;
-  }
-
-  const canvasCtx = ctx.getContext("2d");
-  if (!canvasCtx) {
-    console.error("❌ Canvas context not found for yieldPerformanceChart");
-    return;
-  }
-
-  const fieldNames = fields.slice(0, 10).map(f => f.name || "Field");
-  const yields = fields.slice(0, 10).map(f => f.estimatedYield || 0);
-
-  if (chartInstances.yieldPerformance) {
-    chartInstances.yieldPerformance.destroy();
-  }
-
-  chartInstances.yieldPerformance = new Chart(canvasCtx, {
-    type: "bar",
-    data: {
-      labels: fieldNames,
-      datasets: [{
-        label: "Estimated Yield (tons)",
-        data: yields,
-        backgroundColor: "#f59e0b",
-        borderColor: "#d97706",
-        borderWidth: 1,
-        borderRadius: 4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      indexAxis: "y",
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: { beginAtZero: true }
-      }
-    }
-  });
-}
 
 // Update variety breakdown
 function updateVarietyBreakdown(fields) {

@@ -2223,7 +2223,8 @@
                         (async () => {
                             try {
                                 const timestamp = new Date().getTime();
-                                const { initializeAnalytics } = await import(`./sections/analytics.js?v=${timestamp}`);
+                                const random = Math.random().toString(36).substring(7);
+                                const { initializeAnalytics } = await import(`./sections/analytics.js?v=${timestamp}&r=${random}`);
                                 const { auth } = await import('../../backend/Common/firebase-config.js');
                                 const user = auth.currentUser;
                                 if (user && typeof initializeAnalytics === 'function') {
