@@ -149,8 +149,9 @@ for (const app of allFields) {
   // Optional: filter by status
   let filtered = allFields;
     if (status === 'all') {
-      // ✅ Exclude 'active' and 'harvested' fields - they're operational/completed fields, not for SRA review
-      filtered = allFields.filter((a) => a.status !== 'active' && a.status !== 'harvested');
+      // ✅ Exclude 'harvested' fields - they're completed fields, not for SRA review
+      // Note: 'active' fields are now included in 'all' status
+      filtered = allFields.filter((a) => a.status !== 'harvested');
     } else if (status === 'needs_review') {
       // ✅ Show 'pending' and 'to edit' ONLY - these need SRA attention
       filtered = allFields.filter((a) => a.status === 'pending' || a.status === 'to edit');
@@ -160,6 +161,8 @@ for (const app of allFields) {
       filtered = allFields.filter((a) => a.status === 'to edit');
     } else if (status === 'reviewed') {
       filtered = allFields.filter((a) => a.status === 'reviewed');
+    } else if (status === 'active') {
+      filtered = allFields.filter((a) => a.status === 'active');
     }
 
   filtered.sort((a, b) => {
@@ -759,13 +762,15 @@ function startRealtimeUpdates(status = 'all') {
   // ✅ Build query based on filter
   let q;
   if (status === 'all') {
-    // ✅ For 'all', fetch everything and filter client-side to exclude 'active' and 'harvested'
+    // ✅ For 'all', fetch everything and filter client-side to exclude 'harvested'
     // (Firestore doesn't support multiple != operators in one query)
+    // Note: 'active' fields are now included in 'all' status
     q = collection(db, 'fields');
   } else if (status === 'needs_review') {
     // ✅ Combine 'pending' and 'to edit' - fields needing SRA attention
     q = query(collection(db, 'fields'), where('status', 'in', ['pending', 'to edit']));
   } else {
+    // ✅ Handle specific status filters: 'pending', 'to edit', 'reviewed', 'active'
     q = query(collection(db, 'fields'), where('status', '==', status));
   }
 
@@ -831,9 +836,12 @@ async function renderFromSnapshot(snapshot, status = 'all') {
 
   let apps = snapshot.docs.map(normalize);
 
-  // ✅ Client-side filtering for 'all' status to exclude operational fields
+  // ✅ Client-side filtering for 'all' status to exclude completed fields
+  // Note: 'active' fields are now included in 'all' status
   if (status === 'all') {
-    apps = apps.filter(a => a.status !== 'active' && a.status !== 'harvested');
+    apps = apps.filter(a => a.status !== 'harvested');
+  } else if (status === 'active') {
+    apps = apps.filter(a => a.status === 'active');
   }
 
   // Enrich with user names

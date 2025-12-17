@@ -879,14 +879,15 @@ async function initNotifications(userId) {
                                     }
                                 }
 
-                                // ---------- Setup REAL-TIME listener for approved fields ----------
+                                // ---------- Setup REAL-TIME listener for ALL fields ----------
                                 async function setupRealtimeFieldsListener(map) {
                                     try {
                                         const { db } = await import('../Common/firebase-config.js');
-                                        const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                                        const { collection, onSnapshot, query } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
 
-                                        // Listen to reviewed, active, and harvested fields in real-time (top-level collection)
-                                        const q = query(collection(db, 'fields'), where('status', 'in', ['reviewed', 'active', 'harvested']));
+                                        // ✅ FIX: Query ALL fields (not just reviewed/active/harvested) to match Dashboard behavior
+                                        // This ensures new fields with 'pending' or 'to edit' status appear on the map
+                                        const q = query(collection(db, 'fields'));
 
                                         onSnapshot(q, async (snap) => {
                                             console.log('🗺️ Map: Real-time update triggered, processing fields...');
@@ -896,7 +897,7 @@ async function initNotifications(userId) {
                                             console.error('❌ Map real-time listener failed:', error);
                                         });
 
-                                        console.info('✅ Real-time map listener initialized');
+                                        console.info('✅ Real-time map listener initialized (all fields)');
                                     } catch (err) {
                                         console.error('setupRealtimeFieldsListener() failed:', err);
                                     }
@@ -1672,9 +1673,11 @@ async function initNotifications(userId) {
                             // Setup real-time listener for fields
                             async function setupRealtimeFieldsListenerGlobal(map, db) {
                                 try {
-                                    const { collection, onSnapshot, query, where } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                                    const { collection, onSnapshot, query } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
 
-                                    const q = query(collection(db, 'fields'), where('status', 'in', ['reviewed', 'active', 'harvested']));
+                                    // ✅ FIX: Query ALL fields (not just reviewed/active/harvested) to match Dashboard behavior
+                                    // This ensures new fields with 'pending' or 'to edit' status appear on the map
+                                    const q = query(collection(db, 'fields'));
 
                                     onSnapshot(q, async (snap) => {
                                         console.log('🗺️ Map: Real-time update triggered, processing fields...');
@@ -1684,7 +1687,7 @@ async function initNotifications(userId) {
                                         console.error('❌ Map real-time listener failed:', error);
                                     });
 
-                                    console.info('✅ Real-time map listener initialized');
+                                    console.info('✅ Real-time map listener initialized (all fields)');
                                 } catch (err) {
                                     console.error('setupRealtimeFieldsListenerGlobal() failed:', err);
                                 }

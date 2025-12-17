@@ -5085,7 +5085,7 @@ export function initializeFieldsSection() {
       const street = field.street || '—';
       const barangay = field.barangay || '—';
       const size = field.field_size || field.area_size || field.area || field.size || 'N/A';
-      const terrain = field.terrain_type || field.field_terrain || 'N/A';
+      const terrain = field.fieldTerrain || field.field_terrain || 'N/A';
       const status = field.status || 'active';
       const latitude = field.latitude || field.lat || 'N/A';
       const longitude = field.longitude || field.lng || 'N/A';
@@ -5103,21 +5103,91 @@ export function initializeFieldsSection() {
         growthStage = dap !== null ? getGrowthStage(dap, variety) : 'Not Planted';
       }
       
-      // Format dates from Firestore Timestamps
-      const formatFirestoreDate = (dateValue) => {
+      // Format dates to DD/MM/YYYY format (no time component)
+      const formatDateDDMMYYYY = (dateValue) => {
         if (!dateValue) return '—';
-        if (typeof dateValue === 'string') return dateValue;
+        
+        // Handle string dates (already formatted)
+        if (typeof dateValue === 'string') {
+          // If already in DD/MM/YYYY format, return as-is
+          if (/^\d{2}\/\d{2}\/\d{4}/.test(dateValue)) {
+            return dateValue.split(' ')[0]; // Remove time if present
+          }
+          // Try to parse and reformat
+          const parsed = new Date(dateValue);
+          if (!isNaN(parsed.getTime())) {
+            const day = String(parsed.getDate()).padStart(2, '0');
+            const month = String(parsed.getMonth() + 1).padStart(2, '0');
+            const year = parsed.getFullYear();
+            return `${day}/${month}/${year}`;
+          }
+          return dateValue;
+        }
+        
+        // Handle Firestore Timestamp
+        let dateObj = null;
         if (dateValue.toDate && typeof dateValue.toDate === 'function') {
-          return dateValue.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+          dateObj = dateValue.toDate();
+        } else if (dateValue instanceof Date) {
+          dateObj = dateValue;
+        } else {
+          return String(dateValue);
         }
-        if (dateValue instanceof Date) {
-          return dateValue.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-        }
-        return String(dateValue);
+        
+        if (!dateObj || isNaN(dateObj.getTime())) return '—';
+        
+        // Format as DD/MM/YYYY
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        return `${day}/${month}/${year}`;
       };
       
-      const plantingDate = formatFirestoreDate(field.planting_date || field.plantingDate);
-      const expectedHarvestDate = formatFirestoreDate(field.expected_harvest_date || field.expectedHarvestDate);
+      // CRITICAL: Get Expected Harvest Date from Input Record first, then fallback to field data
+      let expectedHarvestDate = '—';
+      try {
+        // Use already imported Firestore functions
+        const recordsQuery = query(
+          collection(db, 'records'),
+          where('fieldId', '==', fieldId),
+          where('taskType', '==', 'Planting Operation')
+        );
+        const recordsSnap = await getDocs(recordsQuery);
+        
+        if (!recordsSnap.empty) {
+          const plantingRecord = recordsSnap.docs[0].data();
+          const recordData = plantingRecord.data || {};
+          const expectedHarvestDateString = recordData.expectedHarvestDate;
+          
+          if (expectedHarvestDateString) {
+            // Use Expected Harvest Date from Input Record (DD/MM/YYYY format)
+            // Handle range format: "DD/MM/YYYY – DD/MM/YYYY" or single date
+            if (expectedHarvestDateString.includes('–') || expectedHarvestDateString.includes('-')) {
+              // Range format - preserve range but remove time if present
+              const parts = expectedHarvestDateString.split(/[–-]/);
+              if (parts.length === 2) {
+                const date1 = parts[0].trim().split(' ')[0]; // Remove time component
+                const date2 = parts[1].trim().split(' ')[0]; // Remove time component
+                expectedHarvestDate = `${date1} – ${date2}`;
+              } else {
+                expectedHarvestDate = expectedHarvestDateString.split(' ')[0]; // Single date, remove time
+              }
+            } else {
+              // Single date format - remove time component if present
+              expectedHarvestDate = expectedHarvestDateString.split(' ')[0];
+            }
+          }
+        }
+      } catch (recordError) {
+        console.debug('Could not fetch Expected Harvest Date from Input Record:', recordError);
+      }
+      
+      // Fallback to field's expectedHarvestDate if not found in Input Record
+      if (expectedHarvestDate === '—') {
+        expectedHarvestDate = formatDateDDMMYYYY(field.expected_harvest_date || field.expectedHarvestDate);
+      }
+      
+      const plantingDate = formatDateDDMMYYYY(field.planting_date || field.plantingDate);
       const delayDays = field.delay_days || field.delayDays || '—';
       const createdOn = formatFirestoreDate(field.created_on || field.createdOn || field.timestamp);
 
