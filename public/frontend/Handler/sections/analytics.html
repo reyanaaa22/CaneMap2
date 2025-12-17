@@ -41,6 +41,14 @@
             <p class="text-xs text-gray-600 mt-1">Hectares managed</p>
         </div>
 
+        <div class="bg-gradient-to-br from-orange-50 to-white border border-orange-200 rounded-xl p-6 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-orange-700">Avg Yield/Hectare</span>
+                <i class="fas fa-chart-bar text-orange-600 text-xl"></i>
+            </div>
+            <p id="analyticsAvgYield" class="text-3xl font-bold text-orange-900">0</p>
+            <p class="text-xs text-gray-600 mt-1">Tons per hectare</p>
+        </div>
     </div>
 
     <!-- Charts Row -->
@@ -51,21 +59,187 @@
                 <i class="fas fa-seedling text-[var(--cane-600)]"></i>
                 Growth Stage Distribution
             </h3>
-            <div style="position: relative; height: 300px; max-height: 300px;">
-                <canvas id="growthStageChart"></canvas>
-            </div>
+            <canvas id="growthStageChart" style="max-height: 300px;"></canvas>
         </div>
 
+        <!-- Field Status Chart -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-tasks text-[var(--cane-600)]"></i>
+                Field Status Overview
+            </h3>
+            <canvas id="fieldStatusChart" style="max-height: 300px;"></canvas>
+        </div>
     </div>
 
+
     <!-- Field Variety Breakdown -->
-    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition mb-6">
         <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <i class="fas fa-leaf text-[var(--cane-600)]"></i>
             Sugarcane Variety Distribution
         </h3>
         <div id="varietyBreakdown" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <!-- Will be populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Resource Management Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Fertilizer Usage -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-droplet text-blue-600"></i>
+                Fertilizer Usage
+            </h3>
+            <div id="fertilizerStats" class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Total Applied</span>
+                    <span id="totalFertilizer" class="font-bold text-gray-900">0 kg</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Avg per Field</span>
+                    <span id="avgFertilizer" class="font-bold text-gray-900">0 kg</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="fertilizerProgress" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pesticide Application -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-bug text-red-600"></i>
+                Pest Management
+            </h3>
+            <div id="pestStats" class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Applications</span>
+                    <span id="pestApplications" class="font-bold text-gray-900">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Incidents Reported</span>
+                    <span id="pestIncidents" class="font-bold text-red-600">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Control Rate</span>
+                    <span id="controlRate" class="font-bold text-green-600">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Labor Hours -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-users text-purple-600"></i>
+                Labor Investment
+            </h3>
+            <div id="laborStats" class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Total Hours</span>
+                    <span id="totalLaborHours" class="font-bold text-gray-900">0 hrs</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Avg per Field</span>
+                    <span id="avgLaborHours" class="font-bold text-gray-900">0 hrs</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Cost Estimate</span>
+                    <span id="laborCost" class="font-bold text-purple-600">₱0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Data Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Irrigation & Weather -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-water text-cyan-600"></i>
+                Water Management
+            </h3>
+            <div id="waterStats" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Rainfall (mm)</span>
+                    <span id="rainfallData" class="font-bold text-gray-900">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Irrigation (mm)</span>
+                    <span id="irrigationData" class="font-bold text-gray-900">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Soil Moisture Avg</span>
+                    <span id="soilMoisture" class="font-bold text-cyan-600">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="moistureProgress" class="bg-cyan-600 h-2 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Soil Health & Temperature -->
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <i class="fas fa-thermometer-half text-orange-600"></i>
+                Environmental Conditions
+            </h3>
+            <div id="envStats" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Avg Temperature</span>
+                    <span id="avgTemp" class="font-bold text-orange-600">0°C</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Soil Health Score</span>
+                    <span id="soilHealth" class="font-bold text-green-600">0/100</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">pH Level</span>
+                    <span id="phLevel" class="font-bold text-gray-900">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Organic Matter</span>
+                    <span id="organicMatter" class="font-bold text-gray-900">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cost Analysis -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-coins text-yellow-600"></i>
+            Cost Analysis & ROI
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                <p class="text-xs text-yellow-700 font-semibold mb-1">Total Investment</p>
+                <p id="totalInvestment" class="text-2xl font-bold text-yellow-900">₱0</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                <p class="text-xs text-green-700 font-semibold mb-1">Projected Revenue</p>
+                <p id="projectedRevenue" class="text-2xl font-bold text-green-900">₱0</p>
+            </div>
+            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <p class="text-xs text-blue-700 font-semibold mb-1">Estimated Profit</p>
+                <p id="estimatedProfit" class="text-2xl font-bold text-blue-900">₱0</p>
+            </div>
+            <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                <p class="text-xs text-purple-700 font-semibold mb-1">ROI</p>
+                <p id="roiPercentage" class="text-2xl font-bold text-purple-900">0%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Fields -->
+    <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition">
+        <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <i class="fas fa-star text-yellow-500"></i>
+            Top Performing Fields
+        </h3>
+        <div id="topFieldsList" class="space-y-3">
+            <p class="text-gray-500 text-sm text-center py-4">Loading field data...</p>
         </div>
     </div>
 </div>
