@@ -13,6 +13,16 @@
         integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+    <style>
+        .print-desktop-only {
+            display: flex;
+        }
+        @media (max-width: 640px) {
+            .print-desktop-only {
+                display: none !important;
+            }
+        }
+    </style>
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Chart.js for Analytics -->
@@ -2022,7 +2032,7 @@
                             <button id="recordsDownloadPDF" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold">
                                 <i class="fas fa-file-pdf"></i> <span class="hidden sm:inline">Download</span><span class="sm:hidden">PDF</span>
                             </button>
-                            <button id="recordsPrint" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold">
+                            <button id="recordsPrint" class="print-desktop-only sm:flex-none px-3 sm:px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition items-center justify-center gap-2 text-xs sm:text-sm font-semibold">
                                 <i class="fas fa-print"></i> <span class="hidden sm:inline">Print</span>
                             </button>
                             <button id="recordsSendToSRA" class="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed" disabled>
