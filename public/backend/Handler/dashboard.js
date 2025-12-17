@@ -5157,7 +5157,7 @@ export function initializeFieldsSection() {
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(fieldName)}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
-                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Owner</p>
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Handler</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(owner)}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">

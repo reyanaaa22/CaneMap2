@@ -1503,7 +1503,7 @@ function openFieldDetailsModal(field) {
     }</h2>
 
             <p class="text-sm text-center mb-3 text-[var(--cane-700)]">
-                <span class="font-semibold">Owner:</span> ${field.applicantName}
+                <span class="font-semibold">Handler:</span> ${field.applicantName}
             </p>
 
             <div class="text-[13px] text-[var(--cane-800)] bg-[var(--cane-50)] p-3 rounded-md border border-[var(--cane-200)] leading-relaxed mb-2 text-center">

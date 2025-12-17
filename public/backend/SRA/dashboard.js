@@ -1054,7 +1054,7 @@ async function initNotifications(userId) {
                                     const fieldName = field.fieldName || raw.field_name || raw.fieldName || '—';
                                     const info = [
                                         ['Field Name', fieldName],
-                                        ['Owner', field.applicantName || raw.applicantName || raw.owner || raw.ownerName || '—'],
+                                        ['Handler', field.applicantName || raw.applicantName || raw.owner || raw.ownerName || '—'],
                                         ['Street / Sitio', field.street || raw.street || raw.sitio || '—'],
                                         ['Barangay', field.barangay || raw.barangay || raw.location || '—'],
                                         ['Size (ha)', field.size || raw.field_size || raw.size || '—'],
@@ -1674,7 +1674,7 @@ async function initNotifications(userId) {
                                 const fieldName = field.fieldName || raw.field_name || raw.fieldName || '—';
                                 const info = [
                                     ['Field Name', fieldName],
-                                    ['Owner', field.applicantName || raw.applicantName || raw.owner || raw.ownerName || '—'],
+                                    ['Handler', field.applicantName || raw.applicantName || raw.owner || raw.ownerName || '—'],
                                     ['Street / Sitio', field.street || raw.street || raw.sitio || '—'],
                                     ['Barangay', field.barangay || raw.barangay || raw.location || '—'],
                                     ['Size (ha)', field.size || raw.field_size || raw.size || '—'],
