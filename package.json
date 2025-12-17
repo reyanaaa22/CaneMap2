@@ -1,6 +1,6 @@
 {
   "name": "canemap",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "CaneMap is a comprehensive digital platform designed for managing sugarcane fields, tracking farming activities, and facilitating communication between farmers, landowners, and SRA (Sugar Regulatory Administration) officers.",
   "main": "index.js",
   "scripts": {

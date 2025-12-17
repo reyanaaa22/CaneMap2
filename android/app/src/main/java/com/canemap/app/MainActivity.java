@@ -46,8 +46,7 @@ public class MainActivity extends BridgeActivity {
     public void onStart() {
         super.onStart();
 
-        // Request all required permissions
-        requestAllPermissions();
+        // ✅ DO NOT request permissions on app launch - only request when needed
 
         // Configure WebView
         WebView webView = this.bridge.getWebView();
@@ -120,7 +119,10 @@ public class MainActivity extends BridgeActivity {
                                 android.util.Log.e("Download", "Error saving file: " + e.getMessage());
                             }
                         } else {
-                            requestAllPermissions();
+                            // Permission not granted - this shouldn't happen if JavaScript checked properly
+                            // But request permission anyway as a fallback
+                            android.util.Log.w("Download", "Storage permission not granted when downloadFile called, requesting...");
+                            requestStoragePermissions();
                         }
                     });
                 }
@@ -133,6 +135,13 @@ public class MainActivity extends BridgeActivity {
                 @android.webkit.JavascriptInterface
                 public boolean hasCameraPermission() {
                     return checkCameraPermission();
+                }
+
+                @android.webkit.JavascriptInterface
+                public void requestStoragePermissions() {
+                    runOnUiThread(() -> {
+                        requestStoragePermissions();
+                    });
                 }
 
                 @android.webkit.JavascriptInterface
@@ -153,37 +162,29 @@ public class MainActivity extends BridgeActivity {
     }
 
     /**
-     * Request all needed permissions
+     * Request storage and media permissions only (on demand)
+     * Only requests storage/media permissions, not camera/audio/video
      */
-    private void requestAllPermissions() {
+    private void requestStoragePermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             List<String> permissionsToRequest = new ArrayList<>();
 
-            // CAMERA
-            if (!checkCameraPermission()) {
-                permissionsToRequest.add(Manifest.permission.CAMERA);
-            }
-
             // STORAGE BASED ON ANDROID VERSION
+            // Only request storage/media permissions needed for file downloads
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13+ (API 33+): Only request READ_MEDIA_IMAGES for file downloads
                 if (ContextCompat.checkSelfPermission(this,
                         Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED) {
                     permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES);
                 }
-                if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.READ_MEDIA_VIDEO) != PackageManager.PERMISSION_GRANTED) {
-                    permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO);
-                }
-                if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    permissionsToRequest.add(Manifest.permission.READ_MEDIA_AUDIO);
-                }
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10-12 (API 29-32): READ_EXTERNAL_STORAGE
                 if (ContextCompat.checkSelfPermission(this,
                         Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
                 }
             } else {
+                // Android 9 and below: READ and WRITE_EXTERNAL_STORAGE
                 if (ContextCompat.checkSelfPermission(this,
                         Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
