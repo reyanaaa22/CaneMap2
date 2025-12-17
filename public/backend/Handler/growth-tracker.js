@@ -426,6 +426,67 @@ export function parseDateValue(dateValue) {
   return null;
 }
 
+/**
+ * Parse Expected Harvest Date from Input Record (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY format)
+ * @param {string} dateString - Expected harvest date string from Input Record
+ * @returns {{earliest: Date, latest: Date, formatted: string}|null} Parsed dates or null if invalid
+ */
+export function parseExpectedHarvestDateFromRecord(dateString) {
+  if (!dateString || typeof dateString !== 'string') return null;
+  
+  try {
+    // Handle range format: "DD/MM/YYYY – DD/MM/YYYY" or "DD/MM/YYYY - DD/MM/YYYY"
+    const rangeMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*[–-]\s*(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (rangeMatch) {
+      const [, day1, month1, year1, day2, month2, year2] = rangeMatch;
+      const earliest = new Date(parseInt(year1), parseInt(month1) - 1, parseInt(day1));
+      const latest = new Date(parseInt(year2), parseInt(month2) - 1, parseInt(day2));
+      
+      if (!isNaN(earliest.getTime()) && !isNaN(latest.getTime())) {
+        // Format dates (DD/MM/YYYY)
+        const formatDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${day}/${month}/${year}`;
+        };
+        
+        return {
+          earliest,
+          latest,
+          formatted: `${formatDate(earliest)} – ${formatDate(latest)}`
+        };
+      }
+    }
+    
+    // Handle single date format: "DD/MM/YYYY"
+    const singleMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (singleMatch) {
+      const [, day, month, year] = singleMatch;
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      
+      if (!isNaN(date.getTime())) {
+        const formatDate = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const d_ = String(d.getDate()).padStart(2, '0');
+          return `${d_}/${m}/${y}`;
+        };
+        
+        return {
+          earliest: date,
+          latest: date,
+          formatted: formatDate(date)
+        };
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing expected harvest date from record:', dateString, e);
+  }
+  
+  return null;
+}
+
 export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
   if (!plantingDate || !variety) return null;
 
@@ -1273,6 +1334,7 @@ export async function getFieldGrowthData(fieldId) {
     // This ensures consistency with the calculation used in the Planting Operation form
     let plantingDate = null;
     let variety = null;
+    let expectedHarvestDateFromRecord = null; // Store Expected Harvest Date from Input Record
     
     try {
       const recordsQuery = query(
@@ -1295,6 +1357,17 @@ export async function getFieldGrowthData(fieldId) {
         
         // Get variety from record
         variety = recordData.variety || plantingRecord.variety;
+        
+        // CRITICAL: Get Expected Harvest Date from Input Record if available
+        // This takes priority over calculated dates to match user input
+        const expectedHarvestDateString = recordData.expectedHarvestDate;
+        if (expectedHarvestDateString) {
+          // Parse DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY format
+          expectedHarvestDateFromRecord = parseExpectedHarvestDateFromRecord(expectedHarvestDateString);
+          if (expectedHarvestDateFromRecord) {
+            console.log(`✅ Using Expected Harvest Date from Input Record: ${expectedHarvestDateFromRecord.formatted}`);
+          }
+        }
       }
     } catch (recordError) {
       console.debug('Could not fetch planting record, falling back to field data:', recordError);
@@ -1478,12 +1551,32 @@ export async function getFieldGrowthData(fieldId) {
     const DAP = calculateDAP(plantingDate);
     const currentGrowthStage = getGrowthStage(DAP, variety);
     
-    // Calculate expected harvest date using months-based formula for system-wide consistency
-    // Use variety from Planting Operation record (already retrieved above)
-    const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
-    const expectedHarvestDateFormatted = harvestDateRange ? harvestDateRange.formatted : null;
-    // Use earliest date for backward compatibility with existing code that expects Date object
-    const expectedHarvestDateForCalc = harvestDateRange ? harvestDateRange.earliest : expectedHarvestDate;
+    // CRITICAL: Use Expected Harvest Date from Input Record if available, otherwise calculate
+    let harvestDateRange = null;
+    let expectedHarvestDateFormatted = null;
+    let expectedHarvestDateForCalc = expectedHarvestDate;
+    
+    // Check if Expected Harvest Date exists in Input Record (takes priority)
+    if (expectedHarvestDateFromRecord) {
+      harvestDateRange = {
+        earliest: expectedHarvestDateFromRecord.earliest,
+        latest: expectedHarvestDateFromRecord.latest,
+        formatted: expectedHarvestDateFromRecord.formatted
+      };
+      expectedHarvestDateFormatted = expectedHarvestDateFromRecord.formatted;
+      expectedHarvestDateForCalc = expectedHarvestDateFromRecord.earliest;
+      console.log(`📅 Using Expected Harvest Date from Input Record: ${expectedHarvestDateFormatted}`);
+    } else {
+      // Calculate expected harvest date using months-based formula for system-wide consistency
+      // Use variety from Planting Operation record (already retrieved above)
+      harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+      expectedHarvestDateFormatted = harvestDateRange ? harvestDateRange.formatted : null;
+      // Use earliest date for backward compatibility with existing code that expects Date object
+      expectedHarvestDateForCalc = harvestDateRange ? harvestDateRange.earliest : expectedHarvestDate;
+      if (harvestDateRange) {
+        console.log(`📅 Calculated Expected Harvest Date: ${expectedHarvestDateFormatted}`);
+      }
+    }
     
     const daysRemaining = calculateDaysRemaining(expectedHarvestDateForCalc);
     const delayInfo = checkFertilizationDelay(plantingDate, basalFertilizationDate, mainFertilizationDate);
@@ -1542,6 +1635,7 @@ if (typeof window !== 'undefined') {
     getFieldGrowthData,
     calculateExpectedHarvestDate,
     getHarvestDaysRange,
+    parseExpectedHarvestDateFromRecord,
     VARIETY_HARVEST_DAYS,
     VARIETY_HARVEST_DAYS_RANGE,
     VARIETY_HARVEST_MONTHS_RANGE,

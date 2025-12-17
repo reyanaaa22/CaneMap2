@@ -2722,6 +2722,9 @@
                 let formattedValue = value;
                 if (typeof value === 'number' && label.toLowerCase().includes('cost')) {
                   formattedValue = formatCurrency(value);
+                } else if (key === 'expectedHarvestDate' && typeof value === 'string') {
+                  // CRITICAL: Expected Harvest Date from Input Record should be displayed as-is (DD/MM/YYYY format)
+                  formattedValue = escapeHtml(value);
                 } else if (value instanceof Date || (typeof value === 'object' && value.toDate)) {
                   formattedValue = formatDate(value);
                 } else {
@@ -2961,9 +2964,45 @@
               return;
             }
             
-            // Calculate expected harvest date using the same function as Planting Operation form
-            const { calculateExpectedHarvestDateMonths } = await import('../../backend/Handler/growth-tracker.js');
-            const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+            // CRITICAL: Get Expected Harvest Date from Input Record first, then calculate if not available
+            let harvestDateRange = null;
+            
+            // Try to get Expected Harvest Date from Planting Operation Input Record
+            try {
+              // Use already imported Firestore functions
+              const recordsQuery = query(
+                collection(db, 'records'),
+                where('fieldId', '==', fieldId),
+                where('taskType', '==', 'Planting Operation')
+              );
+              const recordsSnap = await getDocs(recordsQuery);
+              
+              if (!recordsSnap.empty) {
+                const plantingRecord = recordsSnap.docs[0].data();
+                const recordData = plantingRecord.data || {};
+                const expectedHarvestDateString = recordData.expectedHarvestDate;
+                
+                if (expectedHarvestDateString) {
+                  // Parse DD/MM/YYYY format from Input Record
+                  const { parseExpectedHarvestDateFromRecord } = await import('../../backend/Handler/growth-tracker.js');
+                  harvestDateRange = parseExpectedHarvestDateFromRecord(expectedHarvestDateString);
+                  if (harvestDateRange) {
+                    console.log(`✅ Using Expected Harvest Date from Input Record: ${harvestDateRange.formatted}`);
+                  }
+                }
+              }
+            } catch (recordError) {
+              console.debug('Could not fetch Expected Harvest Date from Input Record:', recordError);
+            }
+            
+            // If not found in Input Record, calculate using months-based formula
+            if (!harvestDateRange) {
+              const { calculateExpectedHarvestDateMonths } = await import('../../backend/Handler/growth-tracker.js');
+              harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+              if (harvestDateRange) {
+                console.log(`📅 Calculated Expected Harvest Date: ${harvestDateRange.formatted}`);
+              }
+            }
             
             if (!harvestDateRange) {
               document.getElementById('predictedHarvestModal')?.classList.add('hidden');
