@@ -1230,9 +1230,14 @@ async function initNotifications(userId) {
                                 (async () => {
                                     await ensureLeaflet();
 
+                                    // Import map enhancements
+                                    const { parseCoordinates, getCurrentLocation } = await import('../Common/map-enhancements.js');
+
                                     const map = L.map(mapContainer, {
                                         zoomControl: true,
                                         scrollWheelZoom: false,
+                                        minZoom: 2,
+                                        maxZoom: 18
                                     }).setView([11.0064, 124.6075], 12);
 
                                     // Add Esri World Imagery layers (same as handler dashboard and lobby)
@@ -1253,9 +1258,7 @@ async function initNotifications(userId) {
 
                                     const tileLayer = satellite; // Keep reference for redraw functionality
 
-                                    const bounds = L.latLngBounds(L.latLng(10.85, 124.45), L.latLng(11.20, 124.80));
-                                    map.setMaxBounds(bounds);
-                                    map.on('drag', () => map.panInsideBounds(bounds, { animate: true }));
+                                    // Global navigation enabled - no bounds restrictions
 
                                     // Fix: some browsers/devices may grey-out tiles when the map
                                     // is interacted with inside complex layouts. Force a refresh
@@ -1318,8 +1321,15 @@ async function initNotifications(userId) {
                                         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
                                     }
 
+                                    const caneIcon = L.icon({
+                                        iconUrl: '../../frontend/img/PIN.png',
+                                        iconSize: [40, 40],
+                                        iconAnchor: [20, 38],
+                                        popupAnchor: [0, -32]
+                                    });
+
                                     const searchHandler = () => {
-                                        const val = (input && input.value ? input.value.trim().toLowerCase() : '');
+                                        const val = (input && input.value ? input.value.trim() : '');
                                         if (!val) {
                                             map.setView([11.0064, 124.6075], 12);
                                             if (window.__caneMarkers && window.__caneMarkers.length) {
@@ -1329,15 +1339,33 @@ async function initNotifications(userId) {
                                             return;
                                         }
 
-                                        // 1) try field match in window.__caneMarkers
+                                        const valLower = val.toLowerCase();
+
+                                        // 1) Try coordinate search first
+                                        const coords = parseCoordinates(val);
+                                        if (coords) {
+                                            const popupText = `<div style="font-size:13px; line-height:1.4">
+                                                <b>📍 Searched Location</b><br>
+                                                <i>Lat: ${coords.lat.toFixed(6)}, Lng: ${coords.lng.toFixed(6)}</i>
+                                            </div>`;
+                                            map.setView([coords.lat, coords.lng], 15);
+                                            L.marker([coords.lat, coords.lng], { icon: caneIcon })
+                                                .addTo(map)
+                                                .bindPopup(popupText)
+                                                .openPopup();
+                                            showToast(`📍 Map centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`, 'green');
+                                            return;
+                                        }
+
+                                        // 2) try field match in window.__caneMarkers
                                         const matchedFields = (window.__caneMarkers || []).filter(m => {
                                             const d = m.data;
                                             return (
-                                                (d.fieldName && d.fieldName.toLowerCase().includes(val)) ||
-                                                (d.barangay && d.barangay.toLowerCase().includes(val)) ||
-                                                (d.street && d.street.toLowerCase().includes(val)) ||
-                                                (String(d.lat).toLowerCase().includes(val)) ||
-                                                (String(d.lng).toLowerCase().includes(val))
+                                                (d.fieldName && d.fieldName.toLowerCase().includes(valLower)) ||
+                                                (d.barangay && d.barangay.toLowerCase().includes(valLower)) ||
+                                                (d.street && d.street.toLowerCase().includes(valLower)) ||
+                                                (String(d.lat).toLowerCase().includes(valLower)) ||
+                                                (String(d.lng).toLowerCase().includes(valLower))
                                             );
                                         });
 
@@ -1351,15 +1379,9 @@ async function initNotifications(userId) {
                                             return;
                                         }
 
-                                        // 2) try barangays fallback
-                                        const brgyMatch = barangays.find(b => b.name.toLowerCase().includes(val));
+                                        // 3) try barangays fallback
+                                        const brgyMatch = barangays.find(b => b.name.toLowerCase().includes(valLower));
                                         if (brgyMatch && brgyMatch.coords[0] && brgyMatch.coords[1]) {
-                                            const caneIcon = L.icon({
-                                                iconUrl: '../../frontend/img/PIN.png',
-                                                iconSize: [36, 36],
-                                                iconAnchor: [18, 34],
-                                                popupAnchor: [0, -28]
-                                            });
                                             map.setView(brgyMatch.coords, 14);
                                             L.marker(brgyMatch.coords, { icon: caneIcon })
                                                 .addTo(map)
@@ -1370,7 +1392,7 @@ async function initNotifications(userId) {
                                             return;
                                         }
 
-                                        showToast('❌ No matching field or barangay found.', 'gray');
+                                        showToast('❌ No matching field, barangay, or coordinates found.', 'gray');
                                     };
 
                                     if (btn) {
@@ -1378,6 +1400,27 @@ async function initNotifications(userId) {
                                     }
                                     if (input) {
                                         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchHandler(); }});
+                                    }
+
+                                    // Add current location button functionality
+                                    const locateBtn = document.getElementById('mapLocateBtn');
+                                    if (locateBtn) {
+                                        locateBtn.addEventListener('click', async () => {
+                                            try {
+                                                await getCurrentLocation(map, {
+                                                    icon: caneIcon,
+                                                    maxZoom: 16,
+                                                    onSuccess: (lat, lng, accuracy) => {
+                                                        showToast(`📍 Location found: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'green');
+                                                    },
+                                                    onError: (errorMsg) => {
+                                                        showToast(errorMsg, 'gray');
+                                                    }
+                                                });
+                                            } catch (err) {
+                                                showToast('Unable to retrieve your location. Please check browser permissions.', 'gray');
+                                            }
+                                        });
                                     }
 
                                     try { mapContainer.dataset.initialized = 'true'; } catch(_) {}
@@ -1793,7 +1836,14 @@ async function initNotifications(userId) {
                                 (async () => {
                                     await ensureLeafletGlobal();
                                     const { db } = await import('../Common/firebase-config.js');
-                                    const map2 = L.map(mapContainer2, { zoomControl: true, scrollWheelZoom: false }).setView([11.0064, 124.6075], 12);
+                                    const { parseCoordinates, getCurrentLocation } = await import('../Common/map-enhancements.js');
+                                    
+                                    const map2 = L.map(mapContainer2, { 
+                                        zoomControl: true, 
+                                        scrollWheelZoom: false,
+                                        minZoom: 2,
+                                        maxZoom: 18
+                                    }).setView([11.0064, 124.6075], 12);
                                     
                                     // Add Esri World Imagery layers (same as handler dashboard and lobby)
                                     const satellite2 = L.tileLayer(
@@ -1810,9 +1860,15 @@ async function initNotifications(userId) {
                                         'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
                                         { attribution: '© Esri' }
                                     ).addTo(map2);
-                                    const bounds2 = L.latLngBounds(L.latLng(10.85, 124.45), L.latLng(11.20, 124.80));
-                                    map2.setMaxBounds(bounds2);
-                                    map2.on('drag', () => map2.panInsideBounds(bounds2, { animate: true }));
+                                    
+                                    // Global navigation enabled - no bounds restrictions
+                                    
+                                    const caneIcon2 = L.icon({
+                                        iconUrl: '../../frontend/img/PIN.png',
+                                        iconSize: [40, 40],
+                                        iconAnchor: [20, 38],
+                                        popupAnchor: [0, -32]
+                                    });
                                     setupRealtimeFieldsListenerGlobal(map2, db);
                                     setTimeout(() => { try { map2.invalidateSize(); } catch(_) {} }, 200);
                                     const input2 = document.getElementById('mapSearchInputMap');
@@ -1833,16 +1889,35 @@ async function initNotifications(userId) {
                                         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 4000);
                                     };
                                     const searchHandler2 = () => {
-                                        const val = (input2 && input2.value ? input2.value.trim().toLowerCase() : '');
+                                        const val = (input2 && input2.value ? input2.value.trim() : '');
                                         if (!val) {
                                             map2.setView([11.0064, 124.6075], 12);
                                             if (window.__caneMarkers && window.__caneMarkers.length) window.__caneMarkers.forEach(({ marker }) => marker.addTo(map2));
                                             showToast2('🔄 Map reset to default view.', 'gray');
                                             return;
                                         }
+                                        
+                                        const valLower = val.toLowerCase();
+                                        
+                                        // 1) Try coordinate search first
+                                        const coords = parseCoordinates(val);
+                                        if (coords) {
+                                            const popupText = `<div style="font-size:13px; line-height:1.4">
+                                                <b>📍 Searched Location</b><br>
+                                                <i>Lat: ${coords.lat.toFixed(6)}, Lng: ${coords.lng.toFixed(6)}</i>
+                                            </div>`;
+                                            map2.setView([coords.lat, coords.lng], 15);
+                                            L.marker([coords.lat, coords.lng], { icon: caneIcon2 })
+                                                .addTo(map2)
+                                                .bindPopup(popupText)
+                                                .openPopup();
+                                            showToast2(`📍 Map centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`, 'green');
+                                            return;
+                                        }
+                                        
                                         const matchedFields = (window.__caneMarkers || []).filter(m => {
                                             const d = m.data;
-                                            return ((d.fieldName && d.fieldName.toLowerCase().includes(val)) || (d.barangay && d.barangay.toLowerCase().includes(val)) || (d.street && d.street.toLowerCase().includes(val)) || (String(d.lat).toLowerCase().includes(val)) || (String(d.lng).toLowerCase().includes(val)));
+                                            return ((d.fieldName && d.fieldName.toLowerCase().includes(valLower)) || (d.barangay && d.barangay.toLowerCase().includes(valLower)) || (d.street && d.street.toLowerCase().includes(valLower)) || (String(d.lat).toLowerCase().includes(valLower)) || (String(d.lng).toLowerCase().includes(valLower)));
                                         });
                                         if (matchedFields.length > 0) {
                                             const { marker, data } = matchedFields[0];
@@ -1851,16 +1926,36 @@ async function initNotifications(userId) {
                                             showToast2(`📍 Found: ${data.fieldName} (${data.barangay})`, 'green');
                                             return;
                                         }
-                                        const brgyMatch = barangays.find(b => b.name.toLowerCase().includes(val));
+                                        const brgyMatch = barangays.find(b => b.name.toLowerCase().includes(valLower));
                                         if (brgyMatch && brgyMatch.coords[0] && brgyMatch.coords[1]) {
-                                            const caneIcon = L.icon({ iconUrl: '../../frontend/img/PIN.png', iconSize: [36, 36], iconAnchor: [18, 34], popupAnchor: [0, -28] });
                                             map2.setView(brgyMatch.coords, 14);
-                                            L.marker(brgyMatch.coords, { icon: caneIcon }).addTo(map2).bindPopup(`<b>${brgyMatch.name}</b>`).openPopup();
+                                            L.marker(brgyMatch.coords, { icon: caneIcon2 }).addTo(map2).bindPopup(`<b>${brgyMatch.name}</b>`).openPopup();
                                             showToast2(`📍 Barangay: ${brgyMatch.name}`, 'green');
                                             return;
                                         }
-                                        showToast2('❌ No matching field or barangay found.', 'gray');
+                                        showToast2('❌ No matching field, barangay, or coordinates found.', 'gray');
                                     };
+                                    
+                                    // Add current location button functionality for map2
+                                    const locateBtn2 = document.getElementById('mapLocateBtnMap');
+                                    if (locateBtn2) {
+                                        locateBtn2.addEventListener('click', async () => {
+                                            try {
+                                                await getCurrentLocation(map2, {
+                                                    icon: caneIcon2,
+                                                    maxZoom: 16,
+                                                    onSuccess: (lat, lng, accuracy) => {
+                                                        showToast2(`📍 Location found: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'green');
+                                                    },
+                                                    onError: (errorMsg) => {
+                                                        showToast2(errorMsg, 'gray');
+                                                    }
+                                                });
+                                            } catch (err) {
+                                                showToast2('Unable to retrieve your location. Please check browser permissions.', 'gray');
+                                            }
+                                        });
+                                    }
                                     if (btn2) btn2.addEventListener('click', (e) => { e.preventDefault(); searchHandler2(); });
                                     if (input2) input2.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchHandler2(); }});
                                     try { mapContainer2.dataset.initialized = 'true'; } catch(_) {}

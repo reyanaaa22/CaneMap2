@@ -908,19 +908,20 @@
       { name: "West (Poblacion)", coords: [11.0064, 124.6000] }
     ];
 
-    function initLocationMap() {
+    async function initLocationMap() {
       try {
-        const ormocCenter = [11.0064, 124.6075];
-        const ormocBounds = L.latLngBounds([10.9500, 124.5300], [11.0500, 124.6700]);
+        // Import map enhancements
+        const { parseCoordinates, getCurrentLocation } = await import('../../backend/Common/map-enhancements.js');
+        window.mapEnhancements = { parseCoordinates, getCurrentLocation };
 
-        // Initialize restricted map
+        const ormocCenter = [11.0064, 124.6075];
+
+        // Initialize map with default Ormoc City view (global navigation enabled)
         locationMap = L.map('locationMap', {
           center: ormocCenter,
           zoom: 20,
-          minZoom: 12,
-          maxZoom: 20,
-          maxBounds: ormocBounds,
-          maxBoundsViscosity: 1.0
+          minZoom: 2,
+          maxZoom: 20
         });
 
         const satellite = L.tileLayer(
@@ -994,11 +995,7 @@
 if (type === 'polygon' || type === 'rectangle') {
   const bounds = layer.getBounds();
 
-  if (!ormocBounds.contains(bounds.getNorthEast()) || !ormocBounds.contains(bounds.getSouthWest())) {
-    await showPopupMessage("Field boundary must be within Ormoc City limits.", 'warning');
-    return;
-  }
-
+  // Global navigation enabled - no geographic restrictions
   drawnItems.addLayer(layer);
   fieldPolygon = layer;
 
@@ -1041,11 +1038,8 @@ if (type === 'polygon' || type === 'rectangle') {
 
           } else if (type === 'marker') {
             const latlng = layer.getLatLng();
-            if (!ormocBounds.contains(latlng)) {
-              await showPopupMessage("Only fields within Ormoc City are allowed.", 'warning');
-              return;
-            }
-
+            
+            // Global navigation enabled - no geographic restrictions
             drawnItems.addLayer(layer);
             document.getElementById('latitude').value = latlng.lat.toFixed(6);
             document.getElementById('longitude').value = latlng.lng.toFixed(6);
@@ -1094,41 +1088,85 @@ if (type === 'polygon' || type === 'rectangle') {
           console.log("📍 Field boundary removed");
         });
 
-        // 🔍 Local barangay search (no API)
+        // 🔍 Enhanced search: Barangay + Coordinates + Current Location
         const input = document.getElementById('rfSearchInput');
         const btn = document.getElementById('rfSearchBtn');
 
-        async function searchBarangay() {
-          const q = input.value.trim().toLowerCase();
+        async function handleSearch() {
+          const q = input.value.trim();
           if (!q) return;
 
-          const match = barangays.find(b => b.name.toLowerCase().includes(q));
-          if (!match) {
-            await showPopupMessage("Barangay not found in Ormoc City.", 'warning');
+          const qLower = q.toLowerCase();
+
+          // 1. Try coordinate search first
+          if (window.mapEnhancements && window.mapEnhancements.parseCoordinates) {
+            const coords = window.mapEnhancements.parseCoordinates(q);
+            if (coords) {
+              locationMap.setView([coords.lat, coords.lng], 18);
+              await showPopupMessage(`📍 Map centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`, 'info');
+              return;
+            }
+          }
+
+          // 2. Try barangay search
+          const match = barangays.find(b => b.name.toLowerCase().includes(qLower));
+          if (match) {
+            // 🟢 Skip barangays with missing coordinates
+            if (!match.coords || match.coords[0] == null || match.coords[1] == null) {
+              await showPopupMessage(`Found ${match.name}, but it has no coordinates. Please click the map to pin manually.`, 'info');
+              return;
+            }
+
+            const [lat, lng] = match.coords;
+            // ✅ Only center and zoom to maximum - do NOT place a marker
+            locationMap.setView([lat, lng], 18);
+            await showPopupMessage(`📍 Map centered on ${match.name}. Click 'Draw a Marker' to pin location.`, 'info');
+            console.log("Map centered on:", match.name, "- Click 'Draw a Marker' to pin location");
             return;
           }
 
-          // 🟢 Skip barangays with missing coordinates
-          if (!match.coords || match.coords[0] == null || match.coords[1] == null) {
-            await showPopupMessage(`Found ${match.name}, but it has no coordinates. Please click the map to pin manually.`, 'info');
-            return;
-          }
-
-          const [lat, lng] = match.coords;
-          // ✅ Only center and zoom to maximum - do NOT place a marker
-          locationMap.setView([lat, lng], 18);
-
-          console.log("Map centered on:", match.name, "- Click 'Draw a Marker' to pin location");
-
+          // 3. No match found
+          await showPopupMessage("No matching barangay or valid coordinates found. Format: '11.0064, 124.6075'", 'warning');
         }
 
-        btn?.addEventListener('click', searchBarangay);
+        btn?.addEventListener('click', handleSearch);
         input?.addEventListener('keydown', e => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            searchBarangay();
+            handleSearch();
           }
         });
+
+        // Add current location button functionality
+        const locateBtn = document.getElementById('rfLocateBtn');
+        if (locateBtn && window.mapEnhancements && window.mapEnhancements.getCurrentLocation) {
+          locateBtn.addEventListener('click', async () => {
+            try {
+              await window.mapEnhancements.getCurrentLocation(locationMap, {
+                icon: caneIcon,
+                maxZoom: 18,
+                onSuccess: async (lat, lng, accuracy) => {
+                  // Update form fields
+                  document.getElementById('latitude').value = lat.toFixed(6);
+                  document.getElementById('longitude').value = lng.toFixed(6);
+                  
+                  // Place marker at current location
+                  if (locationMarker) {
+                    locationMap.removeLayer(locationMarker);
+                  }
+                  locationMarker = L.marker([lat, lng], { icon: caneIcon }).addTo(locationMap);
+                  
+                  await showPopupMessage(`📍 Location found: ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                },
+                onError: async (errorMsg) => {
+                  await showPopupMessage(errorMsg, 'warning');
+                }
+              });
+            } catch (err) {
+              await showPopupMessage("Unable to retrieve your location. Please check browser permissions.", 'warning');
+            }
+          });
+        }
 
         console.log("✅ Ormoc City map with barangays loaded");
       } catch (err) {

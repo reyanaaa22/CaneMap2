@@ -468,16 +468,9 @@ async function openModal(app) {
 
     await ensureLeafletLoaded();
 
-    // Ormoc City bounds (same as lobby/handler/SRA dashboard)
-    const ormocBounds = L.latLngBounds(
-      [10.95, 124.5],
-      [11.2, 124.8]
-    );
-
+    // Default view: Ormoc City (global navigation enabled)
     const map = L.map(mapBox, {
-      maxBounds: ormocBounds,
-      maxBoundsViscosity: 1.0,
-      minZoom: 11,
+      minZoom: 2,
       maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: false
@@ -499,10 +492,7 @@ async function openModal(app) {
       { attribution: '© Esri' }
     ).addTo(map);
 
-    // Keep map inside Ormoc bounds
-    map.on('drag', () => {
-      map.panInsideBounds(ormocBounds, { animate: false });
-    });
+    // Global navigation enabled - no bounds restrictions
 
     let boundsToFit = null;
 

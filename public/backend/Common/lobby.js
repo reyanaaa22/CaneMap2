@@ -1193,7 +1193,7 @@ const barangays = [
   { name: "Barangay 28", coords: [null, null] },
   { name: "Barangay 29", coords: [null, null] },
 ];
-function initMap() {
+async function initMap() {
   try {
     console.info("initMap() start");
     if (map) return;
@@ -1201,16 +1201,12 @@ function initMap() {
     if (!mapContainer) return;
     mapContainer.innerHTML = "";
 
-    // 🗺️ Limit map inside Ormoc City bounds
-    const ormocBounds = L.latLngBounds(
-      [10.95, 124.5], // southwest
-      [11.2, 124.8] // northeast
-    );
+    // Import map enhancements
+    const { parseCoordinates, getCurrentLocation } = await import('./map-enhancements.js');
 
+    // 🗺️ Default view: Ormoc City (no bounds restriction - global navigation enabled)
     map = L.map("map", {
-      maxBounds: ormocBounds,
-      maxBoundsViscosity: 1.0,
-      minZoom: 11,
+      minZoom: 2,
       maxZoom: 18,
     }).setView([11.0064, 124.6075], 12);
 
@@ -1233,21 +1229,30 @@ function initMap() {
     // Show approved fields from Firestore
     showApprovedFieldsOnMap(map);
 
-    // 🌾 Unified Search (Field + Barangay + Street + LatLng)
+    // 🌾 Enhanced Unified Search (Field + Barangay + Street + Coordinates + Current Location)
     const input = document.getElementById("mapSearchInput");
     const btn = document.getElementById("mapSearchBtn");
 
     if (btn && input) {
+      const caneIcon = L.icon({
+        iconUrl: "../../frontend/img/PIN.png",
+        iconSize: [40, 40],
+        iconAnchor: [20, 38],
+        popupAnchor: [0, -32],
+      });
+
       const handleSearch = () => {
-        const val = input.value.trim().toLowerCase();
+        const val = input.value.trim();
         if (!val) {
           map.setView([11.0064, 124.6075], 12);
           showApprovedFieldsOnMap(map);
           return;
         }
 
+        const valLower = val.toLowerCase();
+
         // Reset map when searching "black"
-        if (val === "black") {
+        if (valLower === "black") {
           console.info("🔁 Resetting map view to default...");
 
           // Clear dynamically added markers (if any)
@@ -1268,19 +1273,39 @@ function initMap() {
           return;
         }
 
-        // 🔹 1. Try to match partial fields
+        // 🔹 1. Try coordinate search first (lat, lng format)
+        const coords = parseCoordinates(val);
+        if (coords) {
+          const popupText = `<div style="font-size:13px; line-height:1.4">
+            <b>📍 Searched Location</b><br>
+            <i>Lat: ${coords.lat.toFixed(6)}, Lng: ${coords.lng.toFixed(6)}</i>
+          </div>`;
+          
+          map.setView([coords.lat, coords.lng], 15);
+          const marker = L.marker([coords.lat, coords.lng], { icon: caneIcon }).addTo(map);
+          marker.bindPopup(popupText).openPopup();
+          
+          // Track marker for cleanup
+          if (!window.__tempSearchMarkers) window.__tempSearchMarkers = [];
+          window.__tempSearchMarkers.push(marker);
+          
+          showToast(`📍 Map centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`, "green");
+          return;
+        }
+
+        // 🔹 2. Try to match partial fields
         const matchedFields = (window.__caneMarkers || []).filter((m) => {
           const d = m.data;
           return (
-            (d.fieldName && d.fieldName.toLowerCase().includes(val)) ||
-            (d.barangay && d.barangay.toLowerCase().includes(val)) ||
-            (d.street && d.street.toLowerCase().includes(val)) ||
-            String(d.lat).toLowerCase().includes(val) ||
-            String(d.lng).toLowerCase().includes(val)
+            (d.fieldName && d.fieldName.toLowerCase().includes(valLower)) ||
+            (d.barangay && d.barangay.toLowerCase().includes(valLower)) ||
+            (d.street && d.street.toLowerCase().includes(valLower)) ||
+            String(d.lat).toLowerCase().includes(valLower) ||
+            String(d.lng).toLowerCase().includes(valLower)
           );
         });
 
-        // 🔹 2. If at least one field matches
+        // 🔹 3. If at least one field matches
         if (matchedFields.length > 0) {
           const { marker, data } = matchedFields[0]; // focus on the first one
           map.setView([data.lat, data.lng], 18);
@@ -1297,17 +1322,11 @@ function initMap() {
           return;
         }
 
-        // 🔹 3. Fallback: Try matching Barangay list
+        // 🔹 4. Fallback: Try matching Barangay list
         const brgyMatch = barangays.find((b) =>
-          b.name.toLowerCase().includes(val)
+          b.name.toLowerCase().includes(valLower)
         );
         if (brgyMatch && brgyMatch.coords[0] && brgyMatch.coords[1]) {
-          const caneIcon = L.icon({
-            iconUrl: "../../frontend/img/PIN.png",
-            iconSize: [36, 36],
-            iconAnchor: [18, 34],
-            popupAnchor: [0, -28],
-          });
           map.setView(brgyMatch.coords, 17);
           L.marker(brgyMatch.coords, { icon: caneIcon })
             .addTo(map)
@@ -1318,8 +1337,8 @@ function initMap() {
           return;
         }
 
-        // 🔹 4. If no results found
-        showToast("❌ No matching field or barangay found.", "gray");
+        // 🔹 5. If no results found
+        showToast("❌ No matching field, barangay, or coordinates found.", "gray");
       };
 
       btn.addEventListener("click", handleSearch);
@@ -1329,6 +1348,27 @@ function initMap() {
           handleSearch();
         }
       });
+
+      // 🔹 Add current location button functionality (if button exists)
+      const locateBtn = document.getElementById("mapLocateBtn");
+      if (locateBtn) {
+        locateBtn.addEventListener("click", async () => {
+          try {
+            await getCurrentLocation(map, {
+              icon: caneIcon,
+              maxZoom: 16,
+              onSuccess: (lat, lng, accuracy) => {
+                showToast(`📍 Location found: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, "green");
+              },
+              onError: (errorMsg) => {
+                showToast(errorMsg, "gray");
+              }
+            });
+          } catch (err) {
+            showToast("Unable to retrieve your location. Please check browser permissions.", "gray");
+          }
+        });
+      }
     }
 
     function searchBarangay() {
@@ -1378,11 +1418,7 @@ function initMap() {
         .openPopup();
     }
 
-    // 📌 Prevent map from leaving Ormoc bounds
-    map.on("drag", function () {
-      map.panInsideBounds(ormocBounds, { animate: false });
-    });
-
+    // Global navigation enabled - no bounds restrictions
     window.map = map;
   } catch (error) {
     console.error("Error initializing map:", error);

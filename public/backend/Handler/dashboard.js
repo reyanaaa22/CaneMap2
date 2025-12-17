@@ -4175,17 +4175,10 @@ async function renderHandlerFields(userId) {
     const firstWithCoords = fields.find(field => toLatLng(field).lat && toLatLng(field).lng);
     const initialCenter = firstWithCoords ? [toLatLng(firstWithCoords).lat, toLatLng(firstWithCoords).lng] : DEFAULT_HANDLER_MAP_CENTER;
 
-    // Define map bounds for Ormoc City
-    const ormocBounds = L.latLngBounds(
-      [10.95, 124.5], // southwest
-      [11.2, 124.8]  // northeast
-    );
-
+    // Default view: Ormoc City (global navigation enabled)
     const map = L.map(mapContainer, {
       maxZoom: 18,
-      minZoom: 11,
-      maxBounds: ormocBounds,
-      maxBoundsViscosity: 1.0
+      minZoom: 2
     }).setView([11.0064, 124.6075], 12);
     
     // Add satellite imagery layer
@@ -4206,10 +4199,7 @@ async function renderHandlerFields(userId) {
       { attribution: '&copy; Esri' }
     ).addTo(map);
 
-    // Keep map within Ormoc bounds
-    map.on('drag', function() {
-      map.panInsideBounds(ormocBounds, { animate: false });
-    });
+    // Global navigation enabled - no bounds restrictions
 
     handlerFieldsMapInstance = map;
     handlerFieldsLastBounds = null;
@@ -4588,19 +4578,12 @@ export function initializeFieldsSection() {
 
       console.log('📍 Creating Leaflet map instance...');
       
-      // Ormoc City boundary coordinates (southwest and northeast points)
-      const ormocBounds = L.latLngBounds(
-        [10.95, 124.5], // southwest
-        [11.2, 124.8]  // northeast
-      );
-
+      // Default view: Ormoc City (global navigation enabled)
       fieldsMap = L.map('handlerFieldsMap', {
         zoomControl: false,
         preferCanvas: true,
         maxZoom: 18,
-        minZoom: 11,
-        maxBounds: ormocBounds,
-        maxBoundsViscosity: 1.0
+        minZoom: 2
       }).setView([11.0064, 124.6075], 12);
 
       console.log('🗺️ Map instance created, adding tile layer...');
@@ -4626,10 +4609,7 @@ export function initializeFieldsSection() {
         { attribution: '© Esri' }
       ).addTo(fieldsMap);
 
-      // Keep map within Ormoc bounds
-      fieldsMap.on('drag', function() {
-        fieldsMap.panInsideBounds(ormocBounds, { animate: false });
-      });
+      // Global navigation enabled - no bounds restrictions
 
       satellite.on('loading', () => console.log('🔄 Loading map tiles...'));
       satellite.on('load', () => console.log('✅ Map tiles loaded'));
