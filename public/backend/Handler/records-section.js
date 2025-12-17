@@ -471,42 +471,85 @@ function populateTaskTypeFilter(records) {
   }
 }
 
-// Calculate total cost from all cost inputs in the record
-function calculateTotalCost(record) {
-  let total = 0;
+// Get cost breakdown by type (fuel, labor, other)
+function getCostBreakdown(record) {
+  let fuelCost = 0;
+  let laborCost = 0;
+  let otherCost = 0;
+  let hasIndividualCosts = false;
   
-  // 1. Get task cost from record.data.totalCost (if exists)
-  total += parseFloat(record.data?.totalCost || 0) || 0;
-  
-  // 2. Scan record.data for ALL cost-related fields
+  // 1. Scan record.data for cost-related fields
   if (record.data && typeof record.data === 'object') {
     for (const [key, value] of Object.entries(record.data)) {
-      // Skip the totalCost field (already added above)
-      if (key === 'totalCost') continue;
+      if (key === 'totalCost') continue; // Skip total, we'll handle it separately
       
-      // Check if key contains cost-related keywords
       const keyLower = key.toLowerCase();
-      if ((keyLower.includes('cost') || 
-           keyLower.includes('price') || 
-           keyLower.includes('amount') ||
-           keyLower.includes('expense') ||
-           keyLower.includes('fee') ||
-           keyLower.includes('charge')) && 
-          typeof value === 'number') {
-        total += parseFloat(value) || 0;
+      const numValue = parseFloat(value) || 0;
+      
+      if (numValue > 0) {
+        hasIndividualCosts = true;
+        if (keyLower.includes('fuel')) {
+          fuelCost += numValue;
+        } else if (keyLower.includes('labor')) {
+          laborCost += numValue;
+        } else if (keyLower.includes('cost') || 
+                   keyLower.includes('price') || 
+                   keyLower.includes('amount') ||
+                   keyLower.includes('expense') ||
+                   keyLower.includes('fee') ||
+                   keyLower.includes('charge')) {
+          // Check if it's not fuel or labor, then it's other
+          if (!keyLower.includes('fuel') && !keyLower.includes('labor')) {
+            otherCost += numValue;
+          }
+        }
+      }
+    }
+    
+    // If totalCost exists but we didn't find individual costs, add it to otherCost
+    // This handles cases where only totalCost is provided
+    if (!hasIndividualCosts && record.data.totalCost) {
+      const totalCostValue = parseFloat(record.data.totalCost) || 0;
+      if (totalCostValue > 0) {
+        otherCost += totalCostValue;
       }
     }
   }
   
-  // 3. Add bought items costs
+  // 2. Add vehicle updates costs
+  if (record.vehicleUpdates && typeof record.vehicleUpdates === 'object') {
+    const vehicleFuel = parseFloat(record.vehicleUpdates.fuelCost || 0) || 0;
+    const vehicleLabor = parseFloat(record.vehicleUpdates.laborCost || 0) || 0;
+    const vehicleTotal = parseFloat(record.vehicleUpdates.totalCost || 0) || 0;
+    
+    fuelCost += vehicleFuel;
+    laborCost += vehicleLabor;
+    
+    // If there's a totalCost that's not just fuel + labor, add the difference to other
+    if (vehicleTotal > (vehicleFuel + vehicleLabor)) {
+      otherCost += (vehicleTotal - vehicleFuel - vehicleLabor);
+    }
+    
+    // Scan for other cost fields in vehicle updates
+    for (const [key, value] of Object.entries(record.vehicleUpdates)) {
+      if (key === 'totalCost' || key === 'fuelCost' || key === 'laborCost') continue;
+      const keyLower = key.toLowerCase();
+      if ((keyLower.includes('cost') || 
+           keyLower.includes('price') || 
+           keyLower.includes('amount')) && 
+          typeof value === 'number') {
+        otherCost += parseFloat(value) || 0;
+      }
+    }
+  }
+  
+  // 3. Add bought items costs (equipment, purchased items, etc. - these are "other")
   const boughtItemsCost = (record.boughtItems || []).reduce((sum, item) => {
-    // Sum totalCost or total from each item (support both field name variants)
     let itemTotal = parseFloat(item.totalCost || item.total || 0) || 0;
     
-    // Also check for other cost fields in the item (but don't double-count)
     if (item && typeof item === 'object') {
       for (const [key, value] of Object.entries(item)) {
-        if (key === 'totalCost' || key === 'total') continue; // Already added
+        if (key === 'totalCost' || key === 'total') continue;
         const keyLower = key.toLowerCase();
         if ((keyLower.includes('cost') || 
              keyLower.includes('amount')) && 
@@ -517,27 +560,15 @@ function calculateTotalCost(record) {
     }
     return sum + itemTotal;
   }, 0);
-  total += boughtItemsCost;
+  otherCost += boughtItemsCost;
   
-  // 4. Add vehicle updates costs
-  if (record.vehicleUpdates && typeof record.vehicleUpdates === 'object') {
-    // Add totalCost if exists
-    total += parseFloat(record.vehicleUpdates.totalCost || 0) || 0;
-    
-    // Scan for other cost fields in vehicle updates
-    for (const [key, value] of Object.entries(record.vehicleUpdates)) {
-      if (key === 'totalCost') continue; // Already added
-      const keyLower = key.toLowerCase();
-      if ((keyLower.includes('cost') || 
-           keyLower.includes('price') || 
-           keyLower.includes('amount')) && 
-          typeof value === 'number') {
-        total += parseFloat(value) || 0;
-      }
-    }
-  }
-  
-  return total;
+  return { fuelCost, laborCost, otherCost };
+}
+
+// Calculate total cost from all cost inputs in the record
+function calculateTotalCost(record) {
+  const breakdown = getCostBreakdown(record);
+  return breakdown.fuelCost + breakdown.laborCost + breakdown.otherCost;
 }
 
 // Create record card HTML
@@ -626,6 +657,7 @@ function applyFilters() {
   const fieldFilter = document.getElementById('recordsFieldFilter')?.value || 'all';
   const operationFilter = document.getElementById('recordsOperationFilter')?.value || 'all';
   const taskTypeFilter = document.getElementById('recordsTaskTypeFilter')?.value || 'all';
+  const costTypeFilter = document.getElementById('recordsCostTypeFilter')?.value || 'all';
   const costMin = parseFloat(document.getElementById('recordsCostMin')?.value) || 0;
   const costMax = parseFloat(document.getElementById('recordsCostMax')?.value) || Infinity;
   
@@ -690,12 +722,28 @@ function applyFilters() {
     filtered = filtered.filter(record => record.operation === operationFilter);
   }
   
-  // Task Type filter
+  // Task Type filter - filter ALL existing task types (no limit)
   if (taskTypeFilter !== 'all') {
     filtered = filtered.filter(record => record.taskType === taskTypeFilter);
   }
   
-  // Cost filter
+  // Cost Type filter
+  if (costTypeFilter !== 'all') {
+    filtered = filtered.filter(record => {
+      const breakdown = getCostBreakdown(record);
+      
+      if (costTypeFilter === 'fuel') {
+        return breakdown.fuelCost > 0;
+      } else if (costTypeFilter === 'labor') {
+        return breakdown.laborCost > 0;
+      } else if (costTypeFilter === 'other') {
+        return breakdown.otherCost > 0;
+      }
+      return true;
+    });
+  }
+  
+  // Cost range filter
   if (costMin > 0 || (costMax !== Infinity && costMax > 0)) {
     filtered = filtered.filter(record => {
       const totalCost = calculateTotalCost(record);
@@ -723,6 +771,7 @@ function clearFilters() {
   const fieldFilter = document.getElementById('recordsFieldFilter');
   const operationFilter = document.getElementById('recordsOperationFilter');
   const taskTypeFilter = document.getElementById('recordsTaskTypeFilter');
+  const costTypeFilter = document.getElementById('recordsCostTypeFilter');
   const costMin = document.getElementById('recordsCostMin');
   const costMax = document.getElementById('recordsCostMax');
   const customDateRange = document.getElementById('recordsCustomDateRange');
@@ -731,6 +780,7 @@ function clearFilters() {
   if (fieldFilter) fieldFilter.value = 'all';
   if (operationFilter) operationFilter.value = 'all';
   if (taskTypeFilter) taskTypeFilter.value = 'all';
+  if (costTypeFilter) costTypeFilter.value = 'all';
   if (costMin) costMin.value = '';
   if (costMax) costMax.value = '';
   if (customDateRange) customDateRange.classList.add('hidden');
@@ -1682,6 +1732,42 @@ function showErrorMessage(message) {
   }, 4000);
 }
 
+// Get task-specific fields for CSV (plain text format)
+function getTaskFieldsForCSV(taskType, data) {
+  if (!data || !taskType) return '';
+  
+  const fields = [];
+  const skipFields = ['totalCost', 'notes', 'remarks', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates'];
+  
+  for (const [key, value] of Object.entries(data)) {
+    // Skip internal fields and empty values
+    if (skipFields.includes(key)) continue;
+    if (value === null || value === undefined || value === '') continue;
+    
+    // Skip if it's an object (unless it's a date/timestamp)
+    if (typeof value === 'object' && !(value instanceof Date) && !(value && typeof value.toDate === 'function')) {
+      // Skip nested objects and arrays (except if they're simple)
+      if (!Array.isArray(value) || value.length === 0) {
+        continue;
+      }
+      // If it's an array, try to display it
+      if (Array.isArray(value)) {
+        const label = formatFieldLabel(key);
+        const displayValue = value.map(v => String(v)).join(', ');
+        fields.push(`${label}: ${displayValue}`);
+      }
+      continue;
+    }
+    
+    const label = formatFieldLabel(key);
+    const displayValue = formatFieldValue(key, value);
+    
+    fields.push(`${label}: ${displayValue}`);
+  }
+  
+  return fields.length > 0 ? fields.join('; ') : '';
+}
+
 // Export to CSV
 function exportToCSV() {
   const records = getFilteredRecords();
@@ -1691,39 +1777,74 @@ function exportToCSV() {
     return;
   }
   
-  // CSV headers
-  const headers = ['Status', 'Field', 'Operation', 'Task Type', 'Date', 'Total Cost'];
+  // Get date range
+  const dateRange = getDateRangeString();
+  
+  // Calculate total cost
+  const totalCost = records.reduce((sum, record) => {
+    return sum + calculateTotalCost(record);
+  }, 0);
+  
+  // CSV content with title and date range
+  const csvLines = [];
+  
+  // Title and date range header
+  csvLines.push('Cost Records');
+  csvLines.push(`Date Range: ${dateRange}`);
+  csvLines.push(''); // Empty line
+  
+  // CSV headers - Task Type first, then Operation Name, then other fields
+  const headers = ['Task Type', 'Operation Name', 'Field', 'Date', 'Cost'];
   
   // CSV rows
   const rows = records.map(record => {
     const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
-    const dateStr = recordDate.toLocaleDateString();
+    const dateStr = recordDate.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
     
     // Use comprehensive cost calculation (includes ALL cost inputs)
     const grandTotal = calculateTotalCost(record);
     
+    // Get task-specific inputs
+    const taskInputs = getTaskFieldsForCSV(record.taskType, record.data);
+    
+    // Operation name with task-specific inputs
+    let operationName = record.operation || 'N/A';
+    if (taskInputs) {
+      operationName = `${operationName} (${taskInputs})`;
+    }
+    
     return [
-      record.status || 'N/A',
-      record.fieldName || 'Unknown Field',
-      record.operation || 'N/A',
       record.taskType || 'N/A',
+      operationName,
+      record.fieldName || 'Unknown Field',
       dateStr,
       grandTotal.toFixed(2)
     ];
   });
   
+  // Add headers and rows
+  csvLines.push(headers.map(h => `"${h}"`).join(','));
+  rows.forEach(row => {
+    csvLines.push(row.map(cell => `"${cell}"`).join(','));
+  });
+  
+  // Add total cost row
+  csvLines.push('');
+  csvLines.push(`"Total","","","","${totalCost.toFixed(2)}"`);
+  
   // Create CSV content
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-  ].join('\n');
+  const csvContent = csvLines.join('\n');
   
   // Download CSV
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.setAttribute('href', url);
-  link.setAttribute('download', `records_${new Date().toISOString().split('T')[0]}.csv`);
+  link.setAttribute('download', `Cost_Records_${new Date().toISOString().split('T')[0]}.csv`);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
@@ -1998,17 +2119,69 @@ async function downloadCostRecordsPDF() {
   
   // Create HTML content for PDF
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; padding: 20px;">
-      <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 5px; color: #2c5a0b;">Cost Records</h1>
-      <div style="font-size: 14px; color: #666; margin-bottom: 20px;">Date Range: ${dateRange}</div>
-      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px;">
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { 
+          font-family: Arial, sans-serif; 
+          padding: 20px; 
+          margin: 0;
+        }
+        h1 {
+          font-size: 24px;
+          font-weight: bold;
+          margin-bottom: 5px;
+          color: #2c5a0b;
+        }
+        .date-range {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 20px;
+        }
+        table { 
+          width: 100%; 
+          border-collapse: collapse; 
+          margin-top: 20px; 
+          font-size: 12px;
+        }
+        th, td { 
+          border: 1px solid #ddd; 
+          padding: 8px; 
+          text-align: left; 
+        }
+        th { 
+          background-color: #f2f2f2; 
+          font-weight: bold; 
+        }
+        .task-inputs {
+          font-size: 10px;
+          color: #666;
+          margin-top: 5px;
+          padding-left: 5px;
+        }
+        .task-inputs div {
+          margin: 3px 0;
+        }
+        .cost-total {
+          font-weight: bold;
+          font-size: 14px;
+          background-color: #f9f9f9;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Cost Records</h1>
+      <div class="date-range">Date Range: ${escapeHtml(dateRange)}</div>
+      <table>
         <thead>
           <tr>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Task Type</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Operation Name</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Field</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Date</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2; font-weight: bold;">Cost</th>
+            <th>Task Type</th>
+            <th>Operation Name</th>
+            <th>Field</th>
+            <th>Date</th>
+            <th>Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -2027,31 +2200,37 @@ async function downloadCostRecordsPDF() {
             
             return `
               <tr>
-                <td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(record.taskType || 'N/A')}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">
+                <td>${escapeHtml(record.taskType || 'N/A')}</td>
+                <td>
                   <div>${escapeHtml(record.operation || 'N/A')}</div>
                   ${taskInputs}
                 </td>
-                <td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(record.fieldName || 'Unknown Field')}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">${dateStr}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">₱${cost.toFixed(2)}</td>
+                <td>${escapeHtml(record.fieldName || 'Unknown Field')}</td>
+                <td>${dateStr}</td>
+                <td>₱${cost.toFixed(2)}</td>
               </tr>
             `;
           }).join('')}
-          <tr style="font-weight: bold; font-size: 14px; background-color: #f9f9f9;">
-            <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: right; padding-right: 15px;">Total:</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">₱${totalCost.toFixed(2)}</td>
+          <tr class="cost-total">
+            <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
+            <td>₱${totalCost.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>
-    </div>
+    </body>
+    </html>
   `;
   
-  // Create temporary container
+  // Create temporary container with proper styling
   const tempContainer = document.createElement('div');
   tempContainer.innerHTML = htmlContent;
-  tempContainer.style.position = 'absolute';
-  tempContainer.style.left = '-9999px';
+  tempContainer.style.position = 'fixed';
+  tempContainer.style.top = '0';
+  tempContainer.style.left = '0';
+  tempContainer.style.width = '210mm'; // A4 width
+  tempContainer.style.padding = '20px';
+  tempContainer.style.backgroundColor = 'white';
+  tempContainer.style.zIndex = '9999';
   document.body.appendChild(tempContainer);
   
   try {
@@ -2059,7 +2238,14 @@ async function downloadCostRecordsPDF() {
       margin: [10, 10, 10, 10],
       filename: `Cost_Records_${new Date().toISOString().split('T')[0]}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        logging: false,
+        letterRendering: true,
+        width: tempContainer.scrollWidth,
+        height: tempContainer.scrollHeight
+      },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
@@ -2071,10 +2257,12 @@ async function downloadCostRecordsPDF() {
     console.error('Error generating PDF:', error);
     alert('Failed to generate PDF. Please try again.');
   } finally {
-    // Remove temporary container
-    if (tempContainer.parentNode) {
-      tempContainer.parentNode.removeChild(tempContainer);
-    }
+    // Remove temporary container after a short delay to ensure PDF generation completes
+    setTimeout(() => {
+      if (tempContainer.parentNode) {
+        tempContainer.parentNode.removeChild(tempContainer);
+      }
+    }, 1000);
   }
 }
 

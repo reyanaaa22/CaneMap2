@@ -2030,7 +2030,7 @@
 
                 <!-- Filters Section -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 overflow-hidden">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
                         <!-- Date Filter -->
                         <div class="min-w-0">
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Date</label>
@@ -2072,6 +2072,17 @@
                             <label class="block text-xs font-semibold text-gray-600 mb-1">Task Type</label>
                             <select id="recordsTaskTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
                                 <option value="all">All Task Types</option>
+                            </select>
+                        </div>
+
+                        <!-- Cost Type Filter -->
+                        <div class="min-w-0">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Cost Type</label>
+                            <select id="recordsCostTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cane-500)]">
+                                <option value="all">All Costs</option>
+                                <option value="fuel">Fuel Cost</option>
+                                <option value="labor">Labor Cost</option>
+                                <option value="other">Other Cost</option>
                             </select>
                         </div>
 
