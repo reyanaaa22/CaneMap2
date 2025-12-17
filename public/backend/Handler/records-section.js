@@ -2117,12 +2117,13 @@ async function downloadCostRecordsPDF() {
   // Get date range
   const dateRange = getDateRangeString();
   
-  // Create HTML content for PDF
+  // Create HTML content for PDF - EXACTLY matching print preview format
   const htmlContent = `
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
+      <title>Cost Records</title>
       <style>
         body { 
           font-family: Arial, sans-serif; 
@@ -2169,11 +2170,14 @@ async function downloadCostRecordsPDF() {
           font-size: 14px;
           background-color: #f9f9f9;
         }
+        @media print {
+          body { margin: 0; padding: 15px; }
+        }
       </style>
     </head>
     <body>
       <h1>Cost Records</h1>
-      <div class="date-range">Date Range: ${escapeHtml(dateRange)}</div>
+      <div class="date-range">Date Range: ${dateRange}</div>
       <table>
         <thead>
           <tr>
@@ -2195,7 +2199,7 @@ async function downloadCostRecordsPDF() {
             
             const cost = calculateTotalCost(record);
             
-            // Get task-specific inputs (formatted for PDF)
+            // Get task-specific inputs (formatted for print/PDF - same function)
             const taskInputs = getTaskFieldsForPrint(record.taskType, record.data);
             
             return `
@@ -2221,16 +2225,19 @@ async function downloadCostRecordsPDF() {
     </html>
   `;
   
-  // Create temporary container with proper styling
+  // Create temporary container - HIDDEN from view but capturable by html2canvas
   const tempContainer = document.createElement('div');
   tempContainer.innerHTML = htmlContent;
-  tempContainer.style.position = 'fixed';
+  // Hide container completely - position off-screen (invisible to user but renderable)
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
   tempContainer.style.top = '0';
-  tempContainer.style.left = '0';
   tempContainer.style.width = '210mm'; // A4 width
   tempContainer.style.padding = '20px';
   tempContainer.style.backgroundColor = 'white';
-  tempContainer.style.zIndex = '9999';
+  tempContainer.style.opacity = '0'; // Invisible but still in DOM for html2canvas
+  tempContainer.style.pointerEvents = 'none'; // Prevent any interaction
+  tempContainer.setAttribute('aria-hidden', 'true'); // Accessibility
   document.body.appendChild(tempContainer);
   
   try {
@@ -2244,11 +2251,14 @@ async function downloadCostRecordsPDF() {
         logging: false,
         letterRendering: true,
         width: tempContainer.scrollWidth,
-        height: tempContainer.scrollHeight
+        height: tempContainer.scrollHeight,
+        windowWidth: tempContainer.scrollWidth,
+        windowHeight: tempContainer.scrollHeight
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
+    // Generate PDF
     await window.html2pdf()
       .set(opt)
       .from(tempContainer)
@@ -2257,12 +2267,10 @@ async function downloadCostRecordsPDF() {
     console.error('Error generating PDF:', error);
     alert('Failed to generate PDF. Please try again.');
   } finally {
-    // Remove temporary container after a short delay to ensure PDF generation completes
-    setTimeout(() => {
-      if (tempContainer.parentNode) {
-        tempContainer.parentNode.removeChild(tempContainer);
-      }
-    }, 1000);
+    // Remove temporary container immediately after PDF generation
+    if (tempContainer && tempContainer.parentNode) {
+      tempContainer.parentNode.removeChild(tempContainer);
+    }
   }
 }
 

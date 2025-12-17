@@ -39,7 +39,7 @@ export const VARIETY_HARVEST_MONTHS_RANGE = {
   'PSR 2000-34': { min: 11, max: 12 },
   'PSR 97-41': { min: 11, max: 11 },
   'PSR 97-45': { min: 10, max: 11 },
-  'Ps 862': { min: 10, max: 12 },
+  'PS 862': { min: 10, max: 12 },
   'VMC 71-39': { min: 10, max: 12 },
   'VMC 84-549': { min: 10, max: 10 },
   'VMC 86-550': { min: 11, max: 12 },
