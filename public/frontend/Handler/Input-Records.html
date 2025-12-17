@@ -2843,8 +2843,8 @@ function renderForm(type){
   });
 
   // --- Legacy labor cost calculation (only if enhanced version doesn't exist) ---
-  const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
-  if (!laborCostEnhancedContainer) {
+  const legacyLaborCostContainer = document.getElementById('laborCostEnhancedContainer');
+  if (!legacyLaborCostContainer) {
     // Only run legacy calculation if enhanced version is not present
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
