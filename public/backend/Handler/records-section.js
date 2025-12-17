@@ -2026,9 +2026,7 @@ function printCostRecords() {
   // Get date range
   const dateRange = getDateRangeString();
   
-  // Create print-friendly HTML
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
+  const printHtml = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -2132,9 +2130,41 @@ function printCostRecords() {
       </table>
     </body>
     </html>
-  `);
-  printWindow.document.close();
-  printWindow.print();
+  `;
+  
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.opacity = '0';
+  iframe.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(printHtml);
+  iframeDoc.close();
+  
+  const triggerPrint = () => {
+    if (!iframe.contentWindow) return;
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(() => {
+      if (iframe && iframe.parentNode) {
+        iframe.parentNode.removeChild(iframe);
+      }
+    }, 500);
+  };
+  
+  if (iframe.contentWindow?.document.readyState === 'complete') {
+    triggerPrint();
+  } else {
+    iframe.onload = triggerPrint;
+    // Fallback in case onload doesn't fire
+    setTimeout(triggerPrint, 300);
+  }
 }
 
 // Download Cost Records as PDF
