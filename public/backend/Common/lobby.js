@@ -882,7 +882,6 @@ async function fetchApprovedFields() {
       "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js"
     );
 
-    // ✅ Fetch from top-level fields collection (include harvested for transparency)
     const q = query(
       collection(db, "fields"),
       where("status", "in", ["reviewed", "active", "harvested"])
@@ -919,8 +918,28 @@ async function fetchApprovedFields() {
       };
     });
 
-    // 🟢 Enrich applicantName like in Review.js
+    console.info(
+      `✅ fetched ${fields.length} reviewed fields from nested field_applications/*/fields`
+    );
+    
+    // Enrich applicantName in background (non-blocking)
+    enrichFieldUserNames(fields, db);
+    
+    return fields;
+  } catch (e) {
+    console.error("fetchApprovedFields() failed:", e);
+    return [];
+  }
+}
+
+// Background user enrichment - doesn't block map rendering
+async function enrichFieldUserNames(fields, db) {
+  try {
+    const { doc, getDoc } = await import(
+      "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js"
+    );
     const userCache = {};
+    
     for (const f of fields) {
       const pathParts = f.path.split("/");
       const uidFromPath = pathParts.length >= 2 ? pathParts[1] : null;
@@ -936,19 +955,11 @@ async function fetchApprovedFields() {
         possibleUid = uidFromPath;
       }
 
-      if (possibleUid) {
-        if (userCache[possibleUid]) {
-          f.applicantName = userCache[possibleUid];
-          continue;
-        }
+      if (possibleUid && !userCache[possibleUid]) {
         try {
-          const { doc, getDoc } = await import(
-            "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js"
-          );
           const userSnap = await getDoc(doc(db, "users", possibleUid));
           if (userSnap.exists()) {
             const u = userSnap.data();
-            // prioritize common fullname variants used across your DB
             const displayName =
               (u.fullname && String(u.fullname).trim()) ||
               (u.full_name && String(u.full_name).trim()) ||
@@ -956,7 +967,7 @@ async function fetchApprovedFields() {
               (u.name && String(u.name).trim()) ||
               (u.displayName && String(u.displayName).trim()) ||
               (u.email && String(u.email).trim()) ||
-              possibleUid; // fallback to uid if nothing else
+              possibleUid;
 
             f.applicantName = displayName;
             userCache[possibleUid] = displayName;
@@ -966,13 +977,8 @@ async function fetchApprovedFields() {
         }
       }
     }
-    console.info(
-      `✅ fetched ${fields.length} reviewed fields from nested field_applications/*/fields`
-    );
-    return fields;
   } catch (e) {
-    console.error("fetchApprovedFields() failed:", e);
-    return [];
+    console.warn("Background user enrichment failed:", e);
   }
 }
 
@@ -992,71 +998,80 @@ async function showApprovedFieldsOnMap(map) {
       return;
     }
 
-    window.__caneMarkers = []; 
+    window.__caneMarkers = [];
+    let markerCount = 0;
 
-fields.forEach((f) => {
+    // Process fields in batches to avoid blocking UI
+    const batchSize = 50;
+    for (let i = 0; i < fields.length; i += batchSize) {
+      const batch = fields.slice(i, i + batchSize);
+      
+      await new Promise(resolve => {
+        requestAnimationFrame(() => {
+          batch.forEach((f) => {
+            const coords = Array.isArray(f.raw?.coordinates)
+              ? f.raw.coordinates
+              : null;
 
+            if (coords && coords.length >= 3) {
+              const polygonCoords = coords.map(c => [c.lat, c.lng]);
 
-  const coords = Array.isArray(f.raw?.coordinates)
-    ? f.raw.coordinates
-    : null;
+              const polygon = L.polygon(polygonCoords, {
+                color: "#16a34a",
+                fillColor: "#22c55e",
+                fillOpacity: 0.25,
+                weight: 2,
+              }).addTo(map);
 
-  if (coords && coords.length >= 3) {
-    const polygonCoords = coords.map(c => [c.lat, c.lng]);
+              polygon.bindPopup(`
+                <div style="font-size:12px; line-height:1.4; color:#14532d;">
+                  <b style="font-size:14px;">${f.fieldName}</b><br/>
+                  Brgy. ${f.barangay}<br/>
+                  Ormoc City
+                </div>
+              `);
 
-    const polygon = L.polygon(polygonCoords, {
-      color: "#16a34a",
-      fillColor: "#22c55e",
-      fillOpacity: 0.25,
-      weight: 2,
-    }).addTo(map);
+              polygon.on("click", () => openFieldDetailsModal(f));
+            }
 
-    polygon.bindPopup(`
-      <div style="font-size:12px; line-height:1.4; color:#14532d;">
-        <b style="font-size:14px;">${f.fieldName}</b><br/>
-        Brgy. ${f.barangay}<br/>
-        Ormoc City
-      </div>
-    `);
+            if (!f.lat || !f.lng) return;
 
+            const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(
+              markerGroup
+            );
 
-    polygon.on("click", () => openFieldDetailsModal(f));
-  }
+            const tooltipHtml = `
+              <div style="font-size:12px; line-height:1.4; max-width:250px; width:max-content; color:#14532d;">
+                <b style="font-size:14px; color:#166534;">${f.fieldName}</b>
+                <br><span style="font-size:10px; color:#15803d;">🏠︎ <i>${f.street}, Brgy. ${f.barangay},<br>Ormoc City, Leyte 6541</i></span>
+                <br><a href="#" class="seeFieldDetails" 
+                   style="font-size:10px; color:gray; font-weight:500; display:inline-block; margin-top:3px;">
+                   Click to see more details.
+                </a>
+              </div>
+            `;
 
-  if (!f.lat || !f.lng) return;
+            marker.bindTooltip(tooltipHtml, {
+              permanent: false,
+              direction: "top",
+              offset: [0, -25],
+              opacity: 0.9,
+            });
 
-  const marker = L.marker([f.lat, f.lng], { icon: caneIcon }).addTo(
-    markerGroup
-  );
+            marker.on("mouseover", () => marker.openTooltip());
+            marker.on("mouseout", () => marker.closeTooltip());
+            marker.on("click", () => openFieldDetailsModal(f));
 
-  const tooltipHtml = `
-    <div style="font-size:12px; line-height:1.4; max-width:250px; width:max-content; color:#14532d;">
-      <b style="font-size:14px; color:#166534;">${f.fieldName}</b>
-      <br><span style="font-size:10px; color:#15803d;">🏠︎ <i>${f.street}, Brgy. ${f.barangay},<br>Ormoc City, Leyte 6541</i></span>
-      <br><a href="#" class="seeFieldDetails" 
-         style="font-size:10px; color:gray; font-weight:500; display:inline-block; margin-top:3px;">
-         Click to see more details.
-      </a>
-    </div>
-  `;
-
-  marker.bindTooltip(tooltipHtml, {
-    permanent: false,
-    direction: "top",
-    offset: [0, -25],
-    opacity: 0.9,
-  });
-
-  marker.on("mouseover", () => marker.openTooltip());
-  marker.on("mouseout", () => marker.closeTooltip());
-  marker.on("click", () => openFieldDetailsModal(f));
-
-  window.__caneMarkers.push({ marker, data: f });
-});
-
+            window.__caneMarkers.push({ marker, data: f });
+            markerCount++;
+          });
+          resolve();
+        });
+      });
+    }
 
     console.info(
-      `✅ Displayed ${fields.length} reviewed field markers on map.`
+      `✅ Displayed ${markerCount} reviewed field markers on map.`
     );
   } catch (err) {
     console.error("showApprovedFieldsOnMap() failed:", err);
@@ -4306,20 +4321,24 @@ setTimeout(() => {
       autoRefreshAllButtons();
 
       // --- Open Modal ---
-      openNotifModal.addEventListener("click", () => {
-        notifModal.classList.remove("hidden");
-        notifModal.classList.add("flex");
-        allNotifList.scrollTo({ top: 0, behavior: "auto" });
-      });
+      if (openNotifModal && notifModal && allNotifList) {
+        openNotifModal.addEventListener("click", () => {
+          notifModal.classList.remove("hidden");
+          notifModal.classList.add("flex");
+          allNotifList.scrollTo({ top: 0, behavior: "auto" });
+        });
+      }
 
       // --- Close Modal ---
-      closeNotifModal.addEventListener("click", () => {
-        notifModal.classList.add("hidden");
-        notifModal.classList.remove("flex");
-      });
-      notifModal.addEventListener("click", (e) => {
-        if (e.target === notifModal) closeNotifModal.click();
-      });
+      if (closeNotifModal && notifModal) {
+        closeNotifModal.addEventListener("click", () => {
+          notifModal.classList.add("hidden");
+          notifModal.classList.remove("flex");
+        });
+        notifModal.addEventListener("click", (e) => {
+          if (e.target === notifModal) closeNotifModal.click();
+        });
+      }
 
       // --- Mark all as read ---
       if (markAllBtn) {
@@ -4705,7 +4724,7 @@ setInterval(updateDriverBadgePromoVisibility, 400);
 
       // Add tooltips for desktop too
       if (role !== "driver") addTooltip(regBtn, "Register a Field");
-      addTooltip(mobileDriverBtn, "Driver Badge");
+      if (mobileDriverBtn) addTooltip(mobileDriverBtn, "Driver Badge");
       if (notifBtn) addTooltip(notifBtn, "Notifications");
     }
   }
@@ -4979,11 +4998,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ------------------------------
 // OPEN DRIVER RENTAL MODAL
 // ------------------------------
-const openRentalOption = document.getElementById("openRentalOption");
-const driverRentalModal = document.getElementById("driverRentalModal");
-const driverRentalFrame = document.getElementById("driverRentalFrame");
-const closeDriverRental = document.getElementById("closeDriverRental");
-
 document.addEventListener("DOMContentLoaded", () => {
   const openRentalOption = document.getElementById("openRentalOption");
   const driverRentalModal = document.getElementById("driverRentalModal");
@@ -4992,25 +5006,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (openRentalOption) {
     openRentalOption.addEventListener("click", () => {
-      driverRentalFrame.src = "../../frontend/Driver/Driver_Rental.html";
-      driverRentalModal.classList.remove("opacity-0", "pointer-events-none");
+      if (driverRentalFrame) driverRentalFrame.src = "../../frontend/Driver/Driver_Rental.html";
+      if (driverRentalModal) driverRentalModal.classList.remove("opacity-0", "pointer-events-none");
     });
   }
 
   if (closeDriverRental) {
     closeDriverRental.addEventListener("click", () => {
-      driverRentalModal.classList.add("opacity-0", "pointer-events-none");
-      driverRentalFrame.src = "";
+      if (driverRentalModal) driverRentalModal.classList.add("opacity-0", "pointer-events-none");
+      if (driverRentalFrame) driverRentalFrame.src = "";
     });
   }
-});
-
-closeDriverRental.addEventListener("click", () => {
-  // HIDE MODAL
-  driverRentalModal.classList.add("opacity-0", "pointer-events-none");
-
-  // CLEAR FRAME (para mag reset ang form)
-  driverRentalFrame.src = "";
 });
 
 // Receive close commands from inside iframe (Driver_Rental.html)
