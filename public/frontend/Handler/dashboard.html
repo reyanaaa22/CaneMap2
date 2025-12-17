@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
     <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="../../css/output.css">
     <script type="module">
         // Bind handler name and profile image in header and sidebar from localStorage/Firebase
@@ -1994,6 +1996,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Analytics Section -->
+                <div id="analyticsContainer" class="mt-4"></div>
             </div>
 
             <!-- Fields Section (Loaded Dynamically) -->
@@ -2213,6 +2218,23 @@
                         targetSection.classList.remove('hidden');
 
                     // Initialize section-specific functionality
+                    if (section === 'dashboard') {
+                        // Initialize Analytics
+                        (async () => {
+                            try {
+                                const timestamp = new Date().getTime();
+                                const { initializeAnalytics } = await import(`./sections/analytics.js?v=${timestamp}`);
+                                const { auth } = await import('../../backend/Common/firebase-config.js');
+                                const user = auth.currentUser;
+                                if (user && typeof initializeAnalytics === 'function') {
+                                    await initializeAnalytics(user.uid);
+                                }
+                            } catch (error) {
+                                console.error('Error initializing Analytics:', error);
+                            }
+                        })();
+                    }
+
                     if (section === 'fields' && typeof window.initializeFieldsSection === 'function') {
                         window.initializeFieldsSection();
                     }
