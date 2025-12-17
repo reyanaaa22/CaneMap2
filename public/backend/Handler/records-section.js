@@ -2825,10 +2825,11 @@ async function gatherReportData(fieldId) {
   
   // 3. Build growth tracker timeline
   const plantingDateObj = field.plantingDate?.toDate?.() || field.plantingDate;
+  const variety = field.sugarcane_variety || field.variety;
   let growthTimeline = [];
   if (plantingDateObj && records.length > 0) {
     const dap = calculateDAP(plantingDateObj);
-    const currentStage = getGrowthStage(dap);
+    const currentStage = getGrowthStage(dap, variety);
     
     // Group records by growth stage
     const recordsByStage = {};
@@ -2922,10 +2923,11 @@ async function gatherReportData(fieldId) {
   };
   
   const plantingDateObj2 = field.plantingDate?.toDate?.() || field.plantingDate;
+  const variety2 = field.sugarcane_variety || field.variety;
   let growthStage = '—';
   if (plantingDateObj2) {
     const dap = calculateDAP(plantingDateObj2);
-    growthStage = dap !== null ? getGrowthStage(dap) : 'Not Planted';
+    growthStage = dap !== null ? getGrowthStage(dap, variety2) : 'Not Planted';
   }
   
   return {

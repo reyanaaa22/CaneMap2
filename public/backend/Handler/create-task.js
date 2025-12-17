@@ -20,9 +20,9 @@ function getTaskDisplayName(taskValue) {
     'plowing': 'Plowing',
     'harrowing': 'Harrowing',
     'furrowing': 'Furrowing',
-    'planting': 'Planting (0 DAP)',
-    'basal_fertilizer': 'Basal Fertilizer (0–30 DAP)',
-    'main_fertilization': 'Main Fertilization (45–60 DAP)',
+    'planting': 'Planting',
+    'basal_fertilizer': 'Basal Fertilizer',
+    'main_fertilization': 'Main Fertilization',
     'spraying': 'Spraying',
     'weeding': 'Weeding',
     'irrigation': 'Irrigation',
@@ -324,7 +324,7 @@ async function loadTaskRecommendations(fieldId, el) {
     panel.classList.remove('hidden');
 
     // Update field info
-    fieldInfo.textContent = `${fieldName} | ${currentDAP} DAP | ${variety || 'Unknown variety'}`;
+    fieldInfo.textContent = `${fieldName} | ${variety || 'Unknown variety'}`;
 
     // ✅ Group recommendations by category
     const nextTasks = recommendations.filter(r => r.category === 'next');
@@ -437,7 +437,7 @@ async function loadTaskRecommendations(fieldId, el) {
 
     recommendationsList.innerHTML = htmlContent;
 
-    console.log(`✅ Displayed ${recommendations.length} recommendations (${nextTasks.length} next, ${skippedTasks.length} skipped, ${optionalTasks.length} optional) for field ${fieldId} (${currentDAP} DAP)`);
+    console.log(`✅ Displayed ${recommendations.length} recommendations (${nextTasks.length} next, ${skippedTasks.length} skipped, ${optionalTasks.length} optional) for field ${fieldId}`);
 
   } catch (error) {
     console.error('Error loading task recommendations:', error);
@@ -468,7 +468,7 @@ function getAvailableDriverTasks(fieldData) {
   const plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
   const harvestDate = fieldData.harvestDate?.toDate?.() || fieldData.harvestDate || fieldData.actualHarvestDate;
 
-  // Calculate DAP (Days After Planting)
+  // Calculate DAP (Days After Planting) - for internal logic only, not displayed
   let currentDAP = null;
   if (plantingDate) {
     currentDAP = calculateDAP(plantingDate);
@@ -488,7 +488,7 @@ function getAvailableDriverTasks(fieldData) {
   }
 
   // Harvest-related driver tasks (available when field is ready for harvest)
-  if (currentDAP >= 200 && !harvestDate && status !== 'harvested') {
+  if (currentDAP !== null && currentDAP >= 200 && !harvestDate && status !== 'harvested') {
     tasks.push(
       { value: 'pickup_harvested_cane', label: 'Pickup Harvested Sugarcane from Field' },
       { value: 'transport_cane_to_mill', label: 'Transport Cane from Field to Mill' },
@@ -545,7 +545,7 @@ function getAvailableTasksForHandler(fieldData) {
       { value: 'plowing', label: 'Plowing (Land Preparation)' },
       { value: 'harrowing', label: 'Harrowing (Land Preparation)' },
       { value: 'furrowing', label: 'Furrowing (Land Preparation)' },
-      { value: 'planting', label: 'Planting (0 DAP)' }
+      { value: 'planting', label: 'Planting' }
     );
   }
 
@@ -554,18 +554,18 @@ function getAvailableTasksForHandler(fieldData) {
   // ========================================
   if (plantingDate && currentDAP !== null && currentDAP >= 0) {
 
-    // Basal Fertilization (0-30 DAP)
+    // Basal Fertilization
     if (currentDAP <= 30) {
-      tasks.push({ value: 'basal_fertilizer', label: `Basal Fertilizer (0-30 DAP, Current: ${currentDAP} DAP)` });
+      tasks.push({ value: 'basal_fertilizer', label: 'Basal Fertilizer' });
     } else if (currentDAP <= 45) {
-      tasks.push({ value: 'basal_fertilizer', label: `Basal Fertilizer (Late - ${currentDAP} DAP)` });
+      tasks.push({ value: 'basal_fertilizer', label: 'Basal Fertilizer (Late)' });
     }
 
-    // Main Fertilization (45-60 DAP)
+    // Main Fertilization
     if (currentDAP >= 40 && currentDAP <= 60) {
-      tasks.push({ value: 'main_fertilization', label: `Main Fertilization (45-60 DAP, Current: ${currentDAP} DAP)` });
+      tasks.push({ value: 'main_fertilization', label: 'Main Fertilization' });
     } else if (currentDAP > 60 && currentDAP <= 90) {
-      tasks.push({ value: 'main_fertilization', label: `Main Fertilization (Late - ${currentDAP} DAP)` });
+      tasks.push({ value: 'main_fertilization', label: 'Main Fertilization (Late)' });
     }
 
     // General Maintenance (any time after planting)
@@ -573,18 +573,18 @@ function getAvailableTasksForHandler(fieldData) {
       { value: 'spraying', label: 'Spraying (Pest/Disease Control)' },
       { value: 'weeding', label: 'Weeding' },
       { value: 'irrigation', label: 'Irrigation' },
-       { value: 'planting', label: 'Planting (Replanting – 0 DAP)' }
+       { value: 'planting', label: 'Planting (Replanting)' }
     );
 
     // Harvesting (only if mature enough and NOT already harvested)
     if (currentDAP >= 200 && !harvestDate && status !== 'harvested') {
       const maturityMsg = currentDAP >= 300 ? 'Optimal Maturity' : 'Early Harvest';
-      tasks.push({ value: 'harvesting', label: `Harvesting (${currentDAP} DAP - ${maturityMsg})` });
+      tasks.push({ value: 'harvesting', label: `Harvesting (${maturityMsg})` });
     } else if (currentDAP < 200 && currentDAP >= 150) {
       // Show but mark as disabled
       tasks.push({
         value: 'harvesting_disabled',
-        label: `Harvesting (Too Early - ${currentDAP} DAP)`,
+        label: 'Harvesting (Too Early)',
         disabled: true
       });
     }
@@ -1058,110 +1058,8 @@ el('#ct_save').addEventListener('click', async () => {
       }
     }
 
-    // Validation 3: Check DAP-based task appropriateness
-    if (plantingDate) {
-      const currentDAP = calculateDAP(plantingDate);
-      let validationError = null;
-
-      // Harvesting too early
-      if (taskType === 'harvesting' && currentDAP !== null) {
-        const variety = fieldData.variety || 'Unknown';
-        const minHarvestDAP = 300; // Minimum 300 days for any variety
-
-        if (currentDAP < minHarvestDAP) {
-          validationError = {
-            icon: 'fa-seedling',
-            iconColor: 'green',
-            title: 'Too Early to Harvest',
-            message: `The sugarcane crop at <strong>${escapeHtml(fieldName)}</strong> is only <strong>${currentDAP} days old</strong>.
-                      Harvesting is typically done at 300-400 DAP (depending on variety).`,
-            suggestion: `Current stage: The crop needs more time to mature. Harvesting now would result in low sugar content and poor yield.`,
-            buttonText: 'I Understand'
-          };
-        }
-      }
-
-      // Basal fertilization too late
-      if (taskType === 'basal_fertilizer' && currentDAP !== null && currentDAP > 40) {
-        validationError = {
-          icon: 'fa-clock',
-          iconColor: 'orange',
-          title: 'Basal Fertilization Window Passed',
-          message: `The crop at <strong>${escapeHtml(fieldName)}</strong> is at <strong>${currentDAP} DAP</strong>.
-                    Basal fertilization should be done within 0-30 DAP (now ${currentDAP - 30} days late).`,
-          suggestion: `It may be too late for basal fertilization. Consider creating a "Main Fertilization" task instead if you haven't done that yet.`,
-          buttonText: 'Create Anyway'
-        };
-      }
-
-      // Main fertilization too early or too late
-      if (taskType === 'main_fertilization' && currentDAP !== null) {
-        if (currentDAP < 40) {
-          validationError = {
-            icon: 'fa-hourglass-start',
-            iconColor: 'blue',
-            title: 'Too Early for Main Fertilization',
-            message: `The crop at <strong>${escapeHtml(fieldName)}</strong> is only <strong>${currentDAP} DAP</strong>.
-                      Main fertilization should be done at 45-60 DAP (${45 - currentDAP} days to go).`,
-            suggestion: `Creating this task now is fine for scheduling, but make sure to complete it within the 45-60 DAP window.`,
-            buttonText: 'Create Anyway'
-          };
-        } else if (currentDAP > 75) {
-          validationError = {
-            icon: 'fa-exclamation-triangle',
-            iconColor: 'red',
-            title: 'Main Fertilization Window Passed',
-            message: `The crop at <strong>${escapeHtml(fieldName)}</strong> is at <strong>${currentDAP} DAP</strong>.
-                      Main fertilization should have been done at 45-60 DAP (now ${currentDAP - 60} days late).`,
-            suggestion: `The critical fertilization window has passed. Applying now may have reduced effectiveness.`,
-            buttonText: 'Create Anyway'
-          };
-        }
-      }
-
-      // Show validation warning if needed
-      if (validationError) {
-        const validationModal = document.createElement('div');
-        validationModal.className = 'fixed inset-0 z-[23000] flex items-center justify-center bg-black/40';
-        validationModal.innerHTML = `
-          <div class="bg-white rounded-xl p-6 max-w-md w-full shadow-lg">
-            <div class="text-center mb-4">
-              <div class="w-16 h-16 mx-auto rounded-full bg-${validationError.iconColor}-100 flex items-center justify-center mb-3">
-                <i class="fas ${validationError.icon} text-3xl text-${validationError.iconColor}-600"></i>
-              </div>
-              <h3 class="text-lg font-semibold text-gray-900">${validationError.title}</h3>
-            </div>
-            <p class="text-sm text-gray-600 mb-3">${validationError.message}</p>
-            <p class="text-sm text-gray-700 font-medium mb-4">
-              <i class="fas fa-info-circle text-blue-600 mr-2"></i>${validationError.suggestion}
-            </p>
-            <div class="flex gap-3">
-              <button id="validationCancel" class="flex-1 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 font-medium">
-                Cancel
-              </button>
-              <button id="validationContinue" class="flex-1 px-4 py-2 rounded-md bg-${validationError.iconColor}-600 text-white hover:bg-${validationError.iconColor}-700 font-medium">
-                ${validationError.buttonText}
-              </button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(validationModal);
-
-        // Handle validation modal buttons
-        await new Promise((resolve) => {
-          validationModal.querySelector('#validationCancel').addEventListener('click', () => {
-            validationModal.remove();
-            resolve(false); // Don't continue
-          });
-          validationModal.querySelector('#validationContinue').addEventListener('click', () => {
-            validationModal.remove();
-            resolve(true); // Continue with task creation
-          });
-        }).then(shouldContinue => {
-          if (!shouldContinue) throw new Error('User cancelled task creation');
-        });
-      }
-    }
+    // Validation 3: Removed DAP-based task appropriateness checks
+    // DAP is now only used internally for growth stage calculations, not displayed in operations
 
   } catch (err) {
     if (err.message === 'User cancelled task creation') {

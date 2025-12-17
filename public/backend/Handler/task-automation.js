@@ -288,7 +288,7 @@ export function getRecommendedTasksForDAP(currentDAP, variety, completedTasks = 
       // Skipped/Missed task
       category = 'skipped';
       urgency = 'overdue';
-      reason = `⏭️ Window passed (${taskDef.startDAP}-${taskDef.endDAP} DAP). Can still be completed if needed.`;
+      reason = `⏭️ Window passed. Can still be completed if needed.`;
       daysLate = currentDAP - taskDef.endDAP;
     } else if (isNextTask) {
       // Next task to complete
@@ -296,22 +296,22 @@ export function getRecommendedTasksForDAP(currentDAP, variety, completedTasks = 
 
       if (currentDAP >= taskDef.criticalStart && currentDAP <= taskDef.endDAP) {
         urgency = 'critical';
-        reason = `🚨 URGENT: Within critical window! (${taskDef.endDAP - currentDAP} days remaining)`;
+        reason = `🚨 URGENT: Within critical window!`;
         daysLeft = taskDef.endDAP - currentDAP;
       } else if (currentDAP >= taskDef.startDAP) {
         urgency = 'high';
-        reason = `⚠️ Within recommended window (${taskDef.startDAP}-${taskDef.endDAP} DAP)`;
+        reason = `⚠️ Within recommended window`;
         daysLeft = taskDef.endDAP - currentDAP;
       } else {
         urgency = 'medium';
-        reason = `Upcoming task (starts at ${taskDef.startDAP} DAP)`;
+        reason = `Upcoming task`;
         daysLeft = taskDef.startDAP - currentDAP;
       }
     } else if (isInWindow) {
       // Optional task (in window but not the immediate next step)
       category = 'optional';
       urgency = 'medium';
-      reason = `Available now (${taskDef.startDAP}-${taskDef.endDAP} DAP window)`;
+      reason = `Available now`;
       daysLeft = taskDef.endDAP - currentDAP;
     } else {
       return; // Not relevant yet
@@ -335,7 +335,7 @@ export function getRecommendedTasksForDAP(currentDAP, variety, completedTasks = 
       task: "Weeding & Cultivation",
       taskType: "weeding",
       urgency: "medium",
-      reason: `Recommended during tillering/grand growth stage (${currentDAP} DAP)`,
+      reason: `Recommended during tillering/grand growth stage`,
       category: "optional",
       stage: "Tillering/Grand Growth"
     });

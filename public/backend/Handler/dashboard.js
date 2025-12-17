@@ -5100,7 +5100,7 @@ export function initializeFieldsSection() {
       const plantingDateObj = field.plantingDate?.toDate?.() || field.plantingDate;
       if (plantingDateObj) {
         const dap = calculateDAP(plantingDateObj);
-        growthStage = dap !== null ? getGrowthStage(dap) : 'Not Planted';
+        growthStage = dap !== null ? getGrowthStage(dap, variety) : 'Not Planted';
       }
       
       // Format dates from Firestore Timestamps
@@ -5307,19 +5307,18 @@ export function initializeFieldsSection() {
         if (fieldSnap.exists()) {
           const latestField = fieldSnap.data();
           
-          // Use stored growth stage if available, otherwise calculate from planting date
-          let growthStageValue = latestField.currentGrowthStage || '—';
+          // Always calculate current growth stage from current DAP and variety (not from stored value which may be outdated)
+          let growthStageValue = '—';
           let dapValue = '—';
           
           const plantingDateObj = latestField.plantingDate?.toDate?.() || latestField.plantingDate;
+          const variety = latestField.sugarcane_variety || latestField.variety;
           if (plantingDateObj) {
             const dap = calculateDAP(plantingDateObj);
             dapValue = dap !== null ? `${dap} days` : '—';
             
-            // If no stored growth stage, calculate it
-            if (!latestField.currentGrowthStage || latestField.currentGrowthStage === '—') {
-              growthStageValue = dap !== null ? getGrowthStage(dap) : 'Not Planted';
-            }
+            // Always calculate growth stage from current DAP and variety for accurate display
+            growthStageValue = dap !== null ? getGrowthStage(dap, variety) : 'Not Planted';
           }
           
           const growthStageEl = modal.querySelector('#fd_growth_stage');

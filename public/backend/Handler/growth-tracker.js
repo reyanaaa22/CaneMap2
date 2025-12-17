@@ -21,30 +21,179 @@ function removeUndefined(obj) {
 // Variety-specific harvest months range (min-max months)
 // Updated to match system-wide Expected Harvest Date requirements
 export const VARIETY_HARVEST_MONTHS_RANGE = {
-  'K 88-65': { min: 11, max: 13 },
-  'K 88-87': { min: 11, max: 13 },
-  'PS 1': { min: 10, max: 11 },
-  'VMC 84-947': { min: 10, max: 11 },
-  'PS 2': { min: 8, max: 9 },
-  'VMC 88-354': { min: 8, max: 9 },
-  'PS 3': { min: 9, max: 10 },
-  'VMC 84-524': { min: 9, max: 10 },
-  'CADP Sc1': { min: 9, max: 10 },
-  'PS 4': { min: 9, max: 11 },
-  'VMC 95-152': { min: 9, max: 11 },
-  'PS 5': { min: 9, max: 11 },
-  'VMC 95-09': { min: 9, max: 11 },
-  'PSR 2000-161': { min: 10, max: 11 },
-  'PSR 2000-343': { min: 10, max: 11 },
-  'PSR 2000-34': { min: 10, max: 11 },
-  'PSR 97-41': { min: 10, max: 10 },
-  'PSR 97-45': { min: 9, max: 10 },
-  'PS 862': { min: 9, max: 11 },
-  'VMC 71-39': { min: 9, max: 11 },
-  'VMC 84-549': { min: 9, max: 9 },
-  'VMC 86-550': { min: 10, max: 11 },
-  'VMC 87-599': { min: 9, max: 11 },
-  'VMC 87-95': { min: 9, max: 10 }
+  'K 88-65': { min: 12, max: 14 },
+  'K 88-87': { min: 12, max: 14 },
+  'PS 1': { min: 11, max: 12 },
+  'VMC 84-947': { min: 11, max: 12 },
+  'PS 2': { min: 9, max: 10 },
+  'VMC 88-354': { min: 9, max: 10 },
+  'PS 3': { min: 10, max: 11 },
+  'VMC 84-524': { min: 10, max: 11 },
+  'CADP Sc1': { min: 10, max: 11 },
+  'PS 4': { min: 10, max: 12 },
+  'VMC 95-152': { min: 10, max: 12 },
+  'PS 5': { min: 10, max: 12 },
+  'VMC 95-09': { min: 10, max: 12 },
+  'PSR 2000-161': { min: 11, max: 12 },
+  'PSR 2000-343': { min: 11, max: 11.5 },
+  'PSR 2000-34': { min: 11, max: 12 },
+  'PSR 97-41': { min: 11, max: 11 },
+  'PSR 97-45': { min: 10, max: 11 },
+  'PS 862': { min: 10, max: 12 },
+  'VMC 71-39': { min: 10, max: 12 },
+  'VMC 84-549': { min: 10, max: 10 },
+  'VMC 86-550': { min: 11, max: 12 },
+  'VMC 87-599': { min: 10, max: 12 },
+  'VMC 87-95': { min: 10, max: 11 }
+};
+
+// Variety-specific growth stages (DAP ranges)
+// Each variety has specific Days After Planting (DAP) ranges for each growth stage
+export const VARIETY_GROWTH_STAGES = {
+  'K 88-65': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 130 },
+    'Grand Growth': { start: 130, end: 300 },
+    Maturity: { start: 300, end: 420 }
+  },
+  'K 88-87': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 130 },
+    'Grand Growth': { start: 130, end: 300 },
+    Maturity: { start: 300, end: 420 }
+  },
+  'PS 1': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 270 },
+    Maturity: { start: 270, end: 360 }
+  },
+  'VMC 84-947': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 270 },
+    Maturity: { start: 270, end: 360 }
+  },
+  'PS 2': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 100 },
+    'Grand Growth': { start: 100, end: 240 },
+    Maturity: { start: 240, end: 300 }
+  },
+  'VMC 88-354': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 100 },
+    'Grand Growth': { start: 100, end: 240 },
+    Maturity: { start: 240, end: 300 }
+  },
+  'PS 3': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 260 },
+    Maturity: { start: 260, end: 330 }
+  },
+  'VMC 84-524': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 260 },
+    Maturity: { start: 260, end: 330 }
+  },
+  'CADP Sc1': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 260 },
+    Maturity: { start: 260, end: 330 }
+  },
+  'PS 4': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'VMC 95-152': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'PS 5': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'VMC 95-09': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'PSR 2000-161': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 270 },
+    Maturity: { start: 270, end: 360 }
+  },
+  'PSR 2000-343': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 260 },
+    Maturity: { start: 260, end: 350 }
+  },
+  'PSR 2000-34': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 270 },
+    Maturity: { start: 270, end: 360 }
+  },
+  'PSR 97-41': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 250 },
+    Maturity: { start: 250, end: 330 }
+  },
+  'PSR 97-45': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 250 },
+    Maturity: { start: 250, end: 330 }
+  },
+  'PS 862': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'VMC 71-39': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'VMC 84-549': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 100 },
+    'Grand Growth': { start: 100, end: 240 },
+    Maturity: { start: 240, end: 300 }
+  },
+  'VMC 86-550': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 270 },
+    Maturity: { start: 270, end: 360 }
+  },
+  'VMC 87-599': {
+    Germination: { start: 0, end: 35 },
+    Tillering: { start: 35, end: 120 },
+    'Grand Growth': { start: 120, end: 280 },
+    Maturity: { start: 280, end: 360 }
+  },
+  'VMC 87-95': {
+    Germination: { start: 0, end: 30 },
+    Tillering: { start: 30, end: 110 },
+    'Grand Growth': { start: 110, end: 250 },
+    Maturity: { start: 250, end: 330 }
+  }
 };
 
 // Ratoon-specific harvest months range (min-max months)
@@ -128,19 +277,61 @@ export function calculateDAP(plantingDate) {
 }
 
 /**
- * Determine growth stage based on DAP
+ * Determine growth stage based on DAP and variety
+ * Uses variety-specific DAP ranges for accurate growth stage determination
  * @param {number} DAP - Days After Planting
+ * @param {string} variety - Sugarcane variety (optional, falls back to default ranges if not provided)
  * @returns {string} Current growth stage
  */
-export function getGrowthStage(DAP) {
+export function getGrowthStage(DAP, variety = null) {
   if (DAP === null || DAP === undefined) return "Not Planted";
 
-  if (DAP >= 0 && DAP < 45) return "Germination";
-  if (DAP >= 45 && DAP < 100) return "Tillering";
-  if (DAP >= 100 && DAP < 240) return "Grand Growth";
-  if (DAP >= 240 && DAP < 300) return "Maturation";
-  if (DAP >= 300 && DAP < 330) return "Ripening";
-  if (DAP >= 330) return "Harvest-ready";
+  // Normalize variety name to handle aliases
+  let normalizedVariety = variety;
+  if (variety) {
+    // Handle variety dropdown format (e.g., "K 88-65 — 12–14 months" -> "K 88-65")
+    if (variety.includes('—')) {
+      normalizedVariety = variety.split('—')[0].trim();
+    }
+    // Handle alias format (e.g., "PS 1 / VMC 84-947" -> "PS 1")
+    if (variety.includes('/')) {
+      normalizedVariety = variety.split('/')[0].trim();
+    }
+    // Handle "or" format (e.g., "PS 3 or VMC 84-524 or CADP Sc1" -> "PS 3")
+    if (variety.includes('or')) {
+      normalizedVariety = variety.split('or')[0].trim();
+    }
+  }
+
+  // Get variety-specific growth stages
+  const growthStages = normalizedVariety ? VARIETY_GROWTH_STAGES[normalizedVariety] : null;
+
+  if (growthStages) {
+    // Use variety-specific DAP ranges
+    if (DAP >= growthStages.Germination.start && DAP < growthStages.Germination.end) {
+      return "Germination";
+    }
+    if (DAP >= growthStages.Tillering.start && DAP < growthStages.Tillering.end) {
+      return "Tillering";
+    }
+    if (DAP >= growthStages['Grand Growth'].start && DAP < growthStages['Grand Growth'].end) {
+      return "Grand Growth";
+    }
+    if (DAP >= growthStages.Maturity.start && DAP < growthStages.Maturity.end) {
+      return "Maturity";
+    }
+    // If DAP exceeds maturity range, consider it harvest-ready
+    if (DAP >= growthStages.Maturity.end) {
+      return "Harvest-ready";
+    }
+  } else {
+    // Fallback to default ranges if variety not found or not provided
+    if (DAP >= 0 && DAP < 35) return "Germination";
+    if (DAP >= 35 && DAP < 120) return "Tillering";
+    if (DAP >= 120 && DAP < 270) return "Grand Growth";
+    if (DAP >= 270 && DAP < 360) return "Maturity";
+    if (DAP >= 360) return "Harvest-ready";
+  }
 
   return "Unknown";
 }
@@ -196,6 +387,45 @@ export function getHarvestDaysRange(variety) {
  * @param {string} variety - Sugarcane variety (may contain aliases like "PS 1 / VMC 84-947")
  * @returns {{earliest: Date, latest: Date, formatted: string}|null} Expected harvest date range
  */
+/**
+ * Safely parse a date value that could be a Date object, Firestore Timestamp, or date string
+ * @param {*} dateValue - Date value to parse
+ * @returns {Date|null} Parsed Date object or null if invalid
+ */
+export function parseDateValue(dateValue) {
+  if (!dateValue) return null;
+  
+  // Handle Firestore Timestamp
+  if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+    return dateValue.toDate();
+  }
+  
+  // Handle Date object
+  if (dateValue instanceof Date) {
+    return dateValue;
+  }
+  
+  // Handle string (from HTML date input, format should be YYYY-MM-DD)
+  if (typeof dateValue === 'string') {
+    const parsed = new Date(dateValue);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  
+  // Try generic Date constructor as fallback
+  try {
+    const parsed = new Date(dateValue);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  } catch (e) {
+    console.error('Error parsing date value:', dateValue, e);
+  }
+  
+  return null;
+}
+
 export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
   if (!plantingDate || !variety) return null;
 
@@ -241,9 +471,17 @@ export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
     maturity = { min: 9, max: 11 };
   }
 
-  const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
+  // Parse planting date safely
+  const planting = parseDateValue(plantingDate);
+  
+  // Ensure we have a valid date
+  if (!planting || isNaN(planting.getTime())) {
+    console.error('Invalid planting date:', plantingDate);
+    return null;
+  }
   
   // Calculate earliest harvest date (min months)
+  // setMonth() automatically handles year rollover correctly
   const earliestDate = new Date(planting);
   earliestDate.setMonth(earliestDate.getMonth() + maturity.min);
   
@@ -251,12 +489,12 @@ export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
   const latestDate = new Date(planting);
   latestDate.setMonth(latestDate.getMonth() + maturity.max);
   
-  // Format dates (MM/DD/YYYY)
+  // Format dates (DD/MM/YYYY) - Day/Month/Year format (NOT MM/DD/YYYY)
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${month}/${day}/${year}`;
+    return `${day}/${month}/${year}`;
   };
   
   // Format display string
@@ -519,7 +757,7 @@ export async function handlePlantingCompletion(userId, fieldId, variety, plantin
     const harvestDateRange = calculateExpectedHarvestDateMonths(planting, variety);
     // Store earliest date for backward compatibility (database expects single date)
     const expectedHarvestDate = harvestDateRange ? harvestDateRange.earliest : null;
-    const currentGrowthStage = getGrowthStage(calculateDAP(planting));
+    const currentGrowthStage = getGrowthStage(calculateDAP(planting), variety);
 
     // Fetch existing field data to preserve fertilization dates if they already exist
     const fieldRef = doc(db, 'fields', fieldId);
@@ -908,7 +1146,7 @@ export async function handleReplanting(userId, fieldId, newPlantingDate = null, 
     // Use provided variety or keep existing variety
     const newVariety = variety || fieldData.sugarcane_variety || fieldData.variety;
     const expectedHarvestDate = calculateExpectedHarvestDate(plantingDate, newVariety);
-    const currentGrowthStage = getGrowthStage(calculateDAP(plantingDate));
+    const currentGrowthStage = getGrowthStage(calculateDAP(plantingDate), newVariety);
 
     // Increment planting cycle number
     const plantingCycleNumber = (fieldData.plantingCycleNumber || 0) + 1;
@@ -994,8 +1232,9 @@ export async function updateGrowthStage(userId, fieldId) {
       return { success: false, reason: 'no_planting_date' };
     }
 
+    const variety = fieldData.sugarcane_variety || fieldData.variety;
     const DAP = calculateDAP(plantingDate);
-    const currentGrowthStage = getGrowthStage(DAP);
+    const currentGrowthStage = getGrowthStage(DAP, variety);
 
     // Only update if growth stage has changed
     if (fieldData.currentGrowthStage !== currentGrowthStage) {
@@ -1029,7 +1268,46 @@ export async function getFieldGrowthData(fieldId) {
     }
 
     const fieldData = fieldSnap.data();
-    const plantingDate = fieldData.plantingDate?.toDate ? fieldData.plantingDate.toDate() : fieldData.plantingDate;
+    
+    // CRITICAL: Get planting date and variety from Planting Operation record (single source of truth)
+    // This ensures consistency with the calculation used in the Planting Operation form
+    let plantingDate = null;
+    let variety = null;
+    
+    try {
+      const recordsQuery = query(
+        collection(db, 'records'),
+        where('fieldId', '==', fieldId),
+        where('taskType', '==', 'Planting Operation')
+      );
+      const recordsSnap = await getDocs(recordsQuery);
+      
+      if (!recordsSnap.empty) {
+        const plantingRecord = recordsSnap.docs[0].data();
+        const recordData = plantingRecord.data || {};
+        
+        // Get planting date from record (prioritize startDate, then fallback to other fields)
+        const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
+        if (plantingDateValue) {
+          // Use safe date parsing helper
+          plantingDate = parseDateValue(plantingDateValue);
+        }
+        
+        // Get variety from record
+        variety = recordData.variety || plantingRecord.variety;
+      }
+    } catch (recordError) {
+      console.debug('Could not fetch planting record, falling back to field data:', recordError);
+    }
+    
+    // Fallback to field data if planting record not found
+    if (!plantingDate) {
+      plantingDate = fieldData.plantingDate?.toDate ? fieldData.plantingDate.toDate() : fieldData.plantingDate;
+    }
+    if (!variety) {
+      variety = fieldData.sugarcane_variety || fieldData.variety;
+    }
+    
     const expectedHarvestDate = fieldData.expectedHarvestDate?.toDate ? fieldData.expectedHarvestDate.toDate() : fieldData.expectedHarvestDate;
     const basalFertilizationDate = fieldData.basalFertilizationDate?.toDate ? fieldData.basalFertilizationDate.toDate() : fieldData.basalFertilizationDate;
     const mainFertilizationDate = fieldData.mainFertilizationDate?.toDate ? fieldData.mainFertilizationDate.toDate() : fieldData.mainFertilizationDate;
@@ -1178,7 +1456,7 @@ export async function getFieldGrowthData(fieldId) {
       return {
         fieldId,
         fieldName: fieldData.field_name || fieldData.fieldName,
-        variety: fieldData.sugarcane_variety || null,
+        variety: variety || null,
         plantingDate: null,
         expectedHarvestDate: null,
         basalFertilizationDate: null,
@@ -1198,10 +1476,10 @@ export async function getFieldGrowthData(fieldId) {
 
     // Calculate growth data only when planting date exists
     const DAP = calculateDAP(plantingDate);
-    const currentGrowthStage = getGrowthStage(DAP);
+    const currentGrowthStage = getGrowthStage(DAP, variety);
     
     // Calculate expected harvest date using months-based formula for system-wide consistency
-    const variety = fieldData.sugarcane_variety;
+    // Use variety from Planting Operation record (already retrieved above)
     const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
     const expectedHarvestDateFormatted = harvestDateRange ? harvestDateRange.formatted : null;
     // Use earliest date for backward compatibility with existing code that expects Date object
@@ -1224,7 +1502,7 @@ export async function getFieldGrowthData(fieldId) {
       variety: variety,
       plantingDate,
       expectedHarvestDate: expectedHarvestDateForCalc, // Date object for calculations
-      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (MM/DD/YYYY or MM/DD/YYYY – MM/DD/YYYY)
+      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY)
       basalFertilizationDate,
       mainFertilizationDate,
       DAP,
@@ -1266,6 +1544,7 @@ if (typeof window !== 'undefined') {
     getHarvestDaysRange,
     VARIETY_HARVEST_DAYS,
     VARIETY_HARVEST_DAYS_RANGE,
-    VARIETY_HARVEST_MONTHS_RANGE
+    VARIETY_HARVEST_MONTHS_RANGE,
+    VARIETY_GROWTH_STAGES
   };
 }

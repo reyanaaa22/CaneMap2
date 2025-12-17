@@ -85,6 +85,9 @@
     /* Unified Timeline Styles */
     .timeline-stage {
       position: relative;
+      width: 100%;
+      overflow-x: hidden;
+      box-sizing: border-box;
     }
 
     .stage-indicator {
@@ -224,7 +227,10 @@
     .activities-stage-list {
       max-height: 260px; /* roughly 4 nodes tall */
       overflow-y: auto;
+      overflow-x: hidden; /* Prevent horizontal overflow */
       padding-right: 0.25rem;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .activity-node {
@@ -237,6 +243,11 @@
       transition: all 0.2s ease;
       cursor: pointer;
       position: relative;
+      width: calc(100% - 1.5rem); /* Account for margin-left */
+      max-width: 100%;
+      box-sizing: border-box;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .activity-node:hover {
@@ -265,6 +276,35 @@
     .activity-node.empty-state:hover {
       transform: none;
       box-shadow: none;
+    }
+
+    /* Mobile responsive fixes for activity nodes */
+    @media (max-width: 640px) {
+      .activities-stage-list {
+        padding-right: 0.5rem;
+        max-height: 200px; /* Smaller max height on mobile */
+      }
+
+      .activity-node {
+        margin-left: 0.75rem; /* Reduced margin on mobile */
+        padding: 0.5rem; /* Reduced padding on mobile */
+        width: calc(100% - 0.75rem); /* Account for reduced margin */
+      }
+
+      .timeline-stage .flex-1 {
+        min-width: 0; /* Allow flex item to shrink */
+        overflow: hidden; /* Prevent overflow */
+      }
+
+      .activity-node .flex {
+        flex-wrap: wrap; /* Allow wrapping on mobile */
+        gap: 0.5rem;
+      }
+
+      .activity-node p {
+        word-break: break-word; /* Break long words */
+        overflow-wrap: break-word;
+      }
     }
 
     @media print {
@@ -766,7 +806,7 @@
           </div>
 
           <!-- Unified Timeline Container -->
-          <div id="unifiedTimelineContainer" class="space-y-0">
+          <div id="unifiedTimelineContainer" class="space-y-0 w-full overflow-x-hidden">
             <!-- Growth stages with integrated activity records will be rendered here -->
 
             
@@ -799,13 +839,13 @@
                   <div class="w-4 h-4 rounded-full bg-[var(--cane-400)] border-2 border-white shadow-md stage-indicator" id="stage-tillering"></div>
                   <div class="w-0.5 h-full bg-gradient-to-b from-[var(--cane-400)] to-gray-300 mt-2 min-h-[40px]" id="connector-tillering"></div>
                 </div>
-                <div class="flex-1 pt-0.5">
+                <div class="flex-1 pt-0.5 min-w-0">
                   <div class="flex items-center justify-between mb-2">
-              <div>
+              <div class="min-w-0 flex-1">
                       <p class="font-semibold text-sm">Tillering</p>
-                      <p class="text-xs text-gray-600" id="tlTill">0% Complete - Expected</p>
+                      <p class="text-xs text-gray-600 truncate" id="tlTill">0% Complete - Expected</p>
               </div>
-                    <span class="badge badge-progress text-xs" id="badge-tillering" style="display: none;">In Progress</span>
+                    <span class="badge badge-progress text-xs flex-shrink-0" id="badge-tillering" style="display: none;">In Progress</span>
             </div>
                   <div id="activities-tillering" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
@@ -954,7 +994,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -1023,152 +1063,17 @@
         };
 
         // DAP (Days After Planting) stage ranges for each variety
-        const DAP_STAGE_RANGES = {
-          'K 88-65': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 130 },
-            'Grand Growth': { min: 130, max: 300 },
-            Maturity: { min: 300, max: 420 }
-          },
-          'K 88-87': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 130 },
-            'Grand Growth': { min: 130, max: 300 },
-            Maturity: { min: 300, max: 420 }
-          },
-          'PS 1': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 270 },
-            Maturity: { min: 270, max: 360 }
-          },
-          'VMC 84-947': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 270 },
-            Maturity: { min: 270, max: 360 }
-          },
-          'PS 2': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 100 },
-            'Grand Growth': { min: 100, max: 240 },
-            Maturity: { min: 240, max: 300 }
-          },
-          'VMC 88-354': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 100 },
-            'Grand Growth': { min: 100, max: 240 },
-            Maturity: { min: 240, max: 300 }
-          },
-          'PS 3': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 260 },
-            Maturity: { min: 260, max: 330 }
-          },
-          'VMC 84-524': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 260 },
-            Maturity: { min: 260, max: 330 }
-          },
-          'CADP Sc1': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 260 },
-            Maturity: { min: 260, max: 330 }
-          },
-          'PS 4': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'VMC 95-152': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'PS 5': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'VMC 95-09': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'PSR 2000-161': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 270 },
-            Maturity: { min: 270, max: 360 }
-          },
-          'PSR 2000-343': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 260 },
-            Maturity: { min: 260, max: 350 }
-          },
-          'PSR 2000-34': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 270 },
-            Maturity: { min: 270, max: 360 }
-          },
-          'PSR 97-41': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 250 },
-            Maturity: { min: 250, max: 330 }
-          },
-          'PSR 97-45': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 250 },
-            Maturity: { min: 250, max: 330 }
-          },
-          'Ps 862': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'VMC 71-39': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'VMC 84-549': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 100 },
-            'Grand Growth': { min: 100, max: 240 },
-            Maturity: { min: 240, max: 300 }
-          },
-          'VMC 86-550': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 270 },
-            Maturity: { min: 270, max: 360 }
-          },
-          'VMC 87-599': {
-            Germination: { min: 0, max: 35 },
-            Tillering: { min: 35, max: 120 },
-            'Grand Growth': { min: 120, max: 280 },
-            Maturity: { min: 280, max: 360 }
-          },
-          'VMC 87-95': {
-            Germination: { min: 0, max: 30 },
-            Tillering: { min: 30, max: 110 },
-            'Grand Growth': { min: 110, max: 250 },
-            Maturity: { min: 250, max: 330 }
+        // Use imported VARIETY_GROWTH_STAGES and convert start/end to min/max for compatibility
+        const DAP_STAGE_RANGES = (() => {
+          const converted = {};
+          for (const [variety, stages] of Object.entries(VARIETY_GROWTH_STAGES)) {
+            converted[variety] = {};
+            for (const [stageName, range] of Object.entries(stages)) {
+              converted[variety][stageName] = { min: range.start, max: range.end };
+            }
           }
-        };
+          return converted;
+        })();
 
         // Auth state listener
         onAuthStateChanged(auth, async (user) => {
@@ -1566,11 +1471,18 @@
             // Update expected harvest date (only when planting exists)
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
-              // Use formatted string if available (shows range), otherwise format the date
+              // Use formatted string if available (shows range in DD/MM/YYYY format)
               if (growthData.expectedHarvestDateFormatted) {
                 uiHarvest.textContent = growthData.expectedHarvestDateFormatted;
               } else if (growthData.expectedHarvestDate) {
-                uiHarvest.textContent = growthData.expectedHarvestDate.toLocaleDateString();
+                // Fallback: format date in DD/MM/YYYY format for consistency
+                const date = growthData.expectedHarvestDate instanceof Date 
+                  ? growthData.expectedHarvestDate 
+                  : new Date(growthData.expectedHarvestDate);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                uiHarvest.textContent = `${day}/${month}/${year}`;
               } else {
                 uiHarvest.textContent = '—';
               }
@@ -1720,43 +1632,61 @@
             return 'Active';
           }
 
-          // Update Germination stage
+          // Update Germination stage - Display as currentDAP / maxDAP
+          // For current stage: show actual DAP (capped at max), for future: 0, for completed: max
           if (tlGerm) {
-            const germPercent = stageProgress.Germination || 0;
-            const isInGermRange = DAP >= germRange.min && DAP < germRange.max;
-            const status = getStageStatus(DAP, germRange, isInGermRange);
-            tlGerm.textContent = `${germPercent}% Complete - ${status}`;
+            let currentDAPInStage;
+            if (DAP < germRange.min) {
+              currentDAPInStage = 0; // Future stage
+            } else if (DAP >= germRange.max) {
+              currentDAPInStage = germRange.max; // Completed stage
+            } else {
+              currentDAPInStage = DAP; // Current stage in progress
+            }
+            const maxDAP = germRange.max;
+            tlGerm.textContent = `Germination (${currentDAPInStage} / ${maxDAP})`;
           }
 
-          // Update Tillering stage
+          // Update Tillering stage - Display as currentDAP / maxDAP
           if (tlTill) {
-            const tillPercent = stageProgress.Tillering || 0;
-            const isInTillRange = DAP >= tillRange.min && DAP < tillRange.max;
-            const status = getStageStatus(DAP, tillRange, isInTillRange);
-            // Remove any existing percentage spans to avoid duplicates
-            const existingSpans = tlTill.querySelectorAll('span');
-            existingSpans.forEach(span => {
-              if (span.id === 'tlPct' || span.classList.contains('stage-percent')) {
-                span.remove();
-              }
-            });
-            tlTill.innerHTML = `<span class="stage-percent font-semibold">${tillPercent}%</span> Complete - ${status}`;
+            let currentDAPInStage;
+            if (DAP < tillRange.min) {
+              currentDAPInStage = 0; // Future stage
+            } else if (DAP >= tillRange.max) {
+              currentDAPInStage = tillRange.max; // Completed stage
+            } else {
+              currentDAPInStage = DAP; // Current stage in progress
+            }
+            const maxDAP = tillRange.max;
+            tlTill.textContent = `Tillering (${currentDAPInStage} / ${maxDAP})`;
           }
 
-          // Update Grand Growth stage
+          // Update Grand Growth stage - Display as currentDAP / maxDAP
           if (tlGrand) {
-            const grandPercent = stageProgress['Grand Growth'] || 0;
-            const isInGrandRange = DAP >= grandRange.min && DAP < grandRange.max;
-            const status = getStageStatus(DAP, grandRange, isInGrandRange);
-            tlGrand.textContent = `${grandPercent}% Complete - ${status}`;
+            let currentDAPInStage;
+            if (DAP < grandRange.min) {
+              currentDAPInStage = 0; // Future stage
+            } else if (DAP >= grandRange.max) {
+              currentDAPInStage = grandRange.max; // Completed stage
+            } else {
+              currentDAPInStage = DAP; // Current stage in progress
+            }
+            const maxDAP = grandRange.max;
+            tlGrand.textContent = `Grand Growth (${currentDAPInStage} / ${maxDAP})`;
           }
 
-          // Update Maturity/Ripening stage
+          // Update Maturity stage - Display as currentDAP / maxDAP
           if (tlMat) {
-            const matPercent = stageProgress.Maturity || 0;
-            const isInMatRange = DAP >= matRange.min && DAP < matRange.max;
-            const status = getStageStatus(DAP, matRange, isInMatRange);
-            tlMat.textContent = `${matPercent}% Complete - ${status}`;
+            let currentDAPInStage;
+            if (DAP < matRange.min) {
+              currentDAPInStage = 0; // Future stage
+            } else if (DAP >= matRange.max) {
+              currentDAPInStage = matRange.max; // Completed stage
+            } else {
+              currentDAPInStage = DAP; // Current stage in progress
+            }
+            const maxDAP = matRange.max;
+            tlMat.textContent = `Maturity (${currentDAPInStage} / ${maxDAP})`;
           }
 
           // Update stage indicators and badges
@@ -2592,17 +2522,17 @@
                      tabindex="0"
                      onkeypress="if(event.key==='Enter') window.openRecordModal('${record.id}')"
                      title="Click to preview record details">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2 w-full">
+                    <div class="flex-1 min-w-0 overflow-hidden">
                       <div class="flex items-center gap-2 mb-1">
-                        <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1">${safeTaskType}</p>
-                        <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap">Preview</span>
+                        <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1 min-w-0">${safeTaskType}</p>
+                        <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>
                       </div>
                       <div class="flex items-center gap-2 mt-1">
-                        <i class="fas fa-calendar text-xs text-gray-400"></i>
-                        <p class="text-xs text-gray-600">${safeDateStr}${dapDisplay}</p>
+                        <i class="fas fa-calendar text-xs text-gray-400 flex-shrink-0"></i>
+                        <p class="text-xs text-gray-600 truncate min-w-0">${safeDateStr}</p>
                       </div>
-                      ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate">${safeSummary}</p>` : ''}
+                      ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
                     </div>
                     <i class="fas fa-chevron-right text-gray-400 text-xs mt-1 flex-shrink-0"></i>
                   </div>
@@ -2978,33 +2908,81 @@
         // Check and display predicted harvest
         async function checkPredictedHarvest(fieldId) {
           try {
-            const fieldRef = doc(db, 'fields', fieldId);
-            const fieldSnap = await getDoc(fieldRef);
+            // Get planting date and variety from Planting Operation record (single source of truth)
+            let plantingDate = null;
+            let variety = null;
             
-            if (!fieldSnap.exists()) return;
+            try {
+              const { query, where, getDocs, collection } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+              const recordsQuery = query(
+                collection(db, 'records'),
+                where('fieldId', '==', fieldId),
+                where('taskType', '==', 'Planting Operation')
+              );
+              const recordsSnap = await getDocs(recordsQuery);
+              
+              if (!recordsSnap.empty) {
+                const plantingRecord = recordsSnap.docs[0].data();
+                const recordData = plantingRecord.data || {};
+                
+                // Get planting date from record
+                const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
+                if (plantingDateValue) {
+                  // Import parseDateValue helper for consistent date parsing
+                  const { parseDateValue } = await import('../../backend/Handler/growth-tracker.js');
+                  plantingDate = parseDateValue(plantingDateValue);
+                }
+                
+                // Get variety from record
+                variety = recordData.variety || plantingRecord.variety;
+              }
+            } catch (recordError) {
+              console.debug('Could not fetch planting record, falling back to field data:', recordError);
+            }
             
-            const fieldData = fieldSnap.data();
-            const plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
+            // Fallback to field data if planting record not found
+            if (!plantingDate || !variety) {
+              const fieldRef = doc(db, 'fields', fieldId);
+              const fieldSnap = await getDoc(fieldRef);
+              
+              if (!fieldSnap.exists()) {
+                document.getElementById('predictedHarvestModal')?.classList.add('hidden');
+                return;
+              }
+              
+              const fieldData = fieldSnap.data();
+              plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
+              variety = variety || fieldData.sugarcane_variety || fieldData.variety;
+            }
             
-            // CRITICAL: Only show predicted harvest if planting date exists
-            // Planting record is the single source of truth
-            if (!plantingDate) {
+            // CRITICAL: Only show predicted harvest if planting date and variety exist
+            if (!plantingDate || !variety) {
               document.getElementById('predictedHarvestModal')?.classList.add('hidden');
               return;
             }
             
-            const expectedHarvestDate = fieldData.expectedHarvestDate?.toDate?.() || fieldData.expectedHarvestDate;
-            const variety = fieldData.sugarcane_variety || fieldData.variety;
+            // Calculate expected harvest date using the same function as Planting Operation form
+            const { calculateExpectedHarvestDateMonths } = await import('../../backend/Handler/growth-tracker.js');
+            const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+            
+            if (!harvestDateRange) {
+              document.getElementById('predictedHarvestModal')?.classList.add('hidden');
+              return;
+            }
+            
+            // Get current status
+            const fieldRef = doc(db, 'fields', fieldId);
+            const fieldSnap = await getDoc(fieldRef);
+            const fieldData = fieldSnap.exists() ? fieldSnap.data() : {};
             const currentStatus = fieldData.currentGrowthStage || fieldData.status;
             
-            // Only show if not yet harvested and has expected harvest date
-            if (expectedHarvestDate && currentStatus !== 'Harvested' && currentStatus !== 'harvested') {
+            // Only show if not yet harvested
+            if (currentStatus !== 'Harvested' && currentStatus !== 'harvested') {
               const modal = document.getElementById('predictedHarvestModal');
               const content = document.getElementById('predictedHarvestContent');
               
-              const harvestDateStr = expectedHarvestDate instanceof Date 
-                ? expectedHarvestDate.toLocaleDateString() 
-                : new Date(expectedHarvestDate).toLocaleDateString();
+              // Use formatted string (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY)
+              const harvestDateStr = harvestDateRange.formatted;
               
               content.innerHTML = `
                 <div class="space-y-2">
@@ -3442,9 +3420,16 @@
           if (harvestDate && variety) {
             const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
             if (harvestRange) {
-              const earliestStr = harvestRange.earliest.toLocaleDateString();
-              const latestStr = harvestRange.latest.toLocaleDateString();
-              confirmMessage += `\n\nExpected Harvest Date Range: ${earliestStr} - ${latestStr}`;
+              // Format dates in DD/MM/YYYY format for consistency
+              const formatDateDDMMYYYY = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${day}/${month}/${year}`;
+              };
+              const earliestStr = formatDateDDMMYYYY(harvestRange.earliest);
+              const latestStr = formatDateDDMMYYYY(harvestRange.latest);
+              confirmMessage += `\n\nExpected Harvest Date Range: ${earliestStr} – ${latestStr}`;
             }
           }
           
@@ -3466,9 +3451,16 @@
               if (harvestDate && variety) {
                 const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
                 if (harvestRange) {
-                  const earliestStr = harvestRange.earliest.toLocaleDateString();
-                  const latestStr = harvestRange.latest.toLocaleDateString();
-                  successMessage += `\n\nExpected Harvest Date Range: ${earliestStr} - ${latestStr}`;
+                  // Format dates in DD/MM/YYYY format for consistency
+                  const formatDateDDMMYYYY = (date) => {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${day}/${month}/${year}`;
+                  };
+                  const earliestStr = formatDateDDMMYYYY(harvestRange.earliest);
+                  const latestStr = formatDateDDMMYYYY(harvestRange.latest);
+                  successMessage += `\n\nExpected Harvest Date Range: ${earliestStr} – ${latestStr}`;
                 }
               }
               showSuccess(successMessage);

@@ -1054,13 +1054,50 @@ async function initNotifications(userId) {
                                     const fieldName = field.fieldName || raw.field_name || raw.fieldName || '—';
                                     
                                     // Calculate expected harvest date using shared function for consistency
+                                    // Get planting date and variety from Planting Operation record (single source of truth)
                                     let expectedHarvestDateDisplay = '—';
-                                    const plantingDate = raw.plantingDate?.toDate?.() || raw.plantingDate;
-                                    const variety = raw.sugarcane_variety;
+                                    let plantingDate = null;
+                                    let variety = null;
                                     
-                                    // Use async import to calculate expected harvest date
-                                    // We'll update the display after the modal is created
+                                    // Fetch from Planting Operation record first
                                     const calculateAndUpdateHarvestDate = async () => {
+                                        try {
+                                            const { query, where, getDocs, collection } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                                            const recordsQuery = query(
+                                                collection(db, 'records'),
+                                                where('fieldId', '==', field.id),
+                                                where('taskType', '==', 'Planting Operation')
+                                            );
+                                            const recordsSnap = await getDocs(recordsQuery);
+                                            
+                                            if (!recordsSnap.empty) {
+                                                const plantingRecord = recordsSnap.docs[0].data();
+                                                const recordData = plantingRecord.data || {};
+                                                
+                                                // Get planting date from record
+                                                const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
+                                                if (plantingDateValue) {
+                                                    // Use parseDateValue helper for consistent date parsing
+                                                    const { parseDateValue } = await import('../Handler/growth-tracker.js');
+                                                    plantingDate = parseDateValue(plantingDateValue);
+                                                }
+                                                
+                                                // Get variety from record
+                                                variety = recordData.variety || plantingRecord.variety;
+                                            }
+                                        } catch (recordError) {
+                                            console.debug('Could not fetch planting record, falling back to field data:', recordError);
+                                        }
+                                        
+                                        // Fallback to field data if planting record not found
+                                        if (!plantingDate) {
+                                            plantingDate = raw.plantingDate?.toDate?.() || raw.plantingDate;
+                                        }
+                                        if (!variety) {
+                                            variety = raw.sugarcane_variety || raw.variety;
+                                        }
+                                        
+                                        // Calculate using the same function as Planting Operation form
                                         if (plantingDate && variety) {
                                             try {
                                                 const { calculateExpectedHarvestDateMonths } = await import('../Handler/growth-tracker.js');
@@ -1087,11 +1124,6 @@ async function initNotifications(userId) {
                                             }
                                         }
                                     };
-                                    
-                                    // Fallback to stored value if available
-                                    if (raw.expectedHarvestDate) {
-                                        expectedHarvestDateDisplay = formatDate(raw.expectedHarvestDate);
-                                    }
                                     
                                     const info = [
                                         ['Field Name', fieldName],
@@ -1732,7 +1764,7 @@ async function initNotifications(userId) {
                                     ['Previous Crop', raw.previousCrop || '—'],
                                     ['Current Growth Stage', raw.currentGrowthStage || '—'],
                                     ['Planting Date', formatDate(raw.plantingDate)],
-                                    ['Expected Harvest Date', formatDate(raw.expectedHarvestDate)],
+                                        ['Expected Harvest Date', '—'], // Will be calculated and updated by calculateAndUpdateHarvestDate
                                     ['Delay Days', raw.delayDays != null ? String(raw.delayDays) : '—'],
                                     ['Created On', formatDate(raw.createdAt)]
                                 ];
@@ -1859,6 +1891,69 @@ async function initNotifications(userId) {
                                 });
 
                                 document.body.appendChild(modal);
+                                
+                                // Calculate and update expected harvest date after modal is created
+                                (async () => {
+                                    try {
+                                        const { query, where, getDocs, collection } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                                        let plantingDate = null;
+                                        let variety = null;
+                                        
+                                        // Fetch from Planting Operation record first
+                                        const recordsQuery = query(
+                                            collection(db, 'records'),
+                                            where('fieldId', '==', field.id),
+                                            where('taskType', '==', 'Planting Operation')
+                                        );
+                                        const recordsSnap = await getDocs(recordsQuery);
+                                        
+                                        if (!recordsSnap.empty) {
+                                            const plantingRecord = recordsSnap.docs[0].data();
+                                            const recordData = plantingRecord.data || {};
+                                            
+                                            const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
+                                            if (plantingDateValue) {
+                                                // Use parseDateValue helper for consistent date parsing
+                                                const { parseDateValue } = await import('../Handler/growth-tracker.js');
+                                                plantingDate = parseDateValue(plantingDateValue);
+                                            }
+                                            variety = recordData.variety || plantingRecord.variety;
+                                        }
+                                        
+                                        // Fallback to field data
+                                        if (!plantingDate) {
+                                            plantingDate = raw.plantingDate?.toDate?.() || raw.plantingDate;
+                                        }
+                                        if (!variety) {
+                                            variety = raw.sugarcane_variety || raw.variety;
+                                        }
+                                        
+                                        // Calculate using the same function as Planting Operation form
+                                        if (plantingDate && variety) {
+                                            const { calculateExpectedHarvestDateMonths } = await import('../Handler/growth-tracker.js');
+                                            const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+                                            if (harvestDateRange) {
+                                                // Find and update the Expected Harvest Date element
+                                                const modalGrid = document.querySelector('#fieldDetailsModal .grid');
+                                                if (modalGrid) {
+                                                    const items = Array.from(modalGrid.children);
+                                                    const expectedHarvestItem = items.find(item => {
+                                                        const label = item.querySelector('.text-xs');
+                                                        return label && label.textContent.trim().toUpperCase() === 'EXPECTED HARVEST DATE';
+                                                    });
+                                                    if (expectedHarvestItem) {
+                                                        const valueEl = expectedHarvestItem.querySelector('.text-base');
+                                                        if (valueEl) {
+                                                            valueEl.textContent = harvestDateRange.formatted;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } catch (err) {
+                                        console.warn('Could not calculate harvest date for global modal:', err);
+                                    }
+                                })();
                             }
                             
                             function initSraMapSection() {

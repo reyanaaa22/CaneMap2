@@ -3567,22 +3567,23 @@ window.confirmSave = async () => {
         const variety = pendingPayload.data.variety;
         
         if (plantingDate && variety) {
-          // Import growth tracker functions
-          const { calculateExpectedHarvestDate, getHarvestDaysRange } = await import('../../backend/Handler/growth-tracker.js');
+          // Import growth tracker function - use the same calculation as Planting Operation form
+          const { calculateExpectedHarvestDateMonths } = await import('../../backend/Handler/growth-tracker.js');
           
-          // Use the calculateExpectedHarvestDate function which handles variety-specific harvest days ranges
-          // Uses max value from range for conservative planning
+          // Use calculateExpectedHarvestDateMonths (same as Planting Operation form) for consistency
           const plantingDateObj = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
-          const predictedHarvestDate = calculateExpectedHarvestDate(plantingDateObj, variety);
+          const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDateObj, variety);
           
-          if (!predictedHarvestDate) {
-            console.error('Failed to calculate predicted harvest date');
+          if (!harvestDateRange) {
+            console.error('Failed to calculate predicted harvest date range');
             return;
           }
           
-          // Get harvest days range for logging
-          const harvestRange = getHarvestDaysRange(variety);
-          console.log(`📅 Variety: ${variety}, Harvest Days Range: ${harvestRange.min}-${harvestRange.max} days, Predicted Harvest (using max): ${predictedHarvestDate.toLocaleDateString()}`);
+          // Use earliest date for backward compatibility (database expects single date)
+          // But all displays will use the formatted range from calculateExpectedHarvestDateMonths
+          const predictedHarvestDate = harvestDateRange.earliest;
+          
+          console.log(`📅 Variety: ${variety}, Harvest Date Range: ${harvestDateRange.formatted}`);
           
           // Update field with predicted harvest date
           const { updateDoc, doc, Timestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
@@ -3596,7 +3597,7 @@ window.confirmSave = async () => {
             status: 'active'
           });
           
-          console.log('✅ Predicted harvest date updated:', predictedHarvestDate.toLocaleDateString());
+          console.log('✅ Predicted harvest date updated:', harvestDateRange.formatted);
         }
       } catch (error) {
         console.error('Error updating predicted harvest:', error);
