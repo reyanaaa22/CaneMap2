@@ -434,12 +434,19 @@ async function openModal(app) {
 
     await ensureLeafletLoaded();
 
-    // Default view: Ormoc City (global navigation enabled)
+    // Region 8 (Eastern Visayas) bounds restriction for performance
+    const region8Bounds = L.latLngBounds(
+      [9.5, 124.0],  // Southwest corner
+      [12.5, 126.0]  // Northeast corner
+    );
+
     const map = L.map(mapBox, {
-      minZoom: 2,
+      minZoom: 8,
       maxZoom: 18,
       zoomControl: true,
-      scrollWheelZoom: false
+      scrollWheelZoom: false,
+      maxBounds: region8Bounds,
+      maxBoundsViscosity: 1.0
     }).setView([11.0064, 124.6075], 12);
 
     // Esri World Imagery + reference layers (system-wide base)
@@ -458,7 +465,10 @@ async function openModal(app) {
       { attribution: '© Esri' }
     ).addTo(map);
 
-    // Global navigation enabled - no bounds restrictions
+    // Enforce Region 8 bounds - prevent panning outside Region 8
+    map.on('drag', () => {
+      map.panInsideBounds(region8Bounds, { animate: false });
+    });
 
     let boundsToFit = null;
 

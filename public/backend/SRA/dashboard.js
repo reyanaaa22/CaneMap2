@@ -1220,11 +1220,19 @@ async function initNotifications(userId) {
                                     // Import map enhancements
                                     const { parseCoordinates, getCurrentLocation } = await import('../Common/map-enhancements.js');
 
+                                    // Region 8 (Eastern Visayas) bounds restriction for performance
+                                    const region8Bounds = L.latLngBounds(
+                                        [9.5, 124.0],  // Southwest corner
+                                        [12.5, 126.0]  // Northeast corner
+                                    );
+
                                     const map = L.map(mapContainer, {
                                         zoomControl: true,
                                         scrollWheelZoom: false,
-                                        minZoom: 2,
-                                        maxZoom: 18
+                                        minZoom: 8,
+                                        maxZoom: 18,
+                                        maxBounds: region8Bounds,
+                                        maxBoundsViscosity: 1.0
                                     }).setView([11.0064, 124.6075], 12);
 
                                     // Add Esri World Imagery layers (same as handler dashboard and lobby)
@@ -1245,7 +1253,10 @@ async function initNotifications(userId) {
 
                                     const tileLayer = satellite; // Keep reference for redraw functionality
 
-                                    // Global navigation enabled - no bounds restrictions
+                                    // Enforce Region 8 bounds - prevent panning outside Region 8
+                                    map.on("drag", function () {
+                                        map.panInsideBounds(region8Bounds, { animate: false });
+                                    });
 
                                     // Fix: some browsers/devices may grey-out tiles when the map
                                     // is interacted with inside complex layouts. Force a refresh
@@ -1812,11 +1823,19 @@ async function initNotifications(userId) {
                                     const { db } = await import('../Common/firebase-config.js');
                                     const { parseCoordinates, getCurrentLocation } = await import('../Common/map-enhancements.js');
                                     
+                                    // Region 8 (Eastern Visayas) bounds restriction for performance
+                                    const region8Bounds2 = L.latLngBounds(
+                                        [9.5, 124.0],  // Southwest corner
+                                        [12.5, 126.0]  // Northeast corner
+                                    );
+
                                     const map2 = L.map(mapContainer2, { 
                                         zoomControl: true, 
                                         scrollWheelZoom: false,
-                                        minZoom: 2,
-                                        maxZoom: 18
+                                        minZoom: 8,
+                                        maxZoom: 18,
+                                        maxBounds: region8Bounds2,
+                                        maxBoundsViscosity: 1.0
                                     }).setView([11.0064, 124.6075], 12);
                                     
                                     // Add Esri World Imagery layers (same as handler dashboard and lobby)
@@ -1835,7 +1854,10 @@ async function initNotifications(userId) {
                                         { attribution: '© Esri' }
                                     ).addTo(map2);
                                     
-                                    // Global navigation enabled - no bounds restrictions
+                                    // Enforce Region 8 bounds - prevent panning outside Region 8
+                                    map2.on("drag", function () {
+                                        map2.panInsideBounds(region8Bounds2, { animate: false });
+                                    });
                                     
                                     const caneIcon2 = L.icon({
                                         iconUrl: '../../frontend/img/PIN.png',

@@ -4175,10 +4175,17 @@ async function renderHandlerFields(userId) {
     const firstWithCoords = fields.find(field => toLatLng(field).lat && toLatLng(field).lng);
     const initialCenter = firstWithCoords ? [toLatLng(firstWithCoords).lat, toLatLng(firstWithCoords).lng] : DEFAULT_HANDLER_MAP_CENTER;
 
-    // Default view: Ormoc City (global navigation enabled)
+    // Region 8 (Eastern Visayas) bounds restriction for performance
+    const region8Bounds = L.latLngBounds(
+      [9.5, 124.0],  // Southwest corner
+      [12.5, 126.0]  // Northeast corner
+    );
+
     const map = L.map(mapContainer, {
       maxZoom: 18,
-      minZoom: 2
+      minZoom: 8,
+      maxBounds: region8Bounds,
+      maxBoundsViscosity: 1.0
     }).setView([11.0064, 124.6075], 12);
     
     // Add satellite imagery layer
@@ -4199,7 +4206,10 @@ async function renderHandlerFields(userId) {
       { attribution: '&copy; Esri' }
     ).addTo(map);
 
-    // Global navigation enabled - no bounds restrictions
+    // Enforce Region 8 bounds - prevent panning outside Region 8
+    map.on("drag", function () {
+      map.panInsideBounds(region8Bounds, { animate: false });
+    });
 
     handlerFieldsMapInstance = map;
     handlerFieldsLastBounds = null;
@@ -4578,12 +4588,19 @@ export function initializeFieldsSection() {
 
       console.log('📍 Creating Leaflet map instance...');
       
-      // Default view: Ormoc City (global navigation enabled)
+      // Region 8 (Eastern Visayas) bounds restriction for performance
+      const region8Bounds = L.latLngBounds(
+        [9.5, 124.0],  // Southwest corner
+        [12.5, 126.0]  // Northeast corner
+      );
+
       fieldsMap = L.map('handlerFieldsMap', {
         zoomControl: false,
         preferCanvas: true,
         maxZoom: 18,
-        minZoom: 2
+        minZoom: 8,
+        maxBounds: region8Bounds,
+        maxBoundsViscosity: 1.0
       }).setView([11.0064, 124.6075], 12);
 
       console.log('🗺️ Map instance created, adding tile layer...');
@@ -4595,7 +4612,7 @@ export function initializeFieldsSection() {
           attribution: 'Tiles © Esri',
           errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
           maxZoom: 18,
-          minZoom: 11
+          minZoom: 8
         }
       ).addTo(fieldsMap);
 
@@ -4609,7 +4626,10 @@ export function initializeFieldsSection() {
         { attribution: '© Esri' }
       ).addTo(fieldsMap);
 
-      // Global navigation enabled - no bounds restrictions
+      // Enforce Region 8 bounds - prevent panning outside Region 8
+      fieldsMap.on("drag", function () {
+        fieldsMap.panInsideBounds(region8Bounds, { animate: false });
+      });
 
       satellite.on('loading', () => console.log('🔄 Loading map tiles...'));
       satellite.on('load', () => console.log('✅ Map tiles loaded'));

@@ -1204,10 +1204,17 @@ async function initMap() {
     // Import map enhancements
     const { parseCoordinates, getCurrentLocation } = await import('./map-enhancements.js');
 
-    // 🗺️ Default view: Ormoc City (no bounds restriction - global navigation enabled)
+    // 🗺️ Region 8 (Eastern Visayas) bounds restriction for performance
+    const region8Bounds = L.latLngBounds(
+      [9.5, 124.0],  // Southwest corner
+      [12.5, 126.0]  // Northeast corner
+    );
+
     map = L.map("map", {
-      minZoom: 2,
+      minZoom: 8,
       maxZoom: 18,
+      maxBounds: region8Bounds,
+      maxBoundsViscosity: 1.0
     }).setView([11.0064, 124.6075], 12);
 
     const satellite = L.tileLayer(
@@ -1418,7 +1425,11 @@ async function initMap() {
         .openPopup();
     }
 
-    // Global navigation enabled - no bounds restrictions
+    // Enforce Region 8 bounds - prevent panning outside Region 8
+    map.on("drag", function () {
+      map.panInsideBounds(region8Bounds, { animate: false });
+    });
+
     window.map = map;
   } catch (error) {
     console.error("Error initializing map:", error);

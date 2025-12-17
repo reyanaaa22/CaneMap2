@@ -581,7 +581,24 @@ docSection.innerHTML = `
 
 
   // map
-  const map = L.map(f('#m_map')).setView([data.latitude||11.0,data.longitude||124.6],14);
+  // Region 8 (Eastern Visayas) bounds restriction for performance
+  const region8Bounds = L.latLngBounds(
+    [9.5, 124.0],  // Southwest corner
+    [12.5, 126.0]  // Northeast corner
+  );
+
+  const map = L.map(f('#m_map'), {
+    maxZoom: 18,
+    minZoom: 8,
+    maxBounds: region8Bounds,
+    maxBoundsViscosity: 1.0
+  }).setView([data.latitude||11.0,data.longitude||124.6],14);
+  
+  // Enforce Region 8 bounds - prevent panning outside Region 8
+  map.on("drag", function () {
+    map.panInsideBounds(region8Bounds, { animate: false });
+  });
+  
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
   const icon = L.icon({iconUrl:'../../frontend/img/PIN.png',iconSize:[36,36],iconAnchor:[18,34]});
   const marker = L.marker([data.latitude||11.0,data.longitude||124.6],{icon,draggable:editable}).addTo(map);

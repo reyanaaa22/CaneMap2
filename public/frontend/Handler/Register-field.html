@@ -888,12 +888,20 @@
 
         const ormocCenter = [11.0064, 124.6075];
 
-        // Initialize map with default Ormoc City view (global navigation enabled)
+        // Region 8 (Eastern Visayas) bounds restriction for performance
+        const region8Bounds = L.latLngBounds(
+          [9.5, 124.0],  // Southwest corner
+          [12.5, 126.0]  // Northeast corner
+        );
+
+        // Initialize map with Region 8 bounds restriction
         locationMap = L.map('locationMap', {
           center: ormocCenter,
-          zoom: 20,
-          minZoom: 2,
-          maxZoom: 20
+          zoom: 18,
+          minZoom: 8,
+          maxZoom: 18,
+          maxBounds: region8Bounds,
+          maxBoundsViscosity: 1.0
         });
 
         const satellite = L.tileLayer(
@@ -1140,7 +1148,12 @@ if (type === 'polygon' || type === 'rectangle') {
           });
         }
 
-        console.log("✅ Ormoc City map with barangays loaded");
+        // Enforce Region 8 bounds - prevent panning outside Region 8
+        locationMap.on("drag", function () {
+          locationMap.panInsideBounds(region8Bounds, { animate: false });
+        });
+
+        console.log("✅ Region 8 restricted map with barangays loaded");
       } catch (err) {
         console.error("Map error:", err);
       }
