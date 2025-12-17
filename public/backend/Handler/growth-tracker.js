@@ -47,6 +47,35 @@ export const VARIETY_HARVEST_MONTHS_RANGE = {
   'VMC 87-95': { min: 10, max: 11 }
 };
 
+// Ratoon-specific harvest months range (min-max months)
+// These are different from initial planting maturity months
+export const RATOON_HARVEST_MONTHS_RANGE = {
+  'K 88-65': { min: 11, max: 13 },
+  'K 88-87': { min: 11, max: 13 },
+  'PS 1': { min: 10, max: 11 },
+  'VMC 84-947': { min: 10, max: 11 },
+  'PS 2': { min: 8, max: 9 },
+  'VMC 88-354': { min: 8, max: 9 },
+  'PS 3': { min: 9, max: 10 },
+  'VMC 84-524': { min: 9, max: 10 },
+  'CADP Sc1': { min: 9, max: 10 },
+  'PS 4': { min: 9, max: 11 },
+  'VMC 95-152': { min: 9, max: 11 },
+  'PS 5': { min: 9, max: 11 },
+  'VMC 95-09': { min: 9, max: 11 },
+  'PSR 2000-161': { min: 10, max: 11 },
+  'PSR 2000-343': { min: 10, max: 11 },
+  'PSR 2000-34': { min: 10, max: 11 },
+  'PSR 97-41': { min: 10, max: 10 },
+  'PSR 97-45': { min: 9, max: 10 },
+  'PS 862': { min: 9, max: 11 },
+  'VMC 71-39': { min: 9, max: 11 },
+  'VMC 84-549': { min: 9, max: 9 },
+  'VMC 86-550': { min: 10, max: 11 },
+  'VMC 87-599': { min: 9, max: 11 },
+  'VMC 87-95': { min: 9, max: 10 }
+};
+
 // Variety-specific harvest days range (converted from months for backward compatibility)
 export const VARIETY_HARVEST_DAYS_RANGE = (() => {
   const daysRange = {};
@@ -158,6 +187,85 @@ export function calculateExpectedHarvestDate(plantingDate, variety, useMin = fal
  */
 export function getHarvestDaysRange(variety) {
   return VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 335, max: 365 };
+}
+
+/**
+ * Normalize variety name to handle aliases (e.g., "PS 1 or VMC 84-947" -> "PS 1")
+ * @param {string} variety - Sugarcane variety name (may contain aliases)
+ * @returns {string} Normalized variety name
+ */
+function normalizeVarietyName(variety) {
+  if (!variety) return variety;
+  
+  // Handle aliases by extracting the first variety name
+  // Examples: "PS 1 or VMC 84-947" -> "PS 1", "PS 3 or VMC 84-524 or CADP Sc1" -> "PS 3"
+  const aliasPatterns = [
+    { pattern: /^PS 1\s+or\s+VMC 84-947/i, normalized: 'PS 1' },
+    { pattern: /^PS 2\s+or\s+VMC 88-354/i, normalized: 'PS 2' },
+    { pattern: /^PS 3\s+or\s+VMC 84-524\s+or\s+CADP Sc1/i, normalized: 'PS 3' },
+    { pattern: /^PS 4\s+or\s+VMC 95-152/i, normalized: 'PS 4' },
+    { pattern: /^PS 5\s+or\s+VMC 95-09/i, normalized: 'PS 5' }
+  ];
+  
+  for (const alias of aliasPatterns) {
+    if (alias.pattern.test(variety)) {
+      return alias.normalized;
+    }
+  }
+  
+  // Also check for individual variety names that might be in the alias string
+  const varietyNames = Object.keys(RATOON_HARVEST_MONTHS_RANGE);
+  for (const name of varietyNames) {
+    if (variety.includes(name)) {
+      return name;
+    }
+  }
+  
+  return variety.trim();
+}
+
+/**
+ * Get ratoon harvest months range for a variety
+ * @param {string} variety - Sugarcane variety (may contain aliases)
+ * @returns {{min: number, max: number}} Ratoon harvest months range
+ */
+export function getRatoonHarvestMonthsRange(variety) {
+  if (!variety) return { min: 9, max: 11 };
+  
+  const normalized = normalizeVarietyName(variety);
+  return RATOON_HARVEST_MONTHS_RANGE[normalized] || RATOON_HARVEST_MONTHS_RANGE[variety] || { min: 9, max: 11 };
+}
+
+/**
+ * Calculate expected harvest date for ratoon based on Days After Harvest (DAH)
+ * Uses ratoon-specific maturity months which are different from initial planting
+ * @param {Date} harvestDate - The date when the previous crop was harvested
+ * @param {string} variety - Sugarcane variety
+ * @param {string} useMin - If true, uses min value; if 'max' uses max; otherwise returns both min and max
+ * @returns {Date|Object|null} Expected harvest date(s) - if useMin is not specified, returns {earliest, latest}
+ */
+export function calculateRatoonExpectedHarvestDate(harvestDate, variety, useMin = false) {
+  if (!harvestDate || !variety) return null;
+
+  const harvest = harvestDate instanceof Date ? harvestDate : new Date(harvestDate);
+  const range = getRatoonHarvestMonthsRange(variety);
+  
+  // Convert months to days (using average 30.44 days per month)
+  const daysPerMonth = 30.44;
+  const minDays = Math.round(range.min * daysPerMonth);
+  const maxDays = Math.round(range.max * daysPerMonth);
+  
+  if (useMin === true) {
+    return new Date(harvest.getTime() + minDays * 24 * 60 * 60 * 1000);
+  } else if (useMin === 'max') {
+    return new Date(harvest.getTime() + maxDays * 24 * 60 * 60 * 1000);
+  } else {
+    // Return both earliest and latest dates
+    return {
+      earliest: new Date(harvest.getTime() + minDays * 24 * 60 * 60 * 1000),
+      latest: new Date(harvest.getTime() + maxDays * 24 * 60 * 60 * 1000)
+    };
+  }
 }
 
 /**
@@ -581,19 +689,32 @@ export async function handleRatooning(userId, fieldId, ratoonStartDate = null) {
 
     // ✅ Use last harvest date as ratoon start date (unless explicitly overridden)
     let ratoonDate = ratoonStartDate;
+    let harvestDate = fieldData.actualHarvestDate?.toDate?.() || fieldData.actualHarvestDate;
+    
     if (!ratoonDate) {
-      const harvestDate = fieldData.actualHarvestDate?.toDate?.() || fieldData.actualHarvestDate;
       if (!harvestDate) {
         throw new Error('No harvest date found. Cannot determine ratoon start date.');
       }
       ratoonDate = harvestDate;
     }
     ratoonDate = ratoonDate instanceof Date ? ratoonDate : new Date(ratoonDate);
+    if (harvestDate) {
+      harvestDate = harvestDate instanceof Date ? harvestDate : new Date(harvestDate);
+    }
 
     // Get variety for calculating expected harvest
     const variety = fieldData.sugarcane_variety || fieldData.variety;
-    const expectedHarvestDate = calculateExpectedHarvestDate(ratoonDate, variety);
-    const currentGrowthStage = getGrowthStage(calculateDAP(ratoonDate));
+    
+    // Use ratoon-specific maturity months to calculate expected harvest date
+    // Calculate using average of min and max for the expected harvest date
+    // Use harvestDate (DAH = Days After Harvest) for ratoon calculations
+    const ratoonHarvestRange = harvestDate ? calculateRatoonExpectedHarvestDate(harvestDate, variety) : null;
+    const expectedHarvestDate = ratoonHarvestRange 
+      ? new Date((ratoonHarvestRange.earliest.getTime() + ratoonHarvestRange.latest.getTime()) / 2)
+      : calculateExpectedHarvestDate(ratoonDate, variety);
+    
+    // Reset growth stage to Germination (DAP = 0)
+    const currentGrowthStage = 'Germination';
 
     // Increment ratoon cycle number
     const ratoonNumber = (fieldData.ratoonNumber || 0) + 1;
@@ -614,7 +735,7 @@ export async function handleRatooning(userId, fieldId, ratoonStartDate = null) {
     const updates = {
       status: 'active',
       plantingDate: Timestamp.fromDate(ratoonDate),
-      expectedHarvestDate: expectedHarvestDate,
+      expectedHarvestDate: Timestamp.fromDate(expectedHarvestDate),
       ratoonNumber: ratoonNumber,
       currentGrowthStage: currentGrowthStage,
       isRatoon: true,
@@ -634,6 +755,9 @@ export async function handleRatooning(userId, fieldId, ratoonStartDate = null) {
       // Clear fertilization dates for new cycle
       basalFertilizationDate: null,
       mainFertilizationDate: null,
+
+      // Reset DAP to 0 for new ratoon cycle
+      DAP: 0,
 
       ratoonedAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -822,6 +946,29 @@ export async function getFieldGrowthData(fieldId) {
     const basalFertilizationDate = fieldData.basalFertilizationDate?.toDate ? fieldData.basalFertilizationDate.toDate() : fieldData.basalFertilizationDate;
     const mainFertilizationDate = fieldData.mainFertilizationDate?.toDate ? fieldData.mainFertilizationDate.toDate() : fieldData.mainFertilizationDate;
 
+    // CRITICAL: Only calculate growth data if planting date exists
+    // Planting record is the single source of truth for growth tracking
+    if (!plantingDate) {
+      return {
+        fieldId,
+        fieldName: fieldData.field_name || fieldData.fieldName,
+        variety: fieldData.sugarcane_variety || null,
+        plantingDate: null,
+        expectedHarvestDate: null,
+        basalFertilizationDate: null,
+        mainFertilizationDate: null,
+        DAP: null,
+        currentGrowthStage: 'Not Planted',
+        daysRemaining: null,
+        delayInfo: { isDelayed: false, delayDays: 0, delayType: null },
+        overdueInfo: { isOverdue: false, overdueDays: 0 },
+        fieldStatus: 'not_planted',
+        status: fieldData.status,
+        area: fieldData.area || fieldData.field_size
+      };
+    }
+
+    // Calculate growth data only when planting date exists
     const DAP = calculateDAP(plantingDate);
     const currentGrowthStage = getGrowthStage(DAP);
     const daysRemaining = calculateDaysRemaining(expectedHarvestDate);
@@ -849,6 +996,7 @@ export async function getFieldGrowthData(fieldId) {
       delayInfo,
       overdueInfo,
       fieldStatus,
+      status: fieldData.status, // Include actual database status field
       area: fieldData.area || fieldData.field_size
     };
 

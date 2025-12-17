@@ -2118,17 +2118,137 @@ async function downloadCostRecordsPDF() {
   const dateRange = getDateRangeString();
   
   // Create HTML content for PDF - EXACTLY matching print preview format
-  const htmlContent = `
+  // Extract only body content (no html/head/body tags) for div.innerHTML
+  const bodyContent = `
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px; 
+        margin: 0;
+        background: white;
+      }
+      h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #2c5a0b;
+      }
+      .date-range {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 20px; 
+        font-size: 12px;
+      }
+      th, td { 
+        border: 1px solid #ddd; 
+        padding: 8px; 
+        text-align: left; 
+      }
+      th { 
+        background-color: #f2f2f2; 
+        font-weight: bold; 
+      }
+      .task-inputs {
+        font-size: 10px;
+        color: #666;
+        margin-top: 5px;
+        padding-left: 5px;
+      }
+      .task-inputs div {
+        margin: 3px 0;
+      }
+      .cost-total {
+        font-weight: bold;
+        font-size: 14px;
+        background-color: #f9f9f9;
+      }
+    </style>
+    <h1>Cost Records</h1>
+    <div class="date-range">Date Range: ${dateRange}</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Task Type</th>
+          <th>Operation Name</th>
+          <th>Field</th>
+          <th>Date</th>
+          <th>Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${records.map(record => {
+          const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+          const dateStr = recordDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+          
+          const cost = calculateTotalCost(record);
+          
+          // Get task-specific inputs (formatted for print/PDF - same function)
+          const taskInputs = getTaskFieldsForPrint(record.taskType, record.data);
+          
+          return `
+            <tr>
+              <td>${escapeHtml(record.taskType || 'N/A')}</td>
+              <td>
+                <div>${escapeHtml(record.operation || 'N/A')}</div>
+                ${taskInputs}
+              </td>
+              <td>${escapeHtml(record.fieldName || 'Unknown Field')}</td>
+              <td>${dateStr}</td>
+              <td>₱${cost.toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('')}
+        <tr class="cost-total">
+          <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
+          <td>₱${totalCost.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  
+  // Create temporary container - use iframe for better PDF generation
+  // Create an iframe to render the content properly
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '0';
+  iframe.style.width = '210mm';
+  iframe.style.height = '297mm';
+  iframe.style.border = 'none';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+  iframe.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(iframe);
+  
+  // Write content to iframe
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+  iframeDoc.open();
+  iframeDoc.write(`
     <!DOCTYPE html>
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>Cost Records</title>
       <style>
+        * {
+          box-sizing: border-box;
+        }
         body { 
           font-family: Arial, sans-serif; 
           padding: 20px; 
           margin: 0;
+          background: white;
         }
         h1 {
           font-size: 24px;
@@ -2170,75 +2290,25 @@ async function downloadCostRecordsPDF() {
           font-size: 14px;
           background-color: #f9f9f9;
         }
-        @media print {
-          body { margin: 0; padding: 15px; }
-        }
       </style>
     </head>
     <body>
-      <h1>Cost Records</h1>
-      <div class="date-range">Date Range: ${dateRange}</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Task Type</th>
-            <th>Operation Name</th>
-            <th>Field</th>
-            <th>Date</th>
-            <th>Cost</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${records.map(record => {
-            const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
-            const dateStr = recordDate.toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'short', 
-              day: 'numeric' 
-            });
-            
-            const cost = calculateTotalCost(record);
-            
-            // Get task-specific inputs (formatted for print/PDF - same function)
-            const taskInputs = getTaskFieldsForPrint(record.taskType, record.data);
-            
-            return `
-              <tr>
-                <td>${escapeHtml(record.taskType || 'N/A')}</td>
-                <td>
-                  <div>${escapeHtml(record.operation || 'N/A')}</div>
-                  ${taskInputs}
-                </td>
-                <td>${escapeHtml(record.fieldName || 'Unknown Field')}</td>
-                <td>${dateStr}</td>
-                <td>₱${cost.toFixed(2)}</td>
-              </tr>
-            `;
-          }).join('')}
-          <tr class="cost-total">
-            <td colspan="4" style="text-align: right; padding-right: 15px;">Total:</td>
-            <td>₱${totalCost.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
+      ${bodyContent}
     </body>
     </html>
-  `;
+  `);
+  iframeDoc.close();
   
-  // Create temporary container - HIDDEN from view but capturable by html2canvas
-  const tempContainer = document.createElement('div');
-  tempContainer.innerHTML = htmlContent;
-  // Hide container completely - position off-screen (invisible to user but renderable)
-  tempContainer.style.position = 'absolute';
-  tempContainer.style.left = '-9999px';
-  tempContainer.style.top = '0';
-  tempContainer.style.width = '210mm'; // A4 width
-  tempContainer.style.padding = '20px';
-  tempContainer.style.backgroundColor = 'white';
-  tempContainer.style.opacity = '0'; // Invisible but still in DOM for html2canvas
-  tempContainer.style.pointerEvents = 'none'; // Prevent any interaction
-  tempContainer.setAttribute('aria-hidden', 'true'); // Accessibility
-  document.body.appendChild(tempContainer);
+  // Wait for iframe content to load
+  await new Promise(resolve => {
+    if (iframe.contentWindow) {
+      iframe.onload = resolve;
+      // Fallback timeout
+      setTimeout(resolve, 300);
+    } else {
+      setTimeout(resolve, 300);
+    }
+  });
   
   try {
     const opt = {
@@ -2250,26 +2320,25 @@ async function downloadCostRecordsPDF() {
         useCORS: true,
         logging: false,
         letterRendering: true,
-        width: tempContainer.scrollWidth,
-        height: tempContainer.scrollHeight,
-        windowWidth: tempContainer.scrollWidth,
-        windowHeight: tempContainer.scrollHeight
+        allowTaint: true,
+        backgroundColor: '#ffffff'
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
-    // Generate PDF
+    // Generate PDF from iframe body
+    const iframeBody = iframeDoc.body;
     await window.html2pdf()
       .set(opt)
-      .from(tempContainer)
+      .from(iframeBody)
       .save();
   } catch (error) {
     console.error('Error generating PDF:', error);
     alert('Failed to generate PDF. Please try again.');
   } finally {
-    // Remove temporary container immediately after PDF generation
-    if (tempContainer && tempContainer.parentNode) {
-      tempContainer.parentNode.removeChild(tempContainer);
+    // Remove iframe immediately after PDF generation
+    if (iframe && iframe.parentNode) {
+      iframe.parentNode.removeChild(iframe);
     }
   }
 }

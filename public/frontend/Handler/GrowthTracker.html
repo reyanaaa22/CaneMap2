@@ -630,9 +630,12 @@
             <p class="text-sm text-[var(--cane-800)]">Monitor sugarcane growth and estimate harvest times with 90%
               accuracy</p>
           </div>
-          <button id="ratoonBtn" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg font-semibold hover:bg-[var(--cane-700)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap ml-4" disabled>
-            <i class="fa-solid fa-leaf mr-2"></i>Ratoon Field
-          </button>
+          <div class="btn-tooltip ml-4">
+            <button id="ratoonBtn" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg font-semibold hover:bg-[var(--cane-700)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" disabled title="Available only when field is harvested">
+              <i class="fa-solid fa-leaf mr-2"></i>Ratoon Field
+            </button>
+            <span id="ratoonBtnTooltip" class="tooltip-text">Available only when field is harvested</span>
+          </div>
         </div>
         <!-- Field select -->
         <div class="section-card field-select-card rounded-xl p-0 overflow-visible">
@@ -951,7 +954,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -963,6 +966,7 @@
         window.selectedFieldIdRef = { value: null };
 
         // Ratoon duration mapping (in months) for each variety
+        // These are the ratoon-specific maturity months (different from initial planting)
         const RATOON_DURATIONS = {
           'K 88-65': { min: 11, max: 13 },
           'K 88-87': { min: 11, max: 13 },
@@ -982,7 +986,7 @@
           'PSR 2000-34': { min: 10, max: 11 },
           'PSR 97-41': { min: 10, max: 10 },
           'PSR 97-45': { min: 9, max: 10 },
-          'Ps 862': { min: 9, max: 11 },
+          'PS 862': { min: 9, max: 11 },
           'VMC 71-39': { min: 9, max: 11 },
           'VMC 84-549': { min: 9, max: 9 },
           'VMC 86-550': { min: 10, max: 11 },
@@ -1494,10 +1498,19 @@
               uiSeedRate.textContent = growthData.seedRate || '—';
             }
 
-            // Check if field has been planted
+            // CRITICAL: Check if field has been planted FIRST
+            // All growth-related data (DAP, stage, progress, harvest) requires planting
+            // This check happens early to prevent any growth data from being displayed
             if (!growthData.plantingDate) {
+              // No planting - show not planted state and reset all growth UI
               showNotPlantedState();
+              resetTimeline();
+              // Hide predicted harvest modal
+              document.getElementById('predictedHarvestModal')?.classList.add('hidden');
+              // Still load timeline nodes to show all submitted reports (without DAP/stage mapping)
               await loadTimelineNodes(fieldId);
+              // Update ratoon button state (works for both planted and unplanted fields)
+              updateRatoonButtonState(growthData);
               return;
             }
 
@@ -1505,8 +1518,13 @@
             const notPlantedMsg = document.getElementById('notPlantedInfo');
             if (notPlantedMsg) notPlantedMsg.remove();
 
-            // Update planting date
+            // CRITICAL: All growth-related data (DAP, stage, progress, harvest) 
+            // MUST only be displayed when planting exists
+            // Planting record is the single source of truth for ALL growth tracking
             const plantingDate = growthData.plantingDate;
+
+            // Planting exists - update ALL growth-related data
+            // Update planting date display
             const uiPlanted = document.getElementById('uiPlanted');
             if (uiPlanted && plantingDate) {
               uiPlanted.textContent = plantingDate.toLocaleDateString();
@@ -1518,19 +1536,19 @@
               plantedDateDisplay.textContent = plantingDate.toLocaleDateString();
             }
 
-            // Update DAP
+            // Update DAP (only when planting exists)
             const uiDays = document.getElementById('uiDays');
             if (uiDays) {
-              uiDays.textContent = growthData.DAP || '0';
+              uiDays.textContent = growthData.DAP !== null ? growthData.DAP.toString() : '0';
             }
 
-            // Update current growth stage
+            // Update current growth stage (only when planting exists)
             const uiStage = document.getElementById('uiStage');
             if (uiStage) {
               uiStage.textContent = growthData.currentGrowthStage || '—';
             }
 
-            // Update expected harvest date
+            // Update expected harvest date (only when planting exists)
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
               if (growthData.expectedHarvestDate) {
@@ -1540,27 +1558,26 @@
               }
             }
 
-            // Update days remaining
+            // Update days remaining (only when planting exists)
             const uiRemain = document.getElementById('uiRemain');
             const uiMonths = document.getElementById('uiMonths');
             if (uiRemain && uiMonths) {
-            if (growthData.daysRemaining !== null) {
+              if (growthData.daysRemaining !== null) {
                 uiRemain.textContent = Math.max(0, growthData.daysRemaining).toString();
                 uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30.5)).toString();
-            } else {
+              } else {
                 uiRemain.textContent = '—';
                 uiMonths.textContent = '—';
               }
             }
 
-            // Update timeline progress (this will update stage indicators)
+            // CRITICAL: Update timeline progress and all growth-related features
+            // All of these require planting to exist
+            // Update timeline progress (this will update stage indicators and progress bar)
             updateTimeline(growthData);
 
             // Show warnings for delays or overdue harvest
             showWarnings(growthData);
-
-            // Update ratoon button state
-            updateRatoonButtonState(growthData);
 
             // ✅ Display historical planting & harvest data
             await displayHistoricalData(fieldId);
@@ -1570,6 +1587,9 @@
 
             // ✅ Check and display predicted harvest
             await checkPredictedHarvest(fieldId);
+
+            // Update ratoon button state (works for both planted and unplanted fields)
+            updateRatoonButtonState(growthData);
 
           } catch (error) {
             console.error('Error displaying field growth data:', error);
@@ -1581,8 +1601,50 @@
         window.displayFieldGrowthData = displayFieldGrowthData;
         window.loadTimelineNodes = loadTimelineNodes;
 
+        // Reset timeline to empty state
+        function resetTimeline() {
+          const tlBar = document.getElementById('tlBar');
+          const tlPct = document.getElementById('tlPct');
+          const progressPercentage = document.getElementById('progressPercentage');
+          const progressCurrent = document.getElementById('progressCurrent');
+          const tlGerm = document.getElementById('tlGerm');
+          const tlTill = document.getElementById('tlTill');
+          const tlGrand = document.getElementById('tlGrand');
+          const tlMat = document.getElementById('tlMat');
+
+          if (tlBar) tlBar.style.width = '0%';
+          if (tlPct) tlPct.textContent = '0';
+          if (progressPercentage) progressPercentage.textContent = '0%';
+          if (progressCurrent) progressCurrent.textContent = 'Not Planted';
+          if (tlGerm) tlGerm.textContent = 'Status: Not Planted';
+          if (tlTill) tlTill.textContent = 'Status: Not Planted';
+          if (tlGrand) tlGrand.textContent = 'Status: Not Planted';
+          if (tlMat) tlMat.textContent = 'Status: Not Planted';
+
+          // Reset all stage indicators
+          const stages = ['germination', 'tillering', 'grand', 'maturing', 'harvest'];
+          stages.forEach(stage => {
+            const indicator = document.getElementById(`stage-${stage}`);
+            const badge = document.getElementById(`badge-${stage}`);
+            const connector = document.getElementById(`connector-${stage}`);
+            if (indicator) {
+              indicator.classList.remove('active', 'completed', 'in-progress');
+            }
+            if (badge) badge.style.display = 'none';
+            if (connector) {
+              connector.className = 'w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]';
+            }
+          });
+        }
+
         // Update timeline with progress
         function updateTimeline(growthData) {
+          // CRITICAL: Do not update timeline if no planting date exists
+          if (!growthData.plantingDate) {
+            resetTimeline();
+            return;
+          }
+
           const DAP = growthData.DAP || 0;
           const totalDays = VARIETY_HARVEST_DAYS[growthData.variety] || 365;
 
@@ -1601,6 +1663,13 @@
           // Update timeline labels and stage indicators
           const plantingDate = growthData.plantingDate;
           const currentStage = growthData.currentGrowthStage || 'Not Planted';
+
+          // Ensure plantingDate is a valid Date object
+          if (!(plantingDate instanceof Date)) {
+            console.error('Invalid planting date in updateTimeline:', plantingDate);
+            resetTimeline();
+            return;
+          }
 
           const germEnd = new Date(plantingDate.getTime() + 45 * 24 * 60 * 60 * 1000);
           const tillEnd = new Date(plantingDate.getTime() + 100 * 24 * 60 * 60 * 1000);
@@ -1812,6 +1881,8 @@
 
         // Show not planted state
         function showNotPlantedState() {
+          // CRITICAL: Reset ALL growth-related UI elements when no planting exists
+          // This ensures no growth data appears without planting
           const uiDays = document.getElementById('uiDays');
           const uiStage = document.getElementById('uiStage');
           const uiPlanted = document.getElementById('uiPlanted');
@@ -1820,14 +1891,29 @@
           const uiMonths = document.getElementById('uiMonths');
           const tlBar = document.getElementById('tlBar');
           const tlPct = document.getElementById('tlPct');
+          const progressPercentage = document.getElementById('progressPercentage');
+          const progressCurrent = document.getElementById('progressCurrent');
+          const plantedDateDisplay = document.getElementById('plantedDateDisplay');
+          
+          // Reset all growth data displays
           if (uiDays) uiDays.textContent = '—';
           if (uiStage) uiStage.textContent = 'Not Planted';
           if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
           if (uiHarvest) uiHarvest.textContent = '—';
           if (uiRemain) uiRemain.textContent = '—';
           if (uiMonths) uiMonths.textContent = '—';
+          if (plantedDateDisplay) plantedDateDisplay.textContent = '—';
+          
+          // Reset progress bar
           if (tlBar) tlBar.style.width = '0%';
           if (tlPct) tlPct.textContent = '0';
+          if (progressPercentage) progressPercentage.textContent = '0%';
+          if (progressCurrent) progressCurrent.textContent = 'Not Planted';
+          
+          // Hide predicted harvest modal
+          document.getElementById('predictedHarvestModal')?.classList.add('hidden');
+          
+          // Show info message
           const existing = document.getElementById('notPlantedInfo');
           if (existing) existing.remove();
           const infoDiv = document.createElement('div');
@@ -1995,6 +2081,25 @@
             return;
           }
 
+          // CRITICAL: Get planting date for DAP calculation, but still load records even if no planting
+          // All reports must appear in timeline, but DAP mapping requires planting
+          let plantingDate = null;
+          try {
+            const fieldRef = doc(db, 'fields', fieldId);
+            const fieldSnap = await getDoc(fieldRef);
+            if (fieldSnap.exists()) {
+              const fieldData = fieldSnap.data();
+              plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
+            }
+            // Also check window.latestGrowthData as fallback
+            if (!plantingDate && window.latestGrowthData && window.latestGrowthData.plantingDate) {
+              plantingDate = window.latestGrowthData.plantingDate;
+            }
+          } catch (error) {
+            console.error('Error checking planting date:', error);
+            // Continue anyway - will show records without DAP mapping
+          }
+
           console.log(`🔍 Setting up real-time listener for fieldId: ${fieldId}`);
 
           try {
@@ -2062,8 +2167,8 @@
                   fieldId: r.fieldId 
                 })));
 
-                // Render timeline with updated records
-                renderTimelineNodes(records);
+                // Render timeline with updated records (await since it's async)
+                await renderTimelineNodes(records);
               },
               async (error) => {
                 console.error('Error in timeline listener:', error);
@@ -2123,7 +2228,7 @@
                         });
                         
                         console.log(`📊 Loaded ${records.length} records (without orderBy)`);
-                        renderTimelineNodes(records);
+                        await renderTimelineNodes(records);
                       },
                       (fallbackError) => {
                         console.error('Fallback query also failed:', fallbackError);
@@ -2158,7 +2263,7 @@
                           vehicleUpdates: null
                         });
                       }
-                      renderTimelineNodes(records);
+                      await renderTimelineNodes(records);
                     });
                   } catch (fallbackError) {
                     console.error('Fallback query also failed:', fallbackError);
@@ -2187,7 +2292,8 @@
         }
 
         // Render timeline nodes integrated into growth stages
-        function renderTimelineNodes(records) {
+        // CRITICAL: All submitted reports must appear, mapped to stages based on DAP
+        async function renderTimelineNodes(records) {
           console.log(`🎨 Rendering ${records.length} records into timeline`);
           const emptyState = document.getElementById('timelineEmptyState');
           
@@ -2211,8 +2317,68 @@
           // Hide empty state if we have records
           if (emptyState) emptyState.classList.add('hidden');
 
-          // Group records by status
-          const groupedByStatus = {
+          // Get planting date from multiple sources for accurate DAP calculation
+          let plantingDate = null;
+          
+          // First, try window.latestGrowthData (most reliable)
+          if (window.latestGrowthData && window.latestGrowthData.plantingDate) {
+            plantingDate = window.latestGrowthData.plantingDate;
+          } else {
+            // Fallback: Try to get from field document
+            try {
+              const fieldId = records.length > 0 ? records[0].fieldId : null;
+              if (fieldId) {
+                const fieldRef = doc(db, 'fields', fieldId);
+                const fieldSnap = await getDoc(fieldRef);
+                if (fieldSnap.exists()) {
+                  const fieldData = fieldSnap.data();
+                  plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
+                }
+              }
+              
+              // If still no planting date, try to find planting record
+              if (!plantingDate) {
+                const plantingRecord = records.find(r => 
+                  r.taskType === 'Planting Operation' || 
+                  r.operation === 'Planting' ||
+                  (r.taskType && r.taskType.toLowerCase().includes('planting'))
+                );
+                if (plantingRecord) {
+                  plantingDate = plantingRecord.recordDate?.toDate?.() || 
+                                 plantingRecord.createdAt?.toDate?.() || 
+                                 plantingRecord.startDate;
+                }
+              }
+            } catch (e) {
+              console.debug('Could not get planting date:', e);
+            }
+          }
+
+          // Helper function to calculate DAP for a record date
+          const calculateDAPForRecord = (recordDate) => {
+            if (!plantingDate || !recordDate) return null;
+            const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
+            const record = recordDate instanceof Date ? recordDate : new Date(recordDate);
+            const diffTime = record - planting;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return Math.max(0, diffDays);
+          };
+
+          // Helper function to map DAP to growth stage
+          // CRITICAL: All records must be mapped to a stage, even if before planting
+          const getStageFromDAP = (dap) => {
+            // If no planting date exists, all records go to Germination stage
+            if (dap === null || !plantingDate) return 'Germination';
+            // Map based on DAP ranges
+            if (dap < 45) return 'Germination';
+            if (dap < 100) return 'Tillering';
+            if (dap < 240) return 'Grand Growth';
+            if (dap < 300) return 'Maturing / Ripening';
+            return 'Harvest';
+          };
+
+          // Group ALL records by growth stage based on DAP
+          const groupedByStage = {
             'Germination': [],
             'Tillering': [],
             'Grand Growth': [],
@@ -2220,27 +2386,30 @@
             'Harvest': []
           };
 
+          // Process ALL records and map them to stages
           records.forEach(record => {
-            const status = record.status || 'Unknown';
-            // Normalize status names to match our stage names
-            let normalizedStatus = status;
+            // Get record date (prefer recordDate, fallback to createdAt or startDate)
+            const recordDate = record.recordDate?.toDate?.() || 
+                              record.createdAt?.toDate?.() || 
+                              record.startDate || 
+                              new Date();
             
-            // Handle variations in status names
-            if (status === 'Maturing / Ripening' || status === 'Maturing/Ripening' || status === 'Maturation' || status === 'Ripening') {
-              normalizedStatus = 'Maturing / Ripening';
-            } else if (status === 'Grand Growth' || status === 'GrandGrowth') {
-              normalizedStatus = 'Grand Growth';
-            }
+            // Calculate DAP for this record
+            const dap = calculateDAPForRecord(recordDate);
             
-            if (groupedByStatus[normalizedStatus]) {
-              groupedByStatus[normalizedStatus].push(record);
-            } else {
-              console.warn(`Unknown status "${status}" for record ${record.id}, taskType: ${record.taskType}`);
-            }
+            // Map to growth stage based on DAP
+            const stage = getStageFromDAP(dap);
+            
+            // Add record to appropriate stage with DAP info
+            groupedByStage[stage].push({
+              ...record,
+              _dap: dap,
+              _recordDate: recordDate
+            });
           });
 
-          // Map status names to container IDs
-          const statusToContainer = {
+          // Map stage names to container IDs
+          const stageToContainer = {
             'Germination': 'germination',
             'Tillering': 'tillering',
             'Grand Growth': 'grand',
@@ -2249,18 +2418,18 @@
           };
 
           // Render activities into each stage container
-          Object.entries(groupedByStatus).forEach(([status, statusRecords]) => {
-            const containerId = statusToContainer[status];
+          Object.entries(groupedByStage).forEach(([stage, stageRecords]) => {
+            const containerId = stageToContainer[stage];
             const container = document.getElementById(`activities-${containerId}`);
             
             if (!container) {
-              console.warn(`Container not found for stage: ${status} (${containerId})`);
+              console.warn(`Container not found for stage: ${stage} (${containerId})`);
               return;
             }
 
-            console.log(`📝 Rendering ${statusRecords.length} records for ${status} stage`);
+            console.log(`📝 Rendering ${stageRecords.length} records for ${stage} stage`);
 
-            if (statusRecords.length === 0) {
+            if (stageRecords.length === 0) {
               container.innerHTML = `
                 <div class="activity-node empty-state">
                   <p class="text-xs text-gray-500 italic">No activities recorded yet</p>
@@ -2269,18 +2438,22 @@
               return;
             }
 
-            // Sort records by date (oldest first for true timeline order)
-            statusRecords.sort((a, b) => {
-              const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
-              const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
-              return dateA - dateB;
+            // CRITICAL: Sort records chronologically (earliest first) within each stage
+            // This ensures the first submitted report appears at the top
+            stageRecords.sort((a, b) => {
+              const dateA = a._recordDate || a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+              const dateB = b._recordDate || b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+              return dateA - dateB; // Oldest first (chronological order)
             });
 
             let html = '';
-            statusRecords.forEach(record => {
-              const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+            stageRecords.forEach(record => {
+              // Use the stored record date from processing
+              const recordDate = record._recordDate || record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
               const dateStr = recordDate.toLocaleDateString();
-              const taskType = record.taskType || 'Unknown Task';
+              // Get task type from various possible fields
+              const taskType = record.taskType || record.operation || record.taskName || 'Activity Record';
+              const dap = record._dap;
               
               // Get brief summary from data
               let summary = '';
@@ -2293,6 +2466,9 @@
               const safeTaskType = escapeHtml(taskType);
               const safeDateStr = escapeHtml(dateStr);
               const safeSummary = escapeHtml(summary);
+              
+              // Show DAP if available and planting exists
+              const dapDisplay = (dap !== null && plantingDate) ? ` • ${dap} DAP` : '';
 
               html += `
                 <div class="activity-node" 
@@ -2310,7 +2486,7 @@
                       </div>
                       <div class="flex items-center gap-2 mt-1">
                         <i class="fas fa-calendar text-xs text-gray-400"></i>
-                        <p class="text-xs text-gray-600">${safeDateStr}</p>
+                        <p class="text-xs text-gray-600">${safeDateStr}${dapDisplay}</p>
                       </div>
                       ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate">${safeSummary}</p>` : ''}
                     </div>
@@ -2694,6 +2870,15 @@
             if (!fieldSnap.exists()) return;
             
             const fieldData = fieldSnap.data();
+            const plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
+            
+            // CRITICAL: Only show predicted harvest if planting date exists
+            // Planting record is the single source of truth
+            if (!plantingDate) {
+              document.getElementById('predictedHarvestModal')?.classList.add('hidden');
+              return;
+            }
+            
             const expectedHarvestDate = fieldData.expectedHarvestDate?.toDate?.() || fieldData.expectedHarvestDate;
             const variety = fieldData.sugarcane_variety || fieldData.variety;
             const currentStatus = fieldData.currentGrowthStage || fieldData.status;
@@ -3040,10 +3225,12 @@
           
           if (!ratoonBtn) return;
 
-          const isHarvested = growthData && growthData.currentGrowthStage === 'Harvest' && growthData.DAP >= 300;
+          // Check if field status is 'harvested' (from database)
+          const isHarvested = growthData && growthData.status === 'harvested';
           
           if (isHarvested) {
             ratoonBtn.disabled = false;
+            ratoonBtn.title = 'Click to ratoon this field';
             if (ratoonTooltip) {
               ratoonTooltip.textContent = 'Click to ratoon this field';
               ratoonTooltip.classList.remove('text-gray-600');
@@ -3051,6 +3238,7 @@
             }
           } else {
             ratoonBtn.disabled = true;
+            ratoonBtn.title = 'Available only when field is harvested';
             if (ratoonTooltip) {
               ratoonTooltip.textContent = 'Available only when field is harvested';
               ratoonTooltip.classList.remove('text-[var(--cane-600)]');
@@ -3059,17 +3247,56 @@
           }
         }
 
-        function getRatoonEstimatedHarvestDate(variety) {
-          const duration = RATOON_DURATIONS[variety];
-          if (!duration) {
-            console.warn(`Variety ${variety} not found in ratoon durations, using default 10 months`);
-            return new Date(Date.now() + 10 * 30 * 24 * 60 * 60 * 1000);
+        function normalizeVarietyName(variety) {
+          if (!variety) return variety;
+          
+          // Handle aliases by extracting the first variety name
+          const aliasPatterns = [
+            { pattern: /^PS 1\s+or\s+VMC 84-947/i, normalized: 'PS 1' },
+            { pattern: /^PS 2\s+or\s+VMC 88-354/i, normalized: 'PS 2' },
+            { pattern: /^PS 3\s+or\s+VMC 84-524\s+or\s+CADP Sc1/i, normalized: 'PS 3' },
+            { pattern: /^PS 4\s+or\s+VMC 95-152/i, normalized: 'PS 4' },
+            { pattern: /^PS 5\s+or\s+VMC 95-09/i, normalized: 'PS 5' }
+          ];
+          
+          for (const alias of aliasPatterns) {
+            if (alias.pattern.test(variety)) {
+              return alias.normalized;
+            }
           }
           
-          const avgMonths = Math.round((duration.min + duration.max) / 2);
-          const harvestDate = new Date();
-          harvestDate.setMonth(harvestDate.getMonth() + avgMonths);
-          return harvestDate;
+          // Also check for individual variety names that might be in the alias string
+          const varietyNames = Object.keys(RATOON_DURATIONS);
+          for (const name of varietyNames) {
+            if (variety.includes(name)) {
+              return name;
+            }
+          }
+          
+          return variety.trim();
+        }
+
+        function getRatoonHarvestDateRange(variety, harvestDate) {
+          if (!variety || !harvestDate) return null;
+          
+          const normalized = normalizeVarietyName(variety);
+          const duration = RATOON_DURATIONS[normalized] || RATOON_DURATIONS[variety];
+          if (!duration) {
+            console.warn(`Variety ${variety} (normalized: ${normalized}) not found in ratoon durations`);
+            return null;
+          }
+          
+          // Convert months to days (using average 30.44 days per month)
+          const daysPerMonth = 30.44;
+          const minDays = Math.round(duration.min * daysPerMonth);
+          const maxDays = Math.round(duration.max * daysPerMonth);
+          
+          const harvest = harvestDate instanceof Date ? harvestDate : new Date(harvestDate);
+          
+          return {
+            earliest: new Date(harvest.getTime() + minDays * 24 * 60 * 60 * 1000),
+            latest: new Date(harvest.getTime() + maxDays * 24 * 60 * 60 * 1000)
+          };
         }
 
         async function handleRatoon() {
@@ -3078,7 +3305,36 @@
             return;
           }
 
-          const confirmed = confirm('Are you sure you want to ratoon this field? This will reset all growth tracking data.');
+          if (!currentUserId) {
+            showError('User not authenticated');
+            return;
+          }
+
+          const growthData = window.latestGrowthData;
+          if (!growthData || growthData.status !== 'harvested') {
+            showError('Field must be harvested before ratooning');
+            return;
+          }
+
+          // Get harvest date for calculating expected harvest range
+          const fieldRef = doc(db, 'fields', selectedFieldId);
+          const fieldSnap = await getDoc(fieldRef);
+          const fieldData = fieldSnap.data();
+          const harvestDate = fieldData?.actualHarvestDate?.toDate?.() || fieldData?.actualHarvestDate;
+          const variety = growthData?.variety || 'Unknown';
+
+          // Calculate and display expected harvest date range
+          let confirmMessage = 'Are you sure you want to ratoon this field? This will reset all growth tracking data.';
+          if (harvestDate && variety) {
+            const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
+            if (harvestRange) {
+              const earliestStr = harvestRange.earliest.toLocaleDateString();
+              const latestStr = harvestRange.latest.toLocaleDateString();
+              confirmMessage += `\n\nExpected Harvest Date Range: ${earliestStr} - ${latestStr}`;
+            }
+          }
+          
+          const confirmed = confirm(confirmMessage);
           if (!confirmed) return;
 
           try {
@@ -3087,30 +3343,29 @@
             const originalContent = ratoonBtn.innerHTML;
             ratoonBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
-            const growthData = window.latestGrowthData;
-            const variety = growthData?.variety || 'Unknown';
-            const estimatedHarvestDate = getRatoonEstimatedHarvestDate(variety);
-
-            const fieldRef = doc(db, 'fields', selectedFieldId);
+            // Use backend handleRatooning function
+            const result = await handleRatooning(currentUserId, selectedFieldId);
             
-            await updateDoc(fieldRef, {
-              plantingDate: Timestamp.now(),
-              currentGrowthStage: 'Germination',
-              DAP: 0,
-              expectedHarvestDate: Timestamp.fromDate(estimatedHarvestDate),
-              daysRemaining: Math.ceil((estimatedHarvestDate - new Date()) / (1000 * 60 * 60 * 24)),
-              ratoonCount: (growthData?.ratoonCount || 0) + 1,
-              lastRatoonDate: Timestamp.now(),
-              fertilizersUsed: '',
-              seedRate: ''
-            });
-
-            showSuccess('Field successfully ratoon! Growth tracking has been reset.');
-            
-            await displayFieldGrowthData(selectedFieldId);
+            if (result.success) {
+              // Display success message with harvest date range if available
+              let successMessage = 'Field successfully ratoon! Growth tracking has been reset.';
+              if (harvestDate && variety) {
+                const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
+                if (harvestRange) {
+                  const earliestStr = harvestRange.earliest.toLocaleDateString();
+                  const latestStr = harvestRange.latest.toLocaleDateString();
+                  successMessage += `\n\nExpected Harvest Date Range: ${earliestStr} - ${latestStr}`;
+                }
+              }
+              showSuccess(successMessage);
+              
+              await displayFieldGrowthData(selectedFieldId);
+            } else {
+              showError('Failed to ratoon field. Please try again.');
+            }
           } catch (error) {
             console.error('Error ratoon field:', error);
-            showError('Failed to ratoon field. Please try again.');
+            showError(error.message || 'Failed to ratoon field. Please try again.');
           } finally {
             const ratoonBtn = document.getElementById('ratoonBtn');
             ratoonBtn.disabled = false;
@@ -3118,7 +3373,13 @@
           }
         }
 
-        document.getElementById('ratoonBtn').addEventListener('click', handleRatoon);
+        // Initialize ratoon button event listener
+        const ratoonBtn = document.getElementById('ratoonBtn');
+        if (ratoonBtn) {
+          ratoonBtn.addEventListener('click', handleRatoon);
+        } else {
+          console.warn('Ratoon button not found in DOM');
+        }
       </script>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
