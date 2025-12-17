@@ -587,7 +587,7 @@
 
         <!-- LEFT: Back + Title -->
         <div class="flex items-center gap-3">
-          <a href="dashboard.html" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] transition-colors">
+          <a href="dashboard.html" id="backArrowBtn" class="text-[var(--cane-700)] hover:text-[var(--cane-800)] transition-colors" onclick="event.preventDefault(); try { if (window.history.length > 1) { window.history.back(); } else { window.location.href = 'dashboard.html'; } } catch(e) { window.location.href = 'dashboard.html'; } return false;">
             <i class="fa-solid fa-arrow-left text-lg"></i>
           </a>
           <h1
@@ -2714,109 +2714,158 @@
         // Wait for html2pdf to be available
         function waitForHtml2pdf() {
           return new Promise((resolve) => {
-            if (typeof html2pdf !== 'undefined') {
+            // Check both window.html2pdf and global html2pdf
+            const checkHtml2pdf = () => {
+              return typeof window.html2pdf !== 'undefined' || typeof html2pdf !== 'undefined';
+            };
+            
+            if (checkHtml2pdf()) {
               resolve();
             } else {
               const checkInterval = setInterval(() => {
-                if (typeof html2pdf !== 'undefined') {
+                if (checkHtml2pdf()) {
                   clearInterval(checkInterval);
                   resolve();
                 }
               }, 100);
-              // Timeout after 5 seconds
+              // Timeout after 10 seconds
               setTimeout(() => {
                 clearInterval(checkInterval);
                 resolve();
-              }, 5000);
+              }, 10000);
             }
           });
         }
 
-        // Add timestamp on print
-        window.onbeforeprint = () => {
-          document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
-        };
-
-        // PRINT BUTTON
-        document.getElementById("btnPrint").addEventListener("click", () => {
-          document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
-          window.print();
-        });
-
-        // PDF BUTTON (captures the whole UI)
-        document.getElementById("btnDownloadPDF").addEventListener("click", async () => {
-          const btn = document.getElementById("btnDownloadPDF");
-          const originalContent = btn.innerHTML;
-          btn.disabled = true;
-          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-
-          try {
-            // Ensure html2pdf is loaded
-            await waitForHtml2pdf();
-            
-            if (typeof html2pdf === 'undefined') {
-              throw new Error('html2pdf library failed to load');
+        // Initialize buttons when DOM is ready
+        function initializeButtons() {
+          // Add timestamp on print
+          window.onbeforeprint = () => {
+            const stamp = document.getElementById("generatedStamp");
+            if (stamp) {
+              stamp.textContent = new Date().toLocaleString();
             }
+          };
 
-            document.getElementById("generatedStamp").textContent = new Date().toLocaleString();
+          // PRINT BUTTON
+          const printBtn = document.getElementById("btnPrint");
+          if (printBtn) {
+            printBtn.addEventListener("click", () => {
+              const stamp = document.getElementById("generatedStamp");
+              if (stamp) {
+                stamp.textContent = new Date().toLocaleString();
+              }
+              window.print();
+            });
+          }
 
-            const content = document.getElementById("captureArea");
-            const filename = `CaneMap_Growth_Report_${Date.now()}.pdf`;
-            
-            const opt = {
-              margin: 10,
-              filename: filename,
-              html2canvas: { 
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff'
-              },
-              jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+          // PDF BUTTON (captures the whole UI)
+          const pdfBtn = document.getElementById("btnDownloadPDF");
+          if (pdfBtn) {
+          pdfBtn.addEventListener("click", async () => {
+            const btn = document.getElementById("btnDownloadPDF");
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
 
-            // Generate PDF - use Android-compatible method if in app, otherwise use standard
-            const { isAndroidApp, downloadFile } = await import('../../backend/Common/android-download.js');
-
-            if (isAndroidApp()) {
-              // For Android: Generate blob and use download utility
-              const pdfBlob = await new Promise((resolve, reject) => {
-                try {
-                  html2pdf()
-                    .set(opt)
-                    .from(content)
-                    .outputPdf('blob')
-                    .then(resolve)
-                    .catch(reject);
-                } catch (e) {
-                  reject(e);
-                }
-              });
+            try {
+              // Ensure html2pdf is loaded
+              await waitForHtml2pdf();
               
-              if (!pdfBlob || pdfBlob.size === 0) {
-                throw new Error('Generated PDF is empty');
+              // Get html2pdf function (check both window.html2pdf and global html2pdf)
+              const html2pdfFn = window.html2pdf || html2pdf;
+              
+              if (typeof html2pdfFn === 'undefined') {
+                throw new Error('html2pdf library failed to load. Please refresh the page.');
+              }
+
+              const stamp = document.getElementById("generatedStamp");
+              if (stamp) {
+                stamp.textContent = new Date().toLocaleString();
+              }
+
+              const content = document.getElementById("captureArea");
+              if (!content) {
+                throw new Error('Content area not found');
               }
               
-              await downloadFile(pdfBlob, filename);
-              // Small delay to ensure download starts before hiding animation
-              await new Promise(resolve => setTimeout(resolve, 500));
-            } else {
-              // For browser: Use standard save method
-              await html2pdf()
-                .set(opt)
-                .from(content)
-                .save();
-              // Small delay to ensure download starts before hiding animation
-              await new Promise(resolve => setTimeout(resolve, 300));
+              const filename = `CaneMap_Growth_Report_${Date.now()}.pdf`;
+              
+              const opt = {
+                margin: 10,
+                filename: filename,
+                html2canvas: { 
+                  scale: 2,
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: '#ffffff',
+                  logging: false
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+              };
+
+              // Generate PDF - use Android-compatible method if in app, otherwise use standard
+              try {
+                const { isAndroidApp, downloadFile } = await import('../../backend/Common/android-download.js');
+
+                if (isAndroidApp && isAndroidApp()) {
+                  // For Android: Generate blob and use download utility
+                  const pdfBlob = await new Promise((resolve, reject) => {
+                    try {
+                      html2pdfFn()
+                        .set(opt)
+                        .from(content)
+                        .outputPdf('blob')
+                        .then(resolve)
+                        .catch(reject);
+                    } catch (e) {
+                      reject(e);
+                    }
+                  });
+                  
+                  if (!pdfBlob || pdfBlob.size === 0) {
+                    throw new Error('Generated PDF is empty');
+                  }
+                  
+                  await downloadFile(pdfBlob, filename);
+                  // Small delay to ensure download starts before hiding animation
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                } else {
+                  // For browser: Use standard save method
+                  await html2pdfFn()
+                    .set(opt)
+                    .from(content)
+                    .save();
+                  // Small delay to ensure download starts before hiding animation
+                  await new Promise(resolve => setTimeout(resolve, 300));
+                }
+              } catch (importError) {
+                // Fallback if android-download module is not available
+                console.warn('Android download module not available, using standard method:', importError);
+                await html2pdfFn()
+                  .set(opt)
+                  .from(content)
+                  .save();
+                await new Promise(resolve => setTimeout(resolve, 300));
+              }
+            } catch (error) {
+              console.error('Error generating PDF:', error);
+              alert('Failed to generate PDF: ' + (error.message || 'Please try again.'));
+            } finally {
+              btn.disabled = false;
+              btn.innerHTML = originalContent;
             }
-          } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF. Please try again.');
-          } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
+          });
           }
-        });
+        }
+
+        // Initialize buttons when DOM is ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initializeButtons);
+        } else {
+          // DOM is already ready
+          initializeButtons();
+        }
 
         // RATOON BUTTON FUNCTIONALITY
         function updateRatoonButtonState(growthData) {

@@ -4904,6 +4904,29 @@ export function initializeFieldsSection() {
     });
   }
 
+  // Helper function to calculate crop age in months
+  function calculateCropAgeInMonths(plantingDate) {
+    if (!plantingDate) return null;
+    
+    try {
+      // Handle Firestore timestamp
+      const date = plantingDate?.toDate ? plantingDate.toDate() : new Date(plantingDate);
+      if (isNaN(date.getTime())) return null;
+      
+      const now = new Date();
+      const diffTime = now - date;
+      
+      // If planting date is in the future, return 0 instead of negative
+      if (diffTime < 0) return 0;
+      
+      const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+      return diffMonths;
+    } catch (error) {
+      console.warn('Error calculating crop age:', error);
+      return null;
+    }
+  }
+
   function updateFieldsList() {
     const listContainer = document.getElementById('handlerFieldsList');
     
@@ -4920,6 +4943,54 @@ export function initializeFieldsSection() {
     listContainer.innerHTML = fieldsData.map(field => {
       const statusLabel = getStatusLabel(field.status);
       const { badgeClass, textClass } = getBadgeClasses(field.status);
+      
+      // Extract field information
+      const variety = field.sugarcane_variety || field.variety || 'N/A';
+      const plantingDate = field.plantingDate;
+      const growthStage = field.currentGrowthStage || 'N/A';
+      const cropAgeMonths = calculateCropAgeInMonths(plantingDate);
+      
+      // Format planting date
+      let plantingDateStr = 'N/A';
+      if (plantingDate) {
+        try {
+          const date = plantingDate?.toDate ? plantingDate.toDate() : new Date(plantingDate);
+          if (!isNaN(date.getTime())) {
+            plantingDateStr = date.toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'short', 
+              day: 'numeric' 
+            });
+          }
+        } catch (error) {
+          console.warn('Error formatting planting date:', error);
+        }
+      }
+      
+      // Build additional information section
+      const additionalInfo = `
+        <div class="mt-2 pt-2 border-t border-gray-200">
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+            <div>
+              <span class="text-gray-500">Variety:</span>
+              <span class="text-gray-700 font-medium ml-1">${escapeHtml(String(variety))}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Date Planted:</span>
+              <span class="text-gray-700 font-medium ml-1">${escapeHtml(plantingDateStr)}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Growth Stage:</span>
+              <span class="text-gray-700 font-medium ml-1">${escapeHtml(String(growthStage))}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Crop Age:</span>
+              <span class="text-gray-700 font-medium ml-1">${cropAgeMonths !== null ? `${cropAgeMonths} ${cropAgeMonths === 1 ? 'month' : 'months'}` : 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      
       return `
         <div class="p-3 bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg hover:shadow-md transition-all cursor-pointer">
           <div class="flex items-start justify-between">
@@ -4930,6 +5001,7 @@ export function initializeFieldsSection() {
                 ${field.barangay || 'Unknown location'}
               </p>
               <p class="text-xs text-gray-500 mt-0.5">${field.field_size || field.area_size || field.area || field.size || 'N/A'} hectares</p>
+              ${additionalInfo}
             </div>
             <div class="flex flex-col gap-1">
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${badgeClass} ${textClass} text-[10px] font-semibold">
