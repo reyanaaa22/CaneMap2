@@ -1551,7 +1551,10 @@
             // Update expected harvest date (only when planting exists)
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
-              if (growthData.expectedHarvestDate) {
+              // Use formatted string if available (shows range), otherwise format the date
+              if (growthData.expectedHarvestDateFormatted) {
+                uiHarvest.textContent = growthData.expectedHarvestDateFormatted;
+              } else if (growthData.expectedHarvestDate) {
                 uiHarvest.textContent = growthData.expectedHarvestDate.toLocaleDateString();
               } else {
                 uiHarvest.textContent = '—';
@@ -2364,7 +2367,7 @@
             return Math.max(0, diffDays);
           };
 
-          // Helper function to map DAP to growth stage
+          // Helper function to map DAP to growth stage (fallback for old records without status)
           // CRITICAL: All records must be mapped to a stage, even if before planting
           const getStageFromDAP = (dap) => {
             // If no planting date exists, all records go to Germination stage
@@ -2377,7 +2380,20 @@
             return 'Harvest';
           };
 
-          // Group ALL records by growth stage based on DAP
+          // Helper function to normalize stage name from record status
+          const normalizeStageName = (status) => {
+            if (!status) return null;
+            const normalized = status.trim();
+            // Map common variations to standard stage names
+            if (normalized === 'Germination') return 'Germination';
+            if (normalized === 'Tillering') return 'Tillering';
+            if (normalized === 'Grand Growth') return 'Grand Growth';
+            if (normalized === 'Maturing / Ripening' || normalized === 'Maturing/Ripening' || normalized.includes('Maturing') || normalized.includes('Ripening')) return 'Maturing / Ripening';
+            if (normalized === 'Harvest') return 'Harvest';
+            return null;
+          };
+
+          // Group ALL records by growth stage based on status field (or DAP fallback)
           const groupedByStage = {
             'Germination': [],
             'Tillering': [],
@@ -2397,8 +2413,24 @@
             // Calculate DAP for this record
             const dap = calculateDAPForRecord(recordDate);
             
-            // Map to growth stage based on DAP
-            const stage = getStageFromDAP(dap);
+            // Determine stage: Use status field if available, otherwise fall back to DAP-based mapping
+            let stage = null;
+            
+            // First, try to use the status field from the record
+            if (record.status) {
+              stage = normalizeStageName(record.status);
+            }
+            
+            // If status field is not available or doesn't match known stages, fall back to DAP-based mapping
+            if (!stage) {
+              stage = getStageFromDAP(dap);
+            }
+            
+            // Ensure stage is valid, default to Germination if not
+            if (!groupedByStage.hasOwnProperty(stage)) {
+              console.warn(`Unknown stage "${stage}" for record ${record.id}, defaulting to Germination`);
+              stage = 'Germination';
+            }
             
             // Add record to appropriate stage with DAP info
             groupedByStage[stage].push({

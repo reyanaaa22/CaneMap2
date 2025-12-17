@@ -625,7 +625,7 @@ This file handles ALL functionalities described in the PDF:
 <script type="module">
 import { auth, db } from '../../backend/Common/firebase-config.js'
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js'
-import { collection, getDocs, addDoc, serverTimestamp, query, where } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
+import { collection, getDocs, addDoc, serverTimestamp, query, where, getDoc, doc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
 import { initHandlerOfflineSync, getOnlineStatus, wasOnInputRecords } from '../../backend/Handler/offline-input-sync.js'
 import { addPendingRecord } from '../../backend/Handler/offline-input-storage.js'
 
@@ -698,6 +698,8 @@ function initializeCustomSelect(selectElement) {
 
   trigger.addEventListener('click', (e) => {
     e.preventDefault();
+    // Prevent opening if the select is disabled
+    if (selectElement.disabled) return;
     container.classList.contains('open') ? close() : open();
   });
 
@@ -872,7 +874,7 @@ const taskFieldMap = {
 
     { id:'equipment', label:'Equipment Used', type:'text' },
     { id:'workers', label:'Number of Workers', type:'number' },
-    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
     { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
   ],
@@ -896,7 +898,7 @@ const taskFieldMap = {
   },
   { id:'operators', label:'Number of Operators', type:'number' },
   { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
 ],
@@ -943,7 +945,7 @@ const taskFieldMap = {
     },
     { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
     { id:'operators', label:'Number of Operators', type:'number' },
-    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
     { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
   ],
 
@@ -1020,7 +1022,7 @@ const taskFieldMap = {
   },
 
   { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1062,7 +1064,7 @@ const taskFieldMap = {
 
   { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
@@ -1116,40 +1118,31 @@ const taskFieldMap = {
     label:'Variety', 
     type:'select',
     options:[
-      'K 88-65 — 12–14 months',
-      'K 88-87 — 12–14 months',
-      'PS 1 / VMC 84-947 — 11–12 months',
-      'PS 2 / VMC 88-354 — 9–10 months',
-      'PS 3 / VMC 84-524 / CADP Sc1 — 10–11 months',
-      'PS 4 / VMC 95-152 — 10–12 months',
-      'PS 5 / VMC 95-09 — 10–12 months',
-      'PSR 2000-161 — 11–12 months',
-      'PSR 2000-343 — 11–11.5 months',
-      'PSR 2000-34 — 11–12 months',
-      'PSR 97-41 — 11 months',
-      'PSR 97-45 — 10–11 months',
-      'PS 862 — 10–12 months',
-      'VMC 71-39 — 10–12 months',
-      'VMC 84-549 — 10 months',
-      'VMC 86-550 — 11–12 months',
-      'VMC 87-599 — 10–12 months',
-      'VMC 87-95 — 10–11 months',
+      'K 88-65 — 11–13 months',
+      'K 88-87 — 11–13 months',
+      'PS 1 / VMC 84-947 — 10–11 months',
+      'PS 2 / VMC 88-354 — 8–9 months',
+      'PS 3 / VMC 84-524 / CADP Sc1 — 9–10 months',
+      'PS 4 / VMC 95-152 — 9–11 months',
+      'PS 5 / VMC 95-09 — 9–11 months',
+      'PSR 2000-161 — 10–11 months',
+      'PSR 2000-343 — 10–11 months',
+      'PSR 2000-34 — 10–11 months',
+      'PSR 97-41 — 10 months',
+      'PSR 97-45 — 9–10 months',
+      'PS 862 — 9–11 months',
+      'VMC 71-39 — 9–11 months',
+      'VMC 84-549 — 9 months',
+      'VMC 86-550 — 10–11 months',
+      'VMC 87-599 — 9–11 months',
+      'VMC 87-95 — 9–10 months',
       'Others'
     ]
   },
   { id:'expectedHarvestDate', label:'Expected Harvest Date (auto-calculated)', type:'text', readonly: true },
-  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
+  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01', readonly: true },
   { id:'numberOfSetts', label:'Number of Setts', type:'number', step:'0.01' },
   { id:'totalCaneRequired', label:'Total Cane Required (auto-calculated)', type:'number', step:'0.01', readonly: true, computed: 'numberOfSetts * seedRate' },
-
-  // Labor for preparation of cane points
-  { id:'prepLabor', label:'Labor for Preparation of Cane Points', type:'number', step:'0.01' },
-
-  // Hauling of cane points
-  { id:'haulingCost', label:'Hauling of Cane Points', type:'number', step:'0.01' },
-
-  // Selection & counting of cane points
-  { id:'selectionCountingCost', label:'Selection & Counting of Cane Points', type:'number', step:'0.01' },
 
   // Planting of cane points
   { 
@@ -1161,8 +1154,6 @@ const taskFieldMap = {
 
     // Number of workers
   { id:'workers', label:'Number of Workers', type:'number' },
-
-  { id:'plantingLaborCost', label:'Labor Cost for Planting', type:'number', step:'0.01' },
 
   // Total cost
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1176,40 +1167,31 @@ const taskFieldMap = {
     label:'Variety', 
     type:'select',
     options:[
-      'K 88-65 — 12–14 months',
-      'K 88-87 — 12–14 months',
-      'PS 1 / VMC 84-947 — 11–12 months',
-      'PS 2 / VMC 88-354 — 9–10 months',
-      'PS 3 / VMC 84-524 / CADP Sc1 — 10–11 months',
-      'PS 4 / VMC 95-152 — 10–12 months',
-      'PS 5 / VMC 95-09 — 10–12 months',
-      'PSR 2000-161 — 11–12 months',
-      'PSR 2000-343 — 11–11.5 months',
-      'PSR 2000-34 — 11–12 months',
-      'PSR 97-41 — 11 months',
-      'PSR 97-45 — 10–11 months',
-      'PS 862 — 10–12 months',
-      'VMC 71-39 — 10–12 months',
-      'VMC 84-549 — 10 months',
-      'VMC 86-550 — 11–12 months',
-      'VMC 87-599 — 10–12 months',
-      'VMC 87-95 — 10–11 months',
+      'K 88-65 — 11–13 months',
+      'K 88-87 — 11–13 months',
+      'PS 1 / VMC 84-947 — 10–11 months',
+      'PS 2 / VMC 88-354 — 8–9 months',
+      'PS 3 / VMC 84-524 / CADP Sc1 — 9–10 months',
+      'PS 4 / VMC 95-152 — 9–11 months',
+      'PS 5 / VMC 95-09 — 9–11 months',
+      'PSR 2000-161 — 10–11 months',
+      'PSR 2000-343 — 10–11 months',
+      'PSR 2000-34 — 10–11 months',
+      'PSR 97-41 — 10 months',
+      'PSR 97-45 — 9–10 months',
+      'PS 862 — 9–11 months',
+      'VMC 71-39 — 9–11 months',
+      'VMC 84-549 — 9 months',
+      'VMC 86-550 — 10–11 months',
+      'VMC 87-599 — 9–11 months',
+      'VMC 87-95 — 9–10 months',
       'Others'
     ]
   },
   { id:'expectedHarvestDate', label:'Expected Harvest Date (auto-calculated)', type:'text', readonly: true },
-  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01' },
+  { id:'seedRate', label:'Seed Rate (canepoints/ha)', type:'number', step:'0.01', readonly: true },
   { id:'numberOfSetts', label:'Number of Setts', type:'number', step:'0.01' },
   { id:'totalCaneRequired', label:'Total Cane Required (auto-calculated)', type:'number', step:'0.01', readonly: true, computed: 'numberOfSetts * seedRate' },
-
-  // Labor for preparation of cane points
-  { id:'prepLabor', label:'Labor for Preparation of Cane Points', type:'number', step:'0.01' },
-
-  // Hauling of cane points
-  { id:'haulingCost', label:'Hauling of Cane Points', type:'number', step:'0.01' },
-
-  // Selection & counting of cane points
-  { id:'selectionCountingCost', label:'Selection & Counting of Cane Points', type:'number', step:'0.01' },
 
   // Planting of cane points
   { 
@@ -1221,8 +1203,6 @@ const taskFieldMap = {
 
     // Number of workers
   { id:'workers', label:'Number of Workers', type:'number' },
-
-  { id:'plantingLaborCost', label:'Labor Cost for Planting', type:'number', step:'0.01' },
 
   // Total cost
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1298,7 +1278,7 @@ const taskFieldMap = {
 
   { id:'workers', label:'Number of Workers', type:'number' },
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
@@ -1333,7 +1313,7 @@ const taskFieldMap = {
   },
 
   { id:'workers', label:'Number of Workers', type:'number' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
 ],
@@ -1365,14 +1345,16 @@ const taskFieldMap = {
     dependsOn:{ field:'method', values:['Chemical Weeding'] } 
   },
 
-  { id:'dosage', label:'Dosage (kg or L per ha)', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+  { id:'dosage', label:'Dosage', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] }, hasUnit: true, unitOptions: ['Liter', 'Kilogram'] },
 
-  { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01' },
+  { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01', autoFill: true },
   { id:'workers', label:'Number of Workers', type:'number' },
 
   // Costs
-  { id:'chemicalCost', label:'Chemical Cost', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'chemicalQuantity', label:'Quantity (pieces/units)', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+  { id:'chemicalPricePerPiece', label:'Price per Piece', type:'number', step:'0.01', dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+  { id:'chemicalCost', label:'Chemical Cost (auto-calculated)', type:'number', step:'0.01', readonly: true, dependsOn:{ field:'method', values:['Chemical Weeding'] } },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
 ],
@@ -1410,7 +1392,7 @@ const taskFieldMap = {
     ]
   },
 
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'materialCost', label:'Material / Construction Cost', type:'number', step:'0.01' },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1460,7 +1442,7 @@ const taskFieldMap = {
       'Others'
     ]
   },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'materialCost', label:'Material / Pump Cost', type:'number', step:'0.01' },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1500,7 +1482,7 @@ const taskFieldMap = {
   { id:'dosage', label:'Dosage (L or kg)', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
   { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01' },
   { id:'workers', label:'Number of Workers', type:'number' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'chemicalCost', label:'Chemical Cost', type:'number', step:'0.01', dependsOn: { field:'cleaningMethod', values:['Herbicide / Chemical'] } },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
@@ -1569,7 +1551,7 @@ const taskFieldMap = {
 
   { id:'areaTreated', label:'Area Treated (ha)', type:'number', step:'0.01' },
   { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
-  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' },
 
 ],
@@ -1782,7 +1764,8 @@ const taskFieldMap = {
     id:'laborCost', 
     label:'Labor Cost', 
     type:'number',
-    step:'0.01'
+    step:'0.01',
+    enhanced: true
   },
 
   { 
@@ -1854,7 +1837,8 @@ const taskFieldMap = {
     id:'laborCost', 
     label:'Labor Cost', 
     type:'number',
-    step:'0.01'
+    step:'0.01',
+    enhanced: true
   },
 
   { 
@@ -1895,6 +1879,9 @@ onAuthStateChanged(auth,async user=>{
   loadFields()
 })
 
+// Store current field area for Seed Rate calculation
+let currentFieldArea = null;
+
 async function loadFields(){
   const q = query(collection(db,'fields'), where('userId','==',uid));
   const snap = await getDocs(q);
@@ -1904,14 +1891,86 @@ async function loadFields(){
     snap.docs.map(d => `<option value="${d.id}">${d.data().field_name}</option>`).join('');
 }
 
+// Field selection handler - fetch field data and calculate Seed Rate
+fieldSelect.addEventListener('change', async function() {
+  const fieldId = this.value;
+  currentFieldArea = null;
+  
+  if (!fieldId) {
+    // Reset seed rate if field is deselected
+    const seedRateInput = document.getElementById('seedRate');
+    if (seedRateInput) {
+      seedRateInput.value = '';
+    }
+    return;
+  }
+  
+  try {
+    // Fetch field document to get area
+    const fieldRef = doc(db, 'fields', fieldId);
+    const fieldSnap = await getDoc(fieldRef);
+    
+    if (fieldSnap.exists()) {
+      const fieldData = fieldSnap.data();
+      // Try multiple field area property names for compatibility
+      currentFieldArea = fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size || null;
+      
+      // Calculate Seed Rate if seedRate field exists (for Planting Operation)
+      const seedRateInput = document.getElementById('seedRate');
+      if (seedRateInput && currentFieldArea) {
+        // Formula: Seed Rate = 40,000 × Field Area Size
+        const seedRate = 40000 * parseFloat(currentFieldArea);
+        seedRateInput.value = seedRate.toFixed(2);
+        
+        // Trigger update of totalCaneRequired if it exists
+        const totalCaneRequiredInput = document.getElementById('totalCaneRequired');
+        const numberOfSettsInput = document.getElementById('numberOfSetts');
+        if (totalCaneRequiredInput && numberOfSettsInput) {
+          const setts = parseFloat(numberOfSettsInput.value) || 0;
+          totalCaneRequiredInput.value = (setts * seedRate).toFixed(2);
+        }
+      }
+      
+      // Auto-fill Area Covered for Weeding Management (if not manually edited)
+      const areaCoveredInput = document.getElementById('areaCovered');
+      if (areaCoveredInput && currentFieldArea) {
+        // Only auto-fill if user hasn't manually edited
+        if (areaCoveredInput.dataset.userEdited !== 'true') {
+          areaCoveredInput.value = parseFloat(currentFieldArea).toFixed(2);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching field data:', error);
+  }
+});
+
 // Status selection handler
 statusSelect.onchange = () => {
   const status = statusSelect.value;
+  
+  // Clean up dynamically created Rent Cost containers
+  const existingRentCostContainer = document.getElementById('rentCostContainer');
+  if (existingRentCostContainer) existingRentCostContainer.remove();
+  const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
+  if (existingTruckRentedContainer) existingTruckRentedContainer.remove();
   
   // Reset all dependent fields
   operationSelect.value = '';
   taskType.value = '';
   dynamicForm.innerHTML = '';
+  
+  // Re-enable operation select (in case it was disabled)
+  operationSelect.disabled = false;
+  const operationSelectContainer = document.querySelector(`.custom-select[data-select-id="operationSelect"]`);
+  if (operationSelectContainer) {
+    const operationTrigger = operationSelectContainer.querySelector('.custom-select-trigger');
+    if (operationTrigger) {
+      operationTrigger.style.pointerEvents = '';
+      operationTrigger.style.opacity = '';
+      operationTrigger.style.cursor = '';
+    }
+  }
   
   // Hide all fields until status is selected
   if (!status) {
@@ -1932,17 +1991,53 @@ statusSelect.onchange = () => {
   operationSelect.innerHTML = '<option value="">Select</option>' +
     allowedOperations.map(op => `<option value="${op}">${op}</option>`).join('');
   
+  // Re-initialize custom select after updating options
+  const operationSelectInstance = customSelectInstances.get('operationSelect');
+  if (operationSelectInstance) {
+    operationSelectInstance.renderOptions();
+  }
+  
   operationWrap.classList.remove('hidden');
   taskTypeWrap.classList.add('hidden');
   dynamicForm.classList.add('hidden');
   boughtItemsSection.classList.add('hidden');
   vehicleUpdatesSection.classList.add('hidden');
+  
+  // Auto-select Post-Planting for Tillering or Grand Growth
+  if (status === 'Tillering' || status === 'Grand Growth') {
+    operationSelect.value = 'Post-Planting';
+    operationSelect.disabled = true;
+    
+    // Disable the custom select trigger visually
+    if (operationSelectContainer) {
+      const operationTrigger = operationSelectContainer.querySelector('.custom-select-trigger');
+      if (operationTrigger) {
+        operationTrigger.style.pointerEvents = 'none';
+        operationTrigger.style.opacity = '0.6';
+        operationTrigger.style.cursor = 'not-allowed';
+      }
+    }
+    
+    // Update custom select display
+    if (operationSelectInstance) {
+      operationSelectInstance.updateSelectedLabel();
+    }
+    
+    // Trigger operation change to load task types automatically
+    operationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
 };
 
 // Field Operation selection handler
 operationSelect.onchange = () => {
   const status = statusSelect.value;
   const operation = operationSelect.value;
+
+  // Clean up dynamically created Rent Cost containers
+  const existingRentCostContainer = document.getElementById('rentCostContainer');
+  if (existingRentCostContainer) existingRentCostContainer.remove();
+  const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
+  if (existingTruckRentedContainer) existingTruckRentedContainer.remove();
 
   taskType.value = '';
   dynamicForm.innerHTML = '';
@@ -1997,6 +2092,16 @@ taskType.onchange = () => {
 }
 
 function renderForm(type){
+  // Clean up any dynamically created Rent Cost containers from previous form
+  const existingRentCostContainer = document.getElementById('rentCostContainer');
+  if (existingRentCostContainer) {
+    existingRentCostContainer.remove();
+  }
+  const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
+  if (existingTruckRentedContainer) {
+    existingTruckRentedContainer.remove();
+  }
+  
   dynamicForm.innerHTML = '';
   const fields = taskFieldMap[type] || [];
   
@@ -2024,8 +2129,65 @@ function renderForm(type){
 
     // 🔢 NUMBER INPUT (regular)
     else if(f.type === 'number'){
-      // check kung weight or laborCost
-      if(f.id === 'weight' || f.id === 'laborCost'){
+      // Special handling for dosage with unit selector
+      if(f.id === 'dosage' && f.hasUnit){
+        const unitOptionsHTML = `
+          <option value="">Select unit</option>
+          ${f.unitOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+        `;
+        inputHTML = `
+          <div class="flex gap-2">
+            <input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="flex-1 border rounded px-3 py-2" value="0" required />
+            ${getCustomSelectTemplate(f.id + 'Unit', unitOptionsHTML, 'Select unit', 'required')}
+          </div>
+        `;
+      }
+      // Special handling for areaCovered with auto-fill
+      else if(f.id === 'areaCovered' && f.autoFill){
+        inputHTML = `<input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="w-full border rounded px-3 py-2" value="0" required />`;
+      }
+      // Special handling for chemical cost calculation (Quantity × Price)
+      else if(f.id === 'chemicalCost' && f.readonly){
+        // This will be rendered after quantity and price fields
+        inputHTML = `<input type="number" step="${f.step || 1}" inputmode="decimal" id="${f.id}" class="w-full border rounded px-3 py-2 bg-gray-100" readonly />`;
+      }
+      // Special handling for enhanced Labor Cost
+      else if(f.id === 'laborCost' && f.enhanced){
+        // Enhanced Labor Cost structure with Rate, Workers, Dates, and calculated total
+        inputHTML = `
+          <div id="laborCostEnhancedContainer" class="space-y-3 p-3 border rounded-lg bg-gray-50">
+            <div class="text-xs font-semibold text-gray-700 mb-2">${f.label} Details</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-medium">Rate per Day</label>
+                <input type="number" step="0.01" id="laborRatePerDay" class="w-full border rounded px-3 py-2" value="0" required />
+              </div>
+              <div>
+                <label class="text-xs font-medium">Number of Workers</label>
+                <input type="number" id="laborWorkers" class="w-full border rounded px-3 py-2" value="0" required />
+              </div>
+              <div>
+                <label class="text-xs font-medium">Start Date</label>
+                <input type="date" id="laborStartDate" class="w-full border rounded px-3 py-2" required />
+              </div>
+              <div>
+                <label class="text-xs font-medium">End Date</label>
+                <input type="date" id="laborEndDate" class="w-full border rounded px-3 py-2" required />
+              </div>
+              <div class="md:col-span-2">
+                <label class="text-xs font-medium">Working Days (auto-calculated)</label>
+                <input type="number" id="laborWorkingDays" class="w-full border rounded px-3 py-2 bg-gray-100" readonly />
+              </div>
+              <div class="md:col-span-2">
+                <label class="text-xs font-semibold">Total Labor Cost (auto-calculated)</label>
+                <input type="number" step="0.01" id="laborCost" class="w-full border rounded px-3 py-2 bg-gray-100 font-semibold" readonly />
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      // check kung weight or laborCost (legacy dynamic input)
+      else if(f.id === 'weight' || (f.id === 'laborCost' && !f.enhanced)){
         inputHTML = `
           <div id="${f.id}Container">
             <div class="flex mb-2">
@@ -2085,7 +2247,62 @@ function renderForm(type){
     .filter(f => f.type === 'select')
     .forEach(f => {
       const selectEl = document.getElementById(f.id);
-      if (selectEl) initializeCustomSelect(selectEl);
+      if (selectEl) {
+        initializeCustomSelect(selectEl);
+        
+        // Handle conditional field visibility (dependsOn)
+        if (f.dependsOn) {
+          const dependentFieldId = f.dependsOn.field;
+          const dependentField = document.getElementById(dependentFieldId);
+          if (dependentField) {
+            const updateVisibility = () => {
+              const dependentValue = dependentField.value;
+              const shouldShow = f.dependsOn.values.includes(dependentValue);
+              const fieldContainer = selectEl.closest('.mb-4');
+              if (fieldContainer) {
+                fieldContainer.style.display = shouldShow ? '' : 'none';
+                // Also update required attribute
+                if (selectEl.hasAttribute('required')) {
+                  selectEl.required = shouldShow;
+                }
+              }
+            };
+            
+            // Listen to both custom select and native select changes
+            dependentField.addEventListener('change', updateVisibility);
+            updateVisibility(); // Initial check
+          }
+        }
+      }
+    });
+  
+  // Handle conditional visibility for non-select fields with dependsOn
+  fields
+    .filter(f => f.dependsOn && f.type !== 'select')
+    .forEach(f => {
+      const fieldEl = document.getElementById(f.id);
+      if (fieldEl) {
+        const dependentFieldId = f.dependsOn.field;
+        const dependentField = document.getElementById(dependentFieldId);
+        if (dependentField) {
+          const updateVisibility = () => {
+            const dependentValue = dependentField.value;
+            const shouldShow = f.dependsOn.values.includes(dependentValue);
+            const fieldContainer = fieldEl.closest('.mb-4');
+            if (fieldContainer) {
+              fieldContainer.style.display = shouldShow ? '' : 'none';
+              // Also update required attribute
+              if (fieldEl.hasAttribute('required')) {
+                fieldEl.required = shouldShow;
+              }
+            }
+          };
+          
+          // Listen to both custom select and native select changes
+          dependentField.addEventListener('change', updateVisibility);
+          updateVisibility(); // Initial check
+        }
+      }
     });
 
   // --- SPECIAL HANDLING ---
@@ -2104,8 +2321,8 @@ function renderForm(type){
       // Standard cost fields
       'fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
       'haulingCost', 'harvestCost', 'transportCost', 'cost',
-      // Special labor cost fields
-      'prepLabor', 'plantingLaborCost', 'selectionCountingCost',
+      // Rent cost field
+      'rentCost',
       // Other expense fields
       'haulingExpense'
     ];
@@ -2116,7 +2333,7 @@ function renderForm(type){
       total += parseFloat(fuelInput.value) || 0;
     }
     
-    // Check for 'laborCost' container (special dynamic input case)
+    // Check for legacy 'laborCost' container (special dynamic input case)
     const laborCostContainer = document.getElementById('laborCostContainer');
     const hasLaborCostContainer = !!laborCostContainer;
     if(hasLaborCostContainer) {
@@ -2126,16 +2343,25 @@ function renderForm(type){
       }
     }
     
+    // Check for enhanced labor cost (readonly calculated field)
+    const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
+    const enhancedLaborCostInput = document.getElementById('laborCost');
+    if(laborCostEnhancedContainer && enhancedLaborCostInput && enhancedLaborCostInput.readonly) {
+      // Enhanced labor cost is already calculated, include it
+      total += parseFloat(enhancedLaborCostInput.value) || 0;
+    }
+    
     // Sum all cost-related fields that exist in the form
     costFieldIds.forEach(fieldId => {
-      // Skip laborCost if it's in a container (already handled above)
-      if(fieldId === 'laborCost' && hasLaborCostContainer) {
+      // Skip laborCost if it's in a legacy dynamic container (already handled above)
+      if(fieldId === 'laborCost' && (hasLaborCostContainer || laborCostEnhancedContainer)) {
         return;
       }
       
       const field = document.getElementById(fieldId);
-      if(field && field.type === 'number' && !field.readonly) {
-        // Skip if it's inside a dynamic container (handled separately above)
+      if(field && field.type === 'number') {
+        // Include readonly fields (like enhanced laborCost which is calculated)
+        // Skip if it's inside a legacy dynamic container (handled separately above)
         const container = field.closest('#' + fieldId + 'Container');
         if(!container) {
           total += parseFloat(field.value) || 0;
@@ -2189,8 +2415,8 @@ function renderForm(type){
 
   // 2️⃣ Attach listeners to all cost-related fields for auto-calculation
   const costFieldIds = ['fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost', 
-                        'haulingCost', 'harvestCost', 'transportCost', 'cost', 'prepLabor', 
-                        'plantingLaborCost', 'selectionCountingCost', 'haulingExpense'];
+                        'haulingCost', 'harvestCost', 'transportCost', 'cost', 
+                        'rentCost', 'haulingExpense'];
   
   // Handle dynamic container fields (fuel, laborCost) - listeners already added in updateSum
   // Just need to make sure they trigger updateTotalCost, which is already done in updateSum
@@ -2214,10 +2440,7 @@ function renderForm(type){
         const fieldId = e.target.id;
         // Check if it's a cost-related field
         if(costFieldIds.includes(fieldId) || 
-           (fieldId.toLowerCase().includes('cost') && fieldId !== 'totalCost') || 
-           fieldId === 'prepLabor' || 
-           fieldId === 'plantingLaborCost' || 
-           fieldId === 'selectionCountingCost') {
+           (fieldId.toLowerCase().includes('cost') && fieldId !== 'totalCost')) {
           updateTotalCost();
         }
       }
@@ -2229,9 +2452,197 @@ function renderForm(type){
   updateTotalCost();
 
   // --- Handle computed fields ---
+  
+  // --- Enhanced Labor Cost Calculation ---
+  const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
+  if (laborCostEnhancedContainer) {
+    const laborRatePerDayInput = document.getElementById('laborRatePerDay');
+    const laborWorkersInput = document.getElementById('laborWorkers');
+    const laborStartDateInput = document.getElementById('laborStartDate');
+    const laborEndDateInput = document.getElementById('laborEndDate');
+    const laborWorkingDaysInput = document.getElementById('laborWorkingDays');
+    const laborCostTotalInput = document.getElementById('laborCost');
+    
+    // Function to calculate working days (inclusive of both dates)
+    const calculateWorkingDays = () => {
+      if (!laborStartDateInput || !laborEndDateInput) return 0;
+      
+      const startDate = laborStartDateInput.value;
+      const endDate = laborEndDateInput.value;
+      
+      if (!startDate || !endDate) {
+        if (laborWorkingDaysInput) laborWorkingDaysInput.value = '';
+        return 0;
+      }
+      
+      // Validate: End Date must be >= Start Date
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (end < start) {
+        // Show validation error
+        laborEndDateInput.classList.add('border-red-500');
+        laborEndDateInput.setCustomValidity('End Date must be on or after Start Date');
+        if (laborWorkingDaysInput) laborWorkingDaysInput.value = '';
+        return 0;
+      } else {
+        laborEndDateInput.classList.remove('border-red-500');
+        laborEndDateInput.setCustomValidity('');
+      }
+      
+      // Calculate days (inclusive): difference + 1
+      const diffTime = Math.abs(end - start);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
+      if (laborWorkingDaysInput) {
+        laborWorkingDaysInput.value = diffDays;
+      }
+      
+      return diffDays;
+    };
+    
+    // Function to calculate total labor cost
+    const calculateTotalLaborCost = () => {
+      const rate = parseFloat(laborRatePerDayInput?.value) || 0;
+      const workers = parseFloat(laborWorkersInput?.value) || 0;
+      const workingDays = calculateWorkingDays();
+      
+      const total = rate * workers * workingDays;
+      
+      if (laborCostTotalInput) {
+        laborCostTotalInput.value = total.toFixed(2);
+        // Trigger total cost update
+        updateTotalCost();
+      }
+    };
+    
+    // Attach event listeners
+    if (laborRatePerDayInput) {
+      laborRatePerDayInput.addEventListener('input', calculateTotalLaborCost);
+      laborRatePerDayInput.addEventListener('change', calculateTotalLaborCost);
+    }
+    if (laborWorkersInput) {
+      laborWorkersInput.addEventListener('input', calculateTotalLaborCost);
+      laborWorkersInput.addEventListener('change', calculateTotalLaborCost);
+    }
+    if (laborStartDateInput) {
+      laborStartDateInput.addEventListener('change', calculateTotalLaborCost);
+    }
+    if (laborEndDateInput) {
+      laborEndDateInput.addEventListener('change', calculateTotalLaborCost);
+    }
+    
+    // Pre-populate labor dates from existing startDate/endDate if available
+    const existingStartDate = document.getElementById('startDate');
+    const existingEndDate = document.getElementById('endDate');
+    if (existingStartDate && existingStartDate.value && !laborStartDateInput.value) {
+      laborStartDateInput.value = existingStartDate.value;
+    }
+    if (existingEndDate && existingEndDate.value && !laborEndDateInput.value) {
+      laborEndDateInput.value = existingEndDate.value;
+    }
+    
+    // Initial calculation
+    calculateTotalLaborCost();
+  }
+  
+  // --- Area Covered Auto-Fill (Weeding Management) ---
+  const areaCoveredInput = document.getElementById('areaCovered');
+  if (areaCoveredInput) {
+    // Track if user has manually edited the field (stored in data attribute)
+    if (!areaCoveredInput.dataset.userEdited) {
+      areaCoveredInput.dataset.userEdited = 'false';
+    }
+    
+    // Auto-fill from field area if available and not manually edited
+    if (currentFieldArea && areaCoveredInput.dataset.userEdited === 'false') {
+      areaCoveredInput.value = parseFloat(currentFieldArea).toFixed(2);
+    }
+    
+    // Track manual edits
+    areaCoveredInput.addEventListener('input', function() {
+      this.dataset.userEdited = 'true';
+      
+      // Prevent negative values
+      if (parseFloat(this.value) < 0) {
+        this.value = 0;
+        this.classList.add('border-red-500');
+        setTimeout(() => this.classList.remove('border-red-500'), 2000);
+      }
+    });
+    
+    // Also track on focus/blur to detect programmatic vs manual changes
+    areaCoveredInput.addEventListener('focus', function() {
+      this.dataset.wasEmpty = this.value === '' || this.value === '0';
+    });
+    
+    // Validation for negative values
+    areaCoveredInput.addEventListener('change', function() {
+      if (parseFloat(this.value) < 0) {
+        this.value = 0;
+        this.classList.add('border-red-500');
+        setTimeout(() => this.classList.remove('border-red-500'), 2000);
+      }
+    });
+  }
+  
+  // --- Dosage Unit Selector Initialization (Weeding Management) ---
+  const dosageUnitSelect = document.getElementById('dosageUnit');
+  if (dosageUnitSelect) {
+    initializeCustomSelect(dosageUnitSelect);
+  }
+  
+  // --- Chemical Cost Auto-Calculation (Weeding Management) ---
+  const chemicalQuantityInput = document.getElementById('chemicalQuantity');
+  const chemicalPricePerPieceInput = document.getElementById('chemicalPricePerPiece');
+  const chemicalCostInput = document.getElementById('chemicalCost');
+  
+  if (chemicalQuantityInput && chemicalPricePerPieceInput && chemicalCostInput) {
+    const calculateChemicalCost = () => {
+      const quantity = parseFloat(chemicalQuantityInput.value) || 0;
+      const price = parseFloat(chemicalPricePerPieceInput.value) || 0;
+      
+      // Prevent negative values with validation
+      if (quantity < 0) {
+        chemicalQuantityInput.value = 0;
+        chemicalQuantityInput.classList.add('border-red-500');
+        setTimeout(() => chemicalQuantityInput.classList.remove('border-red-500'), 2000);
+        quantity = 0;
+      }
+      if (price < 0) {
+        chemicalPricePerPieceInput.value = 0;
+        chemicalPricePerPieceInput.classList.add('border-red-500');
+        setTimeout(() => chemicalPricePerPieceInput.classList.remove('border-red-500'), 2000);
+        price = 0;
+      }
+      
+      const total = quantity * price;
+      chemicalCostInput.value = total.toFixed(2);
+      
+      // Trigger total cost update
+      updateTotalCost();
+    };
+    
+    // Attach event listeners
+    chemicalQuantityInput.addEventListener('input', calculateChemicalCost);
+    chemicalQuantityInput.addEventListener('change', calculateChemicalCost);
+    chemicalPricePerPieceInput.addEventListener('input', calculateChemicalCost);
+    chemicalPricePerPieceInput.addEventListener('change', calculateChemicalCost);
+    
+    // Initial calculation
+    calculateChemicalCost();
+  }
+  
+  // Seed Rate auto-calculation (if field is already selected)
+  const seedRateInput = document.getElementById('seedRate');
+  if (seedRateInput && currentFieldArea) {
+    // Formula: Seed Rate = 40,000 × Field Area Size
+    const seedRate = 40000 * parseFloat(currentFieldArea);
+    seedRateInput.value = seedRate.toFixed(2);
+  }
+  
   // Total Cane Required = Number of Setts × Seed Rate
   const numberOfSettsInput = document.getElementById('numberOfSetts');
-  const seedRateInput = document.getElementById('seedRate');
   const totalCaneRequiredInput = document.getElementById('totalCaneRequired');
   
   if (numberOfSettsInput && seedRateInput && totalCaneRequiredInput) {
@@ -2242,7 +2653,7 @@ function renderForm(type){
     };
     
     numberOfSettsInput.addEventListener('input', updateTotalCaneRequired);
-    seedRateInput.addEventListener('input', updateTotalCaneRequired);
+    // Note: seedRate is readonly, so we don't need to listen to its changes
     updateTotalCaneRequired();
   }
 
@@ -2252,74 +2663,34 @@ function renderForm(type){
   const startDateForHarvest = document.getElementById('startDate');
   
   if (expectedHarvestDateInput && varietyInput && startDateForHarvest) {
-    // Variety maturity mapping (extracted from dropdown options)
-    const varietyMaturityMap = {
-      'K 88-65 — 12–14 months': { min: 12, max: 14 },
-      'K 88-87 — 12–14 months': { min: 12, max: 14 },
-      'PS 1 / VMC 84-947 — 11–12 months': { min: 11, max: 12 },
-      'PS 2 / VMC 88-354 — 9–10 months': { min: 9, max: 10 },
-      'PS 3 / VMC 84-524 / CADP Sc1 — 10–11 months': { min: 10, max: 11 },
-      'PS 4 / VMC 95-152 — 10–12 months': { min: 10, max: 12 },
-      'PS 5 / VMC 95-09 — 10–12 months': { min: 10, max: 12 },
-      'PSR 2000-161 — 11–12 months': { min: 11, max: 12 },
-      'PSR 2000-343 — 11–11.5 months': { min: 11, max: 11.5 },
-      'PSR 2000-34 — 11–12 months': { min: 11, max: 12 },
-      'PSR 97-41 — 11 months': { min: 11, max: 11 },
-      'PSR 97-45 — 10–11 months': { min: 10, max: 11 },
-      'PS 862 — 10–12 months': { min: 10, max: 12 },
-      'VMC 71-39 — 10–12 months': { min: 10, max: 12 },
-      'VMC 84-549 — 10 months': { min: 10, max: 10 },
-      'VMC 86-550 — 11–12 months': { min: 11, max: 12 },
-      'VMC 87-599 — 10–12 months': { min: 10, max: 12 },
-      'VMC 87-95 — 10–11 months': { min: 10, max: 11 }
-    };
+    // Import shared harvest date calculation function
+    import('../../backend/Handler/growth-tracker.js').then(({ calculateExpectedHarvestDateMonths }) => {
+      const updateExpectedHarvestDate = () => {
+        const plantingDate = startDateForHarvest.value;
+        const variety = varietyInput.value;
+        
+        if (!plantingDate || !variety || variety === 'Others') {
+          expectedHarvestDateInput.value = '';
+          return;
+        }
 
-    const updateExpectedHarvestDate = () => {
-      const plantingDate = startDateForHarvest.value;
-      const variety = varietyInput.value;
-      
-      if (!plantingDate || !variety || variety === 'Others') {
-        expectedHarvestDateInput.value = '';
-        return;
-      }
-
-      const maturity = varietyMaturityMap[variety];
-      if (!maturity) {
-        expectedHarvestDateInput.value = '';
-        return;
-      }
-
-      const plantingDateObj = new Date(plantingDate);
-      
-      // Calculate earliest harvest date (min months)
-      // JavaScript's setMonth automatically handles year overflow correctly
-      const earliestDate = new Date(plantingDateObj);
-      earliestDate.setMonth(earliestDate.getMonth() + maturity.min);
-      
-      // Calculate latest harvest date (max months)
-      // JavaScript's setMonth automatically handles year overflow correctly
-      const latestDate = new Date(plantingDateObj);
-      latestDate.setMonth(latestDate.getMonth() + maturity.max);
-      
-      // Format dates
-      const formatDate = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${month}/${day}/${year}`;
+        // Use shared function for consistent calculation across system
+        const result = calculateExpectedHarvestDateMonths(plantingDate, variety);
+        if (result) {
+          expectedHarvestDateInput.value = result.formatted;
+        } else {
+          expectedHarvestDateInput.value = '';
+        }
       };
 
-      // Display range if min !== max, otherwise single date
-      if (maturity.min === maturity.max) {
-        expectedHarvestDateInput.value = formatDate(earliestDate);
-      } else {
-        expectedHarvestDateInput.value = `${formatDate(earliestDate)} – ${formatDate(latestDate)}`;
-      }
-    };
-
-    startDateForHarvest.addEventListener('change', updateExpectedHarvestDate);
-    varietyInput.addEventListener('change', updateExpectedHarvestDate);
-    updateExpectedHarvestDate();
+      startDateForHarvest.addEventListener('change', updateExpectedHarvestDate);
+      varietyInput.addEventListener('change', updateExpectedHarvestDate);
+      updateExpectedHarvestDate();
+    }).catch(err => {
+      console.error('Error loading harvest date calculation:', err);
+      // Fallback to empty if import fails
+      expectedHarvestDateInput.value = '';
+    });
   }
 
   // --- Handle Mechanical selection to show "Was a truck rented?" ---
@@ -2329,6 +2700,7 @@ function renderForm(type){
     if (select && (select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical')))) {
       select.addEventListener('change', function() {
         const truckRentedContainer = document.getElementById('truckRentedContainer');
+        const rentCostContainer = document.getElementById('rentCostContainer');
         if (this.value === 'Mechanical' || this.value.includes('Mechanical')) {
           // Check if container already exists
           if (!truckRentedContainer) {
@@ -2339,7 +2711,7 @@ function renderForm(type){
               newDiv.id = 'truckRentedContainer';
               newDiv.className = 'mb-4';
               newDiv.innerHTML = `
-                <label class="text-xs font-medium">Was a truck rented? <span class="text-red-500">*</span></label>
+                <label class="text-xs font-medium">Is the truck rented? <span class="text-red-500">*</span></label>
                 <select id="truckRented" class="w-full border rounded px-3 py-2" required>
                   <option value="">Select</option>
                   <option value="Yes">Yes</option>
@@ -2347,52 +2719,165 @@ function renderForm(type){
                 </select>
               `;
               currentFieldDiv.parentNode.insertBefore(newDiv, currentFieldDiv.nextSibling);
+              
+              // Initialize custom select for truckRented
+              const truckRentedSelect = document.getElementById('truckRented');
+              if (truckRentedSelect) {
+                initializeCustomSelect(truckRentedSelect);
+                
+                // Add handler for truckRented change to show/hide Rent Cost
+                truckRentedSelect.addEventListener('change', function() {
+                  const rentCostContainerEl = document.getElementById('rentCostContainer');
+                  
+                  if (this.value === 'Yes') {
+                    if (!rentCostContainerEl) {
+                      // Create Rent Cost field
+                      const truckRentedDiv = document.getElementById('truckRentedContainer');
+                      if (truckRentedDiv) {
+                        const rentCostDiv = document.createElement('div');
+                        rentCostDiv.id = 'rentCostContainer';
+                        rentCostDiv.className = 'mb-4';
+                        rentCostDiv.innerHTML = `
+                          <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
+                          <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
+                        `;
+                        truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
+                        
+                        // Add event listener for rentCost to update total cost
+                        const rentCostInput = document.getElementById('rentCost');
+                        if (rentCostInput) {
+                          rentCostInput.addEventListener('input', updateTotalCost);
+                          rentCostInput.addEventListener('change', updateTotalCost);
+                        }
+                      }
+                    } else {
+                      rentCostContainerEl.classList.remove('hidden');
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) rentCostInput.required = true;
+                    }
+                  } else {
+                    if (rentCostContainerEl) {
+                      rentCostContainerEl.classList.add('hidden');
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) {
+                        rentCostInput.required = false;
+                        rentCostInput.value = '';
+                      }
+                      updateTotalCost();
+                    }
+                  }
+                });
+              }
             }
           } else {
             truckRentedContainer.classList.remove('hidden');
+            // Re-attach handler if needed (when form is re-rendered)
+            const truckRentedSelect = document.getElementById('truckRented');
+            if (truckRentedSelect && !truckRentedSelect.dataset.rentHandlerAttached) {
+              truckRentedSelect.dataset.rentHandlerAttached = 'true';
+              truckRentedSelect.addEventListener('change', function() {
+                const rentCostContainerEl = document.getElementById('rentCostContainer');
+                
+                if (this.value === 'Yes') {
+                  if (!rentCostContainerEl) {
+                    const truckRentedDiv = document.getElementById('truckRentedContainer');
+                    if (truckRentedDiv) {
+                      const rentCostDiv = document.createElement('div');
+                      rentCostDiv.id = 'rentCostContainer';
+                      rentCostDiv.className = 'mb-4';
+                      rentCostDiv.innerHTML = `
+                        <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
+                      `;
+                      truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
+                      
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) {
+                        rentCostInput.addEventListener('input', updateTotalCost);
+                        rentCostInput.addEventListener('change', updateTotalCost);
+                      }
+                    }
+                  } else {
+                    rentCostContainerEl.classList.remove('hidden');
+                    const rentCostInput = document.getElementById('rentCost');
+                    if (rentCostInput) rentCostInput.required = true;
+                  }
+                } else {
+                  if (rentCostContainerEl) {
+                    rentCostContainerEl.classList.add('hidden');
+                    const rentCostInput = document.getElementById('rentCost');
+                    if (rentCostInput) {
+                      rentCostInput.required = false;
+                      rentCostInput.value = '';
+                    }
+                    updateTotalCost();
+                  }
+                }
+              });
+            }
           }
         } else {
-          if (truckRentedContainer) {
-            truckRentedContainer.classList.add('hidden');
+          // Hide truck rented question and rent cost when Method is not Mechanical
+          const truckRentedContainerEl = document.getElementById('truckRentedContainer');
+          if (truckRentedContainerEl) {
+            truckRentedContainerEl.classList.add('hidden');
             const truckRentedSelect = document.getElementById('truckRented');
-            if (truckRentedSelect) truckRentedSelect.value = '';
+            if (truckRentedSelect) {
+              truckRentedSelect.value = '';
+              truckRentedSelect.dataset.rentHandlerAttached = '';
+            }
+          }
+          const rentCostContainerEl = document.getElementById('rentCostContainer');
+          if (rentCostContainerEl) {
+            rentCostContainerEl.classList.add('hidden');
+            const rentCostInput = document.getElementById('rentCost');
+            if (rentCostInput) {
+              rentCostInput.value = '';
+              rentCostInput.required = false;
+            }
+            updateTotalCost();
           }
         }
       });
     }
   });
 
-  // --- Calculate labor cost from dates (Rate per day × Number of days) ---
-  const startDateInput = document.getElementById('startDate');
-  const endDateInput = document.getElementById('endDate');
-  const laborRateInput = document.getElementById('laborRatePerDay');
-  const laborCostInput = document.getElementById('laborCost');
-  
-  if (startDateInput && endDateInput && laborCostInput && !laborCostInput.closest('#' + laborCostInput.id + 'Container')) {
-    // Only if laborCost is a regular input, not the dynamic container type
-    const updateLaborCostFromDates = () => {
-      const startDate = startDateInput.value;
-      const endDate = endDateInput.value;
-      const laborRate = laborRateInput ? (parseFloat(laborRateInput.value) || 0) : 0;
-      
-      if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
-        
-        if (laborRate > 0) {
-          laborCostInput.value = (laborRate * diffDays).toFixed(2);
-        }
-      }
-    };
+  // --- Legacy labor cost calculation (only if enhanced version doesn't exist) ---
+  const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
+  if (!laborCostEnhancedContainer) {
+    // Only run legacy calculation if enhanced version is not present
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    const laborRateInput = document.getElementById('laborRatePerDay');
+    const laborCostInput = document.getElementById('laborCost');
     
-    if (laborRateInput) {
-      laborRateInput.addEventListener('input', updateLaborCostFromDates);
+    if (startDateInput && endDateInput && laborCostInput && !laborCostInput.closest('#' + laborCostInput.id + 'Container')) {
+      // Only if laborCost is a regular input, not the dynamic container type or enhanced version
+      const updateLaborCostFromDates = () => {
+        const startDate = startDateInput.value;
+        const endDate = endDateInput.value;
+        const laborRate = laborRateInput ? (parseFloat(laborRateInput.value) || 0) : 0;
+        
+        if (startDate && endDate) {
+          const start = new Date(startDate);
+          const end = new Date(endDate);
+          const diffTime = Math.abs(end - start);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+          
+          if (laborRate > 0) {
+            laborCostInput.value = (laborRate * diffDays).toFixed(2);
+            updateTotalCost();
+          }
+        }
+      };
+      
+      if (laborRateInput) {
+        laborRateInput.addEventListener('input', updateLaborCostFromDates);
+      }
+      startDateInput.addEventListener('change', updateLaborCostFromDates);
+      endDateInput.addEventListener('change', updateLaborCostFromDates);
+      updateLaborCostFromDates();
     }
-    startDateInput.addEventListener('change', updateLaborCostFromDates);
-    endDateInput.addEventListener('change', updateLaborCostFromDates);
-    updateLaborCostFromDates();
   }
 
 }
@@ -2616,6 +3101,99 @@ for(const f of fields){
   recordData[f.id] = value;
 }
 
+  // Collect Weeding Management special fields
+  const dosageUnitSelect = document.getElementById('dosageUnit');
+  if (dosageUnitSelect && dosageUnitSelect.value) {
+    recordData.dosageUnit = dosageUnitSelect.value;
+  }
+  
+  const chemicalQuantityInput = document.getElementById('chemicalQuantity');
+  const chemicalPricePerPieceInput = document.getElementById('chemicalPricePerPiece');
+  if (chemicalQuantityInput) {
+    recordData.chemicalQuantity = parseFloat(chemicalQuantityInput.value) || 0;
+  }
+  if (chemicalPricePerPieceInput) {
+    recordData.chemicalPricePerPiece = parseFloat(chemicalPricePerPieceInput.value) || 0;
+  }
+  
+  // Collect enhanced Labor Cost supporting fields if enhanced version exists
+  const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
+  if (laborCostEnhancedContainer) {
+    const laborRatePerDay = document.getElementById('laborRatePerDay');
+    const laborWorkers = document.getElementById('laborWorkers');
+    const laborStartDate = document.getElementById('laborStartDate');
+    const laborEndDate = document.getElementById('laborEndDate');
+    const laborWorkingDays = document.getElementById('laborWorkingDays');
+    
+    // Validate enhanced labor cost fields
+    if (!laborRatePerDay || !laborRatePerDay.value || parseFloat(laborRatePerDay.value) <= 0) {
+      laborRatePerDay?.classList.add('border-red-500');
+      laborRatePerDay?.focus();
+      const removeRed = () => {
+        laborRatePerDay?.classList.remove('border-red-500');
+        laborRatePerDay?.removeEventListener('input', removeRed);
+        laborRatePerDay?.removeEventListener('change', removeRed);
+      };
+      laborRatePerDay?.addEventListener('input', removeRed);
+      laborRatePerDay?.addEventListener('change', removeRed);
+      return;
+    }
+    
+    if (!laborWorkers || !laborWorkers.value || parseFloat(laborWorkers.value) <= 0) {
+      laborWorkers?.classList.add('border-red-500');
+      laborWorkers?.focus();
+      const removeRed = () => {
+        laborWorkers?.classList.remove('border-red-500');
+        laborWorkers?.removeEventListener('input', removeRed);
+        laborWorkers?.removeEventListener('change', removeRed);
+      };
+      laborWorkers?.addEventListener('input', removeRed);
+      laborWorkers?.addEventListener('change', removeRed);
+      return;
+    }
+    
+    if (!laborStartDate || !laborStartDate.value) {
+      laborStartDate?.classList.add('border-red-500');
+      laborStartDate?.focus();
+      const removeRed = () => {
+        laborStartDate?.classList.remove('border-red-500');
+        laborStartDate?.removeEventListener('change', removeRed);
+      };
+      laborStartDate?.addEventListener('change', removeRed);
+      return;
+    }
+    
+    if (!laborEndDate || !laborEndDate.value) {
+      laborEndDate?.classList.add('border-red-500');
+      laborEndDate?.focus();
+      const removeRed = () => {
+        laborEndDate?.classList.remove('border-red-500');
+        laborEndDate?.removeEventListener('change', removeRed);
+      };
+      laborEndDate?.addEventListener('change', removeRed);
+      return;
+    }
+    
+    // Validate date range
+    if (new Date(laborEndDate.value) < new Date(laborStartDate.value)) {
+      laborEndDate.classList.add('border-red-500');
+      laborEndDate.focus();
+      const removeRed = () => {
+        laborEndDate.classList.remove('border-red-500');
+        laborEndDate.removeEventListener('change', removeRed);
+      };
+      laborEndDate.addEventListener('change', removeRed);
+      return;
+    }
+    
+    // Collect values
+    if (laborRatePerDay) recordData.laborRatePerDay = parseFloat(laborRatePerDay.value) || 0;
+    if (laborWorkers) recordData.laborWorkers = parseFloat(laborWorkers.value) || 0;
+    if (laborStartDate) recordData.laborStartDate = laborStartDate.value || '';
+    if (laborEndDate) recordData.laborEndDate = laborEndDate.value || '';
+    if (laborWorkingDays) recordData.laborWorkingDays = parseFloat(laborWorkingDays.value) || 0;
+  }
+
   // Extract variety name from dropdown value (e.g., "K 88-65 — 12–14 months" -> "K 88-65")
   // Also handle aliases like "PS 1 / VMC 84-947" -> "PS 1" or "PS 3 / VMC 84-524 / CADP Sc1" -> "PS 3"
   if (recordData.variety && recordData.variety !== 'Others') {
@@ -2647,6 +3225,27 @@ for(const f of fields){
       return;
     }
     recordData.truckRented = truckRented.value;
+    
+    // Collect rentCost if truckRented is "Yes" and rentCost field exists
+    if(truckRented.value === 'Yes') {
+      const rentCostInput = document.getElementById('rentCost');
+      const rentCostContainer = document.getElementById('rentCostContainer');
+      if(rentCostInput && rentCostContainer && !rentCostContainer.classList.contains('hidden')) {
+        if(!rentCostInput.value || parseFloat(rentCostInput.value) <= 0) {
+          rentCostInput.classList.add('border-red-500');
+          rentCostInput.focus();
+          const removeRed = () => {
+            rentCostInput.classList.remove('border-red-500');
+            rentCostInput.removeEventListener('input', removeRed);
+            rentCostInput.removeEventListener('change', removeRed);
+          };
+          rentCostInput.addEventListener('input', removeRed);
+          rentCostInput.addEventListener('change', removeRed);
+          return;
+        }
+        recordData.rentCost = parseFloat(rentCostInput.value) || 0;
+      }
+    }
   }
 
   // Collect optional bought items

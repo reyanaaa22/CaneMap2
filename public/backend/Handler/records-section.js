@@ -3,6 +3,7 @@
 
 import { db, storage } from '../Common/firebase-config.js';
 import { collection, query, where, getDocs, deleteDoc, doc, orderBy, onSnapshot, getDoc, limit } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
+import { calculateExpectedHarvestDateMonths } from './growth-tracker.js';
 
 // Status color mapping (matching Growth Tracker)
 const STATUS_COLORS = {
@@ -993,6 +994,20 @@ function renderRecordDetails(record) {
   // Get task-specific fields
   const taskFields = getTaskFields(record.taskType, record.data);
   
+  // Calculate expected harvest date from field data
+  let expectedHarvestDateDisplay = 'N/A';
+  const field = fieldsCache[record.fieldId];
+  if (field) {
+    const plantingDate = field.plantingDate?.toDate?.() || field.plantingDate;
+    const variety = field.sugarcane_variety || field.variety;
+    if (plantingDate && variety) {
+      const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+      if (harvestDateRange) {
+        expectedHarvestDateDisplay = harvestDateRange.formatted;
+      }
+    }
+  }
+  
   return `
     <div class="space-y-6">
       <!-- Section 1: General Info -->
@@ -1026,6 +1041,10 @@ function renderRecordDetails(record) {
           <div>
             <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date Submitted</label>
             <p class="mt-1 text-gray-900 font-medium">${dateStr}</p>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Expected Harvest Date</label>
+            <p class="mt-1 text-gray-900 font-medium">${escapeHtml(expectedHarvestDateDisplay)}</p>
           </div>
         </div>
       </div>
@@ -1812,54 +1831,54 @@ function getTaskFieldsForCSV(taskType, data) {
 }
 
 // Export to CSV
-function exportToCSV() {
+async function exportToCSV() {
   const records = getFilteredRecords();
-  
+
   if (records.length === 0) {
     alert('No records to export');
     return;
   }
-  
+
   // Get date range
   const dateRange = getDateRangeString();
-  
+
   // Calculate total cost
   const totalCost = records.reduce((sum, record) => {
     return sum + calculateTotalCost(record);
   }, 0);
-  
+
   // CSV content with title and date range
   const csvLines = [];
-  
+
   // Title and date range header
   csvLines.push('Cost Records');
   csvLines.push(`Date Range: ${dateRange}`);
   csvLines.push(''); // Empty line
-  
+
   // CSV headers - Task Type first, then Operation Name, then other fields
   const headers = ['Task Type', 'Operation Name', 'Field', 'Date', 'Cost'];
-  
+
   // CSV rows
   const rows = records.map(record => {
     const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
-    const dateStr = recordDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    const dateStr = recordDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
-    
+
     // Use comprehensive cost calculation (includes ALL cost inputs)
     const grandTotal = calculateTotalCost(record);
-    
+
     // Get task-specific inputs
     const taskInputs = getTaskFieldsForCSV(record.taskType, record.data);
-    
+
     // Operation name with task-specific inputs
     let operationName = record.operation || 'N/A';
     if (taskInputs) {
       operationName = `${operationName} (${taskInputs})`;
     }
-    
+
     return [
       record.taskType || 'N/A',
       operationName,
@@ -1868,30 +1887,94 @@ function exportToCSV() {
       grandTotal.toFixed(2)
     ];
   });
-  
+
   // Add headers and rows
   csvLines.push(headers.map(h => `"${h}"`).join(','));
   rows.forEach(row => {
     csvLines.push(row.map(cell => `"${cell}"`).join(','));
   });
-  
+
   // Add total cost row
   csvLines.push('');
   csvLines.push(`"Total","","","","${totalCost.toFixed(2)}"`);
-  
+
   // Create CSV content
   const csvContent = csvLines.join('\n');
-  
-  // Download CSV
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', `Cost_Records_${new Date().toISOString().split('T')[0]}.csv`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const filename = `Cost_Records_${new Date().toISOString().split('T')[0]}.csv`;
+
+  // Check if running in Android app
+  const isAndroid = /Android/i.test(navigator.userAgent) && 
+                    (window.Capacitor !== undefined || 
+                     window.cordova !== undefined || 
+                     window.AndroidDownload !== undefined ||
+                     navigator.userAgent.includes('wv'));
+
+  if (isAndroid && window.AndroidDownload) {
+    try {
+      // Check if storage permission is granted
+      const hasPermission = window.AndroidDownload.hasStoragePermission();
+      
+      if (!hasPermission) {
+        // Request storage permissions
+        window.AndroidDownload.requestStoragePermissions();
+        
+        // Wait for user to grant permission (check multiple times with increasing delays)
+        let permissionGranted = false;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+          permissionGranted = window.AndroidDownload.hasStoragePermission();
+          if (permissionGranted) break;
+        }
+        
+        if (!permissionGranted) {
+          alert('Storage permission is required to export CSV. Please grant permission and try again.');
+          return;
+        }
+      }
+
+      // Convert CSV to blob and then to base64
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const base64 = await blobToBase64(blob);
+      
+      // Use Android download interface
+      window.AndroidDownload.downloadFile(base64, filename, 'text/csv');
+      console.log('✅ CSV export triggered via AndroidDownload interface');
+      return;
+    } catch (error) {
+      console.error('❌ Android download failed, falling back to browser method:', error);
+      // Fall through to browser method
+    }
+  }
+
+  // Fallback: Standard browser download
+  try {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  } catch (error) {
+    console.error('❌ Browser download failed:', error);
+    alert('Failed to export CSV. Please try again.');
+  }
+}
+
+// Helper function to convert blob to base64
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result.split(',')[1]; // Remove data:type;base64, prefix
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 // Print records
@@ -2383,10 +2466,19 @@ async function downloadCostRecordsPDF() {
     }
   });
   
+  // Check if running in Android app
+  const isAndroid = /Android/i.test(navigator.userAgent) && 
+                    (window.Capacitor !== undefined || 
+                     window.cordova !== undefined || 
+                     window.AndroidDownload !== undefined ||
+                     navigator.userAgent.includes('wv'));
+
+  const filename = `Cost_Records_${new Date().toISOString().split('T')[0]}.pdf`;
+
   try {
     const opt = {
       margin: [10, 10, 10, 10],
-      filename: `Cost_Records_${new Date().toISOString().split('T')[0]}.pdf`,
+      filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2, 
@@ -2401,10 +2493,66 @@ async function downloadCostRecordsPDF() {
     
     // Generate PDF from iframe body
     const iframeBody = iframeDoc.body;
-    await window.html2pdf()
-      .set(opt)
-      .from(iframeBody)
-      .save();
+    
+    if (isAndroid && window.AndroidDownload) {
+      // For Android: Generate PDF as blob and use Android download interface
+      try {
+        // Check if storage permission is granted
+        const hasPermission = window.AndroidDownload.hasStoragePermission();
+        
+        if (!hasPermission) {
+          // Request storage permissions
+          window.AndroidDownload.requestStoragePermissions();
+          
+          // Wait for user to grant permission (check multiple times with increasing delays)
+          let permissionGranted = false;
+          for (let attempt = 0; attempt < 10; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            permissionGranted = window.AndroidDownload.hasStoragePermission();
+            if (permissionGranted) break;
+          }
+          
+          if (!permissionGranted) {
+            alert('Storage permission is required to download PDF. Please grant permission and try again.');
+            return;
+          }
+        }
+
+        // Generate PDF as blob
+        const pdfBlob = await new Promise((resolve, reject) => {
+          try {
+            window.html2pdf()
+              .set(opt)
+              .from(iframeBody)
+              .outputPdf('blob')
+              .then(resolve)
+              .catch(reject);
+          } catch (e) {
+            reject(e);
+          }
+        });
+        
+        // Convert blob to base64
+        const base64 = await blobToBase64(pdfBlob);
+        
+        // Use Android download interface
+        window.AndroidDownload.downloadFile(base64, filename, 'application/pdf');
+        console.log('✅ PDF download triggered via AndroidDownload interface');
+      } catch (androidError) {
+        console.error('❌ Android download failed, falling back to standard method:', androidError);
+        // Fall through to standard html2pdf save method
+        await window.html2pdf()
+          .set(opt)
+          .from(iframeBody)
+          .save();
+      }
+    } else {
+      // Standard browser method
+      await window.html2pdf()
+        .set(opt)
+        .from(iframeBody)
+        .save();
+    }
   } catch (error) {
     console.error('Error generating PDF:', error);
     alert('Failed to generate PDF. Please try again.');

@@ -19,32 +19,32 @@ function removeUndefined(obj) {
 }
 
 // Variety-specific harvest months range (min-max months)
-// Converted to days using: months * 30.44 (average days per month)
+// Updated to match system-wide Expected Harvest Date requirements
 export const VARIETY_HARVEST_MONTHS_RANGE = {
-  'K 88-65': { min: 12, max: 14 },
-  'K 88-87': { min: 12, max: 14 },
-  'PS 1': { min: 11, max: 12 },
-  'VMC 84-947': { min: 11, max: 12 },
-  'PS 2': { min: 9, max: 10 },
-  'VMC 88-354': { min: 9, max: 10 },
-  'PS 3': { min: 10, max: 11 },
-  'VMC 84-524': { min: 10, max: 11 },
-  'CADP Sc1': { min: 10, max: 11 },
-  'PS 4': { min: 10, max: 12 },
-  'VMC 95-152': { min: 10, max: 12 },
-  'PS 5': { min: 10, max: 12 },
-  'VMC 95-09': { min: 10, max: 12 },
-  'PSR 2000-161': { min: 11, max: 12 },
-  'PSR 2000-343': { min: 11, max: 11.5 },
-  'PSR 2000-34': { min: 11, max: 12 },
-  'PSR 97-41': { min: 11, max: 11 },
-  'PSR 97-45': { min: 10, max: 11 },
-  'PS 862': { min: 10, max: 12 },
-  'VMC 71-39': { min: 10, max: 12 },
-  'VMC 84-549': { min: 10, max: 10 },
-  'VMC 86-550': { min: 11, max: 12 },
-  'VMC 87-599': { min: 10, max: 12 },
-  'VMC 87-95': { min: 10, max: 11 }
+  'K 88-65': { min: 11, max: 13 },
+  'K 88-87': { min: 11, max: 13 },
+  'PS 1': { min: 10, max: 11 },
+  'VMC 84-947': { min: 10, max: 11 },
+  'PS 2': { min: 8, max: 9 },
+  'VMC 88-354': { min: 8, max: 9 },
+  'PS 3': { min: 9, max: 10 },
+  'VMC 84-524': { min: 9, max: 10 },
+  'CADP Sc1': { min: 9, max: 10 },
+  'PS 4': { min: 9, max: 11 },
+  'VMC 95-152': { min: 9, max: 11 },
+  'PS 5': { min: 9, max: 11 },
+  'VMC 95-09': { min: 9, max: 11 },
+  'PSR 2000-161': { min: 10, max: 11 },
+  'PSR 2000-343': { min: 10, max: 11 },
+  'PSR 2000-34': { min: 10, max: 11 },
+  'PSR 97-41': { min: 10, max: 10 },
+  'PSR 97-45': { min: 9, max: 10 },
+  'PS 862': { min: 9, max: 11 },
+  'VMC 71-39': { min: 9, max: 11 },
+  'VMC 84-549': { min: 9, max: 9 },
+  'VMC 86-550': { min: 10, max: 11 },
+  'VMC 87-599': { min: 9, max: 11 },
+  'VMC 87-95': { min: 9, max: 10 }
 };
 
 // Ratoon-specific harvest months range (min-max months)
@@ -187,6 +187,91 @@ export function calculateExpectedHarvestDate(plantingDate, variety, useMin = fal
  */
 export function getHarvestDaysRange(variety) {
   return VARIETY_HARVEST_DAYS_RANGE[variety] || VARIETY_HARVEST_DAYS_RANGE["Others"] || { min: 335, max: 365 };
+}
+
+/**
+ * Calculate expected harvest date range based on variety using months
+ * This is the system-wide standard formula matching Input Records calculation
+ * @param {Date|string} plantingDate - The date when the field was planted
+ * @param {string} variety - Sugarcane variety (may contain aliases like "PS 1 / VMC 84-947")
+ * @returns {{earliest: Date, latest: Date, formatted: string}|null} Expected harvest date range
+ */
+export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
+  if (!plantingDate || !variety) return null;
+
+  // Normalize variety name to handle aliases and dropdown format
+  let normalizedVariety = variety.trim();
+  
+  // Handle variety dropdown format (e.g., "K 88-65 — 12–14 months" -> "K 88-65")
+  if (normalizedVariety.includes('—')) {
+    normalizedVariety = normalizedVariety.split('—')[0].trim();
+  }
+  
+  // Handle alias format (e.g., "PS 1 / VMC 84-947" -> "PS 1")
+  if (normalizedVariety.includes('/')) {
+    normalizedVariety = normalizedVariety.split('/')[0].trim();
+  }
+  
+  // Handle "or" format (e.g., "PS 3 or VMC 84-524 or CADP Sc1" -> "PS 3")
+  if (normalizedVariety.includes('or')) {
+    normalizedVariety = normalizedVariety.split('or')[0].trim();
+  }
+
+  // Get maturity range for the variety
+  let maturity = VARIETY_HARVEST_MONTHS_RANGE[normalizedVariety];
+  
+  // If not found, try exact match
+  if (!maturity) {
+    maturity = VARIETY_HARVEST_MONTHS_RANGE[variety];
+  }
+  
+  // If still not found, try individual variety names from aliases
+  if (!maturity) {
+    for (const [key, value] of Object.entries(VARIETY_HARVEST_MONTHS_RANGE)) {
+      if (variety.includes(key) || normalizedVariety.includes(key)) {
+        maturity = value;
+        break;
+      }
+    }
+  }
+  
+  // Default fallback
+  if (!maturity) {
+    console.warn(`Unknown variety: "${variety}". Using default range (9-11 months).`);
+    maturity = { min: 9, max: 11 };
+  }
+
+  const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
+  
+  // Calculate earliest harvest date (min months)
+  const earliestDate = new Date(planting);
+  earliestDate.setMonth(earliestDate.getMonth() + maturity.min);
+  
+  // Calculate latest harvest date (max months)
+  const latestDate = new Date(planting);
+  latestDate.setMonth(latestDate.getMonth() + maturity.max);
+  
+  // Format dates (MM/DD/YYYY)
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}/${day}/${year}`;
+  };
+  
+  // Format display string
+  let formatted;
+  if (maturity.min === maturity.max) {
+    formatted = formatDate(earliestDate);
+  } else {
+    formatted = `${formatDate(earliestDate)} – ${formatDate(latestDate)}`;
+  }
+  
+  return {
+    earliest: earliestDate,
+    latest: latestDate,
+    formatted: formatted
+  };
 }
 
 /**
@@ -430,7 +515,10 @@ export async function updateFieldGrowthData(userId, fieldId, updates) {
 export async function handlePlantingCompletion(userId, fieldId, variety, plantingDate = new Date()) {
   try {
     const planting = plantingDate instanceof Date ? plantingDate : new Date(plantingDate);
-    const expectedHarvestDate = calculateExpectedHarvestDate(planting, variety);
+    // Use months-based calculation for system-wide consistency
+    const harvestDateRange = calculateExpectedHarvestDateMonths(planting, variety);
+    // Store earliest date for backward compatibility (database expects single date)
+    const expectedHarvestDate = harvestDateRange ? harvestDateRange.earliest : null;
     const currentGrowthStage = getGrowthStage(calculateDAP(planting));
 
     // Fetch existing field data to preserve fertilization dates if they already exist
@@ -971,13 +1059,21 @@ export async function getFieldGrowthData(fieldId) {
     // Calculate growth data only when planting date exists
     const DAP = calculateDAP(plantingDate);
     const currentGrowthStage = getGrowthStage(DAP);
-    const daysRemaining = calculateDaysRemaining(expectedHarvestDate);
+    
+    // Calculate expected harvest date using months-based formula for system-wide consistency
+    const variety = fieldData.sugarcane_variety;
+    const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+    const expectedHarvestDateFormatted = harvestDateRange ? harvestDateRange.formatted : null;
+    // Use earliest date for backward compatibility with existing code that expects Date object
+    const expectedHarvestDateForCalc = harvestDateRange ? harvestDateRange.earliest : expectedHarvestDate;
+    
+    const daysRemaining = calculateDaysRemaining(expectedHarvestDateForCalc);
     const delayInfo = checkFertilizationDelay(plantingDate, basalFertilizationDate, mainFertilizationDate);
-    const overdueInfo = checkHarvestOverdue(expectedHarvestDate, fieldData.sugarcane_variety);
+    const overdueInfo = checkHarvestOverdue(expectedHarvestDateForCalc, variety);
     const fieldStatus = getFieldStatus({
       plantingDate,
-      expectedHarvestDate,
-      variety: fieldData.sugarcane_variety,
+      expectedHarvestDate: expectedHarvestDateForCalc,
+      variety: variety,
       basalFertilizationDate,
       mainFertilizationDate
     });
@@ -985,9 +1081,10 @@ export async function getFieldGrowthData(fieldId) {
     return {
       fieldId,
       fieldName: fieldData.field_name || fieldData.fieldName,
-      variety: fieldData.sugarcane_variety,
+      variety: variety,
       plantingDate,
-      expectedHarvestDate,
+      expectedHarvestDate: expectedHarvestDateForCalc, // Date object for calculations
+      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (MM/DD/YYYY or MM/DD/YYYY – MM/DD/YYYY)
       basalFertilizationDate,
       mainFertilizationDate,
       DAP,
@@ -1012,6 +1109,7 @@ if (typeof window !== 'undefined') {
     calculateDAP,
     getGrowthStage,
     calculateExpectedHarvestDate,
+    calculateExpectedHarvestDateMonths,
     calculateDaysRemaining,
     checkFertilizationDelay,
     checkHarvestOverdue,
@@ -1025,6 +1123,7 @@ if (typeof window !== 'undefined') {
     calculateExpectedHarvestDate,
     getHarvestDaysRange,
     VARIETY_HARVEST_DAYS,
-    VARIETY_HARVEST_DAYS_RANGE
+    VARIETY_HARVEST_DAYS_RANGE,
+    VARIETY_HARVEST_MONTHS_RANGE
   };
 }

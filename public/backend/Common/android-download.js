@@ -44,6 +44,34 @@ export async function downloadFile(blob, filename) {
       
       if (interfaceAvailable) {
         console.log('📥 Using AndroidDownload interface');
+        
+        // Check if storage permission is granted
+        const hasPermission = window.AndroidDownload.hasStoragePermission && 
+                              window.AndroidDownload.hasStoragePermission();
+        
+        if (!hasPermission) {
+          console.log('⚠️ Storage permission not granted, requesting...');
+          // Request storage permissions
+          if (window.AndroidDownload.requestStoragePermissions) {
+            window.AndroidDownload.requestStoragePermissions();
+            
+            // Wait for user to grant permission (check multiple times with increasing delays)
+            let permissionGranted = false;
+            for (let attempt = 0; attempt < 10; attempt++) {
+              await new Promise(resolve => setTimeout(resolve, 300));
+              permissionGranted = window.AndroidDownload.hasStoragePermission && 
+                                  window.AndroidDownload.hasStoragePermission();
+              if (permissionGranted) break;
+            }
+            
+            if (!permissionGranted) {
+              throw new Error('Storage permission is required to download files. Please grant permission and try again.');
+            }
+          } else {
+            throw new Error('Storage permission is required but permission request method is not available.');
+          }
+        }
+        
         const base64 = await blobToBase64(blob);
         try {
           window.AndroidDownload.downloadFile(base64, filename, blob.type || 'application/octet-stream');
@@ -51,6 +79,7 @@ export async function downloadFile(blob, filename) {
           return;
         } catch (error) {
           console.warn('❌ AndroidDownload interface failed:', error);
+          throw error;
         }
       } else {
         console.log('⚠️ AndroidDownload interface not available after waiting');

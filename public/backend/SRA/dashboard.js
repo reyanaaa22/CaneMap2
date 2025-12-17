@@ -1052,6 +1052,47 @@ async function initNotifications(userId) {
                                     // Build field info grid with all fields
                                     const raw = field.raw || {};
                                     const fieldName = field.fieldName || raw.field_name || raw.fieldName || '—';
+                                    
+                                    // Calculate expected harvest date using shared function for consistency
+                                    let expectedHarvestDateDisplay = '—';
+                                    const plantingDate = raw.plantingDate?.toDate?.() || raw.plantingDate;
+                                    const variety = raw.sugarcane_variety;
+                                    
+                                    // Use async import to calculate expected harvest date
+                                    // We'll update the display after the modal is created
+                                    const calculateAndUpdateHarvestDate = async () => {
+                                        if (plantingDate && variety) {
+                                            try {
+                                                const { calculateExpectedHarvestDateMonths } = await import('../Handler/growth-tracker.js');
+                                                const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+                                                if (harvestDateRange) {
+                                                    // Find and update the Expected Harvest Date element
+                                                    const grid = document.querySelector('#fieldDetailsModal .grid');
+                                                    if (grid) {
+                                                        const items = Array.from(grid.children);
+                                                        const expectedHarvestItem = items.find(item => {
+                                                            const label = item.querySelector('.text-xs');
+                                                            return label && label.textContent.trim().toUpperCase() === 'EXPECTED HARVEST DATE';
+                                                        });
+                                                        if (expectedHarvestItem) {
+                                                            const valueEl = expectedHarvestItem.querySelector('.text-base');
+                                                            if (valueEl) {
+                                                                valueEl.textContent = harvestDateRange.formatted;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } catch (err) {
+                                                console.warn('Could not load harvest date calculation:', err);
+                                            }
+                                        }
+                                    };
+                                    
+                                    // Fallback to stored value if available
+                                    if (raw.expectedHarvestDate) {
+                                        expectedHarvestDateDisplay = formatDate(raw.expectedHarvestDate);
+                                    }
+                                    
                                     const info = [
                                         ['Field Name', fieldName],
                                         ['Handler', field.applicantName || raw.applicantName || raw.owner || raw.ownerName || '—'],
@@ -1068,7 +1109,7 @@ async function initNotifications(userId) {
                                         ['Previous Crop', raw.previousCrop || '—'],
                                         ['Current Growth Stage', raw.currentGrowthStage || '—'],
                                         ['Planting Date', formatDate(raw.plantingDate)],
-                                        ['Expected Harvest Date', formatDate(raw.expectedHarvestDate)],
+                                        ['Expected Harvest Date', expectedHarvestDateDisplay],
                                         ['Delay Days', raw.delayDays != null ? String(raw.delayDays) : '—'],
                                         ['Created On', formatDate(raw.createdAt)]
                                     ];
@@ -1107,6 +1148,9 @@ async function initNotifications(userId) {
                                     }
                                     infoSection.appendChild(grid);
                                     content.appendChild(infoSection);
+                                    
+                                    // Calculate and update expected harvest date after modal is created
+                                    calculateAndUpdateHarvestDate();
 
                                     // Images section (look for common image keys)
                                     const imageKeyMap = {

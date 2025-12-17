@@ -500,7 +500,7 @@ async function syncSingleRecord(record) {
                 
                 if (plantingDate && variety) {
                     // Import growth tracker functions
-                    const { calculateExpectedHarvestDate, getHarvestDaysRange } = await import('./growth-tracker.js');
+                    const { calculateExpectedHarvestDateMonths } = await import('./growth-tracker.js');
                     
                     // Handle Timestamp objects
                     let plantingDateObj;
@@ -511,13 +511,16 @@ async function syncSingleRecord(record) {
                     } else {
                         plantingDateObj = new Date(plantingDate);
                     }
-                    const predictedHarvestDate = calculateExpectedHarvestDate(plantingDateObj, variety);
+                    
+                    // Use months-based calculation for system-wide consistency
+                    const harvestDateRange = calculateExpectedHarvestDateMonths(plantingDateObj, variety);
+                    const predictedHarvestDate = harvestDateRange ? harvestDateRange.earliest : null;
                     
                     if (predictedHarvestDate) {
-                        const harvestRange = getHarvestDaysRange(variety);
-                        console.log(`📅 Variety: ${variety}, Harvest Days Range: ${harvestRange.min}-${harvestRange.max} days, Predicted Harvest (using max): ${predictedHarvestDate.toLocaleDateString()}`);
+                        const harvestRange = harvestDateRange;
+                        console.log(`📅 Variety: ${variety}, Harvest Months Range: ${harvestRange ? harvestRange.earliest.toLocaleDateString() + ' - ' + harvestRange.latest.toLocaleDateString() : 'N/A'}, Predicted Harvest (earliest): ${predictedHarvestDate.toLocaleDateString()}`);
                         
-                        // Update field with predicted harvest date
+                        // Update field with predicted harvest date (store earliest date for backward compatibility)
                         const fieldRef = doc(db, 'fields', deserializedData.fieldId);
                         
                         await updateDoc(fieldRef, {
