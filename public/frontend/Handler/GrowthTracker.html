@@ -958,6 +958,9 @@
         let userFields = [];
         let selectedFieldId = null;
         let recordsUnsubscribe = null; // Store unsubscribe function for real-time listener
+        
+        // Expose selectedFieldId globally for button handlers
+        window.selectedFieldIdRef = { value: null };
 
         // Ratoon duration mapping (in months) for each variety
         const RATOON_DURATIONS = {
@@ -1216,6 +1219,7 @@
                 const fieldExists = userFields.find(f => f.id === urlFieldId);
                 if (fieldExists) {
                   selectedFieldId = urlFieldId;
+                  if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = urlFieldId;
                   console.log(`📍 Auto-selecting field from URL: ${urlFieldId}`);
                   
                   // Update native select
@@ -1248,11 +1252,13 @@
                   console.warn(`⚠️ Field ${urlFieldId} not found in handler's fields`);
                   // Fallback to first field if URL fieldId doesn't exist
               selectedFieldId = userFields[0].id;
+              if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
               await displayFieldGrowthData(selectedFieldId);
                 }
               } else {
                 // Normal navigation (no URL parameter) - select first field
                 selectedFieldId = userFields[0].id;
+                if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
                 
                 // Ensure dropdowns are set to first field
                 const fieldSelect = document.getElementById('gtField');
@@ -1336,6 +1342,7 @@
               optionBtn.addEventListener('click', async () => {
                 try {
                 selectedFieldId = field.id;
+                if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
                   
                   // Update native select
                   if (fieldSelect) {
@@ -1376,6 +1383,7 @@
           fieldSelect.addEventListener('change', async (e) => {
             try {
             selectedFieldId = e.target.value;
+            if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
               if (!selectedFieldId) return;
               
             const selectedField = userFields.find(f => f.id === selectedFieldId);
@@ -1569,6 +1577,10 @@
           }
         }
 
+        // Expose functions globally for button handlers
+        window.displayFieldGrowthData = displayFieldGrowthData;
+        window.loadTimelineNodes = loadTimelineNodes;
+
         // Update timeline with progress
         function updateTimeline(growthData) {
           const DAP = growthData.DAP || 0;
@@ -1607,7 +1619,32 @@
           }
           if (tlTill) {
             const status = DAP >= 100 ? 'Completed' : (DAP >= 45 ? 'In Progress' : 'Expected');
-            tlTill.innerHTML = `Status: ${status} - <span id="tlPct">${progress}</span>% Complete`;
+            // Get existing tlPct element to avoid duplicate ID
+            let existingTlPct = document.getElementById('tlPct');
+            
+            if (existingTlPct && existingTlPct.parentNode === tlTill) {
+              // Update the existing element's text content
+              existingTlPct.textContent = progress.toString();
+              // Update status text by replacing the first text node
+              const childNodes = Array.from(tlTill.childNodes);
+              const textNode = childNodes.find(node => node.nodeType === Node.TEXT_NODE);
+              if (textNode) {
+                textNode.textContent = `Status: ${status} - `;
+              } else {
+                // Insert status text before the span if no text node exists
+                tlTill.insertBefore(document.createTextNode(`Status: ${status} - `), existingTlPct);
+              }
+            } else {
+              // If element doesn't exist or is in wrong parent, create new structure
+              // But first remove any existing tlPct to avoid duplicates
+              const allTlPct = document.querySelectorAll('#tlPct');
+              allTlPct.forEach(el => {
+                if (el.id === 'tlPct' && el !== existingTlPct) {
+                  el.removeAttribute('id'); // Remove duplicate ID
+                }
+              });
+              tlTill.innerHTML = `Status: ${status} - <span id="tlPct">${progress}</span>% Complete`;
+            }
           }
           if (tlGrand) {
             const status = DAP >= 240 ? 'Active' : (DAP >= 100 ? 'Starting Soon' : 'Expected');
@@ -2750,112 +2787,241 @@
           // PRINT BUTTON
           const printBtn = document.getElementById("btnPrint");
           if (printBtn) {
-            printBtn.addEventListener("click", () => {
-              const stamp = document.getElementById("generatedStamp");
-              if (stamp) {
-                stamp.textContent = new Date().toLocaleString();
+            printBtn.addEventListener("click", async () => {
+              const originalContent = printBtn.innerHTML;
+              printBtn.disabled = true;
+              printBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+              
+              try {
+                // Get current selected field ID from global reference or try to get from select element
+                const fieldId = window.selectedFieldIdRef?.value || 
+                               (document.getElementById('gtField')?.value) || 
+                               null;
+                
+                // Ensure data is loaded before printing
+                if (fieldId && typeof window.displayFieldGrowthData === 'function') {
+                  try {
+                    // Refresh data to ensure it's current
+                    await window.displayFieldGrowthData(fieldId);
+                    // Wait for timeline nodes to load
+                    if (typeof window.loadTimelineNodes === 'function') {
+                      await window.loadTimelineNodes(fieldId);
+                    }
+                    // Small delay to ensure DOM updates are complete
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                  } catch (error) {
+                    console.warn('Error refreshing data for print:', error);
+                    // Continue with print even if refresh fails
+                  }
+                }
+                
+                const stamp = document.getElementById("generatedStamp");
+                if (stamp) {
+                  stamp.textContent = new Date().toLocaleString();
+                }
+                
+                // Restore button state
+                printBtn.disabled = false;
+                printBtn.innerHTML = originalContent;
+                
+                // Small delay to ensure all content is rendered before print dialog
+                setTimeout(() => {
+                  window.print();
+                }, 200);
+              } catch (error) {
+                console.error('Error preparing print:', error);
+                // Always re-enable button on error
+                printBtn.disabled = false;
+                printBtn.innerHTML = originalContent;
+                alert('Failed to prepare print. Please try again.');
               }
-              window.print();
             });
           }
 
           // PDF BUTTON (captures the whole UI)
           const pdfBtn = document.getElementById("btnDownloadPDF");
           if (pdfBtn) {
-          pdfBtn.addEventListener("click", async () => {
-            const btn = document.getElementById("btnDownloadPDF");
-            const originalContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-
-            try {
-              // Ensure html2pdf is loaded
-              await waitForHtml2pdf();
+            pdfBtn.addEventListener("click", async () => {
+              const btn = document.getElementById("btnDownloadPDF");
+              const printBtn = document.getElementById("btnPrint");
+              const originalContent = btn.innerHTML;
               
-              // Get html2pdf function (check both window.html2pdf and global html2pdf)
-              const html2pdfFn = window.html2pdf || html2pdf;
-              
-              if (typeof html2pdfFn === 'undefined') {
-                throw new Error('html2pdf library failed to load. Please refresh the page.');
-              }
+              // Disable both buttons to prevent multiple clicks
+              btn.disabled = true;
+              if (printBtn) printBtn.disabled = true;
+              btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
 
-              const stamp = document.getElementById("generatedStamp");
-              if (stamp) {
-                stamp.textContent = new Date().toLocaleString();
-              }
-
-              const content = document.getElementById("captureArea");
-              if (!content) {
-                throw new Error('Content area not found');
-              }
-              
-              const filename = `CaneMap_Growth_Report_${Date.now()}.pdf`;
-              
-              const opt = {
-                margin: 10,
-                filename: filename,
-                html2canvas: { 
-                  scale: 2,
-                  useCORS: true,
-                  allowTaint: true,
-                  backgroundColor: '#ffffff',
-                  logging: false
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-              };
-
-              // Generate PDF - use Android-compatible method if in app, otherwise use standard
               try {
-                const { isAndroidApp, downloadFile } = await import('../../backend/Common/android-download.js');
-
-                if (isAndroidApp && isAndroidApp()) {
-                  // For Android: Generate blob and use download utility
-                  const pdfBlob = await new Promise((resolve, reject) => {
-                    try {
-                      html2pdfFn()
-                        .set(opt)
-                        .from(content)
-                        .outputPdf('blob')
-                        .then(resolve)
-                        .catch(reject);
-                    } catch (e) {
-                      reject(e);
+                // Get current selected field ID from global reference or try to get from select element
+                const fieldId = window.selectedFieldIdRef?.value || 
+                               (document.getElementById('gtField')?.value) || 
+                               null;
+                
+                // Ensure data is loaded before generating PDF
+                if (fieldId && typeof window.displayFieldGrowthData === 'function') {
+                  try {
+                    await window.displayFieldGrowthData(fieldId);
+                    // Wait for timeline nodes to load
+                    if (typeof window.loadTimelineNodes === 'function') {
+                      await window.loadTimelineNodes(fieldId);
                     }
-                  });
-                  
-                  if (!pdfBlob || pdfBlob.size === 0) {
-                    throw new Error('Generated PDF is empty');
+                    // Small delay to ensure DOM updates are complete
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                  } catch (error) {
+                    console.warn('Error refreshing data for PDF:', error);
+                    // Continue with PDF generation even if refresh fails
                   }
-                  
-                  await downloadFile(pdfBlob, filename);
-                  // Small delay to ensure download starts before hiding animation
-                  await new Promise(resolve => setTimeout(resolve, 500));
-                } else {
-                  // For browser: Use standard save method
+                }
+                
+                // Ensure html2pdf is loaded
+                await waitForHtml2pdf();
+                
+                // Get html2pdf function (check both window.html2pdf and global html2pdf)
+                const html2pdfFn = window.html2pdf || html2pdf;
+                
+                if (typeof html2pdfFn === 'undefined') {
+                  throw new Error('html2pdf library failed to load. Please refresh the page.');
+                }
+
+                const stamp = document.getElementById("generatedStamp");
+                if (stamp) {
+                  stamp.textContent = new Date().toLocaleString();
+                }
+
+                const content = document.getElementById("captureArea");
+                if (!content) {
+                  throw new Error('Content area not found');
+                }
+                
+                const filename = `CaneMap_Growth_Report_${Date.now()}.pdf`;
+                
+                // Enhanced html2canvas options to handle gradients and complex CSS
+                const opt = {
+                  margin: [10, 10, 10, 10],
+                  filename: filename,
+                  html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false, // Changed to false to avoid taint issues
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: content.scrollWidth,
+                    windowHeight: content.scrollHeight,
+                    removeContainer: false,
+                    imageTimeout: 15000,
+                    timeout: 30000, // 30 second timeout for canvas generation
+                    onclone: (clonedDoc) => {
+                      // Fix gradients and complex CSS that cause issues in html2canvas
+                      try {
+                        const clonedWindow = clonedDoc.defaultView || clonedDoc.parentWindow;
+                        if (clonedWindow) {
+                          const style = clonedDoc.createElement('style');
+                          style.textContent = `
+                            * {
+                              background-image: none !important;
+                              -webkit-background-clip: unset !important;
+                              background-clip: unset !important;
+                            }
+                            .bg-gradient-to-br,
+                            .bg-gradient-to-r,
+                            .bg-gradient-to-b,
+                            body.bg-gradient-to-br {
+                              background: #f0f7e9 !important;
+                              background-image: none !important;
+                            }
+                            .progress-bar-fill,
+                            .progress-bar-fill::after {
+                              background: #3a7a0f !important;
+                              background-image: none !important;
+                            }
+                            .progress-bar-track {
+                              background: #e5e7eb !important;
+                              background-image: none !important;
+                            }
+                            [class*="gradient"],
+                            [style*="gradient"] {
+                              background-image: none !important;
+                            }
+                          `;
+                          clonedDoc.head.appendChild(style);
+                        }
+                        
+                        // Also remove gradient styles from inline styles
+                        const allElements = clonedDoc.querySelectorAll('*');
+                        allElements.forEach(el => {
+                          const style = el.style;
+                          if (style.backgroundImage && style.backgroundImage.includes('gradient')) {
+                            style.backgroundImage = 'none';
+                          }
+                          if (style.background && style.background.includes('gradient')) {
+                            const bgColor = window.getComputedStyle(el).backgroundColor || '#f0f7e9';
+                            style.background = bgColor;
+                            style.backgroundImage = 'none';
+                          }
+                        });
+                      } catch (cloneError) {
+                        console.warn('Error in onclone callback:', cloneError);
+                        // Continue even if onclone fails
+                      }
+                    }
+                  },
+                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                // Generate PDF - use Android-compatible method if in app, otherwise use standard
+                try {
+                  const { isAndroidApp, downloadFile } = await import('../../backend/Common/android-download.js');
+
+                  if (isAndroidApp && isAndroidApp()) {
+                    // For Android: Generate blob and use download utility
+                    const pdfBlob = await new Promise((resolve, reject) => {
+                      try {
+                        html2pdfFn()
+                          .set(opt)
+                          .from(content)
+                          .outputPdf('blob')
+                          .then(resolve)
+                          .catch(reject);
+                      } catch (e) {
+                        reject(e);
+                      }
+                    });
+                    
+                    if (!pdfBlob || pdfBlob.size === 0) {
+                      throw new Error('Generated PDF is empty');
+                    }
+                    
+                    await downloadFile(pdfBlob, filename);
+                    // Small delay to ensure download starts before hiding animation
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                  } else {
+                    // For browser: Use standard save method
+                    await html2pdfFn()
+                      .set(opt)
+                      .from(content)
+                      .save();
+                    // Small delay to ensure download starts before hiding animation
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                  }
+                } catch (importError) {
+                  // Fallback if android-download module is not available
+                  console.warn('Android download module not available, using standard method:', importError);
                   await html2pdfFn()
                     .set(opt)
                     .from(content)
                     .save();
-                  // Small delay to ensure download starts before hiding animation
                   await new Promise(resolve => setTimeout(resolve, 300));
                 }
-              } catch (importError) {
-                // Fallback if android-download module is not available
-                console.warn('Android download module not available, using standard method:', importError);
-                await html2pdfFn()
-                  .set(opt)
-                  .from(content)
-                  .save();
-                await new Promise(resolve => setTimeout(resolve, 300));
+              } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Failed to generate PDF: ' + (error.message || 'Please try again.'));
+              } finally {
+                // Always re-enable buttons, even on error
+                btn.disabled = false;
+                if (printBtn) printBtn.disabled = false;
+                btn.innerHTML = originalContent;
               }
-            } catch (error) {
-              console.error('Error generating PDF:', error);
-              alert('Failed to generate PDF: ' + (error.message || 'Please try again.'));
-            } finally {
-              btn.disabled = false;
-              btn.innerHTML = originalContent;
-            }
-          });
+            });
           }
         }
 
