@@ -1120,20 +1120,7 @@ async function initNotifications(userId) {
                                         'back_id': 'Valid ID Back',
                                         'selfieUrl': 'Selfie with ID',
                                         'selfie_with_id': 'Selfie with ID',
-                                        'selfie_id': 'Selfie with ID',
-                                        'barangay_certification': 'Barangay Certification',
-                                        'barangay_certificate': 'Barangay Certificate',
-                                        'barangay_certification_url': 'Barangay Certification',
-                                        'barangay_certificate_url': 'Barangay Certificate',
-                                        'barangayCertUrl': 'Barangay Certificate',
-                                        'brgyCertUrl': 'Barangay Certificate',
-                                        'brgy_certificate': 'Barangay Certificate',
-                                        'barangayCert': 'Barangay Certificate',
-                                        'land_title': 'Land Title',
-                                        'land_title_url': 'Land Title',
-                                        'landTitleUrl': 'Land Title',
-                                        'land_titleURL': 'Land Title',
-                                        'landTitle': 'Land Title'
+                                        'selfie_id': 'Selfie with ID'
                                     };
                                     const foundImages = {};
                                     for (const key of Object.keys(imageKeyMap)) {
@@ -1742,20 +1729,7 @@ async function initNotifications(userId) {
                                     'back_id': 'Valid ID Back',
                                     'selfieUrl': 'Selfie with ID',
                                     'selfie_with_id': 'Selfie with ID',
-                                    'selfie_id': 'Selfie with ID',
-                                    'barangay_certification': 'Barangay Certification',
-                                    'barangay_certificate': 'Barangay Certificate',
-                                    'barangay_certification_url': 'Barangay Certification',
-                                    'barangay_certificate_url': 'Barangay Certificate',
-                                    'barangayCertUrl': 'Barangay Certificate',
-                                    'brgyCertUrl': 'Barangay Certificate',
-                                    'brgy_certificate': 'Barangay Certificate',
-                                    'barangayCert': 'Barangay Certificate',
-                                    'land_title': 'Land Title',
-                                    'land_title_url': 'Land Title',
-                                    'landTitleUrl': 'Land Title',
-                                    'land_titleURL': 'Land Title',
-                                    'landTitle': 'Land Title'
+                                    'selfie_id': 'Selfie with ID'
                                 };
                                 const foundImages = {};
                                 for (const key of Object.keys(imageKeyMap)) {

@@ -466,32 +466,6 @@ docSection.innerHTML = `
 
   <div class="grid grid-cols-1 gap-6 w-full">
 
-    <!-- Barangay Certificate -->
-    <div class="rounded-xl border border-gray-300 p-4 bg-white shadow-sm w-full">
-      <label class="block text-sm font-semibold mb-2">Barangay Certificate</label>
-      <div id="prev_barangayCertUrl" class="text-sm text-gray-700 min-h-[24px]"></div>
-      ${editable ? `
-        <button type="button" data-doc="barangayCertUrl"
-          class="change-btn w-fit px-3 py-2 rounded bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white text-sm font-medium transition mt-2">
-          <i class="fa-solid fa-camera mr-1"></i> Change Photo
-        </button>` : ''}
-      <input type="file" id="file_barangayCertUrl" accept="image/*" style="display:none">
-      <input type="hidden" id="b64_barangayCertUrl">
-    </div>
-
-    <!-- Land Title -->
-    <div class="rounded-xl border border-gray-300 p-4 bg-white shadow-sm w-full">
-      <label class="block text-sm font-semibold mb-2">Land Title</label>
-      <div id="prev_landTitleUrl" class="text-sm text-gray-700 min-h-[24px]"></div>
-      ${editable ? `
-        <button type="button" data-doc="landTitleUrl"
-          class="change-btn w-fit px-3 py-2 rounded bg-[var(--cane-700)] hover:bg-[var(--cane-800)] text-white text-sm font-medium transition mt-2">
-          <i class="fa-solid fa-camera mr-1"></i> Change Photo
-        </button>` : ''}
-      <input type="file" id="file_landTitleUrl" accept="image/*" style="display:none">
-      <input type="hidden" id="b64_landTitleUrl">
-    </div>
-
     <!-- Valid ID (Front) -->
     <div class="rounded-xl border border-gray-300 p-4 bg-white shadow-sm w-full">
       <label class="block text-sm font-semibold mb-2">Valid ID (Front)</label>
@@ -587,7 +561,7 @@ docSection.innerHTML = `
   }
 
   // After appending HTML, set previews
-  ['barangayCertUrl','landTitleUrl','validFrontUrl','validBackUrl','selfieUrl'].forEach(key=>{
+  ['validFrontUrl','validBackUrl','selfieUrl'].forEach(key=>{
     setPreview(modal.querySelector(`#prev_${key}`), data[key]);
   });
 
@@ -846,7 +820,7 @@ modal.querySelectorAll('.change-btn').forEach(btn => {
     // Step 1: log changes for debugging
     const textChanged = logChanges(data, newData);
 
-    const fileKeys = ['barangayCertUrl','landTitleUrl','validFrontUrl','validBackUrl','selfieUrl'];
+    const fileKeys = ['validFrontUrl','validBackUrl','selfieUrl'];
     let fileChanged = false;
 
     fileKeys.forEach(k => {
@@ -990,7 +964,7 @@ document.body.appendChild(savingOverlay);
       isNew: true
     };
 
-const uploadKeys = ['barangayCertUrl','landTitleUrl','validFrontUrl','validBackUrl','selfieUrl'];
+const uploadKeys = ['validFrontUrl','validBackUrl','selfieUrl'];
 
 await Promise.all(uploadKeys.map(async key => {
   const fileEl = modal.querySelector(`#file_${key}`);

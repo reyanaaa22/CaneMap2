@@ -72,26 +72,6 @@ const selfie = pickFirst(raw, [
   'selfieUrl', 'selfie_with_id', 'selfie_id'
 ]);
 
-// ✅ Barangay Certificate field (supports your barangayCertUrl key)
-const brgyCert = pickFirst(raw, [
-  'barangay_certification',
-  'barangay_certificate',
-  'barangay_certification_url',
-  'barangay_certificate_url',
-  'barangayCertUrl',
-  'brgyCertUrl',
-  'brgy_certificate',
-  'barangayCert'
-]);
-
-// ✅ Land Title field (supports your landTitleUrl key)
-const landTitle = pickFirst(raw, [
-  'land_title',
-  'land_title_url',
-  'landTitleUrl',
-  'land_titleURL',
-  'landTitle'
-]);
 
   return {
     id: d.id,
@@ -113,9 +93,7 @@ const landTitle = pickFirst(raw, [
     images: {
       validFront,
       validBack,
-      selfie,
-      brgyCert,
-      landTitle,
+      selfie
     },
   };
 };
@@ -317,18 +295,6 @@ async function openModal(app) {
 
     return img;
   };
-
-  // Barangay Certificate
-  const brgyCertWrap = h('div', 'space-y-2 pb-4');
-  brgyCertWrap.appendChild(h('div', 'text-sm font-semibold text-[var(--cane-700)]', 'Barangay Certificate'));
-  brgyCertWrap.appendChild(makeImg(app.images.brgyCert));
-  content.appendChild(brgyCertWrap);
-
-  // Land Title
-  const landTitleWrap = h('div', 'space-y-2 pb-4');
-  landTitleWrap.appendChild(h('div', 'text-sm font-semibold text-[var(--cane-700)]', 'Land Title'));
-  landTitleWrap.appendChild(makeImg(app.images.landTitle));
-  content.appendChild(landTitleWrap);
 
   // ID Documents (2 columns)
   const idWrap = h('div', 'space-y-2 pb-4');
@@ -831,8 +797,6 @@ async function renderFromSnapshot(snapshot, status = 'all') {
     const validFront = pickFirst(raw, ['validFrontUrl', 'valid_id_front', 'valid_front', 'front_id']);
     const validBack = pickFirst(raw, ['validBackUrl', 'valid_id_back', 'valid_back', 'back_id']);
     const selfie = pickFirst(raw, ['selfieUrl', 'selfie_with_id', 'selfie_id']);
-    const brgyCert = pickFirst(raw, ['barangay_certification', 'barangay_certificate', 'barangay_certification_url', 'barangay_certificate_url', 'barangayCertUrl', 'brgyCertUrl', 'brgy_certificate', 'barangayCert']);
-    const landTitle = pickFirst(raw, ['land_title', 'land_title_url', 'landTitleUrl', 'land_titleURL', 'landTitle']);
 
     return {
       id: d.id,
@@ -851,7 +815,7 @@ async function renderFromSnapshot(snapshot, status = 'all') {
       lng: pickFirst(raw, ['longitude', 'lng']),
       status: pickFirst(raw, ['status']) || 'pending',
       createdAt: pickFirst(raw, ['submittedAt', 'createdAt']),
-      images: { validFront, validBack, selfie, brgyCert, landTitle }
+      images: { validFront, validBack, selfie }
     };
   };
 

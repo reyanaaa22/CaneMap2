@@ -72,7 +72,7 @@ async function compressImageDataUrlIfNeeded(dataUrl, {
 }
 
 // ---------------------------------------------
-// 🧾 Barangay Certificate & Land Title Upload Fix
+// 🧾 Document Upload Helper
 // ---------------------------------------------
 function setupDocUpload(fileInputId, base64InputId, nameDisplayId) {
   const fileInput = document.getElementById(fileInputId);
@@ -106,9 +106,6 @@ function setupDocUpload(fileInputId, base64InputId, nameDisplayId) {
   });
 }
 
-// ✅ Attach handlers for Barangay Certificate & Land Title
-setupDocUpload("barangay_certification", "barangay_certification_base64", "barangay_certification_name");
-setupDocUpload("land_title", "land_title_base64", "land_title_name");
 
 // ----------------------------
 // 📸 CAMERA CAPTURE + FILE UPLOAD (Unified)
@@ -392,9 +389,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const validBack = form.querySelector("#valid_id_back")?.value || "";
     const selfie = form.querySelector("#selfie_with_id")?.value || "";
 
-    const barangayCert = form.querySelector("#barangay_certification_base64")?.value || "";
-    const landTitle = form.querySelector("#land_title_base64")?.value || "";
-
     // ✅ Validation with proper error handling
     if (
       !fieldName ||
@@ -504,12 +498,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Upload all images in parallel instead of sequentially (faster on slow internet)
-      const [frontURL, backURL, selfieURL, barangayURL, landTitleURL] = await Promise.all([
+      const [frontURL, backURL, selfieURL] = await Promise.all([
         uploadBase64(validFront, "valid_front"),
         uploadBase64(validBack, "valid_back"),
-        uploadBase64(selfie, "selfie"),
-        barangayCert ? uploadBase64(barangayCert, "barangay_certificate") : Promise.resolve(""),
-        landTitle ? uploadBase64(landTitle, "land_title") : Promise.resolve("")
+        uploadBase64(selfie, "selfie")
       ]);
 
       // REQ-10: Get field boundary coordinates from map
@@ -551,9 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updatedAt: serverTimestamp(),
         validBackUrl: backURL,
         validFrontUrl: frontURL,
-        selfieUrl: selfieURL,
-        barangayCertUrl: barangayURL,
-        landTitleUrl: landTitleURL
+        selfieUrl: selfieURL
       };
 
       // Write field document and create SRA notification in parallel (faster)
@@ -647,7 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <p>This service allows landowners and handlers to register their sugarcane fields for SRA validation, including land location, area, terrain, and supporting documents.</p>
 
     <h4 class="font-semibold">2. User Obligations</h4>
-    <p>Users must provide accurate information and valid supporting documents (barangay certificate, land title, or equivalent). Submitting false or misleading data may result in account suspension or legal action.</p>
+    <p>Users must provide accurate information and valid supporting documents. Submitting false or misleading data may result in account suspension or legal action.</p>
 
     <h4 class="font-semibold">3. Submitted Data</h4>
     <p>All fields submitted, including coordinates, uploaded documents, and captured images (front ID, back ID, selfie with ID), are used solely for official verification and mapping under the Sugar Regulatory Administration (SRA).</p>
