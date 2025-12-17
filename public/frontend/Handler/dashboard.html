@@ -408,6 +408,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        /* Move username to right edge */
+        #handlerHeaderContainer .flex.items-center.space-x-3.sm\:space-x-4 {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
         /* Mobile sidebar initialization */
         .mobile-sidebar-init #handlerMain {
             transition: none !important;
