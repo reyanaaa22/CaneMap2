@@ -1906,11 +1906,11 @@
                 </div>
 
                 <!-- Fields Layout: Map + Summary -->
-                <div id="fieldsDefault" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-2">
+                <div id="fieldsDefault" class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] gap-2 px-1.5 sm:px-0">
                     <!-- Left: Map Section -->
                     <div class="section-card rounded-lg shadow-sm flex flex-col" style="padding: 0.5rem;">
                         <div class="mb-2 pb-1.5 border-b border-gray-200 flex-shrink-0">
-                            <div class="flex items-center justify-between mb-1">
+                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-1">
                                 <div class="flex items-center gap-1.5">
                                     <div class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gray-900 text-white text-xs">
                                         <i class="fas fa-map-marked-alt"></i>
@@ -1920,10 +1920,10 @@
                                         <p class="text-[10px] text-gray-600">All your registered field locations.</p>
                                     </div>
                                 </div>
-                                <div class="flex gap-1.5">
+                                <div class="flex gap-1.5 w-full sm:w-auto sm:justify-end">
                                     <div class="relative">
                                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"></i>
-                                        <input id="handlerFieldsSearch" type="text" placeholder="Search fields..." class="pl-7 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cane-500)] focus:border-transparent w-64" />
+                                        <input id="handlerFieldsSearch" type="text" placeholder="Search fields..." class="pl-7 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--cane-500)] focus:border-transparent w-full sm:w-64" />
                                     </div>
                                 </div>
                             </div>
