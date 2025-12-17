@@ -28,6 +28,12 @@ import java.util.List;
 public class MainActivity extends BridgeActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1001;
+    private static final int PERMISSION_REQUEST_CODE_CAMERA = 1002;
+    private static final int PERMISSION_REQUEST_CODE_STORAGE = 1003;
+    
+    // Store callback IDs for permission requests
+    public String pendingCameraCallback = null;
+    public String pendingStorageCallback = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -152,7 +158,57 @@ public class MainActivity extends BridgeActivity {
 
                             ActivityCompat.requestPermissions(MainActivity.this,
                                     new String[] { Manifest.permission.CAMERA },
-                                    PERMISSION_REQUEST_CODE);
+                                    PERMISSION_REQUEST_CODE_CAMERA);
+                        }
+                    });
+                }
+
+                // Request camera permission and return result via callback
+                @android.webkit.JavascriptInterface
+                public void requestCameraPermissionWithCallback(String callbackId) {
+                    runOnUiThread(() -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (checkCameraPermission()) {
+                                // Already granted, notify JavaScript
+                                webView.evaluateJavascript(
+                                    "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', true, 'camera');",
+                                    null);
+                            } else {
+                                // Store callback ID for later
+                                MainActivity.this.pendingCameraCallback = callbackId;
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                        new String[] { Manifest.permission.CAMERA },
+                                        PERMISSION_REQUEST_CODE_CAMERA);
+                            }
+                        } else {
+                            // Android < 6.0, permissions granted at install
+                            webView.evaluateJavascript(
+                                "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', true, 'camera');",
+                                null);
+                        }
+                    });
+                }
+
+                // Request storage permission and return result via callback
+                @android.webkit.JavascriptInterface
+                public void requestStoragePermissionWithCallback(String callbackId) {
+                    runOnUiThread(() -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (checkStoragePermission()) {
+                                // Already granted, notify JavaScript
+                                webView.evaluateJavascript(
+                                    "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', true, 'storage');",
+                                    null);
+                            } else {
+                                // Store callback ID for later
+                                MainActivity.this.pendingStorageCallback = callbackId;
+                                requestStoragePermissions();
+                            }
+                        } else {
+                            // Android < 6.0, permissions granted at install
+                            webView.evaluateJavascript(
+                                "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', true, 'storage');",
+                                null);
                         }
                     });
                 }
@@ -199,7 +255,7 @@ public class MainActivity extends BridgeActivity {
                 ActivityCompat.requestPermissions(
                         this,
                         permissionsToRequest.toArray(new String[0]),
-                        PERMISSION_REQUEST_CODE);
+                        PERMISSION_REQUEST_CODE_STORAGE);
             }
         }
     }
@@ -209,6 +265,25 @@ public class MainActivity extends BridgeActivity {
             String[] permissions,
             int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        WebView webView = this.bridge != null ? this.bridge.getWebView() : null;
+        if (webView == null) return;
+        
+        boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        
+        if (requestCode == PERMISSION_REQUEST_CODE_CAMERA && pendingCameraCallback != null) {
+            String callbackId = pendingCameraCallback;
+            pendingCameraCallback = null;
+            webView.evaluateJavascript(
+                "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', " + granted + ", 'camera');",
+                null);
+        } else if (requestCode == PERMISSION_REQUEST_CODE_STORAGE && pendingStorageCallback != null) {
+            String callbackId = pendingStorageCallback;
+            pendingStorageCallback = null;
+            webView.evaluateJavascript(
+                "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', " + granted + ", 'storage');",
+                null);
+        }
     }
 
     private boolean checkStoragePermission() {

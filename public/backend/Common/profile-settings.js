@@ -326,6 +326,17 @@ function populateEditModal() {
 function startCamera() {
   if (!ui.cameraModal || !ui.cameraVideo) return;
   
+  // Request camera permission before accessing camera
+  try {
+    const { requestCameraPermissionWithMessage } = await import("./android-permissions.js");
+    const granted = await requestCameraPermissionWithMessage();
+    if (!granted) {
+      return; // Permission denied
+    }
+  } catch (err) {
+    console.warn("Permission check failed, proceeding anyway:", err);
+  }
+  
   navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
     .then(stream => {
       currentCameraStream = stream;
@@ -518,7 +529,19 @@ ui.updateModalCancelBtn?.addEventListener('click', () => closeModal(ui.updateMod
 ui.updateModalCancelSecondaryBtn?.addEventListener('click', () => closeModal(ui.updateModal));
 
 // Update Modal Photo Upload
-ui.updateModalPhotoUploadBtn?.addEventListener('click', () => ui.updateModalPhotoFileInput.click());
+ui.updateModalPhotoUploadBtn?.addEventListener('click', async () => {
+  // Request storage permission before opening file picker
+  try {
+    const { requestStoragePermissionWithMessage } = await import("./android-permissions.js");
+    const granted = await requestStoragePermissionWithMessage();
+    if (!granted) {
+      return; // Permission denied
+    }
+  } catch (err) {
+    console.warn("Permission check failed, proceeding anyway:", err);
+  }
+  ui.updateModalPhotoFileInput.click();
+});
 ui.updateModalPhotoFileInput?.addEventListener('change', () => {
   const f = ui.updateModalPhotoFileInput.files?.[0];
   if (f) {
@@ -544,7 +567,19 @@ ui.editModalCancelBtn?.addEventListener('click', () => closeModal(ui.editProfile
 ui.editModalCancelSecondaryBtn?.addEventListener('click', () => closeModal(ui.editProfileModal));
 
 // Edit Modal Photo Upload
-ui.editModalPhotoUploadBtn?.addEventListener('click', () => ui.editModalPhotoFileInput.click());
+ui.editModalPhotoUploadBtn?.addEventListener('click', async () => {
+  // Request storage permission before opening file picker
+  try {
+    const { requestStoragePermissionWithMessage } = await import("./android-permissions.js");
+    const granted = await requestStoragePermissionWithMessage();
+    if (!granted) {
+      return; // Permission denied
+    }
+  } catch (err) {
+    console.warn("Permission check failed, proceeding anyway:", err);
+  }
+  ui.editModalPhotoFileInput.click();
+});
 ui.editModalPhotoFileInput?.addEventListener('change', () => {
   const f = ui.editModalPhotoFileInput.files?.[0];
   if (f) {

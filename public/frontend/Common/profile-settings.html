@@ -558,6 +558,17 @@
           function stopStream(){ try { streamRef?.getTracks()?.forEach(function(t){ t.stop(); }); } catch(e){} }
           if (camBtn) camBtn.addEventListener('click', async function(){
             try {
+              // Request camera permission before accessing camera
+              try {
+                const { requestCameraPermissionWithMessage } = await import('../../backend/Common/android-permissions.js');
+                const granted = await requestCameraPermissionWithMessage();
+                if (!granted) {
+                  return; // Permission denied
+                }
+              } catch (permErr) {
+                console.warn("Permission check failed, proceeding anyway:", permErr);
+              }
+              
               const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
               streamRef = stream;
               qs('cameraVideo').srcObject = stream;

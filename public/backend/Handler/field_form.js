@@ -652,10 +652,21 @@ modal.querySelectorAll('.change-btn').forEach(btn => {
     };
 
     // 🌿 Upload File
-    choiceBox.querySelector("#uploadBtn").onclick = () => {
+    choiceBox.querySelector("#uploadBtn").onclick = async () => {
+      // Request storage permission before opening file picker
+      try {
+        const { requestStoragePermissionWithMessage } = await import("../Common/android-permissions.js");
+        const granted = await requestStoragePermissionWithMessage();
+        if (!granted) {
+          return; // Permission denied, don't open file picker
+        }
+      } catch (err) {
+        console.warn("Permission check failed, proceeding anyway:", err);
+      }
+      
       closeChoice();
       fileEl.click();
-    fileEl.onchange = e => {
+    fileEl.onchange = async e => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -680,7 +691,18 @@ modal.querySelectorAll('.change-btn').forEach(btn => {
     choiceBox.querySelector("#cancelChoiceBtn").onclick = closeChoice;
 
     // 📸 Camera overlay function
-    function openCamera(key) {
+    async function openCamera(key) {
+      // Request camera permission before opening camera
+      try {
+        const { requestCameraPermissionWithMessage } = await import("../Common/android-permissions.js");
+        const granted = await requestCameraPermissionWithMessage();
+        if (!granted) {
+          return; // Permission denied, don't open camera
+        }
+      } catch (err) {
+        console.warn("Permission check failed, proceeding anyway:", err);
+      }
+
       const cameraDiv = document.createElement("div");
       cameraDiv.className = "fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-[120]";
       document.body.appendChild(cameraDiv);
