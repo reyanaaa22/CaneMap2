@@ -466,6 +466,110 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
+    /* Enhanced Progress Bar Styles */
+    .progress-bar-container {
+      background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+      border: 1px solid var(--cane-200);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .progress-bar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .progress-bar-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--cane-900);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .progress-bar-title i {
+      color: var(--cane-600);
+    }
+
+    .progress-bar-percentage {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--cane-600) 0%, var(--cane-400) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 12px;
+      background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cane-600) 0%, var(--cane-400) 100%);
+      border-radius: 9999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      box-shadow: 0 0 10px rgba(58, 122, 15, 0.4);
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      border-radius: 9999px;
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .progress-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--cane-700);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .progress-bar-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .progress-bar-label-value {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--cane-900);
+    }
+
     @media (max-width: 480px) {
       header .flex.items-center.gap-2 {
         margin-left: auto;
@@ -630,20 +734,38 @@
               90% estimate accuracy based on continuous task logs and timestamps</div>
           </div>
 
-          <!-- Unified Growth & Activity Timeline -->
-          <div class="section-card rounded-xl p-4">
-            <div class="flex items-center justify-between mb-4">
-              <p class="font-semibold text-base">Growth & Activity Timeline</p>
-              <div class="w-full max-w-xs h-1 bg-gray-200 rounded-full relative overflow-hidden ml-4">
-                <div id="tlBar" class="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-400)] transition-all duration-500" style="width:0%"></div>
+          <!-- Unified Growth & Activity Timeline with Enhanced Progress Bar -->
+          <div class="progress-bar-container">
+            <div class="progress-bar-header">
+              <div class="progress-bar-title">
+                <i class="fa-solid fa-chart-line"></i>
+                Growth & Activity Timeline
               </div>
-              <div id="tlBar" class="absolute left-0 top-0 h-full bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-400)] transition-all duration-500" style="width:0%"></div>
+              <div class="progress-bar-percentage" id="progressPercentage">0%</div>
+            </div>
+            <div class="progress-bar-track">
+              <div id="tlBar" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <div class="progress-bar-labels">
+              <div class="progress-bar-label">
+                <span>Start</span>
+                <span class="progress-bar-label-value" id="progressStart">Germination</span>
+              </div>
+              <div class="progress-bar-label">
+                <span>Current</span>
+                <span class="progress-bar-label-value" id="progressCurrent">—</span>
+              </div>
+              <div class="progress-bar-label">
+                <span>Target</span>
+                <span class="progress-bar-label-value" id="progressTarget">Harvest</span>
+              </div>
             </div>
           </div>
-          
+
           <!-- Unified Timeline Container -->
           <div id="unifiedTimelineContainer" class="space-y-0">
             <!-- Growth stages with integrated activity records will be rendered here -->
+
             
             <!-- Germination Stage -->
             <div class="timeline-stage" data-stage="Germination">
@@ -1456,9 +1578,13 @@
           const progress = Math.min(100, Math.round((DAP / totalDays) * 100));
           const tlBar = document.getElementById('tlBar');
           const tlPct = document.getElementById('tlPct');
+          const progressPercentage = document.getElementById('progressPercentage');
+          const progressCurrent = document.getElementById('progressCurrent');
 
           if (tlBar) tlBar.style.width = progress + '%';
           if (tlPct) tlPct.textContent = progress.toString();
+          if (progressPercentage) progressPercentage.textContent = progress + '%';
+          if (progressCurrent) progressCurrent.textContent = growthData.currentGrowthStage || '—';
 
           // Update timeline labels and stage indicators
           const plantingDate = growthData.plantingDate;
