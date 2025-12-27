@@ -3194,6 +3194,95 @@ document.addEventListener("DOMContentLoaded", function () {
   } catch (_) { }
 });
 
+// Removed sessionStorage check - modal will be shown directly by navigation guard
+
+// ✅ Initialize navigation guard for authenticated users (prevents back button navigation to login)
+(function initLobbyNavigationGuard() {
+  let guardInitialized = false;
+  
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      // Wait for auth to be ready
+      const { auth } = await import('../../backend/Common/firebase-config.js');
+      const { onAuthStateChanged } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+      const { initNavigationGuard } = await import('../../backend/Common/navigation-guard.js');
+      
+      // Wait for auth state to be determined
+      await new Promise((resolve) => {
+        let unsubscribe = null;
+        unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (unsubscribe) unsubscribe(); // Only check once
+          resolve(user);
+        });
+        // Timeout after 2 seconds if auth doesn't respond
+        setTimeout(() => {
+          if (unsubscribe) unsubscribe();
+          resolve(null);
+        }, 2000);
+      });
+      
+      // Check if user is authenticated
+      if (auth && auth.currentUser && !guardInitialized) {
+        console.log('🛡️ Initializing navigation guard for lobby...');
+        guardInitialized = true;
+        
+        // Check if user has dashboard access (will be determined by guard if not provided)
+        // For lobby, we let the guard check automatically
+        await initNavigationGuard({
+          modalId: 'logoutModal',
+          confirmBtnId: 'logoutConfirm',
+          cancelBtnId: 'logoutCancel',
+          redirectUrl: '../Common/farmers_login.html',
+          enabled: true,
+          hasDashboardAccess: null, // Let guard determine automatically
+          // Use existing modal open/close functions if available
+          openModal: () => {
+            const modal = document.getElementById('logoutModal');
+            const dialog = document.getElementById('logoutDialog');
+            if (modal && dialog) {
+              modal.style.zIndex = '10000';
+              modal.style.position = 'fixed';
+              modal.style.top = '0';
+              modal.style.left = '0';
+              modal.style.right = '0';
+              modal.style.bottom = '0';
+              modal.classList.remove("opacity-0", "invisible");
+              modal.classList.add("opacity-100", "visible");
+              dialog.classList.remove(
+                "translate-y-2",
+                "scale-95",
+                "opacity-0",
+                "pointer-events-none"
+              );
+              dialog.classList.add("translate-y-0", "scale-100", "opacity-100");
+            }
+          },
+          closeModal: () => {
+            const modal = document.getElementById('logoutModal');
+            const dialog = document.getElementById('logoutDialog');
+            if (modal && dialog) {
+              modal.classList.add("opacity-0", "invisible");
+              modal.classList.remove("opacity-100", "visible");
+              dialog.classList.add(
+                "translate-y-2",
+                "scale-95",
+                "opacity-0",
+                "pointer-events-none"
+              );
+              dialog.classList.remove("translate-y-0", "scale-100", "opacity-100");
+            }
+          }
+        });
+        console.log('✅ Navigation guard initialized for lobby');
+      } else {
+        console.log('ℹ️ User not authenticated in lobby, skipping navigation guard');
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to initialize navigation guard in lobby:', error);
+    }
+  });
+})();
+
 // ✅ Logout confirmation modal wiring (must be inside DOMContentLoaded)
 try {
   const logoutTrigger = document.getElementById("logoutLink");

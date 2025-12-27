@@ -9,6 +9,7 @@ import { calculateDAP, handleRatooning, handleReplanting, VARIETY_HARVEST_DAYS }
 import { openCreateTaskModal } from "./create-task.js";
 import { initializeRecordsSection, cleanupRecordsSection } from "./records-section.js";
 import { initHandlerOfflineSync, getOnlineStatus } from "./offline-input-sync.js";
+import { initNavigationGuard } from "../Common/navigation-guard.js";
 import './analytics.js';
 
 /**
@@ -2124,6 +2125,89 @@ function setupJoinRequestsListener(handlerId) {
 let isInitialized = false;
 let currentUserId = null;
 
+// ✅ Initialize navigation guard immediately if user is already authenticated
+(async function initNavGuardIfAuthenticated() {
+  try {
+    // Wait a bit for auth to initialize
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (auth && auth.currentUser && !window.__handlerNavGuardInitialized) {
+      console.log('🛡️ User already authenticated, initializing navigation guard...');
+      try {
+        await initNavigationGuard({
+          modalId: 'handlerLogoutModal',
+          confirmBtnId: 'handlerLogoutConfirm',
+          cancelBtnId: 'handlerLogoutCancel',
+          redirectUrl: '../../frontend/Common/farmers_login.html',
+          enabled: true,
+          hasDashboardAccess: true,
+          openModal: () => {
+            const modal = document.getElementById('handlerLogoutModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+              modal.style.zIndex = '10000';
+              modal.style.display = 'flex';
+              modal.style.position = 'fixed';
+              modal.style.top = '0';
+              modal.style.left = '0';
+              modal.style.right = '0';
+              modal.style.bottom = '0';
+              modal.style.visibility = 'visible';
+              modal.style.opacity = '1';
+              modal.style.pointerEvents = 'auto';
+              
+              // Ensure modal content and buttons are clickable
+              const modalContent = modal.querySelector('div');
+              if (modalContent) {
+                modalContent.style.pointerEvents = 'auto';
+                modalContent.style.position = 'relative';
+                modalContent.style.zIndex = '10001';
+              }
+              
+              const confirmBtn = document.getElementById('handlerLogoutConfirm');
+              const cancelBtn = document.getElementById('handlerLogoutCancel');
+              
+              if (confirmBtn) {
+                confirmBtn.style.pointerEvents = 'auto';
+                confirmBtn.style.cursor = 'pointer';
+                confirmBtn.style.position = 'relative';
+                confirmBtn.style.zIndex = '10002';
+              }
+              
+              if (cancelBtn) {
+                cancelBtn.style.pointerEvents = 'auto';
+                cancelBtn.style.cursor = 'pointer';
+                cancelBtn.style.position = 'relative';
+                cancelBtn.style.zIndex = '10002';
+              }
+              
+              console.log('✅ Handler Dashboard: Logout modal opened');
+            } else {
+              console.error('❌ Handler Dashboard: Logout modal not found!', {
+                modalId: 'handlerLogoutModal',
+                modalExists: !!document.getElementById('handlerLogoutModal')
+              });
+            }
+          },
+          closeModal: () => {
+            const modal = document.getElementById('handlerLogoutModal');
+            if (modal) {
+              modal.classList.add('hidden');
+              modal.style.display = 'none';
+            }
+          }
+        });
+        window.__handlerNavGuardInitialized = true;
+        console.log('✅ Navigation guard initialized (early init)');
+      } catch (error) {
+        console.error('❌ Failed to initialize navigation guard (early init):', error);
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Early navigation guard init failed:', error);
+  }
+})();
+
 onAuthStateChanged(auth, async (user) => {
   if (!user) return (window.location.href = "../../frontend/Common/farmers_login.html");
 
@@ -2176,6 +2260,87 @@ Please register a field and wait for SRA approval to become a Handler.`);
     console.error("❌ Role verification error:", error);
     window.location.href = "../../frontend/Common/lobby.html";
     return;
+  }
+
+  // ✅ Initialize navigation guard to prevent back button navigation to login
+  // Only initialize once per user session
+  // User has dashboard access (they're on the dashboard), so set hasDashboardAccess to true
+  if (!window.__handlerNavGuardInitialized) {
+    try {
+      console.log('🛡️ Initializing navigation guard for Handler Dashboard...');
+      const guard = await initNavigationGuard({
+        modalId: 'handlerLogoutModal',
+        confirmBtnId: 'handlerLogoutConfirm',
+        cancelBtnId: 'handlerLogoutCancel',
+        redirectUrl: '../../frontend/Common/farmers_login.html',
+        enabled: true,
+        hasDashboardAccess: true, // User is on dashboard, so they have access
+        // Use existing modal open/close functions if available
+        openModal: () => {
+          const modal = document.getElementById('handlerLogoutModal');
+          if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.zIndex = '10000';
+            modal.style.display = 'flex';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.right = '0';
+            modal.style.bottom = '0';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            
+            // Ensure modal content and buttons are clickable
+            const modalContent = modal.querySelector('div');
+            if (modalContent) {
+              modalContent.style.pointerEvents = 'auto';
+              modalContent.style.position = 'relative';
+              modalContent.style.zIndex = '10001';
+            }
+            
+            const confirmBtn = document.getElementById('handlerLogoutConfirm');
+            const cancelBtn = document.getElementById('handlerLogoutCancel');
+            
+            if (confirmBtn) {
+              confirmBtn.style.pointerEvents = 'auto';
+              confirmBtn.style.cursor = 'pointer';
+              confirmBtn.style.position = 'relative';
+              confirmBtn.style.zIndex = '10002';
+            }
+            
+            if (cancelBtn) {
+              cancelBtn.style.pointerEvents = 'auto';
+              cancelBtn.style.cursor = 'pointer';
+              cancelBtn.style.position = 'relative';
+              cancelBtn.style.zIndex = '10002';
+            }
+            
+            console.log('✅ Handler Dashboard: Logout modal opened via guard');
+          } else {
+            console.error('❌ Handler Dashboard: Logout modal not found!');
+          }
+        },
+        closeModal: () => {
+          const modal = document.getElementById('handlerLogoutModal');
+          if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+          }
+        }
+      });
+      window.__handlerNavGuardInitialized = true;
+      // Store guard reference for debugging
+      window.__handlerNavGuard = guard;
+      console.log('✅ Navigation guard initialized for Handler Dashboard', {
+        guardInitialized: guard?.isInitialized,
+        hasDashboardAccess: guard?.userHasDashboardAccess
+      });
+    } catch (error) {
+      console.error('❌ Failed to initialize navigation guard:', error);
+    }
+  } else {
+    console.log('⏭️ Navigation guard already initialized, skipping...');
   }
 
   // ✅ Initialize notifications system

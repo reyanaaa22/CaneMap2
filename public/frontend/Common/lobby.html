@@ -1411,7 +1411,7 @@ onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10
     </div>
 
     <!-- Custom Logout Confirmation Modal -->
-    <div id="logoutModal" class="fixed inset-0 bg-black/40 flex items-center justify-center p-4 opacity-0 invisible transition-opacity duration-200 ease-out z-[80]">
+    <div id="logoutModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 invisible transition-opacity duration-200 ease-out z-[10000]" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000;">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm border border-[var(--cane-200)] transform transition-all duration-200 ease-out translate-y-2 scale-95 opacity-0 pointer-events-none" id="logoutDialog" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
             <div class="px-5 pt-5 pb-3">
                 <h3 id="logoutTitle" class="text-lg font-bold text-[var(--cane-950)]">Confirm Logout</h3>

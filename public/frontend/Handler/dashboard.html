@@ -323,7 +323,34 @@
 
                 if (logoutBtn) logoutBtn.addEventListener('click', function (e) {
                     e.preventDefault();
-                    doLogout();
+                    e.stopPropagation();
+                    // Show logout confirmation modal instead of direct logout
+                    const modal = document.getElementById('handlerLogoutModal');
+                    if (modal) {
+                        // Remove hidden class and set all necessary styles
+                        modal.classList.remove('hidden');
+                        modal.style.zIndex = '10000';
+                        modal.style.display = 'flex';
+                        modal.style.position = 'fixed';
+                        modal.style.top = '0';
+                        modal.style.left = '0';
+                        modal.style.right = '0';
+                        modal.style.bottom = '0';
+                        modal.style.visibility = 'visible';
+                        modal.style.opacity = '1';
+                        console.log('✅ Logout button: Modal shown');
+                    } else {
+                        // Fallback: use navigation guard's modal if available
+                        const guard = window.getNavigationGuard && window.getNavigationGuard();
+                        if (guard && typeof guard.showLogoutModal === 'function') {
+                            guard.showLogoutModal();
+                            console.log('✅ Logout button: Modal shown via guard');
+                        } else {
+                            // Last resort: show modal via navigation guard instance
+                            console.warn('❌ Logout modal not found, attempting direct logout');
+                            doLogout();
+                        }
+                    }
                 });
 
 
@@ -1818,56 +1845,85 @@
                         <h3 id="sidebarUserName" class="text-white font-semibold text-lg">Loading...</h3>
                         <p id="sidebarUserRole" class="text-gray-400 text-sm">Field Handler</p>
                     </div>
-                    <!-- Logout modal for Handler dashboard -->
-                    <div id="handlerLogoutModal"
-                        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                        <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm text-center mx-4">
-                            <h3 class="text-lg font-semibold mb-2">Confirm Logout</h3>
-                            <p class="text-sm text-gray-600 mb-4">Are you sure you want to log out? You will be
-                                redirected to the sign-in page.</p>
-                            <div class="flex justify-center gap-4">
-                                <button id="handlerLogoutCancel"
-                                    class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">Cancel</button>
-                                <button id="handlerLogoutConfirm"
-                                    class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Yes, Log
-                                    out</button>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Logout modal for Handler dashboard - moved outside sidebar for proper z-index -->
 
                     <script>
                         // Handler dashboard logout modal wiring
-                        (function () {
-                            const btn = document.getElementById('handlerLogoutBtn');
-                            const modal = document.getElementById('handlerLogoutModal');
-                            const cancel = document.getElementById('handlerLogoutCancel');
-                            const confirm = document.getElementById('handlerLogoutConfirm');
-                            const redirectTo = '../Common/farmers_login.html'; // redirect after logout (sign-in page)
+                        (function setupLogoutModalHandlers() {
+                            function attachHandlers() {
+                                const modal = document.getElementById('handlerLogoutModal');
+                                const cancel = document.getElementById('handlerLogoutCancel');
+                                const confirm = document.getElementById('handlerLogoutConfirm');
+                                const redirectTo = '../Common/farmers_login.html';
 
-                            function openModal() { modal.classList.remove('hidden'); }
-                            function closeModal() { modal.classList.add('hidden'); }
-
-                            if (btn) btn.addEventListener('click', function (e) {
-                                e.preventDefault();
-                                openModal();
-                            });
-
-                            if (cancel) cancel.addEventListener('click', function (e) { e.preventDefault(); closeModal(); });
-
-                            if (confirm) confirm.addEventListener('click', async function (e) {
-                                e.preventDefault();
-                                try {
-                                    if (window && typeof window.signOut === 'function' && window.auth) {
-                                        await window.signOut(window.auth);
-                                    }
-                                } catch (err) {
-                                    // ignore sign-out errors but log
-                                    console.warn('Sign out error:', err && err.message ? err.message : err);
+                                if (!modal || !cancel || !confirm) {
+                                    console.warn('Logout modal elements not found, retrying...');
+                                    setTimeout(attachHandlers, 100);
+                                    return;
                                 }
-                                try { localStorage.clear(); sessionStorage.clear(); } catch (_) { }
-                                // Redirect to main signup page
-                                window.location.href = redirectTo;
-                            });
+
+                                function closeModal() { 
+                                    modal.classList.add('hidden');
+                                    modal.style.display = 'none';
+                                }
+
+                                // Remove any existing listeners by cloning
+                                const newCancel = cancel.cloneNode(true);
+                                cancel.parentNode.replaceChild(newCancel, cancel);
+                                
+                                const newConfirm = confirm.cloneNode(true);
+                                confirm.parentNode.replaceChild(newConfirm, confirm);
+
+                                // Attach cancel handler
+                                newCancel.addEventListener('click', function (e) { 
+                                    e.preventDefault(); 
+                                    e.stopPropagation();
+                                    console.log('✅ Cancel button clicked');
+                                    closeModal(); 
+                                }, { capture: true });
+
+                                // Attach confirm handler
+                                newConfirm.addEventListener('click', async function (e) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    console.log('✅ Confirm button clicked, logging out...');
+                                    
+                                    try {
+                                        // Try to sign out using Firebase
+                                        const { signOut } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js');
+                                        const { auth } = await import('../backend/Common/firebase-config.js');
+                                        
+                                        if (auth) {
+                                            await signOut(auth);
+                                            console.log('✅ Signed out from Firebase');
+                                        }
+                                    } catch (err) {
+                                        console.warn('Sign out error:', err && err.message ? err.message : err);
+                                        // Continue with logout even if signOut fails
+                                    }
+                                    
+                                    try { 
+                                        localStorage.clear(); 
+                                        sessionStorage.clear(); 
+                                        console.log('✅ Storage cleared');
+                                    } catch (storageErr) {
+                                        console.warn('Storage clear error:', storageErr);
+                                    }
+                                    
+                                    // Redirect to sign-in page
+                                    console.log('✅ Redirecting to sign-in page...');
+                                    window.location.href = redirectTo;
+                                }, { capture: true });
+
+                                console.log('✅ Logout modal handlers attached successfully');
+                            }
+
+                            // Try to attach immediately, or wait for DOM
+                            if (document.readyState === 'loading') {
+                                document.addEventListener('DOMContentLoaded', attachHandlers);
+                            } else {
+                                attachHandlers();
+                            }
                         })();
                     </script>
 
@@ -2326,6 +2382,33 @@
         });
 
     </script>
+
+    <!-- Logout modal for Handler dashboard - positioned at body level for proper z-index -->
+    <div id="handlerLogoutModal"
+        class="hidden fixed inset-0 z-[10000] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+        style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 10000 !important; pointer-events: auto;">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm text-center mx-4 border border-gray-200" style="pointer-events: auto; position: relative; z-index: 10001;">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-sign-out-alt text-red-600 text-xl"></i>
+                </div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Confirm Logout</h3>
+            <p class="text-sm text-gray-600 mb-6">Are you sure you want to log out? You will be redirected to the sign-in page.</p>
+            <div class="flex justify-center gap-3">
+                <button id="handlerLogoutCancel"
+                    class="px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-colors cursor-pointer"
+                    style="pointer-events: auto; position: relative; z-index: 10002;">
+                    Cancel
+                </button>
+                <button id="handlerLogoutConfirm"
+                    class="px-5 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition-colors cursor-pointer"
+                    style="pointer-events: auto; position: relative; z-index: 10002;">
+                    Yes, Log out
+                </button>
+            </div>
+        </div>
+    </div>
 
 </body>
 
