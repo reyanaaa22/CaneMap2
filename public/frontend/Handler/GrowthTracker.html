@@ -792,7 +792,7 @@
             <div class="progress-bar-labels">
               <div class="progress-bar-label">
                 <span>Start</span>
-                <span class="progress-bar-label-value" id="progressStart">Germination</span>
+                <span class="progress-bar-label-value" id="progressStart">Land Preparation</span>
               </div>
               <div class="progress-bar-label">
                 <span>Current</span>
@@ -809,6 +809,49 @@
           <div id="unifiedTimelineContainer" class="space-y-0 w-full overflow-x-hidden">
             <!-- Growth stages with integrated activity records will be rendered here -->
 
+            <!-- Land Preparation Stage -->
+            <div class="timeline-stage" data-stage="Land Preparation">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-[var(--cane-700)] border-2 border-white shadow-md stage-indicator" id="stage-preplanting"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-[var(--cane-700)] to-[var(--cane-600)] mt-2 min-h-[40px]" id="connector-preplanting"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Land Preparation</p>
+                      <p class="text-xs text-gray-600" id="tlPrePlanting">Status: -</p>
+                    </div>
+                    <span class="badge badge-done text-xs" id="badge-preplanting" style="display: none;">Active</span>
+                  </div>
+                  <div id="activities-preplanting" class="mt-3 space-y-2 activities-stage-list">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Planting Stage -->
+            <div class="timeline-stage" data-stage="Planting">
+              <div class="flex items-start gap-3 pb-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-4 h-4 rounded-full bg-[var(--cane-600)] border-2 border-white shadow-md stage-indicator" id="stage-planting"></div>
+                  <div class="w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-500)] mt-2 min-h-[40px]" id="connector-planting"></div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                  <div class="flex items-center justify-between mb-2">
+                    <div>
+                      <p class="font-semibold text-sm">Planting</p>
+                      <p class="text-xs text-gray-600" id="tlPlantingStatus">Status: -</p>
+                    </div>
+                    <span class="badge badge-done text-xs" id="badge-planting" style="display: none;">Active</span>
+                  </div>
+                  <div id="activities-planting" class="mt-3 space-y-2 activities-stage-list">
+                    <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
+              </div>
+            </div>
             
             <!-- Germination Stage -->
             <div class="timeline-stage" data-stage="Germination">
@@ -914,6 +957,79 @@
                   </div>
                   <div id="activities-harvest" class="mt-3 space-y-2 activities-stage-list">
                     <!-- Activity records for this stage will be inserted here -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Optional Field Operations Section (initially hidden) -->
+            <div id="optionalStagesSection" class="mt-8 pt-6 border-t border-gray-200 hidden">
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-700">Optional Field Operations</h3>
+                <p class="text-xs text-gray-500 mt-1">Additional operations for this field and crop cycle</p>
+              </div>
+              
+              <!-- Detrashing Stage -->
+              <div class="timeline-stage" data-stage="Detrashing">
+                <div class="flex items-start gap-3 pb-4">
+                  <div class="flex flex-col items-center">
+                    <div class="w-4 h-4 rounded-full bg-amber-400 border-2 border-white shadow-md stage-indicator" id="stage-detrashing"></div>
+                    <div class="w-0.5 h-full bg-gradient-to-b from-amber-400 to-amber-300 mt-2 min-h-[40px]" id="connector-detrashing"></div>
+                  </div>
+                  <div class="flex-1 pt-0.5">
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <p class="font-semibold text-sm">Detrashing / Brushing</p>
+                        <p class="text-xs text-gray-600" id="tlDetrashing">Status: -</p>
+                      </div>
+                      <span class="badge badge-not text-xs" id="badge-detrashing" style="display: none;">Optional</span>
+                    </div>
+                    <div id="activities-detrashing" class="mt-3 space-y-2 activities-stage-list">
+                      <!-- Activity records for this stage will be inserted here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Replanting Stage -->
+              <div class="timeline-stage" data-stage="Replanting">
+                <div class="flex items-start gap-3 pb-4">
+                  <div class="flex flex-col items-center">
+                    <div class="w-4 h-4 rounded-full bg-blue-400 border-2 border-white shadow-md stage-indicator" id="stage-replanting"></div>
+                    <div class="w-0.5 h-full bg-gradient-to-b from-blue-400 to-blue-300 mt-2 min-h-[40px]" id="connector-replanting"></div>
+                  </div>
+                  <div class="flex-1 pt-0.5">
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <p class="font-semibold text-sm">Replanting</p>
+                        <p class="text-xs text-gray-600" id="tlReplanting">Status: -</p>
+                      </div>
+                      <span class="badge badge-not text-xs" id="badge-replanting" style="display: none;">Optional</span>
+                    </div>
+                    <div id="activities-replanting" class="mt-3 space-y-2 activities-stage-list">
+                      <!-- Activity records for this stage will be inserted here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ratooning Stage -->
+              <div class="timeline-stage" data-stage="Ratooning">
+                <div class="flex items-start gap-3">
+                  <div class="flex flex-col items-center">
+                    <div class="w-4 h-4 rounded-full bg-purple-400 border-2 border-white shadow-md stage-indicator" id="stage-ratooning"></div>
+                  </div>
+                  <div class="flex-1 pt-0.5">
+                    <div class="flex items-center justify-between mb-2">
+                      <div>
+                        <p class="font-semibold text-sm">Ratooning</p>
+                        <p class="text-xs text-gray-600" id="tlRatooning">Status: -</p>
+                      </div>
+                      <span class="badge badge-not text-xs" id="badge-ratooning" style="display: none;">Optional</span>
+                    </div>
+                    <div id="activities-ratooning" class="mt-3 space-y-2 activities-stage-list">
+                      <!-- Activity records for this stage will be inserted here -->
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1546,14 +1662,29 @@
           if (tlPct) tlPct.textContent = '0';
           if (progressPercentage) progressPercentage.textContent = '0%';
           if (progressCurrent) progressCurrent.textContent = 'Not Planted';
+          
+          // Reset status text for all stages
+          const tlPrePlanting = document.getElementById('tlPrePlanting');
+          const tlPlantingStatus = document.getElementById('tlPlantingStatus');
+          const tlDetrashing = document.getElementById('tlDetrashing');
+          const tlReplanting = document.getElementById('tlReplanting');
+          const tlRatooning = document.getElementById('tlRatooning');
+          
+          if (tlPrePlanting) tlPrePlanting.textContent = 'Status: -';
+          if (tlPlantingStatus) tlPlantingStatus.textContent = 'Status: -';
           if (tlGerm) tlGerm.textContent = 'Status: Not Planted';
           if (tlTill) tlTill.textContent = 'Status: Not Planted';
           if (tlGrand) tlGrand.textContent = 'Status: Not Planted';
           if (tlMat) tlMat.textContent = 'Status: Not Planted';
+          if (tlDetrashing) tlDetrashing.textContent = 'Status: -';
+          if (tlReplanting) tlReplanting.textContent = 'Status: -';
+          if (tlRatooning) tlRatooning.textContent = 'Status: -';
 
-          // Reset all stage indicators
-          const stages = ['germination', 'tillering', 'grand', 'maturing', 'harvest'];
-          stages.forEach(stage => {
+          // Reset all stage indicators (main timeline + optional)
+          const mainStages = ['preplanting', 'planting', 'germination', 'tillering', 'grand', 'maturing', 'harvest'];
+          const optionalStages = ['detrashing', 'replanting', 'ratooning'];
+          
+          [...mainStages, ...optionalStages].forEach(stage => {
             const indicator = document.getElementById(`stage-${stage}`);
             const badge = document.getElementById(`badge-${stage}`);
             const connector = document.getElementById(`connector-${stage}`);
@@ -1565,6 +1696,12 @@
               connector.className = 'w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]';
             }
           });
+          
+          // Hide optional stages section
+          const optionalStagesSection = document.getElementById('optionalStagesSection');
+          if (optionalStagesSection) {
+            optionalStagesSection.classList.add('hidden');
+          }
         }
 
         // Update timeline with progress
@@ -2172,10 +2309,11 @@
                   });
                 }
 
-                // Debug: Log record count and statuses
+                // Debug: Log record count and growth stages
                 console.log(`📊 Rendering ${records.length} records:`, records.map(r => ({ 
                   id: r.id, 
-                  status: r.status, 
+                  growthStage: r.growthStage,
+                  status: r.status, // Legacy field, kept for backward compatibility
                   taskType: r.taskType,
                   fieldId: r.fieldId 
                 })));
@@ -2313,8 +2451,8 @@
           if (records.length === 0) {
             console.log('No records found, showing empty state');
             if (emptyState) emptyState.classList.remove('hidden');
-            // Clear all activity containers
-            ['germination', 'tillering', 'grand', 'maturing', 'harvest'].forEach(stage => {
+            // Clear all activity containers (main timeline + optional)
+            ['preplanting', 'planting', 'germination', 'tillering', 'grand', 'maturing', 'harvest', 'detrashing', 'replanting', 'ratooning'].forEach(stage => {
               const container = document.getElementById(`activities-${stage}`);
               if (container) {
                 container.innerHTML = `
@@ -2324,6 +2462,12 @@
                 `;
               }
             });
+            
+            // Hide optional stages section
+            const optionalStagesSection = document.getElementById('optionalStagesSection');
+            if (optionalStagesSection) {
+              optionalStagesSection.classList.add('hidden');
+            }
             return;
           }
 
@@ -2382,36 +2526,59 @@
           // Helper function to map DAP to growth stage (fallback for old records without status)
           // CRITICAL: All records must be mapped to a stage, even if before planting
           const getStageFromDAP = (dap) => {
-            // If no planting date exists, all records go to Germination stage
-            if (dap === null || !plantingDate) return 'Germination';
+            // If no planting date exists, all records go to Land Preparation stage
+            if (dap === null || !plantingDate) return 'Land Preparation';
             // Map based on DAP ranges
+            if (dap < 0) return 'Land Preparation'; // Before planting
+            if (dap === 0) return 'Planting'; // Planting day
             if (dap < 45) return 'Germination';
             if (dap < 100) return 'Tillering';
             if (dap < 240) return 'Grand Growth';
-            if (dap < 300) return 'Maturing / Ripening';
-            return 'Harvest';
+            if (dap < 300) return 'Ripening / Maturing';
+            return 'Harvesting';
           };
 
-          // Helper function to normalize stage name from record status
-          const normalizeStageName = (status) => {
-            if (!status) return null;
-            const normalized = status.trim();
-            // Map common variations to standard stage names
+          // Helper function to normalize stage name from record growthStage/status
+          const normalizeStageName = (stage) => {
+            if (!stage) return null;
+            const normalized = stage.trim();
+            
+            // New Visayas stage names - map to main timeline stages
+            if (normalized === 'Land Preparation (Before Planting)') return 'Land Preparation';
+            if (normalized === 'Planting (Panahon sa Pagtanom)') return 'Planting';
+            if (normalized === 'Germination & Early Growth') return 'Germination';
+            if (normalized === 'Tillering Stage') return 'Tillering';
+            if (normalized === 'Stem Elongation & Grand Growth') return 'Grand Growth';
+            if (normalized === 'Ripening & Maturation') return 'Ripening / Maturing';
+            if (normalized === 'Harvesting (Ani sa Tubo)') return 'Harvesting';
+            if (normalized === 'Detrashing Stage') return 'Detrashing';
+            if (normalized === 'Replanting Stage') return 'Replanting';
+            
+            // Legacy stage names (backward compatibility)
             if (normalized === 'Germination') return 'Germination';
             if (normalized === 'Tillering') return 'Tillering';
             if (normalized === 'Grand Growth') return 'Grand Growth';
-            if (normalized === 'Maturing / Ripening' || normalized === 'Maturing/Ripening' || normalized.includes('Maturing') || normalized.includes('Ripening')) return 'Maturing / Ripening';
-            if (normalized === 'Harvest') return 'Harvest';
+            if (normalized === 'Maturing / Ripening' || normalized === 'Maturing/Ripening' || normalized.includes('Maturing') || normalized.includes('Ripening')) return 'Ripening / Maturing';
+            if (normalized === 'Harvest' || normalized === 'Harvesting') return 'Harvesting';
+            if (normalized === 'Pre-Planting') return 'Land Preparation';
+            if (normalized === 'Planting') return 'Planting';
+            
             return null;
           };
 
-          // Group ALL records by growth stage based on status field (or DAP fallback)
+          // Group ALL records by growth stage - MAIN TIMELINE STAGES (ordered)
           const groupedByStage = {
+            'Land Preparation': [],
+            'Planting': [],
             'Germination': [],
             'Tillering': [],
             'Grand Growth': [],
-            'Maturing / Ripening': [],
-            'Harvest': []
+            'Ripening / Maturing': [],
+            'Harvesting': [],
+            // Optional stages (displayed separately)
+            'Detrashing': [],
+            'Replanting': [],
+            'Ratooning': []
           };
 
           // Process ALL records and map them to stages
@@ -2425,23 +2592,36 @@
             // Calculate DAP for this record using Current Date - Planting Date
             const dap = calculateDAPForRecord();
             
-            // Determine stage: Use status field if available, otherwise fall back to DAP-based mapping
+            // Determine stage: Use growthStage field (auto-derived) if available, then fallback to status, then DAP
             let stage = null;
             
-            // First, try to use the status field from the record
-            if (record.status) {
-              stage = normalizeStageName(record.status);
+            // First, try to use the growthStage field (auto-derived from operation + task type)
+            if (record.growthStage) {
+              stage = normalizeStageName(record.growthStage);
             }
             
-            // If status field is not available or doesn't match known stages, fall back to DAP-based mapping
+            // If growthStage is not available, fallback to status field (for backward compatibility)
+            if (!stage && record.status) {
+              stage = normalizeStageName(record.status);
+              console.warn(`Record ${record.id} using legacy status field. Consider migrating to growthStage.`);
+            }
+            
+            // If neither growthStage nor status is available, fall back to DAP-based mapping
             if (!stage) {
               stage = getStageFromDAP(dap);
             }
             
-            // Ensure stage is valid, default to Germination if not
+            // Ensure stage is valid, default to Land Preparation if not
             if (!groupedByStage.hasOwnProperty(stage)) {
-              console.warn(`Unknown stage "${stage}" for record ${record.id}, defaulting to Germination`);
-              stage = 'Germination';
+              console.warn(`Unknown stage "${stage}" for record ${record.id}, defaulting to Land Preparation`);
+              // Map unknown stages to closest known stage
+              if (stage && (stage.includes('Pre') || stage.includes('Land'))) {
+                stage = 'Land Preparation';
+              } else if (stage && stage.includes('Planting')) {
+                stage = 'Planting';
+              } else {
+                stage = 'Land Preparation';
+              }
             }
             
             // Add record to appropriate stage with DAP info
@@ -2452,17 +2632,38 @@
             });
           });
 
-          // Map stage names to container IDs
+          // Map stage names to container IDs - MAIN TIMELINE STAGES
           const stageToContainer = {
+            'Land Preparation': 'preplanting',
+            'Planting': 'planting',
             'Germination': 'germination',
             'Tillering': 'tillering',
             'Grand Growth': 'grand',
-            'Maturing / Ripening': 'maturing',
-            'Harvest': 'harvest'
+            'Ripening / Maturing': 'maturing',
+            'Harvesting': 'harvest',
+            // Optional stages
+            'Detrashing': 'detrashing',
+            'Replanting': 'replanting',
+            'Ratooning': 'ratooning'
           };
 
-          // Render activities into each stage container
-          Object.entries(groupedByStage).forEach(([stage, stageRecords]) => {
+          // Define main timeline stages in order
+          const mainTimelineStages = [
+            'Land Preparation',
+            'Planting',
+            'Germination',
+            'Tillering',
+            'Grand Growth',
+            'Ripening / Maturing',
+            'Harvesting'
+          ];
+          
+          // Define optional stages
+          const optionalStages = ['Detrashing', 'Replanting', 'Ratooning'];
+          
+          // Render main timeline stages in order
+          mainTimelineStages.forEach(stage => {
+            const stageRecords = groupedByStage[stage] || [];
             const containerId = stageToContainer[stage];
             const container = document.getElementById(`activities-${containerId}`);
             
@@ -2542,6 +2743,96 @@
 
             container.innerHTML = html;
           });
+          
+          // Handle optional stages section visibility and rendering
+          const optionalStagesSection = document.getElementById('optionalStagesSection');
+          const hasOptionalRecords = optionalStages.some(stage => {
+            const records = groupedByStage[stage] || [];
+            return records.length > 0;
+          });
+          
+          if (optionalStagesSection) {
+            if (hasOptionalRecords) {
+              optionalStagesSection.classList.remove('hidden');
+              
+              // Render optional stages
+              optionalStages.forEach(stage => {
+                const stageRecords = groupedByStage[stage] || [];
+                const containerId = stageToContainer[stage];
+                const container = document.getElementById(`activities-${containerId}`);
+                
+                if (!container) {
+                  console.warn(`Container not found for optional stage: ${stage} (${containerId})`);
+                  return;
+                }
+
+                console.log(`📝 Rendering ${stageRecords.length} records for optional stage: ${stage}`);
+
+                if (stageRecords.length === 0) {
+                  container.innerHTML = `
+                    <div class="activity-node empty-state">
+                      <p class="text-xs text-gray-500 italic">No activities recorded yet</p>
+                    </div>
+                  `;
+                  return;
+                }
+
+                // Sort records chronologically
+                stageRecords.sort((a, b) => {
+                  const dateA = a._recordDate || a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+                  const dateB = b._recordDate || b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+                  return dateA - dateB;
+                });
+
+                let html = '';
+                stageRecords.forEach(record => {
+                  const recordDate = record._recordDate || record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
+                  const dateStr = recordDate.toLocaleDateString();
+                  const taskType = record.taskType || record.operation || record.taskName || 'Activity Record';
+                  const dap = record._dap;
+                  
+                  let summary = '';
+                  if (record.data) {
+                    const notes = record.data.notes || record.data.remarks || '';
+                    summary = notes.length > 40 ? notes.substring(0, 40) + '...' : notes;
+                  }
+
+                  const safeTaskType = escapeHtml(taskType);
+                  const safeDateStr = escapeHtml(dateStr);
+                  const safeSummary = escapeHtml(summary);
+                  const dapDisplay = (dap !== null && plantingDate) ? ` • ${dap} DAP` : '';
+
+                  html += `
+                    <div class="activity-node" 
+                         data-record-id="${record.id}"
+                         onclick="window.openRecordModal('${record.id}')"
+                         role="button"
+                         tabindex="0"
+                         onkeypress="if(event.key==='Enter') window.openRecordModal('${record.id}')"
+                         title="Click to preview record details">
+                      <div class="flex items-start justify-between gap-2 w-full">
+                        <div class="flex-1 min-w-0 overflow-hidden">
+                          <div class="flex items-center gap-2 mb-1">
+                            <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1 min-w-0">${safeTaskType}</p>
+                            <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>
+                          </div>
+                          <div class="flex items-center gap-2 mt-1">
+                            <i class="fas fa-calendar text-xs text-gray-400 flex-shrink-0"></i>
+                            <p class="text-xs text-gray-600 truncate min-w-0">${safeDateStr}</p>
+                          </div>
+                          ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400 text-xs mt-1 flex-shrink-0"></i>
+                      </div>
+                    </div>
+                  `;
+                });
+                container.innerHTML = html;
+              });
+            } else {
+              optionalStagesSection.classList.add('hidden');
+            }
+          }
         }
 
         // Open record detail modal

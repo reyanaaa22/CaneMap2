@@ -439,29 +439,8 @@ This file handles ALL functionalities described in the PDF:
 <!-- FORM CARD -->
 <div class="card rounded-xl p-5 space-y-4 fade">
 
-  <!-- STATUS / GROWTH STAGE (FIRST FIELD) -->
-  <div>
-    <label class="text-sm font-medium">Growth Stage / Status <span class="text-red-500">*</span></label>
-    <div class="custom-select" data-select-id="statusSelect">
-      <div class="custom-select-wrapper">
-        <button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false">
-          <span class="custom-select-value">Select Growth Stage</span>
-        </button>
-        <div class="custom-select-list" role="listbox"></div>
-      </div>
-    </div>
-    <select id="statusSelect" class="custom-native-hidden" required>
-      <option value="">Select Growth Stage</option>
-      <option value="Germination">Germination</option>
-      <option value="Tillering">Tillering</option>
-      <option value="Grand Growth">Grand Growth</option>
-      <option value="Maturing / Ripening">Maturing / Ripening</option>
-      <option value="Harvest">Harvest</option>
-    </select>
-  </div>
-
   <!-- FIELD -->
-  <div id="fieldWrap" class="hidden">
+  <div id="fieldWrap">
     <label class="text-sm font-medium">Select a Field</label>
     <div class="custom-select" data-select-id="fieldSelect">
       <div class="custom-select-wrapper">
@@ -728,7 +707,7 @@ function initializeCustomSelect(selectElement) {
 }
 
 function initializeAllCustomSelects() {
-  ['statusSelect','fieldSelect','operationSelect','taskType','vehicleType'].forEach(id => {
+  ['fieldSelect','operationSelect','taskType','vehicleType'].forEach(id => {
     const el = document.getElementById(id);
     if (el) initializeCustomSelect(el);
   });
@@ -770,45 +749,109 @@ function showCenterMessage(msg) {
   document.getElementById('closeCenterMsg').onclick = () => modal.remove();
 }
 
-// Status → Field Operations mapping
-const statusToOperations = {
-  'Germination': ['Pre-Planting', 'Planting', 'Post-Planting'],
-  'Tillering': ['Post-Planting'],
-  'Grand Growth': ['Post-Planting'],
-  'Maturing / Ripening': ['Post-Planting', 'Harvesting'],
-  'Harvest': ['Harvesting']
-};
-
-// Status + Field Operation → Task Types mapping
-const statusOperationToTasks = {
-  'Germination': {
-    'Pre-Planting': ['Land Clearing', 'Plowing', 'Harrowing', 'Furrow Making', 'Seed Cane Preparation'],
-    'Planting': ['Planting Operation', 'Replanting / Gap Filling'],
-    'Post-Planting': ['Germination Monitoring']
-  },
-  'Tillering': {
-    'Post-Planting': ['Weed Management', 'Fertilizer Application (Top Dressing)', 'Irrigation', 'Pest Control', 'Disease Control', 'Earthing-Up']
-  },
-  'Grand Growth': {
-    'Post-Planting': ['Fertilizer Application', 'Irrigation', 'Growth Monitoring', 'Pest Control', 'Disease Control']
-  },
-  'Maturing / Ripening': {
-    'Post-Planting': ['Growth Monitoring', 'Pre-Harvest Assessment'],
-    'Harvesting': ['Harvesting']
-  },
-  'Harvest': {
-    'Harvesting': ['Harvesting']
-  }
-};
 
 // Task name aliases mapping (display name → taskFieldMap key)
+// Maps Visayas task type names (with Cebuano) to taskFieldMap keys
 const taskNameAliases = {
-  'Replanting / Gap Filling': 'Replanting Operation',
-  'Weed Management': 'Weeding',
-  'Fertilizer Application (Top Dressing)': 'Post-Planting Fertilization',
-  'Fertilizer Application': 'Post-Planting Fertilization',
-  'Pest Control': 'Control of Pest & Diseases',
-  'Disease Control': 'Control of Pest & Diseases'
+  'Clearing (Paglimpyo sa uma)': 'Land Clearing',
+  'Plowing (Arado / Araro)': 'Plowing',
+  'Harrowing (Suyod)': 'Harrowing',
+  'Field Leveling (Pagpatag sa uma)': 'Field Leveling',
+  'Furrowing / Trenching (Paghimo ug tudling)': 'Furrow Making',
+  'Seed Cane Preparation (Pag-andam sa binhi sa tubo)': 'Seed Cane Preparation',
+  'Planting Operation (Pagtanom sa tubo)': 'Planting Operation',
+  'First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)': 'Pre-Planting Fertilization (basal)',
+  'Germination Monitoring (Pagmonitor sa pagturok)': 'Germination Monitoring',
+  'Gap Filling / Replanting (Pagpuli sa wala miturok)': 'Replanting Operation',
+  'Weeding (Pagpananom / Paglimpyo sa sagbot)': 'Weeding',
+  'First Dose Fertilization – After Emergence (Unang Abono)': 'Post-Planting Fertilization',
+  'Hilling-up / Off-barring (Pagtabon sa gamot)': 'Earthing-Up',
+  'Second Dose Fertilization (Ikaduhang Abono)': 'Post-Planting Fertilization',
+  'Irrigation / Watering (Pagpatubig)': 'Irrigation',
+  'Brushing / Light Detrashing (Pagpanitan – magaan)': 'Side Cleaning',
+  'Ripener Application (Pagbutang og ripener)': 'Ripener Application',
+  'Crop Monitoring (Pagbantay sa kahamtong)': 'Growth Monitoring',
+  'Detrashing / Brushing (Pagpanitan sa uga nga dahon)': 'Detrashing',
+  'Manual Harvesting (Manu-manong ani)': 'Harvesting',
+  'Mechanical Harvesting (Makinarya nga ani)': 'Harvesting',
+  'Replanting Operation (Pag-usab og tanom)': 'Replanting Operation'
+};
+
+// Auto-derive growth stage from Operation + Task Type
+function deriveGrowthStage(operation, taskType) {
+  if (!operation || !taskType) return null;
+  
+  // Post-Planting tasks map to specific growth stages based on task type
+  if (operation === 'Post-Planting') {
+    const taskToStage = {
+      // Germination & Early Growth
+      'Germination Monitoring (Pagmonitor sa pagturok)': 'Germination & Early Growth',
+      'Gap Filling / Replanting (Pagpuli sa wala miturok)': 'Germination & Early Growth',
+      
+      // Tillering Stage
+      'Weeding (Pagpananom / Paglimpyo sa sagbot)': 'Tillering Stage',
+      'First Dose Fertilization – After Emergence (Unang Abono)': 'Tillering Stage',
+      'Hilling-up / Off-barring (Pagtabon sa gamot)': 'Tillering Stage',
+      
+      // Stem Elongation & Grand Growth
+      'Second Dose Fertilization (Ikaduhang Abono)': 'Stem Elongation & Grand Growth',
+      'Irrigation / Watering (Pagpatubig)': 'Stem Elongation & Grand Growth',
+      'Brushing / Light Detrashing (Pagpanitan – magaan)': 'Stem Elongation & Grand Growth',
+      
+      // Ripening & Maturation
+      'Ripener Application (Pagbutang og ripener)': 'Ripening & Maturation',
+      'Crop Monitoring (Pagbantay sa kahamtong)': 'Ripening & Maturation'
+    };
+    return taskToStage[taskType] || 'Stem Elongation & Grand Growth'; // Default fallback
+  }
+  
+  // Direct operation mappings
+  if (operation === 'Pre-Planting') return 'Land Preparation (Before Planting)';
+  if (operation === 'Planting') return 'Planting (Panahon sa Pagtanom)';
+  if (operation === 'Harvesting') return 'Harvesting (Ani sa Tubo)';
+  if (operation === 'Detrashing') return 'Detrashing Stage';
+  if (operation === 'Replanting') return 'Replanting Stage';
+  
+  return null; // Should not happen
+}
+
+// Direct Operation → Task Types mapping (Visayas farming practices)
+const operationToTasks = {
+  'Pre-Planting': [
+    'Clearing (Paglimpyo sa uma)',
+    'Plowing (Arado / Araro)',
+    'Harrowing (Suyod)',
+    'Field Leveling (Pagpatag sa uma)',
+    'Furrowing / Trenching (Paghimo ug tudling)',
+    'Seed Cane Preparation (Pag-andam sa binhi sa tubo)'
+  ],
+  'Planting': [
+    'Planting Operation (Pagtanom sa tubo)',
+    'First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)'
+  ],
+  'Post-Planting': [
+    'Germination Monitoring (Pagmonitor sa pagturok)',
+    'Gap Filling / Replanting (Pagpuli sa wala miturok)',
+    'Weeding (Pagpananom / Paglimpyo sa sagbot)',
+    'First Dose Fertilization – After Emergence (Unang Abono)',
+    'Hilling-up / Off-barring (Pagtabon sa gamot)',
+    'Second Dose Fertilization (Ikaduhang Abono)',
+    'Irrigation / Watering (Pagpatubig)',
+    'Brushing / Light Detrashing (Pagpanitan – magaan)',
+    'Ripener Application (Pagbutang og ripener)',
+    'Crop Monitoring (Pagbantay sa kahamtong)'
+  ],
+  'Detrashing': [
+    'Detrashing / Brushing (Pagpanitan sa uga nga dahon)'
+  ],
+  'Harvesting': [
+    'Manual Harvesting (Manu-manong ani)',
+    'Mechanical Harvesting (Makinarya nga ani)'
+  ],
+  'Replanting': [
+    'Replanting Operation (Pag-usab og tanom)'
+  ],
+  'Ratooning': [] // Special - no task types, handled separately
 };
 
 // Legacy operationMap for backward compatibility with taskFieldMap
@@ -1219,9 +1262,6 @@ const taskFieldMap = {
   { id:'startDate', label:'Start Date', type:'date' },
   { id:'endDate', label:'End Date', type:'date' },
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
-  { id:'growthStage', label:'Current Growth Stage', type:'select',
-    options:['Germination', 'Tillering', 'Grand Growth', 'Maturing / Ripening', 'Harvest']
-  },
   { id:'height', label:'Average Height (cm)', type:'number', step:'0.01' },
   { id:'tillersPerHill', label:'Tillers per Hill', type:'number', step:'0.01' },
   { id:'workers', label:'Number of Workers / Observers', type:'number' },
@@ -1607,6 +1647,59 @@ const taskFieldMap = {
 
 ],
 
+"Detrashing": [
+  { id:'startDate', label:'Start Date (Petsa Sugod)', type:'date' },
+  { id:'endDate', label:'End Date (Petsa Tapos)', type:'date' },
+  
+  { 
+    id:'areaCovered', 
+    label:'Area Covered (Natabunan nga luna)', 
+    type:'number', 
+    step:'0.01',
+    autoFill: true
+  },
+  
+  { 
+    id:'method', 
+    label:'Method (Paagi sa Pagpanitan)', 
+    type:'select',
+    options:[
+      'Manual (Manu-mano)',
+      'Mechanical (Makinarya)',
+      'Others'
+    ]
+  },
+  
+  { 
+    id:'workers', 
+    label:'Number of Workers (Kadaghan sa Trabahante)', 
+    type:'number'
+  },
+  
+  { 
+    id:'laborCost', 
+    label:'Labor Cost', 
+    type:'number', 
+    step:'0.01',
+    enhanced: true
+  },
+  
+  { 
+    id:'equipmentUsed', 
+    label:'Equipment Used (Gigamit nga ekipo)', 
+    type:'text',
+    placeholder: 'e.g., bolo, sickle, brush cutter'
+  },
+  
+  { 
+    id:'totalCost', 
+    label:'Total Cost', 
+    type:'number', 
+    step:'0.01'
+  }
+
+],
+
 "Harvesting": [
   { id:'startDate', label:'Start Date', type:'date' },
   { id:'endDate', label:'End Date', type:'date' },
@@ -1869,7 +1962,15 @@ const taskFieldMap = {
 onAuthStateChanged(auth,async user=>{
   if(!user)return location.href='../Common/farmers_login.html'
   uid=user.uid
-  loadFields()
+  // Load fields immediately - ensure DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      loadFields();
+    });
+  } else {
+    // DOM already ready, load immediately
+    loadFields();
+  }
 })
 
 // Store current field area for Seed Rate calculation
@@ -1923,27 +2024,85 @@ function autoSelectAndProgress(selectElement, selectId, nextElement = null) {
 }
 
 async function loadFields(){
-  const q = query(collection(db,'fields'), where('userId','==',uid));
-  const snap = await getDocs(q);
+  try {
+    // Show loading state in dropdown
+    const fieldSelectInstance = customSelectInstances.get('fieldSelect');
+    if (fieldSelectInstance) {
+      const trigger = document.querySelector('[data-select-id="fieldSelect"] .custom-select-trigger .custom-select-value');
+      if (trigger) trigger.textContent = 'Loading fields...';
+    }
+    
+    // Load fields from Firestore
+    const q = query(collection(db,'fields'), where('userId','==',uid));
+    const snap = await getDocs(q);
 
-  // Add default "Select" option first
-  fieldSelect.innerHTML = '<option value="">Select</option>' + 
-    snap.docs.map(d => `<option value="${d.id}">${d.data().field_name}</option>`).join('');
+    // Add default "Select" option first
+    fieldSelect.innerHTML = '<option value="">Select</option>' + 
+      snap.docs.map(d => `<option value="${d.id}">${d.data().field_name || d.data().fieldName || 'Unnamed Field'}</option>`).join('');
+    
+    // Immediately render options in custom select (don't wait for MutationObserver)
+    if (fieldSelectInstance) {
+      fieldSelectInstance.renderOptions();
+    } else {
+      // If instance doesn't exist yet, initialize it
+      const fieldSelectEl = document.getElementById('fieldSelect');
+      if (fieldSelectEl) {
+        initializeCustomSelect(fieldSelectEl);
+        const newInstance = customSelectInstances.get('fieldSelect');
+        if (newInstance) {
+          newInstance.renderOptions();
+        }
+      }
+    }
+    
+    // Setup click handlers for auto-selection (only once)
+    setupAutoSelectionHandlers();
+    
+    // Auto-select field if only one exists
+    if (autoSelectAndProgress(fieldSelect, 'fieldSelect', operationSelect)) {
+      // Field was auto-selected, show operations immediately
+      showOperations();
+    }
+  } catch (error) {
+    console.error('Error loading fields:', error);
+    // Show error state
+    const trigger = document.querySelector('[data-select-id="fieldSelect"] .custom-select-trigger .custom-select-value');
+    if (trigger) trigger.textContent = 'Error loading fields';
+    fieldSelect.innerHTML = '<option value="">Error loading fields</option>';
+  }
+}
+
+// Show and populate Field Operations (locked list of 7 operations)
+function showOperations() {
+  // Locked list of operations (Visayas farming practices)
+  const allOperations = [
+    'Pre-Planting',
+    'Planting',
+    'Post-Planting',
+    'Detrashing',
+    'Harvesting',
+    'Replanting',
+    'Ratooning'
+  ];
+  operationSelect.innerHTML = '<option value="">Select</option>' +
+    allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
   
   // Re-initialize custom select after updating options
-  const fieldSelectInstance = customSelectInstances.get('fieldSelect');
-  if (fieldSelectInstance) {
-    fieldSelectInstance.renderOptions();
+  const operationSelectInstance = customSelectInstances.get('operationSelect');
+  if (operationSelectInstance) {
+    operationSelectInstance.renderOptions();
   }
   
-  // Setup click handlers for auto-selection (only once)
-  setupAutoSelectionHandlers();
+  operationWrap.classList.remove('hidden');
+  taskTypeWrap.classList.add('hidden');
+  dynamicForm.classList.add('hidden');
+  boughtItemsSection.classList.add('hidden');
+  vehicleUpdatesSection.classList.add('hidden');
   
-  // Auto-select field if only one exists
-  // Don't move focus yet - wait for status to be selected first
-  if (autoSelectAndProgress(fieldSelect, 'fieldSelect', null)) {
-    // Field was auto-selected, operations will be populated by status change
-  }
+  // Auto-select operation if only one option exists
+  setTimeout(() => {
+    autoSelectAndProgress(operationSelect, 'operationSelect', taskType);
+  }, 50);
 }
 
 // Setup click handlers for auto-selection (called once after fields are loaded)
@@ -1951,22 +2110,6 @@ let autoSelectionHandlersSetup = false;
 function setupAutoSelectionHandlers() {
   if (autoSelectionHandlersSetup) return;
   autoSelectionHandlersSetup = true;
-  
-  // Handler for statusSelect click/focus
-  const statusSelectTrigger = document.querySelector(`.custom-select[data-select-id="statusSelect"] .custom-select-trigger`);
-  if (statusSelectTrigger) {
-    statusSelectTrigger.addEventListener('click', () => {
-      // Check if field should be auto-selected (only if status is not yet selected)
-      if (!statusSelect.value && fieldSelect.options.length > 1) {
-        // Check if only one field exists (excluding "Select" option)
-        const fieldOptions = Array.from(fieldSelect.options).filter(opt => opt.value !== '');
-        if (fieldOptions.length === 1 && !fieldSelect.value) {
-          // Auto-select field
-          autoSelectAndProgress(fieldSelect, 'fieldSelect', null);
-        }
-      }
-    });
-  }
 
   // Handler for fieldSelect click/focus
   const fieldSelectTrigger = document.querySelector(`.custom-select[data-select-id="fieldSelect"] .custom-select-trigger`);
@@ -1974,9 +2117,7 @@ function setupAutoSelectionHandlers() {
     fieldSelectTrigger.addEventListener('click', () => {
       // Check if only one field exists and not yet selected
       if (!fieldSelect.value) {
-        // Only move focus to operationSelect if status is already selected
-        const nextElement = statusSelect.value ? operationSelect : null;
-        autoSelectAndProgress(fieldSelect, 'fieldSelect', nextElement);
+        autoSelectAndProgress(fieldSelect, 'fieldSelect', operationSelect);
       }
     });
   }
@@ -1988,6 +2129,13 @@ fieldSelect.addEventListener('change', async function() {
   currentFieldArea = null;
   
   if (!fieldId) {
+    // Hide operations and dependent fields if field is deselected
+    operationWrap.classList.add('hidden');
+    taskTypeWrap.classList.add('hidden');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    
     // Reset seed rate if field is deselected
     const seedRateInput = document.getElementById('seedRate');
     if (seedRateInput) {
@@ -2031,128 +2179,29 @@ fieldSelect.addEventListener('change', async function() {
         }
       }
     }
+    
+    // Show operations after field is selected
+    showOperations();
   } catch (error) {
     console.error('Error fetching field data:', error);
   }
 });
 
-// Status selection handler
-statusSelect.onchange = () => {
-  const status = statusSelect.value;
-  
-  // Clean up dynamically created Rent Cost containers
-  const existingRentCostContainer = document.getElementById('rentCostContainer');
-  if (existingRentCostContainer) existingRentCostContainer.remove();
-  const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
-  if (existingTruckRentedContainer) existingTruckRentedContainer.remove();
-  
-  // Reset all dependent fields
-  operationSelect.value = '';
-  taskType.value = '';
-  dynamicForm.innerHTML = '';
-  
-  // Re-enable operation select (in case it was disabled)
-  operationSelect.disabled = false;
-  const operationSelectContainer = document.querySelector(`.custom-select[data-select-id="operationSelect"]`);
-  if (operationSelectContainer) {
-    const operationTrigger = operationSelectContainer.querySelector('.custom-select-trigger');
-    if (operationTrigger) {
-      operationTrigger.style.pointerEvents = '';
-      operationTrigger.style.opacity = '';
-      operationTrigger.style.cursor = '';
-    }
-  }
-  
-  // Hide all fields until status is selected
-  if (!status) {
-    fieldWrap.classList.add('hidden');
-    operationWrap.classList.add('hidden');
-    taskTypeWrap.classList.add('hidden');
-    dynamicForm.classList.add('hidden');
-    boughtItemsSection.classList.add('hidden');
-    vehicleUpdatesSection.classList.add('hidden');
-    return;
-  }
-  
-  // Show field selection
-  fieldWrap.classList.remove('hidden');
-  
-  // Show and populate Field Operations based on Status
-  const allowedOperations = statusToOperations[status] || [];
-  operationSelect.innerHTML = '<option value="">Select</option>' +
-    allowedOperations.map(op => `<option value="${op}">${op}</option>`).join('');
-  
-  // Re-initialize custom select after updating options
-  const operationSelectInstance = customSelectInstances.get('operationSelect');
-  if (operationSelectInstance) {
-    operationSelectInstance.renderOptions();
-  }
-  
-  operationWrap.classList.remove('hidden');
-  taskTypeWrap.classList.add('hidden');
-  dynamicForm.classList.add('hidden');
-  boughtItemsSection.classList.add('hidden');
-  vehicleUpdatesSection.classList.add('hidden');
-  
-  // Auto-select Post-Planting for Tillering or Grand Growth
-  if (status === 'Tillering' || status === 'Grand Growth') {
-    operationSelect.value = 'Post-Planting';
-    operationSelect.disabled = true;
-    
-    // Disable the custom select trigger visually
-    if (operationSelectContainer) {
-      const operationTrigger = operationSelectContainer.querySelector('.custom-select-trigger');
-      if (operationTrigger) {
-        operationTrigger.style.pointerEvents = 'none';
-        operationTrigger.style.opacity = '0.6';
-        operationTrigger.style.cursor = 'not-allowed';
-      }
-    }
-    
-    // Update custom select display
-    if (operationSelectInstance) {
-      operationSelectInstance.updateSelectedLabel();
-    }
-    
-    // Trigger operation change to load task types automatically
-    operationSelect.dispatchEvent(new Event('change', { bubbles: true }));
-  } else {
-    // Auto-select operation if only one option exists
-    // Use setTimeout to ensure operations are fully populated before checking
-    setTimeout(() => {
-      const wasAutoSelected = autoSelectAndProgress(operationSelect, 'operationSelect', taskType);
-      // If field was already auto-selected and operation is now auto-selected, move focus
-      if (wasAutoSelected && fieldSelect.value) {
-        // Focus will be moved by autoSelectAndProgress to taskType
-      } else if (!wasAutoSelected && fieldSelect.value) {
-        // Field is selected but operation has multiple options, move focus to operation
-        const operationSelectWrapper = document.querySelector(`.custom-select[data-select-id="operationSelect"]`);
-        if (operationSelectWrapper) {
-          const trigger = operationSelectWrapper.querySelector('.custom-select-trigger');
-          if (trigger) {
-            setTimeout(() => trigger.focus(), 100);
-          }
-        }
-      }
-    }, 50);
-  }
-};
 
 // Field Operation selection handler
 operationSelect.onchange = () => {
-  const status = statusSelect.value;
   const operation = operationSelect.value;
-
+  
   // Clean up dynamically created Rent Cost containers
   const existingRentCostContainer = document.getElementById('rentCostContainer');
   if (existingRentCostContainer) existingRentCostContainer.remove();
   const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
   if (existingTruckRentedContainer) existingTruckRentedContainer.remove();
-
+  
   taskType.value = '';
   dynamicForm.innerHTML = '';
-
-  if (!status || !operation) {
+  
+  if (!operation) {
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
@@ -2160,8 +2209,61 @@ operationSelect.onchange = () => {
     return;
   }
   
-  // Get Task Types based on Status + Field Operation
-  const tasks = statusOperationToTasks[status]?.[operation] || [];
+  // Special handling for Ratooning - no task types or forms
+  if (operation === 'Ratooning') {
+    taskTypeWrap.classList.add('hidden');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    
+    // Show confirmation and handle ratooning immediately
+    const ratooningConfirm = confirm('Ratooning will archive the current crop cycle and prepare the field for a new cycle. Continue?');
+    if (!ratooningConfirm) {
+      // Reset operation selection if user cancels
+      operationSelect.value = '';
+  const operationSelectInstance = customSelectInstances.get('operationSelect');
+  if (operationSelectInstance) {
+        operationSelectInstance.updateSelectedLabel();
+      }
+      return;
+  }
+  
+    // Handle ratooning asynchronously
+    (async () => {
+      try {
+        showLoading(true);
+        
+        // Import ratooning handler
+        const { handleRatooning } = await import('../../backend/Handler/growth-tracker.js');
+        await handleRatooning(uid, fieldSelect.value);
+        
+        showLoading(false);
+        showNotification('success', 'Ratooning Completed', 'The current crop cycle has been archived and the field is ready for a new cycle.', [
+          {
+            text: 'OK',
+            type: 'primary',
+            action: () => {
+              location.reload();
+            }
+          }
+        ]);
+      } catch (error) {
+        console.error('Error handling ratooning:', error);
+        showLoading(false);
+        showNotification('error', 'Ratooning Failed', error.message || 'An error occurred while processing ratooning.');
+        // Reset operation selection on error
+        operationSelect.value = '';
+        const operationSelectInstance = customSelectInstances.get('operationSelect');
+    if (operationSelectInstance) {
+      operationSelectInstance.updateSelectedLabel();
+    }
+      }
+    })();
+    return;
+  }
+  
+  // Get Task Types based on Field Operation (no status dependency)
+  const tasks = operationToTasks[operation] || [];
   
   if (!tasks.length) {
     taskTypeWrap.classList.add('hidden');
@@ -2359,6 +2461,17 @@ function renderForm(type){
       </div>
     `;
   });
+
+  // Always add Notes / Remarks field at the bottom (optional, always visible)
+  const hasNotesField = fields.some(f => f.id === 'notes' || f.id === 'remarks');
+  if (!hasNotesField) {
+    dynamicForm.innerHTML += `
+      <div class="mb-4">
+        <label class="text-xs font-medium">Notes / Remarks (Mga Pahinumdom) <span class="text-gray-500 text-xs">(Optional)</span></label>
+        <textarea id="notes" class="w-full border rounded px-3 py-2" rows="3" placeholder="Add any additional notes or remarks..."></textarea>
+      </div>
+    `;
+  }
 
   // Initialize custom selects within the dynamic form
   fields
@@ -3157,7 +3270,7 @@ if (vehicleFuelCostEl) vehicleFuelCostEl.addEventListener('input', updateVehicle
 if (vehicleLaborCostEl) vehicleLaborCostEl.addEventListener('input', updateVehicleTotalCost);
 
 submitBtn.onclick = async () => {
-  const requiredFields = [statusSelect, fieldSelect, operationSelect, taskType];
+  const requiredFields = [fieldSelect, operationSelect, taskType];
   let hasEmpty = false;
 
   requiredFields.forEach(el => {
@@ -3439,10 +3552,15 @@ for(const f of fields){
   const { Timestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
   const recordDateTimestamp = recordDate instanceof Date ? Timestamp.fromDate(recordDate) : Timestamp.fromDate(new Date(recordDate));
 
+  // Auto-derive growth stage from operation + task type
+  const growthStage = deriveGrowthStage(operationSelect.value, taskType.value);
+  
+  // Note: Ratooning is handled in operationSelect.onchange, so it won't reach here
+
   pendingPayload = {
     userId: uid,
     fieldId: fieldSelect.value,
-    status: statusSelect.value,
+    growthStage: growthStage, // Auto-derived
     operation: operationSelect.value,
     taskType: taskType.value,
     data: recordData,
@@ -3602,6 +3720,20 @@ window.confirmSave = async () => {
       } catch (error) {
         console.error('Error updating predicted harvest:', error);
         // Don't fail the whole submission if harvest prediction fails
+      }
+    }
+
+    // Auto-update field's currentGrowthStage from auto-derived growth stage
+    if (pendingPayload.growthStage) {
+      try {
+        const { updateFieldGrowthData } = await import('../../backend/Handler/growth-tracker.js');
+        await updateFieldGrowthData(uid, pendingPayload.fieldId, {
+          currentGrowthStage: pendingPayload.growthStage
+        });
+        console.log(`✅ Updated field currentGrowthStage to: ${pendingPayload.growthStage}`);
+      } catch (error) {
+        console.error('Error updating field growth stage:', error);
+        // Don't fail the whole submission if growth stage update fails
       }
     }
 
