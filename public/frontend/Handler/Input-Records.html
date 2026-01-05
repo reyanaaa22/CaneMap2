@@ -775,8 +775,7 @@ const taskNameAliases = {
   'Ripener Application (Pagbutang og ripener)': 'Ripener Application',
   'Crop Monitoring (Pagbantay sa kahamtong)': 'Growth Monitoring',
   'Detrashing / Brushing (Pagpanitan sa uga nga dahon)': 'Detrashing',
-  'Manual Harvesting (Manu-manong ani)': 'Harvesting',
-  'Mechanical Harvesting (Makinarya nga ani)': 'Harvesting',
+  'Harvesting (Ani sa Tubo)': 'Harvesting',
   'Replanting Operation (Pag-usab og tanom)': 'Replanting Operation'
 };
 
@@ -848,8 +847,7 @@ const operationToTasks = {
     'Detrashing / Brushing (Pagpanitan sa uga nga dahon)'
   ],
   'Harvesting': [
-    'Manual Harvesting (Manu-manong ani)',
-    'Mechanical Harvesting (Makinarya nga ani)'
+    'Harvesting (Ani sa Tubo)'
   ],
   'Replanting': [
     'Replanting Operation (Pag-usab og tanom)'
@@ -989,7 +987,6 @@ const taskFieldMap = {
       options:['Manual','Animal-Drawn','Mechanical','Others'] 
     },
     { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
-    { id:'operators', label:'Number of Operators', type:'number' },
     { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
     { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
   ],
@@ -1004,8 +1001,28 @@ const taskFieldMap = {
       type:'select', 
       options:['Manual','Animal-Drawn','Mechanical','Others'] 
     },
-    { id:'operator', label:'Number of Operators', type:'number' },
     { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+    { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+    { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+  ],
+
+"Field Leveling": [
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
+  { 
+    id:'method', 
+    label:'Method Used', 
+    type:'select', 
+    options:['Manual', 'Animal-Drawn', 'Mechanical', 'Others'] 
+  },
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:['Manual Tools', 'Animal-Drawn Leveler', 'Tractor with Leveler', 'Laser Leveler', 'Others'] 
+  },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
     { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
   ],
 
@@ -1018,8 +1035,15 @@ const taskFieldMap = {
     type:'select', 
     options:['Manual', 'Animal-Drawn', 'Mechanical', 'Others'] 
   },
-    { id:'workers', label:'Number of Workers', type:'number' },
-    { id:'cost', label:'Cost', type:'number', step:'0.01' }
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:['Manual Tools', 'Animal-Drawn Plow', 'Tractor with Furrower', 'Others'] 
+  },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
   ],
 
 "Lime Application": [
@@ -1132,7 +1156,6 @@ const taskFieldMap = {
       'Others'
     ]
   },
-  { id:'workers', label:'Number of Workers', type:'number' },
   { id:'seedSource', label:'Seed Source', type:'text' },
   { id:'seedAge', label:'Seed Age (months)', type:'number' },
 
@@ -1151,7 +1174,9 @@ const taskFieldMap = {
   },
 
   { id:'quantity', label:'Quantity Prepared', type:'number' },
-  { id:'cost', label:'Cost', type:'number', step:'0.01' }
+  { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
 "Planting Operation": [
@@ -1195,11 +1220,14 @@ const taskFieldMap = {
     type:'select', 
     options:['Manual','Mechanical','Others'] 
   },
-
-    // Number of workers
-  { id:'workers', label:'Number of Workers', type:'number' },
-
-  // Total cost
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:['Manual Tools', 'Planting Machine', 'Tractor with Planter', 'Others'] 
+  },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
@@ -1244,11 +1272,14 @@ const taskFieldMap = {
     type:'select', 
     options:['Manual','Mechanical','Others'] 
   },
-
-    // Number of workers
-  { id:'workers', label:'Number of Workers', type:'number' },
-
-  // Total cost
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:['Manual Tools', 'Planting Machine', 'Tractor with Planter', 'Others'] 
+  },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
@@ -1257,8 +1288,8 @@ const taskFieldMap = {
   { id:'endDate', label:'End Date', type:'date' },
   { id:'germinationRate', label:'Germination Rate (%)', type:'number', step:'0.01' },
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
-  { id:'workers', label:'Number of Workers / Observers', type:'number' },
-  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
 "Growth Monitoring": [
@@ -1267,8 +1298,48 @@ const taskFieldMap = {
   { id:'cropAge', label:'Crop Age (days)', type:'number' },
   { id:'height', label:'Average Height (cm)', type:'number', step:'0.01' },
   { id:'tillersPerHill', label:'Tillers per Hill', type:'number', step:'0.01' },
-  { id:'workers', label:'Number of Workers / Observers', type:'number' },
-  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
+],
+
+"Ripener Application": [
+  { id:'startDate', label:'Start Date', type:'date' },
+  { id:'endDate', label:'End Date', type:'date' },
+  { 
+    id:'ripenerType', 
+    label:'Ripener Type', 
+    type:'select',
+    options:[
+      'Ethephon',
+      'Glyphosate',
+      'Sodium Chlorate',
+      'Calcium Carbide',
+      'Others'
+    ]
+  },
+  { id:'dosage', label:'Dosage (ml/L or kg/ha)', type:'number', step:'0.01' },
+  { 
+    id:'applicationMethod', 
+    label:'Application Method', 
+    type:'select',
+    options:[
+      'Foliar Spray',
+      'Aerial Application',
+      'Ground Application',
+      'Others'
+    ]
+  },
+  { id:'areaCovered', label:'Area Covered (ha)', type:'number', step:'0.01', autoFill: true },
+  { 
+    id:'equipment', 
+    label:'Equipment Used', 
+    type:'select', 
+    options:['Manual Sprayer', 'Tractor-mounted Sprayer', 'Aerial Sprayer', 'Others'] 
+  },
+  { id:'materialCost', label:'Material Cost', type:'number', step:'0.01' },
+  { id:'fuelCost', label:'Fuel Cost', type:'number', step:'0.01' },
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
 "Pre-Harvest Assessment": [
@@ -1280,8 +1351,8 @@ const taskFieldMap = {
   },
   { id:'estimatedYield', label:'Estimated Yield (tc/ha)', type:'number', step:'0.01' },
   { id:'brix', label:'Brix (%)', type:'number', step:'0.01' },
-  { id:'workers', label:'Number of Workers / Assessors', type:'number' },
-  { id:'notes', label:'Notes / Remarks', type:'textarea' }
+  { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
+  { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
 ],
 
 "Post-Planting Fertilization": [
@@ -1622,23 +1693,18 @@ const taskFieldMap = {
   },
 
   { 
-    id:'workers', 
-    label:'Number of Workers', 
-    type:'number'
+    id:'fuelCost', 
+    label:'Fuel Cost', 
+    type:'number',
+    step:'0.01'
   },
 
   { 
     id:'laborCost', 
     label:'Labor Cost', 
     type:'number',
-    step:'0.01'
-  },
-
-  { 
-    id:'fuelCost', 
-    label:'Fuel Cost', 
-    type:'number',
-    step:'0.01'
+    step:'0.01',
+    enhanced: true
   },
 
   { 
@@ -1673,11 +1739,6 @@ const taskFieldMap = {
     ]
   },
   
-  { 
-    id:'workers', 
-    label:'Number of Workers (Kadaghan sa Trabahante)', 
-    type:'number'
-  },
   
   { 
     id:'laborCost', 
@@ -1751,9 +1812,11 @@ const taskFieldMap = {
   },
 
   { 
-    id:'workers', 
-    label:'Number of Workers', 
-    type:'number'
+    id:'laborCost', 
+    label:'Labor Cost', 
+    type:'number', 
+    step:'0.01',
+    enhanced: true
   },
 
   { 
@@ -2758,6 +2821,89 @@ async function loadRecordForEdit(recordId) {
 // Store current field area for Seed Rate calculation
 let currentFieldArea = null;
 
+// Cache for done tasks to avoid repeated queries
+let doneTasksCache = new Map(); // Key: `${fieldId}_${operation}_${taskType}`, Value: boolean
+
+/**
+ * Check if a task is done (exists in Growth Tracker via records collection)
+ * Growth Tracker = Final Authority: If a task appears in Growth Tracker, it is considered Done
+ * @param {string} fieldId - Field ID
+ * @param {string} operation - Field Operation
+ * @param {string} taskType - Task Type
+ * @returns {Promise<boolean>} True if task is done
+ */
+async function isTaskDone(fieldId, operation, taskType) {
+  if (!fieldId || !operation || !taskType) {
+    return false;
+  }
+  
+  // Check cache first
+  const cacheKey = `${fieldId}_${operation}_${taskType}`;
+  if (doneTasksCache.has(cacheKey)) {
+    return doneTasksCache.get(cacheKey);
+  }
+  
+  try {
+    const { query, collection, where, getDocs } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    
+    // Query records collection for Done records matching this field, operation, and task type
+    const recordsQuery = query(
+      collection(db, 'records'),
+      where('fieldId', '==', fieldId),
+      where('operation', '==', operation),
+      where('taskType', '==', taskType),
+      where('recordStatus', '==', 'Done')
+    );
+    
+    const snapshot = await getDocs(recordsQuery);
+    const isDone = !snapshot.empty;
+    
+    // Cache the result
+    doneTasksCache.set(cacheKey, isDone);
+    
+    return isDone;
+  } catch (error) {
+    console.error('Error checking if task is done:', error);
+    // On error, assume not done to be safe (don't hide tasks)
+    return false;
+  }
+}
+
+/**
+ * Check which tasks are done for a given field and operation
+ * Returns a Set of done task types for efficient lookup
+ * @param {string} fieldId - Field ID
+ * @param {string} operation - Field Operation
+ * @param {Array<string>} taskTypes - Array of task types to check
+ * @returns {Promise<Set<string>>} Set of done task types
+ */
+async function getDoneTasks(fieldId, operation, taskTypes) {
+  if (!fieldId || !operation || !taskTypes || taskTypes.length === 0) {
+    return new Set();
+  }
+  
+  const doneTasks = new Set();
+  
+  // Check all tasks in parallel for better performance
+  const checks = taskTypes.map(async (taskType) => {
+    const isDone = await isTaskDone(fieldId, operation, taskType);
+    if (isDone) {
+      doneTasks.add(taskType);
+    }
+  });
+  
+  await Promise.all(checks);
+  
+  return doneTasks;
+}
+
+/**
+ * Clear done tasks cache (call when field changes or after undo)
+ */
+function clearDoneTasksCache() {
+  doneTasksCache.clear();
+}
+
 // Helper function to auto-select and progress when only one option exists
 function autoSelectAndProgress(selectElement, selectId, nextElement = null) {
   if (!selectElement) return false;
@@ -2916,6 +3062,9 @@ fieldSelect.addEventListener('change', async function() {
   }
   currentFieldArea = null;
   
+  // Clear done tasks cache when field changes (per-field isolation)
+  clearDoneTasksCache();
+  
   if (!fieldId) {
     // Hide operations and dependent fields if field is deselected
     operationWrap.classList.add('hidden');
@@ -3010,7 +3159,7 @@ fieldSelect.addEventListener('change', async function() {
 
 
 // Field Operation selection handler
-operationSelect.onchange = () => {
+operationSelect.onchange = async () => {
   const operation = operationSelect.value;
   const isEditMode = window._isLoadingEditRecord;
   
@@ -3093,10 +3242,10 @@ operationSelect.onchange = () => {
     return;
   }
   
-  // Get Task Types based on Field Operation (no status dependency)
-  const tasks = operationToTasks[operation] || [];
+  // Get Task Types based on Field Operation
+  const allTasks = operationToTasks[operation] || [];
   
-  if (!tasks.length) {
+  if (!allTasks.length) {
     taskTypeWrap.classList.add('hidden');
     if (!isEditMode) {
     dynamicForm.classList.add('hidden');
@@ -3106,10 +3255,66 @@ operationSelect.onchange = () => {
     return;
   }
   
-  // Show Task Type dropdown (always show, even in edit mode)
+  // Filter out done tasks (Growth Tracker = Final Authority)
+  // Only filter in normal mode (not in edit mode, where we want to show all tasks)
+  let availableTasks = allTasks;
+  if (!isEditMode && fieldSelect.value) {
+    try {
+      const doneTasks = await getDoneTasks(fieldSelect.value, operation, allTasks);
+      availableTasks = allTasks.filter(task => !doneTasks.has(task));
+      
+      // Update Field Operation display if all tasks are done
+      const operationSelectInstance = customSelectInstances.get('operationSelect');
+      if (operationSelectInstance && availableTasks.length === 0) {
+        // All tasks completed - make operation non-clickable and show label
+        const operationTrigger = document.querySelector('[data-select-id="operationSelect"] .custom-select-trigger');
+        if (operationTrigger) {
+          operationTrigger.style.cursor = 'not-allowed';
+          operationTrigger.style.opacity = '0.7';
+          operationTrigger.title = 'All tasks completed';
+          
+          // Add visual indicator
+          const valueEl = operationTrigger.querySelector('.custom-select-value');
+          if (valueEl) {
+            const originalText = valueEl.textContent;
+            valueEl.innerHTML = `${originalText} <span class="text-xs text-gray-500 ml-2">(All tasks completed)</span>`;
+          }
+        }
+      } else if (operationSelectInstance) {
+        // Reset operation display if not all tasks are done
+        const operationTrigger = document.querySelector('[data-select-id="operationSelect"] .custom-select-trigger');
+        if (operationTrigger) {
+          operationTrigger.style.cursor = '';
+          operationTrigger.style.opacity = '';
+          operationTrigger.title = '';
+          
+          const valueEl = operationTrigger.querySelector('.custom-select-value');
+          if (valueEl) {
+            // Remove the "(All tasks completed)" text if present
+            valueEl.textContent = operationSelect.value || 'Select';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error filtering done tasks:', error);
+      // On error, show all tasks (don't hide anything)
+      availableTasks = allTasks;
+    }
+  }
+  
+  // If all tasks are done and we're not in edit mode, hide task type dropdown
+  if (!isEditMode && availableTasks.length === 0) {
+    taskTypeWrap.classList.add('hidden');
+    dynamicForm.classList.add('hidden');
+    boughtItemsSection.classList.add('hidden');
+    vehicleUpdatesSection.classList.add('hidden');
+    return;
+  }
+  
+  // Show Task Type dropdown
     taskTypeWrap.classList.remove('hidden');
   taskType.innerHTML = '<option value="">Select</option>' +
-      tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+      availableTasks.map(t => `<option value="${t}">${t}</option>`).join('');
   
   // Re-initialize custom select after updating options
   const taskTypeInstance = customSelectInstances.get('taskType');
@@ -3442,17 +3647,45 @@ function renderForm(type){
 
   // --- SPECIAL HANDLING ---
 
-  // List of all possible cost-related field IDs (defined outside function so it's accessible)
-    const costFieldIds = [
-      // Standard cost fields
-      'fuelCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
-      'haulingCost', 'harvestCost', 'transportCost', 'cost',
-      // Other expense fields
-      'haulingExpense'
-    ];
+  // Comprehensive list of ALL cost-related field IDs (ONLY fields that represent money/cost)
+  // This list is exhaustive and includes all cost fields from Pre-Planting to Replanting
+  const costFieldIds = [
+    // Standard cost fields
+    'fuelCost',
+    'materialCost',
+    'fertilizerCost',
+    'chemicalCost',
+    'haulingCost',
+    'harvestCost',
+    'transportCost',
+    'cost', // Legacy field name
+    // Other expense fields
+    'haulingExpense',
+    'rentCost' // Dynamically created field
+  ];
+
+  // List of field IDs that should NEVER be included in total cost calculation
+  // These are non-cost fields (quantities, measurements, counts, etc.)
+  const excludedFieldIds = [
+    'totalCost', // Don't include itself
+    'laborCost', // Handled separately (enhanced or legacy) - only the final calculated total
+    'fuel', // Special case, handled separately if needed
+    // Labor cost detail fields (NOT costs, only used to calculate laborCost)
+    'laborRatePerDay', 'laborWorkers', 'laborWorkingDays', 'ratePerDay',
+    // Non-cost fields
+    'workers', 'operators', 'numberOfWorkers', 'numberOfOperators',
+    'areaCovered', 'areaHarvested', 'areaTreated', 'fieldArea',
+    'quantity', 'quantityPrepared', 'dosage',
+    'yieldTcHa', 'totalCaneYield', 'caneLoaded', 'weight',
+    'distance', 'depth', 'rowCoverage', 'rowsCovered',
+    'germinationRate', 'cropAge', 'height', 'tillersPerHill',
+    'estimatedYield', 'brix',
+    'startDate', 'endDate' // Dates are not costs
+  ];
 
   // --- Universal Auto-calculate Total Cost ---
-  // This function calculates totalCost by summing ALL cost-related fields
+  // This function calculates totalCost by summing ONLY cost-related fields
+  // It explicitly excludes all non-cost fields (quantities, measurements, counts, etc.)
   // Make it available globally so it can be accessed from loadRecordForEdit
   window.updateTotalCost = function updateTotalCost(){
     const totalCostInput = document.getElementById('totalCost');
@@ -3460,10 +3693,16 @@ function renderForm(type){
     
     let total = 0;
     
-    // Also check for 'fuel' field (special dynamic input case)
-    const fuelInput = document.getElementById('fuel');
-    if(fuelInput) {
-      total += parseFloat(fuelInput.value) || 0;
+    // Check for enhanced labor cost (readonly calculated field) - ALWAYS include if present
+    // This is the total labor cost from the enhanced labor cost details
+    const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
+    const enhancedLaborCostInput = document.getElementById('laborCost');
+    if(laborCostEnhancedContainer && enhancedLaborCostInput) {
+      // Only include if it's the readonly calculated total (enhanced labor cost)
+      // The enhanced labor cost input becomes readonly after calculation
+      if(enhancedLaborCostInput.readonly || enhancedLaborCostInput.hasAttribute('readonly')) {
+        total += parseFloat(enhancedLaborCostInput.value) || 0;
+      }
     }
     
     // Check for legacy 'laborCost' container (special dynamic input case)
@@ -3476,21 +3715,13 @@ function renderForm(type){
       }
     }
     
-    // Check for enhanced labor cost (readonly calculated field) - ALWAYS include if present
-    const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
-    const enhancedLaborCostInput = document.getElementById('laborCost');
-    if(laborCostEnhancedContainer && enhancedLaborCostInput && enhancedLaborCostInput.readonly) {
-      // Enhanced labor cost is already calculated, include it
-      total += parseFloat(enhancedLaborCostInput.value) || 0;
-    }
-    
     // Explicitly include Rent Cost if it exists (dynamically created field)
     const rentCostInput = document.getElementById('rentCost');
-    if(rentCostInput) {
+    if(rentCostInput && rentCostInput.type === 'number') {
       total += parseFloat(rentCostInput.value) || 0;
     }
     
-    // Sum all cost-related fields that exist in the form
+    // Sum ONLY the explicitly listed cost-related fields that exist in the form
     costFieldIds.forEach(fieldId => {
       // Skip laborCost if it's in a legacy dynamic container or enhanced container (already handled above)
       if(fieldId === 'laborCost' && (hasLaborCostContainer || laborCostEnhancedContainer)) {
@@ -3499,11 +3730,17 @@ function renderForm(type){
       
       const field = document.getElementById(fieldId);
       if(field && field.type === 'number') {
-        // Include readonly fields (like calculated costs)
+        // Double-check: ensure this field is NOT in the excluded list
+        if(excludedFieldIds.includes(fieldId)) {
+          return; // Skip excluded fields
+        }
+        
+        // Include readonly fields (like calculated costs such as chemicalCost)
         // Skip if it's inside a legacy dynamic container (handled separately above)
         const container = field.closest('#' + fieldId + 'Container');
         if(!container) {
-          total += parseFloat(field.value) || 0;
+          const value = parseFloat(field.value) || 0;
+          total += value;
         }
       }
     });
@@ -4794,6 +5031,8 @@ window.confirmSave = async () => {
     // CRITICAL: Only run automatic calculations for "Done" records
     // Partial records should not trigger growth tracking updates
     if (recordStatus === 'Done') {
+      // Clear done tasks cache so the task disappears from Input Records immediately
+      clearDoneTasksCache();
     // Handle predicted harvest logic for planting operations
       if (pendingPayload.growthStage === 'Germination' && 
         (pendingPayload.taskType === 'Planting Operation' || pendingPayload.taskType === 'Replanting / Gap Filling')) {

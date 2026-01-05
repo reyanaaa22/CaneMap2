@@ -449,6 +449,8 @@ function renderRecords(records) {
       editRecord(recordId);
     } else if (action === 'delete') {
       confirmDeleteRecord(recordId);
+    } else if (action === 'undo') {
+      handleUndoDoneRecord(recordId);
     }
   });
 }
@@ -499,6 +501,62 @@ function populateTaskTypeFilter(records) {
   }
 }
 
+// Comprehensive list of ALL cost-related field names (ONLY fields that represent money/cost)
+// This ensures we only sum actual cost fields, not quantities, measurements, or counts
+const COST_FIELD_NAMES = [
+  // Fuel costs
+  'fuelCost', 'fuel',
+  // Labor costs
+  'laborCost', 'labor',
+  // Material and supply costs
+  'materialCost', 'material',
+  // Fertilizer costs
+  'fertilizerCost', 'fertilizer',
+  // Chemical costs
+  'chemicalCost', 'chemical',
+  // Transport and hauling costs
+  'transportCost', 'transport', 'haulingCost', 'hauling', 'haulingExpense',
+  // Harvest costs
+  'harvestCost', 'harvest',
+  // Rent costs
+  'rentCost', 'rent',
+  // Legacy/other cost fields
+  'cost', 'price', 'amount', 'expense', 'fee', 'charge'
+];
+
+// List of field names that should NEVER be included in cost calculation
+// These are non-cost fields (quantities, measurements, counts, etc.)
+const EXCLUDED_FIELD_NAMES = [
+  'totalCost', // Don't include itself (we calculate it)
+  // Labor cost detail fields (NOT costs, only used to calculate laborCost)
+  // Only the final calculated 'laborCost' should be included, not these components
+  'laborRatePerDay', 'laborWorkers', 'laborWorkingDays', 'ratePerDay', 'workingDays',
+  // Non-cost fields
+  'workers', 'operators', 'numberOfWorkers', 'numberOfOperators',
+  'areaCovered', 'areaHarvested', 'areaTreated', 'fieldArea', 'area',
+  'quantity', 'quantityPrepared', 'dosage',
+  'yieldTcHa', 'totalCaneYield', 'caneLoaded', 'weight',
+  'distance', 'depth', 'rowCoverage', 'rowsCovered',
+  'germinationRate', 'cropAge', 'height', 'tillersPerHill',
+  'estimatedYield', 'brix',
+  'startDate', 'endDate', 'date', // Dates are not costs
+  'method', 'equipment', 'equipmentUsed', 'transportUsed', 'caneType', 'harvestMethod'
+];
+
+// Helper function to check if a field name is a cost field
+function isCostField(fieldName) {
+  if (!fieldName || typeof fieldName !== 'string') return false;
+  
+  // First check exclusion list
+  const fieldLower = fieldName.toLowerCase();
+  if (EXCLUDED_FIELD_NAMES.some(excluded => fieldLower === excluded.toLowerCase())) {
+    return false;
+  }
+  
+  // Then check if it's in the cost fields list
+  return COST_FIELD_NAMES.some(costField => fieldLower === costField.toLowerCase() || fieldLower.includes(costField.toLowerCase()));
+}
+
 // Get cost breakdown by type (fuel, labor, other)
 function getCostBreakdown(record) {
   let fuelCost = 0;
@@ -506,40 +564,52 @@ function getCostBreakdown(record) {
   let otherCost = 0;
   let hasIndividualCosts = false;
   
-  // 1. Scan record.data for cost-related fields
+  // 1. Scan record.data for cost-related fields (ONLY explicitly listed cost fields)
   if (record.data && typeof record.data === 'object') {
     for (const [key, value] of Object.entries(record.data)) {
       if (key === 'totalCost') continue; // Skip total, we'll handle it separately
       
-      const keyLower = key.toLowerCase();
+      // Skip labor cost detail fields - these are NOT costs, only used to calculate laborCost
+      if (EXCLUDED_FIELD_NAMES.includes(key)) continue;
+      
+      // Only process if this is a recognized cost field
+      if (!isCostField(key)) continue;
+      
       const numValue = parseFloat(value) || 0;
       
       if (numValue > 0) {
         hasIndividualCosts = true;
+        const keyLower = key.toLowerCase();
+        
         if (keyLower.includes('fuel')) {
           fuelCost += numValue;
         } else if (keyLower.includes('labor')) {
           laborCost += numValue;
-        } else if (keyLower.includes('cost') || 
-                   keyLower.includes('price') || 
-                   keyLower.includes('amount') ||
-                   keyLower.includes('expense') ||
-                   keyLower.includes('fee') ||
-                   keyLower.includes('charge')) {
-          // Check if it's not fuel or labor, then it's other
-          if (!keyLower.includes('fuel') && !keyLower.includes('labor')) {
-            otherCost += numValue;
-          }
+        } else {
+          // All other cost fields go to otherCost
+          otherCost += numValue;
         }
       }
     }
     
-    // If totalCost exists but we didn't find individual costs, add it to otherCost
-    // This handles cases where only totalCost is provided
-    if (!hasIndividualCosts && record.data.totalCost) {
+    // Use totalCost as the authoritative source - it should match the grand total
+    // This ensures the grand total displayed matches what was saved in totalCost
+    if (record.data.totalCost) {
       const totalCostValue = parseFloat(record.data.totalCost) || 0;
       if (totalCostValue > 0) {
-        otherCost += totalCostValue;
+        if (!hasIndividualCosts) {
+          // No individual costs found, use totalCost as otherCost
+          otherCost += totalCostValue;
+        } else {
+          // We have individual costs, but totalCost is the authoritative value
+          // Recalculate to ensure grand total matches totalCost exactly
+          const calculatedTotal = fuelCost + laborCost + otherCost;
+          if (Math.abs(calculatedTotal - totalCostValue) > 0.01) {
+            // Adjust to match totalCost (the source of truth)
+            const diff = totalCostValue - calculatedTotal;
+            otherCost += diff;
+          }
+        }
       }
     }
   }
@@ -558,14 +628,12 @@ function getCostBreakdown(record) {
       otherCost += (vehicleTotal - vehicleFuel - vehicleLabor);
     }
     
-    // Scan for other cost fields in vehicle updates
+    // Scan for other cost fields in vehicle updates (ONLY explicitly listed cost fields)
     for (const [key, value] of Object.entries(record.vehicleUpdates)) {
       if (key === 'totalCost' || key === 'fuelCost' || key === 'laborCost') continue;
-      const keyLower = key.toLowerCase();
-      if ((keyLower.includes('cost') || 
-           keyLower.includes('price') || 
-           keyLower.includes('amount')) && 
-          typeof value === 'number') {
+      
+      // Only process if this is a recognized cost field
+      if (isCostField(key) && typeof value === 'number') {
         otherCost += parseFloat(value) || 0;
       }
     }
@@ -578,10 +646,9 @@ function getCostBreakdown(record) {
     if (item && typeof item === 'object') {
       for (const [key, value] of Object.entries(item)) {
         if (key === 'totalCost' || key === 'total') continue;
-        const keyLower = key.toLowerCase();
-        if ((keyLower.includes('cost') || 
-             keyLower.includes('amount')) && 
-            typeof value === 'number') {
+        
+        // Only process if this is a recognized cost field
+        if (isCostField(key) && typeof value === 'number') {
           itemTotal += parseFloat(value) || 0;
         }
       }
@@ -594,7 +661,18 @@ function getCostBreakdown(record) {
 }
 
 // Calculate total cost from all cost inputs in the record
+// If totalCost exists in the record, use it directly (it's the authoritative value)
+// This ensures the grand total matches what was saved in the input record
 function calculateTotalCost(record) {
+  // If totalCost exists, use it directly as the grand total
+  if (record.data && record.data.totalCost) {
+    const totalCostValue = parseFloat(record.data.totalCost) || 0;
+    if (totalCostValue > 0) {
+      return totalCostValue;
+    }
+  }
+  
+  // Fallback: calculate from individual cost fields
   const breakdown = getCostBreakdown(record);
   return breakdown.fuelCost + breakdown.laborCost + breakdown.otherCost;
 }
@@ -625,7 +703,7 @@ function createRecordCard(record) {
     : 'px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300';
   
   return `
-    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4 mb-4" 
+    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4 mb-4 relative" 
          style="border-left-color: ${colors.border};">
       <!-- Top Section: Status, Task Type, Details -->
       <div class="mb-4">
@@ -662,6 +740,17 @@ function createRecordCard(record) {
         </div>
         `}
       </div>
+      
+      <!-- Top Right: Undo Button (only for Done records) -->
+      ${isDone ? `
+      <div class="absolute top-4 right-4">
+        <button data-record-id="${record.id}" data-action="undo" 
+                class="w-8 h-8 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition-all duration-200 flex items-center justify-center shadow-md hover:shadow-lg" 
+                title="Undo Done Record">
+          <i class="fas fa-undo text-sm"></i>
+        </button>
+      </div>
+      ` : ''}
       
       <!-- Bottom Section: Action Buttons (responsive, always at bottom) -->
       <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
@@ -3680,6 +3769,166 @@ async function sendReportToSRA(reportData) {
   } finally {
     // Always clear the sending flag
     window.sendingReportToSRA = false;
+  }
+}
+
+/**
+ * Undo Done Record - Reset record to "Not Started" and redirect to Input Records
+ * User-controlled undo that resets all inputs to blank and removes from Growth Tracker
+ */
+async function handleUndoDoneRecord(recordId) {
+  // Find the record
+  let record = currentFilteredRecords.find(r => r.id === recordId);
+  if (!record) {
+    record = recordsCache.find(r => r.id === recordId);
+  }
+  
+  if (!record) {
+    alert('Record not found. It may have been deleted.');
+    return;
+  }
+  
+  // Verify it's a Done record
+  const recordStatus = record.recordStatus || 'Done';
+  if (recordStatus !== 'Done') {
+    alert('Only Done records can be undone.');
+    return;
+  }
+  
+  // Show confirmation modal
+  const confirmed = await new Promise((resolve) => {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center';
+    modal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 animate-modalSlideIn">
+        <div class="mb-4 text-center">
+          <i class="fas fa-exclamation-triangle text-4xl text-orange-500 mb-3"></i>
+          <h3 class="text-xl font-bold text-[var(--cane-900)] mb-2">Undo Done Record</h3>
+          <p class="text-gray-600 text-sm mb-4">
+            This will reset the record to "Not Started" and remove it from Growth Tracker. 
+            All inputs will be cleared. This action cannot be undone.
+          </p>
+          <div class="bg-gray-50 rounded-lg p-3 text-left text-sm">
+            <p class="font-semibold mb-2">Record Details:</p>
+            <p><strong>Field:</strong> ${escapeHtml(record.fieldName || 'Unknown')}</p>
+            <p><strong>Operation:</strong> ${escapeHtml(record.operation || 'N/A')}</p>
+            <p><strong>Task Type:</strong> ${escapeHtml(record.taskType || 'Unknown')}</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button id="undoCancel" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+            Cancel
+          </button>
+          <button id="undoConfirm" class="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition font-semibold">
+            Confirm Undo
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    const cancelBtn = modal.querySelector('#undoCancel');
+    const confirmBtn = modal.querySelector('#undoConfirm');
+    
+    cancelBtn.addEventListener('click', () => {
+      modal.remove();
+      resolve(false);
+    });
+    
+    confirmBtn.addEventListener('click', () => {
+      modal.remove();
+      resolve(true);
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+        resolve(false);
+      }
+    });
+    
+    // Close on Escape key
+    const escapeHandler = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', escapeHandler);
+        resolve(false);
+      }
+    };
+    document.addEventListener('keydown', escapeHandler);
+  });
+  
+  if (!confirmed) {
+    return;
+  }
+  
+  try {
+    // Show loading
+    const loadingModal = document.createElement('div');
+    loadingModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center';
+    loadingModal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
+        <i class="fas fa-spinner fa-spin text-4xl text-[var(--cane-600)] mb-3"></i>
+        <p class="text-gray-600">Resetting record...</p>
+      </div>
+    `;
+    document.body.appendChild(loadingModal);
+    
+    const { doc, updateDoc, deleteDoc, getDocs, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    
+    // Update record: reset to "Not Done Yet" and clear all data
+    const recordRef = doc(db, 'records', recordId);
+    await updateDoc(recordRef, {
+      recordStatus: 'Not Done Yet',
+      data: {}, // Reset all inputs to blank
+      updatedAt: serverTimestamp()
+    });
+    
+    // Delete subcollections (bought_items, vehicle_updates) to fully reset
+    const [boughtItemsSnap, vehicleUpdatesSnap] = await Promise.all([
+      getDocs(collection(db, 'records', recordId, 'bought_items')).catch(() => ({ docs: [] })),
+      getDocs(collection(db, 'records', recordId, 'vehicle_updates')).catch(() => ({ docs: [] }))
+    ]);
+    
+    // Delete all bought items
+    for (const itemDoc of boughtItemsSnap.docs) {
+      await deleteDoc(itemDoc.ref);
+    }
+    
+    // Delete all vehicle updates
+    for (const updateDoc of vehicleUpdatesSnap.docs) {
+      await deleteDoc(updateDoc.ref);
+    }
+    
+    loadingModal.remove();
+    
+    // Get the current page's directory and navigate relative to it
+    const currentPath = window.location.pathname;
+    let inputRecordsPath;
+    if (currentPath.includes('/Handler/')) {
+      const handlerIndex = currentPath.indexOf('/Handler/');
+      const basePath = currentPath.substring(0, handlerIndex + '/Handler/'.length);
+      inputRecordsPath = basePath + 'Input-Records.html';
+    } else {
+      const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      inputRecordsPath = currentDir + '/Input-Records.html';
+    }
+    
+    // Redirect to Input Records with auto-selection
+    // Note: We pass editRecordId so the form loads, but the record is now "Not Done Yet" and will be editable
+    const params = new URLSearchParams({
+      fieldId: record.fieldId,
+      operation: record.operation,
+      taskType: record.taskType,
+      editRecordId: recordId
+    });
+    
+    window.location.href = `${inputRecordsPath}?${params.toString()}`;
+    
+  } catch (error) {
+    console.error('Error undoing done record:', error);
+    alert('Failed to undo record. Please try again.');
   }
 }
 
