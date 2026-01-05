@@ -558,9 +558,12 @@ This file handles ALL functionalities described in the PDF:
   </div>
 
   <!-- SUBMIT -->
-  <div class="pt-4 flex justify-end">
-    <button id="submitBtn" class="btn bg-[var(--cane-700)] text-white px-6 py-2 rounded-lg">
+  <div class="pt-4 flex justify-end gap-3">
+    <button type="button" id="savePartialBtn" class="btn bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">
       Save Record
+    </button>
+    <button type="button" id="submitBtn" class="btn bg-[var(--cane-700)] text-white px-6 py-2 rounded-lg">
+      Done Record
     </button>
   </div>
 </div>
@@ -604,7 +607,7 @@ This file handles ALL functionalities described in the PDF:
 <script type="module">
 import { auth, db } from '../../backend/Common/firebase-config.js'
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js'
-import { collection, getDocs, addDoc, serverTimestamp, query, where, getDoc, doc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
+import { collection, getDocs, addDoc, serverTimestamp, query, where, getDoc, doc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js'
 import { initHandlerOfflineSync, getOnlineStatus, wasOnInputRecords } from '../../backend/Handler/offline-input-sync.js'
 import { addPendingRecord } from '../../backend/Handler/offline-input-storage.js'
 
@@ -1959,19 +1962,798 @@ const taskFieldMap = {
   ]
 };
 
+// Store current editing record ID (if any)
+let editingRecordId = null;
+
 onAuthStateChanged(auth,async user=>{
   if(!user)return location.href='../Common/farmers_login.html'
   uid=user.uid
-  // Load fields immediately - ensure DOM is ready
+  
+  // Load fields FIRST before checking for edit mode
+  // This ensures fields are available when editing
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      loadFields();
+    await new Promise(resolve => {
+      document.addEventListener('DOMContentLoaded', resolve);
     });
+  }
+  
+  // Ensure buttons are attached (in case they weren't attached earlier)
+  attachButtonHandlers();
+  
+  // Load fields immediately
+  await loadFields();
+  
+  // Check if we're editing an existing record (after fields are loaded)
+  const params = new URLSearchParams(window.location.search);
+  const editRecordId = params.get('editRecordId');
+  
+  if (editRecordId) {
+    editingRecordId = editRecordId;
+    console.log('📝 Edit mode activated. Record ID:', editingRecordId);
+    // Load the record and populate the form
+    await loadRecordForEdit(editRecordId);
   } else {
-    // DOM already ready, load immediately
-    loadFields();
+    // Ensure editingRecordId is null when not editing
+    editingRecordId = null;
+    console.log('📝 New record mode');
   }
 })
+
+// Function to attach button handlers (can be called multiple times safely)
+function attachButtonHandlers() {
+  // Handle partial save (Save Record button)
+  const savePartialBtn = document.getElementById('savePartialBtn');
+  if (savePartialBtn && !savePartialBtn.dataset.handlerAttached) {
+    savePartialBtn.dataset.handlerAttached = 'true';
+    savePartialBtn.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🔄 Save Record button clicked (partial save)');
+      try {
+        await handleSubmit(false); // false = partial save
+      } catch (error) {
+        console.error('❌ Error in handleSubmit (partial):', error);
+        showNotification('error', 'Save Failed', 'An error occurred while saving. Please try again.');
+      }
+    };
+    console.log('✅ Save Record button handler attached');
+  } else if (!savePartialBtn) {
+    console.warn('⚠️ Save Record button not found yet');
+  }
+
+  // Handle complete save (Done Record button)
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn && !submitBtn.dataset.handlerAttached) {
+    submitBtn.dataset.handlerAttached = 'true';
+    submitBtn.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🔄 Done Record button clicked (complete save)');
+      try {
+        await handleSubmit(true); // true = done save
+      } catch (error) {
+        console.error('❌ Error in handleSubmit (done):', error);
+        showNotification('error', 'Save Failed', 'An error occurred while saving. Please try again.');
+      }
+    };
+    console.log('✅ Done Record button handler attached');
+  } else if (!submitBtn) {
+    console.warn('⚠️ Done Record button not found yet');
+  }
+}
+
+// Load record data for editing
+async function loadRecordForEdit(recordId) {
+  try {
+    showLoading(true);
+    console.log('🔄 Loading record for edit:', recordId);
+    
+    // Set flag to prevent form clearing during edit mode
+    window._isLoadingEditRecord = true;
+    
+    const { getDoc, doc, getDocs, collection } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    const recordRef = doc(db, 'records', recordId);
+    const recordSnap = await getDoc(recordRef);
+    
+    if (!recordSnap.exists()) {
+      window._isLoadingEditRecord = false;
+      showLoading(false);
+      alert('Record not found. It may have been deleted.');
+      window.location.href = 'Input-Records.html';
+      return;
+    }
+    
+    const recordData = recordSnap.data();
+    console.log('✅ Record loaded:', recordData);
+    
+    // Check if record is editable (only "Not Done Yet" records can be edited)
+    const recordStatus = recordData.recordStatus || 'Done';
+    if (recordStatus === 'Done') {
+      window._isLoadingEditRecord = false;
+      showLoading(false);
+      alert('This record is already completed and cannot be edited.');
+      window.location.href = 'Input-Records.html';
+      return;
+    }
+    
+    // Load subcollections
+    const [boughtItemsSnap, vehicleUpdatesSnap] = await Promise.all([
+      getDocs(collection(db, 'records', recordId, 'bought_items')).catch(() => ({ docs: [] })),
+      getDocs(collection(db, 'records', recordId, 'vehicle_updates')).catch(() => ({ docs: [] }))
+    ]);
+    
+    const boughtItems = boughtItemsSnap.docs.map(d => d.data());
+    const vehicleUpdates = vehicleUpdatesSnap.docs.length > 0 ? vehicleUpdatesSnap.docs[0].data() : null;
+    
+    // Store record data globally for population after form renders
+    window._editingRecordData = {
+      recordData: recordData.data || {},
+      boughtItems: boughtItems,
+      vehicleUpdates: vehicleUpdates
+    };
+    
+    // Step 1: Ensure fields are loaded (they should already be loaded, but double-check)
+    console.log('⏳ Checking if fields are loaded...');
+    if (!fieldSelect || fieldSelect.options.length <= 1) {
+      console.log('⏳ Fields not loaded yet, waiting...');
+      await new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 30; // 3 seconds max (30 * 100ms)
+        const checkFieldsLoaded = () => {
+          attempts++;
+          if (fieldSelect && fieldSelect.options.length > 1) { // More than just "Select" option
+            console.log('✅ Fields loaded');
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            console.warn('⚠️ Fields loading timeout, proceeding anyway...');
+            resolve(); // Resolve anyway to continue
+  } else {
+            setTimeout(checkFieldsLoaded, 100);
+          }
+        };
+        checkFieldsLoaded();
+      });
+    } else {
+      console.log('✅ Fields already loaded');
+    }
+    
+    // Set field value
+    if (recordData.fieldId && fieldSelect) {
+      console.log('📝 Setting field:', recordData.fieldId);
+      fieldSelect.value = recordData.fieldId;
+      // Update custom select display
+      const fieldSelectInstance = customSelectInstances.get('fieldSelect');
+      if (fieldSelectInstance) {
+        fieldSelectInstance.updateSelectedLabel();
+      }
+      
+      // Manually show operations in edit mode (don't trigger change event which might clear things)
+      console.log('🔄 Manually showing operations for edit mode');
+      
+      // Populate operations manually
+      const allOperations = [
+        'Pre-Planting',
+        'Planting',
+        'Post-Planting',
+        'Detrashing',
+        'Harvesting',
+        'Replanting',
+        'Ratooning'
+      ];
+      operationSelect.innerHTML = '<option value="">Select</option>' +
+        allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+      
+      // Show operation wrap
+      operationWrap.classList.remove('hidden');
+      
+      // Re-initialize custom select after updating options
+      const operationSelectInstance = customSelectInstances.get('operationSelect');
+      if (operationSelectInstance) {
+        operationSelectInstance.renderOptions();
+      } else {
+        // Initialize if it doesn't exist
+        initializeCustomSelect(operationSelect);
+        const newInstance = customSelectInstances.get('operationSelect');
+        if (newInstance) {
+          newInstance.renderOptions();
+        }
+      }
+      
+      // Wait a moment for operations to be ready
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Now set the operation value AFTER operations are populated
+      if (recordData.operation && operationSelect) {
+        console.log('📝 Setting operation:', recordData.operation);
+        operationSelect.value = recordData.operation;
+        
+        // Update custom select display
+        const operationSelectInstance2 = customSelectInstances.get('operationSelect');
+        if (operationSelectInstance2) {
+          operationSelectInstance2.updateSelectedLabel();
+        } else {
+          // If instance doesn't exist, try to update manually
+          const operationSelectWrapper = document.querySelector('[data-select-id="operationSelect"]');
+          if (operationSelectWrapper) {
+            const valueEl = operationSelectWrapper.querySelector('.custom-select-value');
+            if (valueEl) {
+              const option = operationSelect.querySelector(`option[value="${recordData.operation}"]`);
+              valueEl.textContent = option ? option.textContent : recordData.operation;
+            }
+          }
+        }
+        
+        console.log('✅ Operation set to:', operationSelect.value);
+        
+        // Manually trigger task type population (don't use change event in edit mode)
+        console.log('🔄 Manually showing task types for edit mode');
+        const operation = recordData.operation;
+        const tasks = operationToTasks[operation] || [];
+        
+        if (tasks.length > 0) {
+          taskTypeWrap.classList.remove('hidden');
+          taskType.innerHTML = '<option value="">Select</option>' +
+            tasks.map(t => `<option value="${t}">${t}</option>`).join('');
+          
+          // Re-initialize custom select after updating options
+          const taskTypeInstance = customSelectInstances.get('taskType');
+          if (taskTypeInstance) {
+            taskTypeInstance.renderOptions();
+          }
+          
+          // Wait for task types to be populated
+          await new Promise((resolve) => {
+            let attempts = 0;
+            const maxAttempts = 30;
+            const check = () => {
+              attempts++;
+              if (taskType && taskType.options.length > 1) {
+                console.log('✅ Task types populated');
+                resolve();
+              } else if (attempts >= maxAttempts) {
+                console.warn('⚠️ Task types timeout, proceeding anyway...');
+                resolve();
+              } else {
+                setTimeout(check, 50);
+              }
+            };
+            check();
+          });
+        }
+      }
+    }
+    
+    // Step 3: Set task type value and wait for form to render
+    if (recordData.taskType && taskType) {
+      console.log('📝 Setting task type:', recordData.taskType);
+      
+      // Map display name to taskFieldMap key (same logic as in taskType.onchange)
+      const taskDisplayName = recordData.taskType;
+      
+      // Safety check: ensure taskNameAliases exists
+      if (typeof taskNameAliases === 'undefined' || !taskNameAliases) {
+        console.error('❌ taskNameAliases is not defined');
+        showLoading(false);
+        window._isLoadingEditRecord = false;
+        alert('Error: taskNameAliases not found. Please refresh the page.');
+        return;
+      }
+      
+      const taskKey = taskNameAliases[taskDisplayName] || taskDisplayName;
+      console.log('📝 Task key for form rendering:', taskKey);
+      
+      // Safety check: ensure taskKey is valid
+      if (!taskKey || typeof taskKey !== 'string') {
+        console.error('❌ Invalid taskKey:', taskKey, 'from taskDisplayName:', taskDisplayName);
+        showLoading(false);
+        window._isLoadingEditRecord = false;
+        alert('Error: Invalid task type. Please refresh the page.');
+        return;
+      }
+      
+      // Set the value
+      taskType.value = recordData.taskType;
+      
+      // Update custom select display
+      const taskTypeSelectInstance = customSelectInstances.get('taskType');
+      if (taskTypeSelectInstance) {
+        taskTypeSelectInstance.updateSelectedLabel();
+      }
+      
+      // Manually render the form (don't rely on change event in edit mode)
+      console.log('🔄 Rendering form for task:', taskKey);
+      renderForm(taskKey);
+      
+      // Show optional sections
+      const boughtItemsSection = document.getElementById('boughtItemsSection');
+      const vehicleUpdatesSection = document.getElementById('vehicleUpdatesSection');
+      if (boughtItemsSection) boughtItemsSection.classList.remove('hidden');
+      if (vehicleUpdatesSection) vehicleUpdatesSection.classList.remove('hidden');
+      
+      // Wait for form to render (check if dynamicForm has content) with timeout
+      console.log('⏳ Waiting for form to render...');
+      await new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 30; // 3 seconds max
+        const checkFormRendered = () => {
+          attempts++;
+          const dynamicForm = document.getElementById('dynamicForm');
+          if (dynamicForm && !dynamicForm.classList.contains('hidden') && dynamicForm.children.length > 0) {
+            console.log('✅ Form rendered with', dynamicForm.children.length, 'children');
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            console.warn('⚠️ Form rendering timeout after', attempts, 'attempts. Form state:', {
+              exists: !!dynamicForm,
+              hidden: dynamicForm?.classList.contains('hidden'),
+              children: dynamicForm?.children.length || 0
+            });
+            resolve(); // Resolve anyway to continue
+          } else {
+            setTimeout(checkFormRendered, 100);
+          }
+        };
+        checkFormRendered();
+      });
+      
+      // Additional wait to ensure all custom selects are initialized
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Re-initialize any custom selects that might not have been initialized
+      const dynamicForm = document.getElementById('dynamicForm');
+      if (dynamicForm) {
+        const allSelects = dynamicForm.querySelectorAll('select.custom-native-hidden');
+        console.log('🔍 Found', allSelects.length, 'selects in form');
+        allSelects.forEach(select => {
+          if (!customSelectInstances.has(select.id)) {
+            console.log('🔧 Initializing custom select:', select.id);
+            initializeCustomSelect(select);
+          }
+        });
+      }
+    }
+    
+    // Step 4: Now populate all data fields
+    if (window._editingRecordData.recordData) {
+      const data = window._editingRecordData.recordData;
+      
+      // Populate fields in order, handling special cases
+      Object.keys(data).forEach(key => {
+        const input = document.getElementById(key);
+        if (!input) return;
+        
+        const value = data[key];
+        if (value === null || value === undefined) return;
+        
+        if (input.type === 'date') {
+          // Convert Firestore Timestamp or Date to YYYY-MM-DD format
+          let dateValue = value;
+          if (dateValue && dateValue.toDate && typeof dateValue.toDate === 'function') {
+            dateValue = dateValue.toDate();
+          }
+          if (dateValue instanceof Date) {
+            const year = dateValue.getFullYear();
+            const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+            const day = String(dateValue.getDate()).padStart(2, '0');
+            input.value = `${year}-${month}-${day}`;
+          } else if (typeof dateValue === 'string') {
+            // Handle string dates (might be in YYYY-MM-DD format already)
+            input.value = dateValue;
+          }
+        } else if (input.tagName === 'SELECT' || input.classList.contains('custom-native-hidden')) {
+          // Handle select fields (including custom selects)
+          const selectValue = String(value || '');
+          
+          // Set native select value first
+          if (input.tagName === 'SELECT') {
+            input.value = selectValue;
+          }
+          
+          // Update custom select display
+          const customSelectInstance = customSelectInstances.get(key);
+          if (customSelectInstance) {
+            customSelectInstance.updateSelectedLabel();
+          } else {
+            // Try to find and update custom select wrapper manually
+            const customSelectWrapper = document.querySelector(`[data-select-id="${key}"]`);
+            if (customSelectWrapper) {
+              const valueEl = customSelectWrapper.querySelector('.custom-select-value');
+              if (valueEl && input.tagName === 'SELECT') {
+                const option = input.querySelector(`option[value="${selectValue}"]`);
+                valueEl.textContent = option ? option.textContent : (selectValue || 'Select');
+              }
+            }
+          }
+          
+          // Handle "Others" option - show _other input if value is "Others" or "Other"
+          if (selectValue && (selectValue === 'Others' || selectValue === 'Other')) {
+            const otherInput = document.getElementById(key + '_other');
+            if (otherInput) {
+              otherInput.classList.remove('hidden');
+              otherInput.required = true;
+              // Check if there's a custom value stored
+              if (data[key + '_other']) {
+                otherInput.value = data[key + '_other'];
+              }
+            }
+          }
+          
+          // CRITICAL: For equipment/method/cleaningMethod fields, don't trigger change event in edit mode
+          // We'll handle truckRented manually after all fields are populated
+          // For other select fields, trigger change event
+          if (key !== 'equipment' && key !== 'method' && key !== 'cleaningMethod') {
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+          } else {
+            // For equipment fields, update custom select display manually
+            const customSelectInstance = customSelectInstances.get(key);
+            if (customSelectInstance) {
+              customSelectInstance.updateSelectedLabel();
+            }
+          }
+        } else if (input.type === 'number') {
+          input.value = value || 0;
+          // Trigger input event for number fields to update calculations
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        } else if (input.tagName === 'TEXTAREA') {
+          input.value = value || '';
+        } else {
+          input.value = value || '';
+        }
+      });
+      
+      // Handle special fields that might need additional processing
+      // Enhanced labor cost fields
+      if (data.laborRatePerDay !== undefined) {
+        const laborRateInput = document.getElementById('laborRatePerDay');
+        if (laborRateInput) laborRateInput.value = data.laborRatePerDay || 0;
+      }
+      if (data.laborWorkers !== undefined) {
+        const laborWorkersInput = document.getElementById('laborWorkers');
+        if (laborWorkersInput) laborWorkersInput.value = data.laborWorkers || 0;
+      }
+      if (data.laborWorkingDays !== undefined) {
+        const laborWorkingDaysInput = document.getElementById('laborWorkingDays');
+        if (laborWorkingDaysInput) laborWorkingDaysInput.value = data.laborWorkingDays || 0;
+      }
+      
+      // CRITICAL: Handle truckRented and rentCost for Mechanical equipment
+      // Check DATA first to see if Mechanical was selected (not field values, as fields might not be populated yet)
+      const hasMechanical = (data.equipment && (data.equipment === 'Mechanical' || data.equipment.includes('Mechanical'))) ||
+                           (data.method && (data.method === 'Mechanical' || data.method.includes('Mechanical'))) ||
+                           (data.cleaningMethod && (data.cleaningMethod === 'Mechanical' || data.cleaningMethod.includes('Mechanical')));
+      
+      // Determine which field ID triggers truckRented
+      let mechanicalFieldId = null;
+      if (data.equipment && (data.equipment === 'Mechanical' || data.equipment.includes('Mechanical'))) {
+        mechanicalFieldId = 'equipment';
+      } else if (data.method && (data.method === 'Mechanical' || data.method.includes('Mechanical'))) {
+        mechanicalFieldId = 'method';
+      } else if (data.cleaningMethod && (data.cleaningMethod === 'Mechanical' || data.cleaningMethod.includes('Mechanical'))) {
+        mechanicalFieldId = 'cleaningMethod';
+      }
+      
+      console.log('🔧 Checking for Mechanical in data:', { 
+        equipment: data.equipment, 
+        method: data.method, 
+        cleaningMethod: data.cleaningMethod,
+        mechanicalFieldId,
+        hasMechanical,
+        truckRented: data.truckRented,
+        rentCost: data.rentCost
+      });
+      
+      // If Mechanical is selected in data, create truckRented container
+      if (hasMechanical && mechanicalFieldId) {
+        console.log('🔧 Mechanical detected in data, creating truckRented container...');
+        
+        // Wait a bit for form to render, then create containers
+        setTimeout(() => {
+          const mechanicalField = document.getElementById(mechanicalFieldId);
+          const truckRentedContainer = document.getElementById('truckRentedContainer');
+          
+          if (!truckRentedContainer && mechanicalField) {
+            const currentFieldDiv = mechanicalField.closest('.mb-4');
+            if (currentFieldDiv) {
+            const newDiv = document.createElement('div');
+            newDiv.id = 'truckRentedContainer';
+            newDiv.className = 'mb-4';
+            newDiv.innerHTML = `
+              <label class="text-xs font-medium">Is the truck rented? <span class="text-red-500">*</span></label>
+              <select id="truckRented" class="w-full border rounded px-3 py-2" required>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            `;
+            currentFieldDiv.parentNode.insertBefore(newDiv, currentFieldDiv.nextSibling);
+            
+            // Initialize custom select for truckRented
+            const truckRentedSelect = document.getElementById('truckRented');
+            if (truckRentedSelect) {
+              initializeCustomSelect(truckRentedSelect);
+              
+              // Set value if saved
+              if (data.truckRented) {
+                truckRentedSelect.value = data.truckRented;
+                const truckRentedInstance = customSelectInstances.get('truckRented');
+                if (truckRentedInstance) {
+                  truckRentedInstance.updateSelectedLabel();
+                }
+                
+                // If "Yes", create rentCost container
+                if (data.truckRented === 'Yes') {
+                  const rentCostContainer = document.getElementById('rentCostContainer');
+                  if (!rentCostContainer) {
+                    const truckRentedDiv = document.getElementById('truckRentedContainer');
+                    if (truckRentedDiv) {
+                      const rentCostDiv = document.createElement('div');
+                      rentCostDiv.id = 'rentCostContainer';
+                      rentCostDiv.className = 'mb-4';
+                      rentCostDiv.innerHTML = `
+                        <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
+                      `;
+                      truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
+                      
+                      // Populate rentCost if saved
+                      if (data.rentCost !== undefined) {
+                        const rentCostInput = document.getElementById('rentCost');
+                        if (rentCostInput) {
+                          rentCostInput.value = data.rentCost || 0;
+                        }
+                      }
+                      
+                      // Add event listener for rentCost to update total cost
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) {
+                        const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
+                        if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+                          rentCostInput.addEventListener('input', updateTotalCostFn);
+                          rentCostInput.addEventListener('change', updateTotalCostFn);
+                        }
+                      }
+                    }
+                  } else {
+                    // Container exists, just show it and populate
+                    const rentCostContainerEl = document.getElementById('rentCostContainer');
+                    if (rentCostContainerEl) {
+                      rentCostContainerEl.classList.remove('hidden');
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) {
+                        rentCostInput.value = data.rentCost || 0;
+                        rentCostInput.required = true;
+                      }
+                    }
+                  }
+                }
+              }
+              
+              // Add handler for truckRented change to show/hide Rent Cost
+              if (!truckRentedSelect.dataset.rentHandlerAttached) {
+                truckRentedSelect.dataset.rentHandlerAttached = 'true';
+                truckRentedSelect.addEventListener('change', function() {
+                  const rentCostContainerEl = document.getElementById('rentCostContainer');
+                  
+                  if (this.value === 'Yes') {
+                    if (!rentCostContainerEl) {
+                      const truckRentedDiv = document.getElementById('truckRentedContainer');
+                      if (truckRentedDiv) {
+                        const rentCostDiv = document.createElement('div');
+                        rentCostDiv.id = 'rentCostContainer';
+                        rentCostDiv.className = 'mb-4';
+                        rentCostDiv.innerHTML = `
+                          <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
+                          <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
+                        `;
+                        truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
+                        
+                        const rentCostInput = document.getElementById('rentCost');
+                        if (rentCostInput) {
+                          const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
+                          if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+                            rentCostInput.addEventListener('input', updateTotalCostFn);
+                            rentCostInput.addEventListener('change', updateTotalCostFn);
+                          }
+                        }
+                      }
+                    } else {
+                      rentCostContainerEl.classList.remove('hidden');
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) rentCostInput.required = true;
+                    }
+                  } else {
+                    if (rentCostContainerEl) {
+                      rentCostContainerEl.classList.add('hidden');
+                      const rentCostInput = document.getElementById('rentCost');
+                      if (rentCostInput) {
+                        rentCostInput.required = false;
+                        rentCostInput.value = '';
+                      }
+                      const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
+                      if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+                        updateTotalCostFn();
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          }
+          } else if (truckRentedContainer) {
+            // Container exists, just show it and populate
+            truckRentedContainer.classList.remove('hidden');
+            const truckRentedSelect = document.getElementById('truckRented');
+            if (truckRentedSelect) {
+              if (data.truckRented) {
+                truckRentedSelect.value = data.truckRented;
+                const truckRentedInstance = customSelectInstances.get('truckRented');
+                if (truckRentedInstance) {
+                  truckRentedInstance.updateSelectedLabel();
+                }
+                
+                // If "Yes", show and populate rentCost
+                if (data.truckRented === 'Yes') {
+                  const rentCostContainerEl = document.getElementById('rentCostContainer');
+                  if (rentCostContainerEl) {
+                    rentCostContainerEl.classList.remove('hidden');
+                    const rentCostInput = document.getElementById('rentCost');
+                    if (rentCostInput) {
+                      rentCostInput.value = data.rentCost || 0;
+                      rentCostInput.required = true;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }, 100); // Small delay to ensure form is rendered
+      }
+      
+      // Trigger total cost calculation
+      const updateTotalCostFn = window.updateTotalCost;
+      if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+        setTimeout(() => updateTotalCostFn(), 300);
+      }
+    }
+    
+    // Step 5: Populate bought items
+    if (window._editingRecordData.boughtItems && window._editingRecordData.boughtItems.length > 0) {
+      // Show bought items section
+      const boughtItemsSection = document.getElementById('boughtItemsSection');
+      const boughtItemsContent = document.getElementById('boughtItemsContent');
+      const toggleBoughtItems = document.getElementById('toggleBoughtItems');
+      
+      if (boughtItemsSection) boughtItemsSection.classList.remove('hidden');
+      if (boughtItemsContent) boughtItemsContent.classList.remove('hidden');
+      if (toggleBoughtItems) toggleBoughtItems.textContent = 'Hide Section';
+      
+      // Populate bought items by clicking add button for each item
+      const boughtItemsList = document.getElementById('boughtItemsList');
+      const addBoughtItemBtn = document.getElementById('addBoughtItemBtn');
+      
+      if (boughtItemsList && addBoughtItemBtn) {
+        boughtItemsList.innerHTML = '';
+        
+        // Add each bought item one by one
+        for (const item of window._editingRecordData.boughtItems) {
+          // Click add button to create new item
+          addBoughtItemBtn.click();
+          
+          // Wait a bit for the item to be added to DOM
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          // Find the last added item and populate it
+          const itemDivs = boughtItemsList.querySelectorAll('.border.rounded');
+          const itemDiv = itemDivs[itemDivs.length - 1];
+          
+          if (itemDiv) {
+            const nameInput = itemDiv.querySelector('.bought-item-name');
+            const qtyInput = itemDiv.querySelector('.bought-item-qty');
+            // Find the unit select - it's a custom select, so find the native select
+            const unitSelect = itemDiv.querySelector('select.custom-native-hidden');
+            const priceInput = itemDiv.querySelector('.bought-item-price');
+            const totalInput = itemDiv.querySelector('.bought-item-total');
+            const supplierInput = itemDiv.querySelector('.bought-item-supplier');
+            const notesInput = itemDiv.querySelector('.bought-item-notes');
+            
+            if (nameInput) nameInput.value = item.itemName || '';
+            if (qtyInput) qtyInput.value = item.quantity || 0;
+            if (unitSelect) {
+              unitSelect.value = item.unit || '';
+              // Update custom select display
+              const unitSelectInstance = customSelectInstances.get(unitSelect.id);
+              if (unitSelectInstance) {
+                unitSelectInstance.updateSelectedLabel();
+              } else {
+                // Try to update manually if instance not found
+                const customSelectWrapper = document.querySelector(`[data-select-id="${unitSelect.id}"]`);
+                if (customSelectWrapper) {
+                  const valueEl = customSelectWrapper.querySelector('.custom-select-value');
+                  if (valueEl && unitSelect.tagName === 'SELECT') {
+                    const option = unitSelect.querySelector(`option[value="${item.unit}"]`);
+                    valueEl.textContent = option ? option.textContent : (item.unit || 'Select');
+                  }
+                }
+              }
+            }
+            if (priceInput) priceInput.value = item.price || 0;
+            if (totalInput) totalInput.value = item.total || 0;
+            if (supplierInput) supplierInput.value = item.supplier || '';
+            if (notesInput) notesInput.value = item.notes || '';
+            
+            // Trigger total calculation
+            if (qtyInput && priceInput) {
+              qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+              priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        }
+      }
+    }
+    
+    // Step 6: Populate vehicle updates
+    if (window._editingRecordData.vehicleUpdates) {
+      const vehicleUpdates = window._editingRecordData.vehicleUpdates;
+      const vehicleUpdatesSection = document.getElementById('vehicleUpdatesSection');
+      const vehicleUpdatesContent = document.getElementById('vehicleUpdatesContent');
+      const toggleVehicleUpdates = document.getElementById('toggleVehicleUpdates');
+      
+      if (vehicleUpdatesSection) vehicleUpdatesSection.classList.remove('hidden');
+      if (vehicleUpdatesContent) vehicleUpdatesContent.classList.remove('hidden');
+      if (toggleVehicleUpdates) toggleVehicleUpdates.textContent = 'Hide Section';
+      
+      // Populate vehicle update fields
+      const vehicleTypeInput = document.getElementById('vehicleType');
+      const tripsBoxesInput = document.getElementById('tripsBoxes');
+      const vehicleFuelCostInput = document.getElementById('vehicleFuelCost');
+      const vehicleLaborCostInput = document.getElementById('vehicleLaborCost');
+      const vehicleTotalCostInput = document.getElementById('vehicleTotalCost');
+      const vehicleRouteInput = document.getElementById('vehicleRoute');
+      
+      if (vehicleTypeInput) {
+        vehicleTypeInput.value = vehicleUpdates.vehicleType || '';
+        // Update custom select if it exists
+        const vehicleTypeSelectInstance = customSelectInstances.get('vehicleType');
+        if (vehicleTypeSelectInstance) {
+          vehicleTypeSelectInstance.updateSelectedLabel();
+        }
+      }
+      if (tripsBoxesInput) tripsBoxesInput.value = vehicleUpdates.tripsBoxes || 0;
+      if (vehicleFuelCostInput) vehicleFuelCostInput.value = vehicleUpdates.fuelCost || 0;
+      if (vehicleLaborCostInput) vehicleLaborCostInput.value = vehicleUpdates.laborCost || 0;
+      if (vehicleTotalCostInput) vehicleTotalCostInput.value = vehicleUpdates.totalCost || 0;
+      if (vehicleRouteInput) vehicleRouteInput.value = vehicleUpdates.route || '';
+      
+      // Trigger total cost calculation
+      if (vehicleFuelCostInput) vehicleFuelCostInput.dispatchEvent(new Event('input'));
+      if (vehicleLaborCostInput) vehicleLaborCostInput.dispatchEvent(new Event('input'));
+    }
+    
+    console.log('✅ Record edit form loaded successfully');
+    
+    // Clear the loading flag AFTER everything is populated
+    window._isLoadingEditRecord = false;
+    
+    showLoading(false);
+    showNotification('info', 'Editing Record', 'You are editing a partial record. Complete it by adding an End Date and clicking "Done Record".');
+    
+    // Clean up stored data after a delay
+    setTimeout(() => {
+      delete window._editingRecordData;
+    }, 5000);
+    
+  } catch (error) {
+    console.error('❌ Error loading record for edit:', error);
+    window._isLoadingEditRecord = false;
+    showLoading(false);
+    alert('Failed to load record for editing. Please try again.');
+    // Don't redirect immediately, let user see the error
+    setTimeout(() => {
+      if (!window._editingRecordData) {
+        window.location.href = 'Input-Records.html';
+      }
+    }, 2000);
+  }
+}
 
 // Store current field area for Seed Rate calculation
 let currentFieldArea = null;
@@ -2126,6 +2908,12 @@ function setupAutoSelectionHandlers() {
 // Field selection handler - fetch field data and calculate Seed Rate
 fieldSelect.addEventListener('change', async function() {
   const fieldId = this.value;
+  
+  // Don't clear form if we're loading an edit record (but still fetch field data)
+  const isEditMode = window._isLoadingEditRecord;
+  if (isEditMode) {
+    console.log('⏸️ Edit mode: skipping form clear, but fetching field data');
+  }
   currentFieldArea = null;
   
   if (!fieldId) {
@@ -2181,7 +2969,40 @@ fieldSelect.addEventListener('change', async function() {
     }
     
     // Show operations after field is selected
+    // In edit mode, we've already populated operations manually, so just ensure they're visible
+    if (!isEditMode) {
     showOperations();
+    } else {
+      // In edit mode, operations should already be populated by loadRecordForEdit
+      // Just make sure the wrap is visible
+      if (operationSelect && operationSelect.options.length > 1) {
+        operationWrap.classList.remove('hidden');
+        // Re-initialize custom select if needed
+        const operationSelectInstance = customSelectInstances.get('operationSelect');
+        if (operationSelectInstance) {
+          operationSelectInstance.renderOptions();
+        }
+      } else {
+        // Fallback: populate operations if they weren't populated yet
+        operationWrap.classList.remove('hidden');
+        const allOperations = [
+          'Pre-Planting',
+          'Planting',
+          'Post-Planting',
+          'Detrashing',
+          'Harvesting',
+          'Replanting',
+          'Ratooning'
+        ];
+        operationSelect.innerHTML = '<option value="">Select</option>' +
+          allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+        
+        const operationSelectInstance = customSelectInstances.get('operationSelect');
+        if (operationSelectInstance) {
+          operationSelectInstance.renderOptions();
+        }
+      }
+    }
   } catch (error) {
     console.error('Error fetching field data:', error);
   }
@@ -2191,26 +3012,35 @@ fieldSelect.addEventListener('change', async function() {
 // Field Operation selection handler
 operationSelect.onchange = () => {
   const operation = operationSelect.value;
+  const isEditMode = window._isLoadingEditRecord;
   
-  // Clean up dynamically created Rent Cost containers
+  if (isEditMode) {
+    console.log('⏸️ Edit mode: showing task types without clearing form');
+  } else {
+    // Clean up dynamically created Rent Cost containers (only in normal mode)
   const existingRentCostContainer = document.getElementById('rentCostContainer');
   if (existingRentCostContainer) existingRentCostContainer.remove();
   const existingTruckRentedContainer = document.getElementById('truckRentedContainer');
   if (existingTruckRentedContainer) existingTruckRentedContainer.remove();
   
+    // Clear form only in normal mode
   taskType.value = '';
   dynamicForm.innerHTML = '';
+  }
   
   if (!operation) {
     taskTypeWrap.classList.add('hidden');
+    if (!isEditMode) {
     dynamicForm.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
+    }
     return;
   }
   
   // Special handling for Ratooning - no task types or forms
   if (operation === 'Ratooning') {
+    if (!isEditMode) {
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
@@ -2259,6 +3089,7 @@ operationSelect.onchange = () => {
     }
       }
     })();
+    }
     return;
   }
   
@@ -2267,13 +3098,15 @@ operationSelect.onchange = () => {
   
   if (!tasks.length) {
     taskTypeWrap.classList.add('hidden');
+    if (!isEditMode) {
     dynamicForm.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
+    }
     return;
   }
   
-  // Show Task Type dropdown
+  // Show Task Type dropdown (always show, even in edit mode)
     taskTypeWrap.classList.remove('hidden');
   taskType.innerHTML = '<option value="">Select</option>' +
       tasks.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -2284,18 +3117,19 @@ operationSelect.onchange = () => {
     taskTypeInstance.renderOptions();
   }
   
+  // Only hide form in normal mode (in edit mode, form will be shown when task type is set)
+  if (!isEditMode) {
   dynamicForm.classList.add('hidden');
   boughtItemsSection.classList.add('hidden');
   vehicleUpdatesSection.classList.add('hidden');
   
-  // Auto-select task type if only one option exists
-  // Note: We stop auto-progression at taskType as per requirements
-  // Use setTimeout to ensure task types are fully populated before checking
+    // Auto-select task type if only one option exists (only in normal mode)
   setTimeout(() => {
     if (autoSelectAndProgress(taskType, 'taskType', null)) {
       // Task type was auto-selected, form will be rendered by taskType change
     }
   }, 50);
+  }
 };
 
 // Task Type selection handler
@@ -2319,6 +3153,26 @@ taskType.onchange = () => {
 }
 
 function renderForm(type){
+  // Safety check: ensure type is valid and taskFieldMap exists
+  if (!type || typeof type !== 'string') {
+    console.error('❌ renderForm called with invalid type:', type);
+    if (dynamicForm) {
+      dynamicForm.innerHTML = '';
+      dynamicForm.classList.add('hidden');
+    }
+    return;
+  }
+  
+  // Safety check: ensure taskFieldMap exists
+  if (typeof taskFieldMap === 'undefined' || !taskFieldMap) {
+    console.error('❌ taskFieldMap is not defined');
+    if (dynamicForm) {
+      dynamicForm.innerHTML = '';
+      dynamicForm.classList.add('hidden');
+    }
+    return;
+  }
+  
   // Clean up any dynamically created Rent Cost containers from previous form
   const existingRentCostContainer = document.getElementById('rentCostContainer');
   if (existingRentCostContainer) {
@@ -2329,8 +3183,33 @@ function renderForm(type){
     existingTruckRentedContainer.remove();
   }
   
+  if (!dynamicForm) {
+    console.error('❌ dynamicForm element not found');
+    return;
+  }
+  
+  if (!dynamicForm) {
+    console.error('❌ dynamicForm element not found');
+    return;
+  }
+  
   dynamicForm.innerHTML = '';
-  const fields = taskFieldMap[type] || [];
+  
+  // Safety check: ensure taskFieldMap exists and type is valid
+  if (!taskFieldMap || typeof taskFieldMap !== 'object') {
+    console.error('❌ taskFieldMap is not defined or not an object');
+    dynamicForm.classList.add('hidden');
+    return;
+  }
+  
+  const fields = taskFieldMap[type];
+  
+  // Safety check: ensure fields is an array
+  if (!Array.isArray(fields)) {
+    console.error('❌ fields is not an array for type:', type, 'Got:', fields);
+    dynamicForm.classList.add('hidden');
+    return;
+  }
   
   if (!fields.length) {
     dynamicForm.classList.add('hidden');
@@ -2463,7 +3342,12 @@ function renderForm(type){
   });
 
   // Always add Notes / Remarks field at the bottom (optional, always visible)
-  const hasNotesField = fields.some(f => f.id === 'notes' || f.id === 'remarks');
+  // Safety check: ensure fields is still an array
+  if (!Array.isArray(fields)) {
+    console.error('❌ fields is not an array when checking for notes field');
+    return;
+  }
+  const hasNotesField = fields.some(f => f && (f.id === 'notes' || f.id === 'remarks'));
   if (!hasNotesField) {
     dynamicForm.innerHTML += `
       <div class="mb-4">
@@ -2474,9 +3358,19 @@ function renderForm(type){
   }
 
   // Initialize custom selects within the dynamic form
-  fields
-    .filter(f => f.type === 'select')
-    .forEach(f => {
+  // Safety check: ensure fields is an array before using filter/forEach
+  if (!Array.isArray(fields)) {
+    console.error('❌ fields is not an array when initializing custom selects. Type:', typeof fields, 'Value:', fields);
+    return;
+  }
+  
+  const selectFields = fields.filter(f => f && f.type === 'select');
+  if (!Array.isArray(selectFields)) {
+    console.error('❌ selectFields is not an array after filter');
+    return;
+  }
+  
+  selectFields.forEach(f => {
       const selectEl = document.getElementById(f.id);
       if (selectEl) {
         initializeCustomSelect(selectEl);
@@ -2508,9 +3402,19 @@ function renderForm(type){
     });
   
   // Handle conditional visibility for non-select fields with dependsOn
-  fields
-    .filter(f => f.dependsOn && f.type !== 'select')
-    .forEach(f => {
+  // Safety check: ensure fields is still an array
+  if (!Array.isArray(fields)) {
+    console.error('❌ fields is not an array when handling conditional visibility');
+    return;
+  }
+  
+  const dependsOnFields = fields.filter(f => f && f.dependsOn && f.type !== 'select');
+  if (!Array.isArray(dependsOnFields)) {
+    console.error('❌ dependsOnFields is not an array after filter');
+    return;
+  }
+  
+  dependsOnFields.forEach(f => {
       const fieldEl = document.getElementById(f.id);
       if (fieldEl) {
         const dependentFieldId = f.dependsOn.field;
@@ -2538,16 +3442,7 @@ function renderForm(type){
 
   // --- SPECIAL HANDLING ---
 
-  // --- Universal Auto-calculate Total Cost ---
-  // This function calculates totalCost by summing ALL cost-related fields
-  // Defined first so it's available to other functions
-  function updateTotalCost(){
-    const totalCostInput = document.getElementById('totalCost');
-    if(!totalCostInput) return;
-    
-    let total = 0;
-    
-    // List of all possible cost-related field IDs
+  // List of all possible cost-related field IDs (defined outside function so it's accessible)
     const costFieldIds = [
       // Standard cost fields
       'fuelCost', 'materialCost', 'fertilizerCost', 'chemicalCost',
@@ -2555,6 +3450,15 @@ function renderForm(type){
       // Other expense fields
       'haulingExpense'
     ];
+
+  // --- Universal Auto-calculate Total Cost ---
+  // This function calculates totalCost by summing ALL cost-related fields
+  // Make it available globally so it can be accessed from loadRecordForEdit
+  window.updateTotalCost = function updateTotalCost(){
+    const totalCostInput = document.getElementById('totalCost');
+    if(!totalCostInput) return;
+    
+    let total = 0;
     
     // Also check for 'fuel' field (special dynamic input case)
     const fuelInput = document.getElementById('fuel');
@@ -2609,7 +3513,13 @@ function renderForm(type){
   }
 
   // 1️⃣ Dynamic inputs handler (weight, laborCost, fuel)
-  ['weight','laborCost','fuel'].forEach(field => {
+  // Safety check: ensure array exists before forEach
+  const dynamicFields = ['weight','laborCost','fuel'];
+  if (!Array.isArray(dynamicFields)) {
+    console.error('❌ dynamicFields is not an array');
+    return;
+  }
+  dynamicFields.forEach(field => {
     const container = document.getElementById(field + 'Container');
     if(!container) return;
 
@@ -2649,15 +3559,15 @@ function renderForm(type){
   });
 
   // 2️⃣ Attach listeners to all cost-related fields for auto-calculation
-  const costFieldIds = ['fuelCost', 'laborCost', 'materialCost', 'fertilizerCost', 'chemicalCost', 
-                        'haulingCost', 'harvestCost', 'transportCost', 'cost', 
-                        'rentCost', 'haulingExpense'];
+  // Note: costFieldIds is already defined above, just use it here
+  // Add 'laborCost' and 'rentCost' to the list for event listeners
+  const costFieldIdsForListeners = [...costFieldIds, 'laborCost', 'rentCost'];
   
   // Handle dynamic container fields (fuel, laborCost) - listeners already added in updateSum
   // Just need to make sure they trigger updateTotalCost, which is already done in updateSum
   
   // Attach listeners to all regular cost fields
-  costFieldIds.forEach(fieldId => {
+  costFieldIdsForListeners.forEach(fieldId => {
     const field = document.getElementById(fieldId);
     if(field && field.type === 'number' && !field.readonly) {
       field.addEventListener('input', updateTotalCost);
@@ -2674,7 +3584,7 @@ function renderForm(type){
       if(e.target.type === 'number' && !e.target.readonly) {
         const fieldId = e.target.id;
         // Check if it's a cost-related field
-        if(costFieldIds.includes(fieldId) || 
+        if(costFieldIdsForListeners.includes(fieldId) || 
            (fieldId.toLowerCase().includes('cost') && fieldId !== 'totalCost')) {
           updateTotalCost();
         }
@@ -2974,8 +3884,11 @@ function renderForm(type){
                         // Add event listener for rentCost to update total cost
                         const rentCostInput = document.getElementById('rentCost');
                         if (rentCostInput) {
-                          rentCostInput.addEventListener('input', updateTotalCost);
-                          rentCostInput.addEventListener('change', updateTotalCost);
+                          const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
+                          if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+                            rentCostInput.addEventListener('input', updateTotalCostFn);
+                            rentCostInput.addEventListener('change', updateTotalCostFn);
+                          }
                         }
                       }
                     } else {
@@ -3269,12 +4182,21 @@ const vehicleLaborCostEl = document.getElementById('vehicleLaborCost');
 if (vehicleFuelCostEl) vehicleFuelCostEl.addEventListener('input', updateVehicleTotalCost);
 if (vehicleLaborCostEl) vehicleLaborCostEl.addEventListener('input', updateVehicleTotalCost);
 
-submitBtn.onclick = async () => {
+// Attach button handlers immediately (will be re-attached after auth if needed)
+attachButtonHandlers();
+
+// Unified submit handler
+async function handleSubmit(isDone) {
+  console.log('📝 handleSubmit called, isDone:', isDone);
+  console.log('📝 editingRecordId:', editingRecordId);
+  
   const requiredFields = [fieldSelect, operationSelect, taskType];
   let hasEmpty = false;
 
   requiredFields.forEach(el => {
-    if(!el.value){
+    if(!el || !el.value){
+      console.warn('⚠️ Required field is empty:', el?.id || 'unknown');
+      if (el) {
       el.classList.add('border-red-500');
       el.focus();
       const removeRed = () => {
@@ -3284,11 +4206,32 @@ submitBtn.onclick = async () => {
       };
       el.addEventListener('input', removeRed);
       el.addEventListener('change', removeRed);
+      }
       hasEmpty = true;
     }
   });
 
-  if(hasEmpty) return;
+  if(hasEmpty) {
+    console.warn('⚠️ Validation failed: required fields are empty');
+    showNotification('error', 'Required Fields Missing', 'Please fill in Field, Operation, and Task Type before saving.');
+    return;
+  }
+  
+  console.log('✅ Basic validation passed');
+
+  // For "Done Record", require End Date (Start Date is optional but recommended)
+  const endDate = document.getElementById('endDate');
+  if (isDone && endDate && !endDate.value) {
+    endDate.classList.add('border-red-500');
+    endDate.focus();
+    showNotification('error', 'End Date Required', 'Please provide an End Date to mark this record as Done.');
+    const removeRed = () => {
+      endDate.classList.remove('border-red-500');
+      endDate.removeEventListener('change', removeRed);
+    };
+    endDate.addEventListener('change', removeRed);
+    return;
+  }
 
   // Map display name to taskFieldMap key (same logic as in taskType.onchange)
   const taskDisplayName = taskType.value;
@@ -3305,8 +4248,26 @@ for(const f of fields){
     continue;
   }
 
-  // Validate non-readonly fields
+  // CRITICAL: For partial saves ("Save Record"), skip ALL field validations
+  // All task type inputs are optional for partial saves
+  if (!isDone) {
+    // For partial saves, include ALL fields (even empty ones) when updating
+    // This ensures that when editing, all current form values replace the old ones
+    if (editingRecordId) {
+      // When updating: include all fields, even empty strings, to replace old data
+      recordData[f.id] = value !== null ? value : '';
+    } else {
+      // When creating new: only include non-empty values
+      if (value !== '' && value !== null) {
+        recordData[f.id] = value;
+      }
+    }
+    continue; // Skip all validation for partial saves
+  }
+
+  // For "Done Record", validate all non-readonly fields
   // allow 0 for numbers, but not empty string for text
+  // EXCEPT: End Date is already validated above, so we still validate other fields
   if(value === '' || value === null){
     const el = document.getElementById(f.id);
     const other = document.getElementById(f.id + '_other');
@@ -3346,7 +4307,7 @@ for(const f of fields){
   
   // Collect enhanced Labor Cost supporting fields if enhanced version exists
   const laborCostEnhancedContainer = document.getElementById('laborCostEnhancedContainer');
-  if (laborCostEnhancedContainer) {
+  if (laborCostEnhancedContainer && !laborCostEnhancedContainer.classList.contains('hidden')) {
     const laborRatePerDay = document.getElementById('laborRatePerDay');
     const laborWorkers = document.getElementById('laborWorkers');
     const laborWorkingDays = document.getElementById('laborWorkingDays');
@@ -3354,7 +4315,10 @@ for(const f of fields){
     const startDate = document.getElementById('startDate');
     const endDate = document.getElementById('endDate');
     
-    // Validate enhanced labor cost fields
+    // For "Save Record" (partial), all enhanced labor cost fields are optional
+    // For "Done Record", validate and calculate
+    if (isDone) {
+      // Validate enhanced labor cost fields for Done records
     if (!laborRatePerDay || !laborRatePerDay.value || parseFloat(laborRatePerDay.value) <= 0) {
       laborRatePerDay?.classList.add('border-red-500');
       laborRatePerDay?.focus();
@@ -3381,31 +4345,10 @@ for(const f of fields){
       return;
     }
     
-    // Validate external Start Date and End Date are present
-    if (!startDate || !startDate.value) {
-      startDate?.classList.add('border-red-500');
-      startDate?.focus();
-      const removeRed = () => {
-        startDate?.classList.remove('border-red-500');
-        startDate?.removeEventListener('change', removeRed);
-      };
-      startDate?.addEventListener('change', removeRed);
-      return;
-    }
-    
-    if (!endDate || !endDate.value) {
-      endDate?.classList.add('border-red-500');
-      endDate?.focus();
-      const removeRed = () => {
-        endDate?.classList.remove('border-red-500');
-        endDate?.removeEventListener('change', removeRed);
-      };
-      endDate?.addEventListener('change', removeRed);
-      return;
-    }
-    
-    // Validate date range using external dates
-    if (new Date(endDate.value) < new Date(startDate.value)) {
+      // For "Done Record", only End Date is required (Start Date is optional)
+      // End Date is already validated at the top for Done records
+      // If Start Date is provided, validate date range
+      if (endDate && endDate.value && startDate && startDate.value && new Date(endDate.value) < new Date(startDate.value)) {
       endDate.classList.add('border-red-500');
       endDate.focus();
       const removeRed = () => {
@@ -3416,10 +4359,38 @@ for(const f of fields){
       return;
     }
     
-    // Collect values (dates are already in recordData from main loop as startDate and endDate)
-    if (laborRatePerDay) recordData.laborRatePerDay = parseFloat(laborRatePerDay.value) || 0;
-    if (laborWorkers) recordData.laborWorkers = parseFloat(laborWorkers.value) || 0;
-    if (laborWorkingDays) recordData.laborWorkingDays = parseFloat(laborWorkingDays.value) || 0;
+      // Calculate working days and labor totals for Done records (if both dates are provided)
+      // Note: Only End Date is required; Start Date is optional but needed for calculations
+      if (endDate && endDate.value && startDate && startDate.value) {
+        const start = new Date(startDate.value);
+        const end = new Date(endDate.value);
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
+        const workingDays = Math.max(1, diffDays);
+        
+        if (laborWorkingDays) {
+          laborWorkingDays.value = workingDays.toString();
+        }
+        
+        // Recalculate labor cost if all fields are present
+        if (laborRatePerDay && laborWorkers && laborWorkingDays) {
+          const rate = parseFloat(laborRatePerDay.value) || 0;
+          const workers = parseFloat(laborWorkers.value) || 0;
+          const days = parseFloat(laborWorkingDays.value) || 0;
+          const total = rate * workers * days;
+          
+          const laborCostInput = document.getElementById('laborCost');
+          if (laborCostInput) {
+            laborCostInput.value = total.toFixed(2);
+          }
+        }
+      }
+    }
+    
+    // Collect values (for both partial and done saves)
+    if (laborRatePerDay && laborRatePerDay.value) recordData.laborRatePerDay = parseFloat(laborRatePerDay.value) || 0;
+    if (laborWorkers && laborWorkers.value) recordData.laborWorkers = parseFloat(laborWorkers.value) || 0;
+    if (laborWorkingDays && laborWorkingDays.value) recordData.laborWorkingDays = parseFloat(laborWorkingDays.value) || 0;
   }
 
   // Extract variety name from dropdown value (e.g., "K 88-65 — 12–14 months" -> "K 88-65")
@@ -3436,13 +4407,47 @@ for(const f of fields){
       recordData.variety = recordData.variety.split('/')[0].trim();
     }
   }
+  
+  // CRITICAL: Always collect notes/remarks field even if not in taskFieldMap
+  // Notes field is added at the bottom of the form for all task types
+  const notesInput = document.getElementById('notes');
+  const remarksInput = document.getElementById('remarks');
+  
+  if (notesInput) {
+    const notesValue = notesInput.value?.trim() || '';
+    if (editingRecordId) {
+      // When updating: always include notes (even if empty) to replace old value
+      recordData.notes = notesValue;
+      console.log('📝 Collected notes field:', notesValue);
+    } else {
+      // When creating: only include if not empty
+      if (notesValue) {
+        recordData.notes = notesValue;
+      }
+    }
+  }
+  
+  if (remarksInput) {
+    const remarksValue = remarksInput.value?.trim() || '';
+    if (editingRecordId) {
+      // When updating: always include remarks (even if empty) to replace old value
+      recordData.remarks = remarksValue;
+      console.log('📝 Collected remarks field:', remarksValue);
+    } else {
+      // When creating: only include if not empty
+      if (remarksValue) {
+        recordData.remarks = remarksValue;
+      }
+    }
+  }
 
   // Also collect truckRented if it exists (from Mechanical selection)
-  // Validate it if it's visible (required field)
+  // For partial saves, this is optional; for done saves, validate if visible
   const truckRented = document.getElementById('truckRented');
   const truckRentedContainer = document.getElementById('truckRentedContainer');
   if(truckRented && truckRentedContainer && !truckRentedContainer.classList.contains('hidden')) {
-    if(!truckRented.value) {
+    // For "Done Record", validate truckRented if visible
+    if (isDone && !truckRented.value) {
       truckRented.classList.add('border-red-500');
       truckRented.focus();
       const removeRed = () => {
@@ -3452,14 +4457,19 @@ for(const f of fields){
       truckRented.addEventListener('change', removeRed);
       return;
     }
-    recordData.truckRented = truckRented.value;
     
-    // Collect rentCost if truckRented is "Yes" and rentCost field exists
-    if(truckRented.value === 'Yes') {
+    // Include truckRented value (for both partial and done saves)
+    // When updating, include even if empty to replace old value
+    if (editingRecordId) {
+      // When updating: always include truckRented value (even if empty)
+      recordData.truckRented = truckRented.value || '';
+      
+      // Collect rentCost if rentCost field exists (even if empty when updating)
       const rentCostInput = document.getElementById('rentCost');
       const rentCostContainer = document.getElementById('rentCostContainer');
       if(rentCostInput && rentCostContainer && !rentCostContainer.classList.contains('hidden')) {
-        if(!rentCostInput.value || parseFloat(rentCostInput.value) <= 0) {
+        // For "Done Record", validate rentCost; for partial saves, it's optional
+        if (isDone && truckRented.value === 'Yes' && (!rentCostInput.value || parseFloat(rentCostInput.value) <= 0)) {
           rentCostInput.classList.add('border-red-500');
           rentCostInput.focus();
           const removeRed = () => {
@@ -3471,7 +4481,45 @@ for(const f of fields){
           rentCostInput.addEventListener('change', removeRed);
           return;
         }
+        
+        // When updating: include rentCost value (even if 0 or empty) to replace old value
+        // When creating: only include if provided and > 0
+        if (editingRecordId) {
+          recordData.rentCost = parseFloat(rentCostInput.value) || 0;
+        } else if (rentCostInput.value && parseFloat(rentCostInput.value) > 0) {
+          recordData.rentCost = parseFloat(rentCostInput.value) || 0;
+        }
+      }
+    } else {
+      // When creating new record: only include if provided
+      if (truckRented.value) {
+    recordData.truckRented = truckRented.value;
+    
+    // Collect rentCost if truckRented is "Yes" and rentCost field exists
+    if(truckRented.value === 'Yes') {
+      const rentCostInput = document.getElementById('rentCost');
+      const rentCostContainer = document.getElementById('rentCostContainer');
+      if(rentCostInput && rentCostContainer && !rentCostContainer.classList.contains('hidden')) {
+            // For "Done Record", validate rentCost; for partial saves, it's optional
+            if (isDone && (!rentCostInput.value || parseFloat(rentCostInput.value) <= 0)) {
+          rentCostInput.classList.add('border-red-500');
+          rentCostInput.focus();
+          const removeRed = () => {
+            rentCostInput.classList.remove('border-red-500');
+            rentCostInput.removeEventListener('input', removeRed);
+            rentCostInput.removeEventListener('change', removeRed);
+          };
+          rentCostInput.addEventListener('input', removeRed);
+          rentCostInput.addEventListener('change', removeRed);
+          return;
+        }
+            
+            // Include rentCost if provided (for both partial and done saves)
+            if (rentCostInput.value && parseFloat(rentCostInput.value) > 0) {
         recordData.rentCost = parseFloat(rentCostInput.value) || 0;
+            }
+          }
+        }
       }
     }
   }
@@ -3557,6 +4605,9 @@ for(const f of fields){
   
   // Note: Ratooning is handled in operationSelect.onchange, so it won't reach here
 
+  // Determine record status based on isDone flag
+  const recordStatus = isDone ? 'Done' : 'Not Done Yet';
+
   pendingPayload = {
     userId: uid,
     fieldId: fieldSelect.value,
@@ -3567,15 +4618,40 @@ for(const f of fields){
     boughtItems: boughtItems.length > 0 ? boughtItems : null,
     vehicleUpdates: vehicleUpdates,
     recordDate: recordDateTimestamp,
+    recordStatus: recordStatus, // 'Done' or 'Not Done Yet'
+    status: growthStage, // Legacy field for Firestore rules compatibility (uses growthStage)
     createdAt: serverTimestamp()
   };
 
+  // Store isDone flag for use in confirmSave
+  pendingPayload._isDone = isDone;
+  
+  console.log('✅ Payload prepared, showing confirmation modal');
+  console.log('📦 Payload:', pendingPayload);
+  console.log('📦 Record Data:', recordData);
+  console.log('📦 Is updating:', !!editingRecordId);
+  console.log('📦 Field count:', Object.keys(recordData).length);
+
+  const confirmModal = document.getElementById('confirmModal');
+  if (!confirmModal) {
+    console.error('❌ Confirmation modal not found!');
+    showNotification('error', 'Error', 'Confirmation modal not found. Please refresh the page.');
+    return;
+  }
+
   confirmModal.classList.remove('hidden');
+  console.log('✅ Confirmation modal shown');
 };
 
 
 window.confirmSave = async () => {
   console.log('Saving...', pendingPayload);
+  console.log('🔍 Editing Record ID:', editingRecordId);
+  console.log('🔍 Is editing:', editingRecordId !== null);
+
+  // Get record status from payload
+  const isDone = pendingPayload._isDone === true;
+  const recordStatus = pendingPayload.recordStatus || (isDone ? 'Done' : 'Not Done Yet');
 
   // Check if offline
   const isOnline = getOnlineStatus();
@@ -3622,7 +4698,8 @@ window.confirmSave = async () => {
       showLoading(false);
       
       // Show floating notification about auto-sync (NO PAGE REFRESH)
-      showNotification('success', 'Record Saved Offline', 'This record will sync automatically when the internet is restored.', [
+      const statusText = recordStatus === 'Done' ? 'Done Record' : 'Partial Record';
+      showNotification('success', `${statusText} Saved Offline`, 'This record will sync automatically when the internet is restored.', [
         {
           text: 'OK',
           type: 'primary',
@@ -3652,9 +4729,47 @@ window.confirmSave = async () => {
     // Prepare main record payload (without subcollections)
     const { boughtItems, vehicleUpdates, ...mainPayload } = pendingPayload;
     
-    // Save main record
+    // If editing, update existing record; otherwise create new
+    let recordId;
+    if (editingRecordId) {
+      console.log(`🔄 Updating existing record: ${editingRecordId}`);
+      console.log(`📦 Update payload data fields:`, Object.keys(mainPayload.data || {}));
+      console.log(`📦 Update payload data:`, mainPayload.data);
+      
+      const recordRef = doc(db, 'records', editingRecordId);
+      
+      // Don't overwrite createdAt when updating - preserve original creation time
+      const { createdAt, ...updatePayload } = mainPayload;
+      
+      // CRITICAL: When updating, we need to ensure the 'data' object is completely replaced
+      // Firestore's updateDoc merges nested objects, so we use setDoc with merge: true
+      // This will merge top-level fields but completely replace the 'data' object
+      const { setDoc } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+      await setDoc(recordRef, updatePayload, { merge: true });
+      
+      // Note: setDoc with merge: true merges top-level fields but replaces nested objects
+      // So the 'data' field will be completely replaced with our new data object
+      recordId = editingRecordId;
+      console.log(`✅ Updated existing record: ${recordId}`);
+      console.log(`📦 Data object replaced with ${Object.keys(updatePayload.data || {}).length} fields`);
+      console.log(`📦 Data fields:`, Object.keys(updatePayload.data || {}));
+      
+      // Delete old subcollections before adding new ones
+      const oldBoughtItemsSnap = await getDocs(collection(db, 'records', recordId, 'bought_items'));
+      for (const itemDoc of oldBoughtItemsSnap.docs) {
+        await deleteDoc(itemDoc.ref);
+      }
+      const oldVehicleUpdatesSnap = await getDocs(collection(db, 'records', recordId, 'vehicle_updates'));
+      for (const updateDoc of oldVehicleUpdatesSnap.docs) {
+        await deleteDoc(updateDoc.ref);
+      }
+    } else {
+      // Create new record
+      console.log(`🆕 Creating new record`);
     const recordRef = await addDoc(collection(db, 'records'), mainPayload);
-    const recordId = recordRef.id;
+      recordId = recordRef.id;
+      console.log(`✅ Created new record: ${recordId}`);
+    }
 
     // Save bought items as subcollection if present
     if (boughtItems && boughtItems.length > 0) {
@@ -3676,8 +4791,11 @@ window.confirmSave = async () => {
       });
     }
 
+    // CRITICAL: Only run automatic calculations for "Done" records
+    // Partial records should not trigger growth tracking updates
+    if (recordStatus === 'Done') {
     // Handle predicted harvest logic for planting operations
-    if (pendingPayload.status === 'Germination' && 
+      if (pendingPayload.growthStage === 'Germination' && 
         (pendingPayload.taskType === 'Planting Operation' || pendingPayload.taskType === 'Replanting / Gap Filling')) {
       try {
         // Get planting date - check startDate (new standard), then old field names for backward compatibility
@@ -3735,12 +4853,32 @@ window.confirmSave = async () => {
         console.error('Error updating field growth stage:', error);
         // Don't fail the whole submission if growth stage update fails
       }
+      }
+    } else {
+      console.log(`ℹ️ Skipping automatic calculations for partial record (status: ${recordStatus})`);
     }
 
     // Hide loading and show success notification with action buttons
     showLoading(false);
     const fieldId = pendingPayload.fieldId;
-    showNotification('success', 'Record Saved Successfully!', 'Your input record has been saved and will appear in the Growth Tracker timeline.', [
+    
+    // Different messages for partial vs done records
+    let notificationTitle, notificationMessage;
+    const isEditing = editingRecordId !== null;
+    if (recordStatus === 'Done') {
+      notificationTitle = isEditing ? 'Record Updated and Completed!' : 'Record Completed Successfully!';
+      notificationMessage = 'Your record has been marked as Done and will appear in the Growth Tracker timeline.';
+      
+      // Clear editing state only when record is marked as Done
+      if (isEditing) {
+        editingRecordId = null;
+        // Remove editRecordId from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('editRecordId');
+        window.history.replaceState({}, '', url);
+      }
+      
+      showNotification('success', notificationTitle, notificationMessage, [
       {
         text: 'View in Growth Tracker',
         type: 'primary',
@@ -3756,6 +4894,25 @@ window.confirmSave = async () => {
         }
       }
     ]);
+    } else {
+      // Partial save - don't reload, allow continued editing
+      notificationTitle = isEditing ? 'Record Updated (Not Done Yet)' : 'Record Saved (Not Done Yet)';
+      notificationMessage = 'Your partial record has been saved. You can continue editing. Add an End Date and click "Done Record" to complete it and add it to the Growth Tracker.';
+      
+      // DON'T clear editingRecordId for partial saves - allow continued editing
+      // DON'T reload the page - keep the form populated
+      
+      showNotification('success', notificationTitle, notificationMessage, [
+        {
+          text: 'OK',
+          type: 'primary',
+          action: () => {
+            // Just dismiss notification, don't reload
+            hideNotification();
+          }
+        }
+      ]);
+    }
   } catch(e) {
     console.error('Error saving record:', e);
     showLoading(false);

@@ -2283,6 +2283,20 @@
                 for (const recordDoc of recordsSnapshot.docs) {
                   const recordData = recordDoc.data();
                   
+                  // CRITICAL: Only show "Done" records in Growth Tracker
+                  // Partial records (recordStatus === 'Not Done Yet') are excluded
+                  const recordStatus = recordData.recordStatus;
+                  if (recordStatus === 'Not Done Yet') {
+                    console.log(`⏭️ Skipping partial record ${recordDoc.id} (status: ${recordStatus})`);
+                    continue; // Skip this record
+                  }
+                  
+                  // For backward compatibility: if recordStatus is missing, assume it's "Done"
+                  // This ensures existing records without the status field still appear
+                  if (!recordStatus) {
+                    console.log(`⚠️ Record ${recordDoc.id} missing recordStatus, assuming "Done" for backward compatibility`);
+                  }
+                  
                   // Load bought items subcollection
                   let boughtItems = [];
                   try {
@@ -2341,6 +2355,18 @@
                         for (const recordDoc of snapshot.docs) {
                           try {
                             const recordData = recordDoc.data();
+                            
+                            // CRITICAL: Only show "Done" records in Growth Tracker
+                            const recordStatus = recordData.recordStatus;
+                            if (recordStatus === 'Not Done Yet') {
+                              console.log(`⏭️ Skipping partial record ${recordDoc.id} (status: ${recordStatus})`);
+                              continue; // Skip this record
+                            }
+                            
+                            // For backward compatibility: if recordStatus is missing, assume it's "Done"
+                            if (!recordStatus) {
+                              console.log(`⚠️ Record ${recordDoc.id} missing recordStatus, assuming "Done" for backward compatibility`);
+                            }
                             
                             // Load bought items subcollection
                             let boughtItems = [];
@@ -2407,6 +2433,13 @@
                       const records = [];
                       for (const recordDoc of snapshot.docs) {
                         const recordData = recordDoc.data();
+                        
+                        // CRITICAL: Only show "Done" records in Growth Tracker
+                        const recordStatus = recordData.recordStatus;
+                        if (recordStatus === 'Not Done Yet') {
+                          continue; // Skip partial records
+                        }
+                        
                         records.push({
                           id: recordDoc.id,
                           ...recordData,

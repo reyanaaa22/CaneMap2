@@ -799,7 +799,8 @@ allow read: if request.auth != null && (
       // Validate required fields
       request.resource.data.userId == request.auth.uid &&
       'fieldId' in request.resource.data &&
-      'status' in request.resource.data &&
+      // Accept either 'status' (legacy) or 'recordStatus' (new) for backward compatibility
+      ('status' in request.resource.data || 'recordStatus' in request.resource.data) &&
       'operation' in request.resource.data &&
       'taskType' in request.resource.data &&
       'data' in request.resource.data;

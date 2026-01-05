@@ -445,6 +445,8 @@ function renderRecords(records) {
     
     if (action === 'view') {
       openRecordDetailsModal(recordId);
+    } else if (action === 'edit') {
+      editRecord(recordId);
     } else if (action === 'delete') {
       confirmDeleteRecord(recordId);
     }
@@ -602,6 +604,10 @@ function createRecordCard(record) {
   const status = record.status || 'Unknown';
   const colors = STATUS_COLORS[status] || { bg: '#f3f4f6', text: '#6b7280', border: '#9ca3af' };
   
+  // Get record status (Done or Not Done Yet)
+  const recordStatus = record.recordStatus || 'Done'; // Default to 'Done' for backward compatibility
+  const isDone = recordStatus === 'Done';
+  
   const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
   const dateStr = recordDate.toLocaleDateString('en-US', { 
     year: 'numeric', 
@@ -609,52 +615,70 @@ function createRecordCard(record) {
     day: 'numeric' 
   });
   
-  // Calculate total cost from ALL cost inputs
-  const totalCost = calculateTotalCost(record);
+  // Calculate total cost from ALL cost inputs (only for Done records)
+  // Partial records may not have complete cost data
+  const totalCost = isDone ? calculateTotalCost(record) : 0;
+  
+  // Status badge styling
+  const statusBadgeClass = isDone 
+    ? 'px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 border border-green-300'
+    : 'px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300';
   
   return `
-    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4" 
+    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4 mb-4" 
          style="border-left-color: ${colors.border};">
-      <div class="flex items-start justify-between gap-4">
-        <!-- Left Section: Status, Task Type, Details -->
-        <div class="flex-1">
-          <!-- Status Badge and Task Type -->
-          <div class="flex items-center gap-2 mb-3">
-            <span class="px-2 py-1 rounded text-xs font-semibold" 
-                  style="background: ${colors.bg}; color: ${colors.text};">
-              ${escapeHtml(status)}
-            </span>
-            <h3 class="font-bold text-gray-900">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
-          </div>
-          
-          <!-- Details with Icons -->
-          <div class="space-y-1 text-sm text-gray-600">
-            <p><i class="fas fa-map-marker-alt text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.fieldName || 'Unknown Field')}</p>
-            <p><i class="fas fa-cogs text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.operation || 'N/A')}</p>
-            <p><i class="fas fa-calendar text-[var(--cane-600)] w-4"></i> ${dateStr}</p>
-          </div>
+      <!-- Top Section: Status, Task Type, Details -->
+      <div class="mb-4">
+        <!-- Status Badge and Task Type -->
+        <div class="flex items-center gap-2 mb-3 flex-wrap">
+          <span class="px-2 py-1 rounded text-xs font-semibold" 
+                style="background: ${colors.bg}; color: ${colors.text};">
+            ${escapeHtml(status)}
+          </span>
+          <span class="${statusBadgeClass}">
+            ${escapeHtml(recordStatus)}
+          </span>
+          <h3 class="font-bold text-gray-900">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
         </div>
         
-        <!-- Right Section: Cost and Buttons -->
-        <div class="flex flex-col items-end gap-3">
-          <!-- Total Cost -->
-          <div class="text-right">
-            <p class="text-lg font-bold text-[var(--cane-700)]">₱${totalCost.toFixed(2)}</p>
-            <p class="text-xs text-gray-500">Total Cost</p>
-          </div>
-          
-          <!-- Action Buttons -->
-          <div class="flex gap-2">
-            <button data-record-id="${record.id}" data-action="view" 
-                    class="px-3 py-1.5 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition text-xs font-semibold flex items-center gap-1">
-              <i class="fas fa-eye"></i> View Details
-            </button>
-            <button data-record-id="${record.id}" data-action="delete" 
-                    class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-semibold flex items-center gap-1">
-              <i class="fas fa-trash"></i> Delete
-            </button>
-          </div>
+        <!-- Details with Icons -->
+        <div class="space-y-1 text-sm text-gray-600 mb-3">
+          <p><i class="fas fa-map-marker-alt text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.fieldName || 'Unknown Field')}</p>
+          <p><i class="fas fa-cogs text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.operation || 'N/A')}</p>
+          <p><i class="fas fa-calendar text-[var(--cane-600)] w-4"></i> ${dateStr}</p>
+          ${!isDone ? '<p class="text-xs text-yellow-700 mt-2"><i class="fas fa-info-circle"></i> This record is incomplete. Add an End Date and mark as Done to complete it.</p>' : ''}
         </div>
+        
+        <!-- Cost Display (inline with details for better mobile layout) -->
+        ${isDone ? `
+        <div class="inline-block bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+          <p class="text-lg font-bold text-[var(--cane-700)]">₱${totalCost.toFixed(2)}</p>
+          <p class="text-xs text-gray-500">Total Cost</p>
+        </div>
+        ` : `
+        <div class="inline-block bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+          <p class="text-sm text-gray-400 italic">Cost not calculated</p>
+          <p class="text-xs text-gray-400">Complete record to see cost</p>
+        </div>
+        `}
+      </div>
+      
+      <!-- Bottom Section: Action Buttons (responsive, always at bottom) -->
+      <div class="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+        <button data-record-id="${record.id}" data-action="view" 
+                class="flex-1 sm:flex-none px-3 py-2 bg-[var(--cane-600)] text-white rounded-lg hover:bg-[var(--cane-700)] transition text-xs font-semibold flex items-center justify-center gap-1">
+          <i class="fas fa-eye"></i> <span>View Details</span>
+        </button>
+        ${!isDone ? `
+        <button data-record-id="${record.id}" data-action="edit" 
+                class="flex-1 sm:flex-none px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-xs font-semibold flex items-center justify-center gap-1">
+          <i class="fas fa-edit"></i> <span>Edit</span>
+        </button>
+        ` : ''}
+        <button data-record-id="${record.id}" data-action="delete" 
+                class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-xs font-semibold flex items-center justify-center gap-1">
+          <i class="fas fa-trash"></i> <span>Delete</span>
+        </button>
       </div>
     </div>
   `;
@@ -1062,6 +1086,19 @@ function renderRecordDetails(record) {
         </div>
       ` : ''}
       
+      <!-- Section 2.5: Notes / Remarks (if exists) -->
+      ${record.data && (record.data.notes || record.data.remarks) ? `
+        <div class="bg-white rounded-lg p-5 border border-gray-200">
+          <h3 class="text-lg font-bold text-[var(--cane-900)] mb-4 flex items-center gap-2">
+            <i class="fas fa-sticky-note text-[var(--cane-600)]"></i>
+            Notes / Remarks
+          </h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-gray-900 whitespace-pre-wrap">${escapeHtml(record.data.notes || record.data.remarks || 'No notes added.')}</p>
+          </div>
+        </div>
+      ` : ''}
+      
       <!-- Section 3: Bought Items -->
       ${record.boughtItems && record.boughtItems.length > 0 ? `
         <div class="bg-white rounded-lg p-5 border border-gray-200">
@@ -1198,11 +1235,13 @@ function getTaskFieldsForPrint(taskType, data) {
   if (!data || !taskType) return '';
   
   const fields = [];
-  const skipFields = ['totalCost', 'notes', 'remarks', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates'];
+  const skipFields = ['totalCost', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates', 'notes', 'remarks'];
+  // Note: 'notes' and 'remarks' are skipped here - they are displayed in a separate section
   
   for (const [key, value] of Object.entries(data)) {
-    // Skip internal fields and empty values
+    // Skip internal fields and notes/remarks (they have their own section)
     if (skipFields.includes(key)) continue;
+    // Skip empty values
     if (value === null || value === undefined || value === '') continue;
     
     // Skip if it's an object (unless it's a date/timestamp)
@@ -1234,11 +1273,13 @@ function getTaskFields(taskType, data) {
   if (!data || !taskType) return '';
   
   const fields = [];
-  const skipFields = ['totalCost', 'notes', 'remarks', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates'];
+  const skipFields = ['totalCost', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates', 'notes', 'remarks'];
+  // Note: 'notes' and 'remarks' are skipped here - they are displayed in a separate section
   
   for (const [key, value] of Object.entries(data)) {
-    // Skip internal fields and empty values
+    // Skip internal fields and notes/remarks (they have their own section)
     if (skipFields.includes(key)) continue;
+    // Skip empty values
     if (value === null || value === undefined || value === '') continue;
     
     // Skip if it's an object (unless it's a date/timestamp)
@@ -1799,11 +1840,13 @@ function getTaskFieldsForCSV(taskType, data) {
   if (!data || !taskType) return '';
   
   const fields = [];
-  const skipFields = ['totalCost', 'notes', 'remarks', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates'];
+  const skipFields = ['totalCost', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates', 'notes', 'remarks'];
+  // Note: 'notes' and 'remarks' are skipped here - they are displayed in a separate section
   
   for (const [key, value] of Object.entries(data)) {
-    // Skip internal fields and empty values
+    // Skip internal fields and notes/remarks (they have their own section)
     if (skipFields.includes(key)) continue;
+    // Skip empty values
     if (value === null || value === undefined || value === '') continue;
     
     // Skip if it's an object (unless it's a date/timestamp)
@@ -3637,6 +3680,50 @@ async function sendReportToSRA(reportData) {
   } finally {
     // Always clear the sending flag
     window.sendingReportToSRA = false;
+  }
+}
+
+// Edit record - navigate to Input Records page with record ID
+async function editRecord(recordId) {
+  try {
+    // Find the record in cache
+    const record = recordsCache.find(r => r.id === recordId);
+    if (!record) {
+      console.error('Record not found:', recordId);
+      alert('Record not found. Please refresh the page and try again.');
+      return;
+    }
+    
+    // Check if record is editable (only "Not Done Yet" records can be edited)
+    const recordStatus = record.recordStatus || 'Done';
+    if (recordStatus === 'Done') {
+      alert('This record is already completed and cannot be edited.');
+      return;
+    }
+    
+    // Navigate to Input Records page with record ID as query parameter
+    // The Input Records page will detect this and pre-populate the form
+    // Get the current page's directory and navigate relative to it
+    const currentPath = window.location.pathname;
+    const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'));
+    
+    // Construct path to Input-Records.html in the same directory
+    // If we're in /Handler/dashboard.html, go to /Handler/Input-Records.html
+    let inputRecordsPath;
+    if (currentPath.includes('/Handler/')) {
+      // Extract the path up to /Handler/ and append Input-Records.html
+      const handlerIndex = currentPath.indexOf('/Handler/');
+      const basePath = currentPath.substring(0, handlerIndex + '/Handler/'.length);
+      inputRecordsPath = basePath + 'Input-Records.html';
+    } else {
+      // Fallback: assume same directory
+      inputRecordsPath = currentDir + '/Input-Records.html';
+    }
+    
+    window.location.href = `${inputRecordsPath}?editRecordId=${recordId}`;
+  } catch (error) {
+    console.error('Error editing record:', error);
+    alert('Failed to open record for editing. Please try again.');
   }
 }
 
