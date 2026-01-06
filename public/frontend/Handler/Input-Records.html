@@ -388,6 +388,52 @@ This file handles ALL functionalities described in the PDF:
       }
     }
     
+    /* Date input with current date dropdown */
+    .date-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .current-date-dropdown {
+      position: absolute;
+      top: calc(100% + 0.5rem);
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      display: none;
+      animation: fade 0.2s ease;
+    }
+    
+    .current-date-dropdown.show {
+      display: block;
+    }
+    
+    .current-date-option {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .current-date-option:hover {
+      background: rgba(58, 122, 15, 0.08);
+    }
+    
+    .current-date-option .date-label {
+      font-weight: 600;
+      color: var(--cane-700);
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .current-date-option .date-value {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+    
     /* Loading overlay */
     .loading-overlay {
       position: fixed;
@@ -2478,49 +2524,74 @@ async function loadRecordForEdit(recordId) {
         if (laborWorkingDaysInput) laborWorkingDaysInput.value = data.laborWorkingDays || 0;
       }
       
-      // CRITICAL: Handle truckRented and rentCost for Mechanical equipment
-      // Check DATA first to see if Mechanical was selected (not field values, as fields might not be populated yet)
+      // CRITICAL: Handle truckRented and rentCost for Mechanical and Animal-Drawn equipment
+      // Check DATA first to see if Mechanical or Animal-Drawn was selected (not field values, as fields might not be populated yet)
       const hasMechanical = (data.equipment && (data.equipment === 'Mechanical' || data.equipment.includes('Mechanical'))) ||
                            (data.method && (data.method === 'Mechanical' || data.method.includes('Mechanical'))) ||
                            (data.cleaningMethod && (data.cleaningMethod === 'Mechanical' || data.cleaningMethod.includes('Mechanical')));
       
-      // Determine which field ID triggers truckRented
-      let mechanicalFieldId = null;
+      const hasAnimal = (data.equipment && (data.equipment === 'Animal-Drawn' || data.equipment.includes('Animal-Drawn') || (data.equipment.includes('Animal') && !data.equipment.includes('Mechanical')))) ||
+                        (data.method && (data.method === 'Animal-Drawn' || data.method.includes('Animal-Drawn') || (data.method.includes('Animal') && !data.method.includes('Mechanical')))) ||
+                        (data.cleaningMethod && (data.cleaningMethod === 'Animal-Drawn' || data.cleaningMethod.includes('Animal-Drawn') || (data.cleaningMethod.includes('Animal') && !data.cleaningMethod.includes('Mechanical'))));
+      
+      // Determine which field ID triggers truckRented/animalRented
+      let methodFieldId = null;
+      let isMechanicalSelection = false;
+      let isAnimalSelection = false;
+      
       if (data.equipment && (data.equipment === 'Mechanical' || data.equipment.includes('Mechanical'))) {
-        mechanicalFieldId = 'equipment';
+        methodFieldId = 'equipment';
+        isMechanicalSelection = true;
+      } else if (data.equipment && (data.equipment === 'Animal-Drawn' || data.equipment.includes('Animal-Drawn') || (data.equipment.includes('Animal') && !data.equipment.includes('Mechanical')))) {
+        methodFieldId = 'equipment';
+        isAnimalSelection = true;
       } else if (data.method && (data.method === 'Mechanical' || data.method.includes('Mechanical'))) {
-        mechanicalFieldId = 'method';
+        methodFieldId = 'method';
+        isMechanicalSelection = true;
+      } else if (data.method && (data.method === 'Animal-Drawn' || data.method.includes('Animal-Drawn') || (data.method.includes('Animal') && !data.method.includes('Mechanical')))) {
+        methodFieldId = 'method';
+        isAnimalSelection = true;
       } else if (data.cleaningMethod && (data.cleaningMethod === 'Mechanical' || data.cleaningMethod.includes('Mechanical'))) {
-        mechanicalFieldId = 'cleaningMethod';
+        methodFieldId = 'cleaningMethod';
+        isMechanicalSelection = true;
+      } else if (data.cleaningMethod && (data.cleaningMethod === 'Animal-Drawn' || data.cleaningMethod.includes('Animal-Drawn') || (data.cleaningMethod.includes('Animal') && !data.cleaningMethod.includes('Mechanical')))) {
+        methodFieldId = 'cleaningMethod';
+        isAnimalSelection = true;
       }
       
-      console.log('🔧 Checking for Mechanical in data:', { 
+      console.log('🔧 Checking for Mechanical/Animal in data:', { 
         equipment: data.equipment, 
         method: data.method, 
         cleaningMethod: data.cleaningMethod,
-        mechanicalFieldId,
+        methodFieldId,
         hasMechanical,
+        hasAnimal,
+        isMechanicalSelection,
+        isAnimalSelection,
         truckRented: data.truckRented,
         rentCost: data.rentCost
       });
       
-      // If Mechanical is selected in data, create truckRented container
-      if (hasMechanical && mechanicalFieldId) {
-        console.log('🔧 Mechanical detected in data, creating truckRented container...');
+      // If Mechanical or Animal-Drawn is selected in data, create truckRented container
+      if ((hasMechanical || hasAnimal) && methodFieldId) {
+        console.log('🔧 Mechanical/Animal detected in data, creating truckRented container...');
+        
+        // Determine label based on selection
+        const rentLabel = isMechanicalSelection ? 'Is the truck rented?' : 'Is the animal/equipment rented?';
         
         // Wait a bit for form to render, then create containers
         setTimeout(() => {
-          const mechanicalField = document.getElementById(mechanicalFieldId);
+          const methodField = document.getElementById(methodFieldId);
           const truckRentedContainer = document.getElementById('truckRentedContainer');
           
-          if (!truckRentedContainer && mechanicalField) {
-            const currentFieldDiv = mechanicalField.closest('.mb-4');
+          if (!truckRentedContainer && methodField) {
+            const currentFieldDiv = methodField.closest('.mb-4');
             if (currentFieldDiv) {
             const newDiv = document.createElement('div');
             newDiv.id = 'truckRentedContainer';
             newDiv.className = 'mb-4';
             newDiv.innerHTML = `
-              <label class="text-xs font-medium">Is the truck rented? <span class="text-red-500">*</span></label>
+              <label class="text-xs font-medium">${rentLabel} <span class="text-red-500">*</span></label>
               <select id="truckRented" class="w-full border rounded px-3 py-2" required>
                 <option value="">Select</option>
                 <option value="Yes">Yes</option>
@@ -2642,7 +2713,11 @@ async function loadRecordForEdit(recordId) {
             }
           }
           } else if (truckRentedContainer) {
-            // Container exists, just show it and populate
+            // Container exists, update label and show it
+            const labelEl = truckRentedContainer.querySelector('label');
+            if (labelEl) {
+              labelEl.innerHTML = `${rentLabel} <span class="text-red-500">*</span>`;
+            }
             truckRentedContainer.classList.remove('hidden');
             const truckRentedSelect = document.getElementById('truckRented');
             if (truckRentedSelect) {
@@ -3510,7 +3585,33 @@ function renderForm(type){
 
     // 📅 DATE
     else if(f.type === 'date'){
-      inputHTML = `<input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+      // Special handling for startDate fields - add current date dropdown
+      if(f.id === 'startDate'){
+        const today = new Date();
+        // Get local date components to avoid timezone issues
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayFormattedDisplay = today.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+        inputHTML = `
+          <div class="date-input-wrapper">
+            <input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />
+            <div id="${f.id}_dropdown" class="current-date-dropdown">
+              <div class="current-date-option" onclick="event.stopPropagation(); selectCurrentDate('${f.id}');">
+                <div class="date-label">Today</div>
+                <div class="date-value">${todayFormattedDisplay}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        inputHTML = `<input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+      }
     }
 
     // 💰 FUEL COST DYNAMIC INPUTS
@@ -3644,6 +3745,52 @@ function renderForm(type){
         }
       }
     });
+
+  // Add event listeners for start date inputs to show dropdown on click/focus
+  const startDateInputs = document.querySelectorAll('input[type="date"][id="startDate"]');
+  startDateInputs.forEach(input => {
+    // Show dropdown when date input is clicked
+    input.addEventListener('click', function() {
+      const dropdown = document.getElementById(`${input.id}_dropdown`);
+      if (dropdown) {
+        // Close all other dropdowns
+        document.querySelectorAll('.current-date-dropdown.show').forEach(d => {
+          if (d.id !== dropdown.id) {
+            d.classList.remove('show');
+          }
+        });
+        // Show this dropdown
+        dropdown.classList.add('show');
+      }
+    });
+    
+    // Also show on focus
+    input.addEventListener('focus', function() {
+      const dropdown = document.getElementById(`${input.id}_dropdown`);
+      if (dropdown) {
+        // Close all other dropdowns
+        document.querySelectorAll('.current-date-dropdown.show').forEach(d => {
+          if (d.id !== dropdown.id) {
+            d.classList.remove('show');
+          }
+        });
+        // Show this dropdown
+        dropdown.classList.add('show');
+      }
+    });
+  });
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(event) {
+    // Don't close if clicking on the date input wrapper or dropdown option
+    if (!event.target.closest('.date-input-wrapper') && 
+        !event.target.closest('.current-date-option') &&
+        !event.target.closest('.current-date-dropdown')) {
+      document.querySelectorAll('.current-date-dropdown.show').forEach(dropdown => {
+        dropdown.classList.remove('show');
+      });
+    }
+  });
 
   // --- SPECIAL HANDLING ---
 
@@ -4068,45 +4215,111 @@ function renderForm(type){
     });
   }
 
-  // --- Handle Mechanical selection to show "Was a truck rented?" ---
-  const mechanicalFields = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod'];
-  mechanicalFields.forEach(fieldId => {
+  // --- Handle Mechanical and Animal-Drawn selection to show rent question ---
+  const methodFields = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod'];
+  methodFields.forEach(fieldId => {
     const select = document.getElementById(fieldId);
-    if (select && (select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical')))) {
-      select.addEventListener('change', function() {
-        const truckRentedContainer = document.getElementById('truckRentedContainer');
-        const rentCostContainer = document.getElementById('rentCostContainer');
-        if (this.value === 'Mechanical' || this.value.includes('Mechanical')) {
-          // Check if container already exists
-          if (!truckRentedContainer) {
-            // Find the parent div and insert after the current field
-            const currentFieldDiv = this.closest('.mb-4');
-            if (currentFieldDiv) {
-              const newDiv = document.createElement('div');
-              newDiv.id = 'truckRentedContainer';
-              newDiv.className = 'mb-4';
-              newDiv.innerHTML = `
-                <label class="text-xs font-medium">Is the truck rented? <span class="text-red-500">*</span></label>
-                <select id="truckRented" class="w-full border rounded px-3 py-2" required>
-                  <option value="">Select</option>
-                  <option value="Yes">Yes</option>
-                  <option value="No">No</option>
-                </select>
-              `;
-              currentFieldDiv.parentNode.insertBefore(newDiv, currentFieldDiv.nextSibling);
-              
-              // Initialize custom select for truckRented
-              const truckRentedSelect = document.getElementById('truckRented');
-              if (truckRentedSelect) {
-                initializeCustomSelect(truckRentedSelect);
+    if (select) {
+      const hasMechanical = select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical'));
+      const hasAnimal = select.options && Array.from(select.options).some(opt => opt.value === 'Animal-Drawn' || opt.value.includes('Animal') || opt.value.includes('Animal-Drawn'));
+      
+      if (hasMechanical || hasAnimal) {
+        select.addEventListener('change', function() {
+          const isMechanical = this.value === 'Mechanical' || this.value.includes('Mechanical');
+          const isAnimal = this.value === 'Animal-Drawn' || this.value.includes('Animal-Drawn') || (this.value.includes('Animal') && !this.value.includes('Mechanical'));
+          const truckRentedContainer = document.getElementById('truckRentedContainer');
+          const rentCostContainer = document.getElementById('rentCostContainer');
+          
+          if (isMechanical || isAnimal) {
+            // Determine label based on selection
+            const rentLabel = isMechanical ? 'Is the truck rented?' : 'Is the animal/equipment rented?';
+            
+            // Check if container already exists
+            if (!truckRentedContainer) {
+              // Find the parent div and insert after the current field
+              const currentFieldDiv = this.closest('.mb-4');
+              if (currentFieldDiv) {
+                const newDiv = document.createElement('div');
+                newDiv.id = 'truckRentedContainer';
+                newDiv.className = 'mb-4';
+                newDiv.innerHTML = `
+                  <label class="text-xs font-medium">${rentLabel} <span class="text-red-500">*</span></label>
+                  <select id="truckRented" class="w-full border rounded px-3 py-2" required>
+                    <option value="">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                `;
+                currentFieldDiv.parentNode.insertBefore(newDiv, currentFieldDiv.nextSibling);
                 
-                // Add handler for truckRented change to show/hide Rent Cost
+                // Initialize custom select for truckRented
+                const truckRentedSelect = document.getElementById('truckRented');
+                if (truckRentedSelect) {
+                  initializeCustomSelect(truckRentedSelect);
+                  
+                  // Add handler for truckRented change to show/hide Rent Cost
+                  truckRentedSelect.addEventListener('change', function() {
+                    const rentCostContainerEl = document.getElementById('rentCostContainer');
+                    
+                    if (this.value === 'Yes') {
+                      if (!rentCostContainerEl) {
+                        // Create Rent Cost field
+                        const truckRentedDiv = document.getElementById('truckRentedContainer');
+                        if (truckRentedDiv) {
+                          const rentCostDiv = document.createElement('div');
+                          rentCostDiv.id = 'rentCostContainer';
+                          rentCostDiv.className = 'mb-4';
+                          rentCostDiv.innerHTML = `
+                            <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
+                            <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
+                          `;
+                          truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
+                          
+                          // Add event listener for rentCost to update total cost
+                          const rentCostInput = document.getElementById('rentCost');
+                          if (rentCostInput) {
+                            const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
+                            if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
+                              rentCostInput.addEventListener('input', updateTotalCostFn);
+                              rentCostInput.addEventListener('change', updateTotalCostFn);
+                            }
+                          }
+                        }
+                      } else {
+                        rentCostContainerEl.classList.remove('hidden');
+                        const rentCostInput = document.getElementById('rentCost');
+                        if (rentCostInput) rentCostInput.required = true;
+                      }
+                    } else {
+                      if (rentCostContainerEl) {
+                        rentCostContainerEl.classList.add('hidden');
+                        const rentCostInput = document.getElementById('rentCost');
+                        if (rentCostInput) {
+                          rentCostInput.required = false;
+                          rentCostInput.value = '';
+                        }
+                        updateTotalCost();
+                      }
+                    }
+                  });
+                }
+              }
+            } else {
+              // Update label if container exists
+              const labelEl = truckRentedContainer.querySelector('label');
+              if (labelEl) {
+                labelEl.innerHTML = `${rentLabel} <span class="text-red-500">*</span>`;
+              }
+              truckRentedContainer.classList.remove('hidden');
+              // Re-attach handler if needed (when form is re-rendered)
+              const truckRentedSelect = document.getElementById('truckRented');
+              if (truckRentedSelect && !truckRentedSelect.dataset.rentHandlerAttached) {
+                truckRentedSelect.dataset.rentHandlerAttached = 'true';
                 truckRentedSelect.addEventListener('change', function() {
                   const rentCostContainerEl = document.getElementById('rentCostContainer');
                   
                   if (this.value === 'Yes') {
                     if (!rentCostContainerEl) {
-                      // Create Rent Cost field
                       const truckRentedDiv = document.getElementById('truckRentedContainer');
                       if (truckRentedDiv) {
                         const rentCostDiv = document.createElement('div');
@@ -4118,14 +4331,10 @@ function renderForm(type){
                         `;
                         truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
                         
-                        // Add event listener for rentCost to update total cost
                         const rentCostInput = document.getElementById('rentCost');
                         if (rentCostInput) {
-                          const updateTotalCostFn = window.updateTotalCost || (typeof updateTotalCost !== 'undefined' ? updateTotalCost : null);
-                          if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
-                            rentCostInput.addEventListener('input', updateTotalCostFn);
-                            rentCostInput.addEventListener('change', updateTotalCostFn);
-                          }
+                          rentCostInput.addEventListener('input', updateTotalCost);
+                          rentCostInput.addEventListener('change', updateTotalCost);
                         }
                       }
                     } else {
@@ -4148,75 +4357,29 @@ function renderForm(type){
               }
             }
           } else {
-            truckRentedContainer.classList.remove('hidden');
-            // Re-attach handler if needed (when form is re-rendered)
-            const truckRentedSelect = document.getElementById('truckRented');
-            if (truckRentedSelect && !truckRentedSelect.dataset.rentHandlerAttached) {
-              truckRentedSelect.dataset.rentHandlerAttached = 'true';
-              truckRentedSelect.addEventListener('change', function() {
-                const rentCostContainerEl = document.getElementById('rentCostContainer');
-                
-                if (this.value === 'Yes') {
-                  if (!rentCostContainerEl) {
-                    const truckRentedDiv = document.getElementById('truckRentedContainer');
-                    if (truckRentedDiv) {
-                      const rentCostDiv = document.createElement('div');
-                      rentCostDiv.id = 'rentCostContainer';
-                      rentCostDiv.className = 'mb-4';
-                      rentCostDiv.innerHTML = `
-                        <label class="text-xs font-medium">Rent Cost <span class="text-red-500">*</span></label>
-                        <input type="number" step="0.01" id="rentCost" class="w-full border rounded px-3 py-2" required />
-                      `;
-                      truckRentedDiv.parentNode.insertBefore(rentCostDiv, truckRentedDiv.nextSibling);
-                      
-                      const rentCostInput = document.getElementById('rentCost');
-                      if (rentCostInput) {
-                        rentCostInput.addEventListener('input', updateTotalCost);
-                        rentCostInput.addEventListener('change', updateTotalCost);
-                      }
-                    }
-                  } else {
-                    rentCostContainerEl.classList.remove('hidden');
-                    const rentCostInput = document.getElementById('rentCost');
-                    if (rentCostInput) rentCostInput.required = true;
-                  }
-                } else {
-                  if (rentCostContainerEl) {
-                    rentCostContainerEl.classList.add('hidden');
-                    const rentCostInput = document.getElementById('rentCost');
-                    if (rentCostInput) {
-                      rentCostInput.required = false;
-                      rentCostInput.value = '';
-                    }
-                    updateTotalCost();
-                  }
-                }
-              });
+            // Hide rent question and rent cost when Method is not Mechanical or Animal-Drawn
+            const truckRentedContainerEl = document.getElementById('truckRentedContainer');
+            if (truckRentedContainerEl) {
+              truckRentedContainerEl.classList.add('hidden');
+              const truckRentedSelect = document.getElementById('truckRented');
+              if (truckRentedSelect) {
+                truckRentedSelect.value = '';
+                truckRentedSelect.dataset.rentHandlerAttached = '';
+              }
+            }
+            const rentCostContainerEl = document.getElementById('rentCostContainer');
+            if (rentCostContainerEl) {
+              rentCostContainerEl.classList.add('hidden');
+              const rentCostInput = document.getElementById('rentCost');
+              if (rentCostInput) {
+                rentCostInput.value = '';
+                rentCostInput.required = false;
+              }
+              updateTotalCost();
             }
           }
-        } else {
-          // Hide truck rented question and rent cost when Method is not Mechanical
-          const truckRentedContainerEl = document.getElementById('truckRentedContainer');
-          if (truckRentedContainerEl) {
-            truckRentedContainerEl.classList.add('hidden');
-            const truckRentedSelect = document.getElementById('truckRented');
-            if (truckRentedSelect) {
-              truckRentedSelect.value = '';
-              truckRentedSelect.dataset.rentHandlerAttached = '';
-            }
-          }
-          const rentCostContainerEl = document.getElementById('rentCostContainer');
-          if (rentCostContainerEl) {
-            rentCostContainerEl.classList.add('hidden');
-            const rentCostInput = document.getElementById('rentCost');
-            if (rentCostInput) {
-              rentCostInput.value = '';
-              rentCostInput.required = false;
-            }
-            updateTotalCost();
-          }
-        }
-      });
+        });
+      }
     }
   });
 
@@ -4260,7 +4423,7 @@ function renderForm(type){
 
 }
 
-// Handle “Other” input for selects
+// Handle "Other" input for selects
 function handleOtherSelect(id){
   const select = document.getElementById(id);
   const otherInput = document.getElementById(`${id}_other`);
@@ -4273,6 +4436,41 @@ function handleOtherSelect(id){
     otherInput.value = '';
   }
 }
+
+// Select current date and fill the input
+window.selectCurrentDate = function(fieldId) {
+  const input = document.getElementById(fieldId);
+  const dropdown = document.getElementById(`${fieldId}_dropdown`);
+  
+  if (input) {
+    // Calculate current date at the time of selection to ensure accuracy
+    const today = new Date();
+    // Get local date components to avoid timezone issues
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayFormatted = `${year}-${month}-${day}`;
+    
+    // Set the date value - use the freshly calculated date
+    input.value = todayFormatted;
+    
+    // Close all dropdowns immediately
+    document.querySelectorAll('.current-date-dropdown').forEach(d => {
+      d.classList.remove('show');
+    });
+    
+    // Trigger change event to update any dependent calculations
+    setTimeout(() => {
+      const changeEvent = new Event('change', { bubbles: true });
+      input.dispatchEvent(changeEvent);
+    }, 10);
+    
+    // Blur the input to remove focus and hide any native date picker
+    setTimeout(() => {
+      input.blur();
+    }, 50);
+  }
+};
 
 
 // Optional sections handlers
