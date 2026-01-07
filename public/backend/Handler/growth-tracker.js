@@ -18,8 +18,56 @@ function removeUndefined(obj) {
   return cleaned;
 }
 
+/**
+ * Format date to human-readable format: "MMM D, YYYY"
+ * This is the SINGLE SOURCE OF TRUTH for date formatting across the system
+ * Examples: "Jan 1, 2026", "Feb 4, 2025", "Dec 15, 2026"
+ * @param {Date} date - Date object to format
+ * @returns {string} Formatted date string
+ */
+export function formatHarvestDate(date) {
+  if (!date) return null;
+  
+  const dateObj = date instanceof Date ? date : new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    console.error('Invalid date provided to formatHarvestDate:', date);
+    return null;
+  }
+  
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[dateObj.getMonth()];
+  const day = dateObj.getDate();
+  const year = dateObj.getFullYear();
+  
+  return `${month} ${day}, ${year}`;
+}
+
+/**
+ * Format harvest date range: "MMM D, YYYY – MMM D, YYYY" or single date if range is same
+ * @param {Date} earliest - Earliest harvest date
+ * @param {Date} latest - Latest harvest date
+ * @returns {string} Formatted date range string
+ */
+export function formatHarvestDateRange(earliest, latest) {
+  if (!earliest || !latest) return null;
+  
+  const earliestFormatted = formatHarvestDate(earliest);
+  const latestFormatted = formatHarvestDate(latest);
+  
+  if (!earliestFormatted || !latestFormatted) return null;
+  
+  // If dates are the same, return single date
+  if (earliest.getTime() === latest.getTime()) {
+    return earliestFormatted;
+  }
+  
+  return `${earliestFormatted} – ${latestFormatted}`;
+}
+
 // Variety-specific harvest months range (min-max months)
-// Updated to match system-wide Expected Harvest Date requirements
+// CALCULATION LOGIC: Only the MAXIMUM value is used for harvest date calculation
+// Harvest Window = Date Planted + MAX months → +7 days operational buffer
+// Example: PSR 2000-34 (max: 11 months) + Feb 4, 2025 = Jan 4, 2026 – Jan 11, 2026
 export const VARIETY_HARVEST_MONTHS_RANGE = {
   'K 88-65': { min: 12, max: 14 },
   'K 88-87': { min: 12, max: 14 },
@@ -36,7 +84,7 @@ export const VARIETY_HARVEST_MONTHS_RANGE = {
   'VMC 95-09': { min: 10, max: 12 },
   'PSR 2000-161': { min: 11, max: 12 },
   'PSR 2000-343': { min: 11, max: 11.5 },
-  'PSR 2000-34': { min: 11, max: 12 },
+  'PSR 2000-34': { min: 10, max: 11 },
   'PSR 97-41': { min: 11, max: 11 },
   'PSR 97-45': { min: 10, max: 11 },
   'PS 862': { min: 10, max: 12 },
@@ -427,7 +475,9 @@ export function parseDateValue(dateValue) {
 }
 
 /**
- * Parse Expected Harvest Date from Input Record (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY format)
+ * Parse Expected Harvest Date from Input Record
+ * Supports both old format (DD/MM/YYYY) and new format (MMM D, YYYY) for backward compatibility
+ * Always outputs in new format: "MMM D, YYYY" or "MMM D, YYYY – MMM D, YYYY"
  * @param {string} dateString - Expected harvest date string from Input Record
  * @returns {{earliest: Date, latest: Date, formatted: string}|null} Parsed dates or null if invalid
  */
@@ -435,48 +485,76 @@ export function parseExpectedHarvestDateFromRecord(dateString) {
   if (!dateString || typeof dateString !== 'string') return null;
   
   try {
-    // Handle range format: "DD/MM/YYYY – DD/MM/YYYY" or "DD/MM/YYYY - DD/MM/YYYY"
-    const rangeMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*[–-]\s*(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (rangeMatch) {
-      const [, day1, month1, year1, day2, month2, year2] = rangeMatch;
+    // Handle new format: "MMM D, YYYY – MMM D, YYYY" or "MMM D, YYYY"
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const newFormatRangeMatch = dateString.match(/^([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})\s*[–-]\s*([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})$/);
+    if (newFormatRangeMatch) {
+      const [, month1, day1, year1, month2, day2, year2] = newFormatRangeMatch;
+      const monthIndex1 = months.indexOf(month1);
+      const monthIndex2 = months.indexOf(month2);
+      
+      if (monthIndex1 >= 0 && monthIndex2 >= 0) {
+        const earliest = new Date(parseInt(year1), monthIndex1, parseInt(day1));
+        const latest = new Date(parseInt(year2), monthIndex2, parseInt(day2));
+      
+      if (!isNaN(earliest.getTime()) && !isNaN(latest.getTime())) {
+          return {
+            earliest,
+            latest,
+            formatted: formatHarvestDateRange(earliest, latest)
+          };
+        }
+      }
+    }
+    
+    // Handle new format single date: "MMM D, YYYY"
+    const newFormatSingleMatch = dateString.match(/^([A-Za-z]{3})\s+(\d{1,2}),\s+(\d{4})$/);
+    if (newFormatSingleMatch) {
+      const [, month, day, year] = newFormatSingleMatch;
+      const monthIndex = months.indexOf(month);
+      
+      if (monthIndex >= 0) {
+        const date = new Date(parseInt(year), monthIndex, parseInt(day));
+        
+        if (!isNaN(date.getTime())) {
+          return {
+            earliest: date,
+            latest: date,
+            formatted: formatHarvestDate(date)
+          };
+        }
+      }
+    }
+    
+    // Handle old format range: "DD/MM/YYYY – DD/MM/YYYY" or "DD/MM/YYYY - DD/MM/YYYY" (backward compatibility)
+    const oldFormatRangeMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})\s*[–-]\s*(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (oldFormatRangeMatch) {
+      const [, day1, month1, year1, day2, month2, year2] = oldFormatRangeMatch;
       const earliest = new Date(parseInt(year1), parseInt(month1) - 1, parseInt(day1));
       const latest = new Date(parseInt(year2), parseInt(month2) - 1, parseInt(day2));
       
       if (!isNaN(earliest.getTime()) && !isNaN(latest.getTime())) {
-        // Format dates (DD/MM/YYYY)
-        const formatDate = (date) => {
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, '0');
-          const day = String(date.getDate()).padStart(2, '0');
-          return `${day}/${month}/${year}`;
-        };
-        
+        // Convert to new format for output
         return {
           earliest,
           latest,
-          formatted: `${formatDate(earliest)} – ${formatDate(latest)}`
+          formatted: formatHarvestDateRange(earliest, latest)
         };
       }
     }
     
-    // Handle single date format: "DD/MM/YYYY"
-    const singleMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (singleMatch) {
-      const [, day, month, year] = singleMatch;
+    // Handle old format single date: "DD/MM/YYYY" (backward compatibility)
+    const oldFormatSingleMatch = dateString.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (oldFormatSingleMatch) {
+      const [, day, month, year] = oldFormatSingleMatch;
       const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       
       if (!isNaN(date.getTime())) {
-        const formatDate = (d) => {
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const d_ = String(d.getDate()).padStart(2, '0');
-          return `${d_}/${m}/${y}`;
-        };
-        
+        // Convert to new format for output
         return {
           earliest: date,
           latest: date,
-          formatted: formatDate(date)
+          formatted: formatHarvestDate(date)
         };
       }
     }
@@ -528,8 +606,8 @@ export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
   
   // Default fallback
   if (!maturity) {
-    console.warn(`Unknown variety: "${variety}". Using default range (9-11 months).`);
-    maturity = { min: 9, max: 11 };
+    console.warn(`Unknown variety: "${variety}". Using default maximum (11 months).`);
+    maturity = { min: 11, max: 11 };
   }
 
   // Parse planting date safely
@@ -541,34 +619,26 @@ export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
     return null;
   }
   
-  // Calculate earliest harvest date (min months)
-  // setMonth() automatically handles year rollover correctly
-  const earliestDate = new Date(planting);
-  earliestDate.setMonth(earliestDate.getMonth() + maturity.min);
+  // =========================================================
+  // ✅ HARVEST CALCULATION LOGIC (AUTHORITATIVE)
+  // =========================================================
+  // Step 1: Compute Latest Harvest Date using MAXIMUM growth duration
+  // This is the biological maturity date based on variety
+  const latestHarvestDate = new Date(planting);
+  latestHarvestDate.setMonth(latestHarvestDate.getMonth() + maturity.max);
   
-  // Calculate latest harvest date (max months)
-  const latestDate = new Date(planting);
-  latestDate.setMonth(latestDate.getMonth() + maturity.max);
+  // Step 2: Compute Harvest Window End (7-day operational buffer)
+  // This is a fixed operational buffer, NOT a biological estimate
+  const harvestWindowEnd = new Date(latestHarvestDate);
+  harvestWindowEnd.setDate(harvestWindowEnd.getDate() + 7);
   
-  // Format dates (DD/MM/YYYY) - Day/Month/Year format (NOT MM/DD/YYYY)
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${day}/${month}/${year}`;
-  };
-  
-  // Format display string
-  let formatted;
-  if (maturity.min === maturity.max) {
-    formatted = formatDate(earliestDate);
-  } else {
-    formatted = `${formatDate(earliestDate)} – ${formatDate(latestDate)}`;
-  }
+  // Format dates using standardized format: "MMM D, YYYY"
+  // Result: "Jan 4, 2026 – Jan 11, 2026" (example for PSR 2000-34 planted Feb 4, 2025)
+  const formatted = formatHarvestDateRange(latestHarvestDate, harvestWindowEnd);
   
   return {
-    earliest: earliestDate,
-    latest: latestDate,
+    earliest: latestHarvestDate,      // Start of harvest window (latest biological maturity)
+    latest: harvestWindowEnd,          // End of harvest window (+7 days operational buffer)
     formatted: formatted
   };
 }
@@ -1385,146 +1455,189 @@ export async function getFieldGrowthData(fieldId) {
     const basalFertilizationDate = fieldData.basalFertilizationDate?.toDate ? fieldData.basalFertilizationDate.toDate() : fieldData.basalFertilizationDate;
     const mainFertilizationDate = fieldData.mainFertilizationDate?.toDate ? fieldData.mainFertilizationDate.toDate() : fieldData.mainFertilizationDate;
 
-    // Fetch seed rate and fertilizers from records
+    // =========================================================
+    // ✅ FETCH SEED RATE AND FERTILIZERS FROM LATEST DONE RECORDS
+    // =========================================================
+    // Seed Rate: From latest DONE "Planting Operation" record
+    // Fertilizers Used: From latest DONE fertilizer-related records
     let seedRate = null;
     let fertilizersUsed = null;
     
     try {
-      // Find Planting Operation record for this field
-      const recordsQuery = query(
+      // 1️⃣ FETCH ALL DONE RECORDS for this field to search for seed rate and fertilizers
+      // This is more efficient than multiple queries and handles all task type variations
+      const allDoneRecordsQuery = query(
         collection(db, 'records'),
         where('fieldId', '==', fieldId),
-        where('taskType', '==', 'Planting Operation')
+        where('recordStatus', '==', 'Done')
       );
-      const recordsSnap = await getDocs(recordsQuery);
+      const allDoneRecordsSnap = await getDocs(allDoneRecordsQuery);
       
-      if (!recordsSnap.empty) {
-        // Get the first planting record (should be only one)
-        const plantingRecordDoc = recordsSnap.docs[0];
-        const plantingRecord = plantingRecordDoc.data();
+      if (!allDoneRecordsSnap.empty) {
+        const allDoneRecords = allDoneRecordsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
         
-        // Extract seed rate from record data
-        if (plantingRecord.data && plantingRecord.data.seedRate) {
-          seedRate = plantingRecord.data.seedRate;
-        }
+        console.log(`📊 Found ${allDoneRecords.length} DONE records for field ${fieldId}`);
         
-        // Extract fertilizers from bought items subcollection
-        try {
-          const boughtItemsSnapshot = await getDocs(collection(db, 'records', plantingRecordDoc.id, 'bought_items'));
-          const boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
+        // 2️⃣ FETCH SEED RATE from Planting Operation records
+        // Task types that contain seed rate (display names as saved in database)
+        const plantingTaskTypes = [
+          'Planting Operation',
+          'Planting Operation (Pagtanom sa tubo)',
+          'Replanting Operation'
+        ];
+        
+        const plantingRecords = allDoneRecords.filter(record => 
+          plantingTaskTypes.some(taskType => 
+            record.taskType && record.taskType.includes(taskType.split(' (')[0])
+          )
+        );
+        
+        if (plantingRecords.length > 0) {
+          // Sort by date to get most recent
+          plantingRecords.sort((a, b) => {
+            const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+            const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+            return dateB - dateA; // Most recent first
+          });
           
-          if (boughtItems.length > 0) {
-            const fertilizerItems = boughtItems.filter(item => 
-              item.itemName && item.itemName.toLowerCase().includes('fertilizer')
-            );
-            if (fertilizerItems.length > 0) {
-              fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
-            }
+          const latestPlantingRecord = plantingRecords[0];
+          console.log(`📋 Latest Planting Record:`, latestPlantingRecord.taskType);
+          
+          // Extract seed rate from record data
+          if (latestPlantingRecord.data && latestPlantingRecord.data.seedRate) {
+            seedRate = latestPlantingRecord.data.seedRate;
+            console.log(`✅ Seed Rate found: ${seedRate}`);
+          } else {
+            console.log(`⚠️ No seedRate in planting record data:`, latestPlantingRecord.data);
           }
-        } catch (boughtItemsError) {
-          console.debug('No bought items subcollection for planting record:', boughtItemsError);
+        } else {
+          console.log(`⚠️ No planting records found for field ${fieldId}`);
         }
         
-        // If no fertilizers found in bought items, check Post-Planting Fertilization record (Fertilizer Application)
-        // Check both possible taskType values: "Post-Planting Fertilization" and "Fertilizer Application"
-        if (!fertilizersUsed) {
-          const possibleTaskTypes = ['Post-Planting Fertilization', 'Fertilizer Application', 'Fertilizer Application (Top Dressing)'];
-          
-          for (const taskTypeValue of possibleTaskTypes) {
-            const fertilizerAppQuery = query(
-              collection(db, 'records'),
-              where('fieldId', '==', fieldId),
-              where('taskType', '==', taskTypeValue)
-            );
-            const fertilizerAppSnap = await getDocs(fertilizerAppQuery);
-            
-            if (!fertilizerAppSnap.empty) {
-              // Get the most recent fertilizer application record (sort by recordDate if available)
-              let fertilizerAppRecordDoc = fertilizerAppSnap.docs[0];
-              let fertilizerAppRecord = fertilizerAppRecordDoc.data();
-              
-              // If multiple records, get the most recent one
-              if (fertilizerAppSnap.docs.length > 1) {
-                const sortedDocs = fertilizerAppSnap.docs.sort((a, b) => {
-                  const dateA = a.data().recordDate?.toDate?.() || a.data().createdAt?.toDate?.() || new Date(0);
-                  const dateB = b.data().recordDate?.toDate?.() || b.data().createdAt?.toDate?.() || new Date(0);
+        // 3️⃣ FETCH FERTILIZERS USED from fertilizer-related records
+        // Task types that contain fertilizer info (display names and variations)
+        const fertilizerKeywords = [
+          'Fertilization',
+          'Fertilizer',
+          'Abono', // Cebuano for fertilizer
+          'First Dose',
+          'Second Dose',
+          'basal'
+        ];
+        
+        const fertilizerRecords = allDoneRecords.filter(record => 
+          record.taskType && fertilizerKeywords.some(keyword => 
+            record.taskType.toLowerCase().includes(keyword.toLowerCase())
+          )
+        );
+        
+        console.log(`📋 Found ${fertilizerRecords.length} fertilizer-related records`);
+        
+        if (fertilizerRecords.length > 0) {
+          // Sort by date to get most recent
+          fertilizerRecords.sort((a, b) => {
+            const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+            const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
                   return dateB - dateA; // Most recent first
                 });
-                fertilizerAppRecordDoc = sortedDocs[0];
-                fertilizerAppRecord = fertilizerAppRecordDoc.data();
-              }
+          
+          const latestFertilizerRecord = fertilizerRecords[0];
+          console.log(`📋 Latest Fertilizer Record:`, latestFertilizerRecord.taskType);
+          console.log(`📋 Fertilizer Record Data:`, latestFertilizerRecord.data);
+          
+          // Priority 1: Check fertilizerType in record.data
+          if (latestFertilizerRecord.data && latestFertilizerRecord.data.fertilizerType) {
+            fertilizersUsed = latestFertilizerRecord.data.fertilizerType;
+            console.log(`✅ Fertilizer Used found in record.data.fertilizerType: ${fertilizersUsed}`);
+          }
+          // Priority 2: Check bought_items subcollection
+          else {
+            try {
+              const boughtItemsSnapshot = await getDocs(collection(db, 'records', latestFertilizerRecord.id, 'bought_items'));
+              const boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
               
-              // Check fertilizer type in record data (this is the primary source for Fertilizer Used)
-              if (fertilizerAppRecord.data && fertilizerAppRecord.data.fertilizerType) {
-                fertilizersUsed = fertilizerAppRecord.data.fertilizerType;
-                break; // Found it, no need to check other task types
-              } else {
-                // Check bought items subcollection as fallback
-                try {
-                  const fertilizerAppBoughtItemsSnapshot = await getDocs(collection(db, 'records', fertilizerAppRecordDoc.id, 'bought_items'));
-                  const fertilizerAppBoughtItems = fertilizerAppBoughtItemsSnapshot.docs.map(doc => doc.data());
-                  
-                  if (fertilizerAppBoughtItems.length > 0) {
-                    const fertilizerItems = fertilizerAppBoughtItems.filter(item => 
+              if (boughtItems.length > 0) {
+                const fertilizerItems = boughtItems.filter(item => 
                       item.itemName && item.itemName.toLowerCase().includes('fertilizer')
                     );
                     if (fertilizerItems.length > 0) {
                       fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
-                      break; // Found it, no need to check other task types
-                    }
-                  }
-                } catch (fertilizerAppBoughtItemsError) {
-                  console.debug('No bought items subcollection for fertilizer application record:', fertilizerAppBoughtItemsError);
+                  console.log(`✅ Fertilizer Used found in bought_items: ${fertilizersUsed}`);
                 }
               }
+            } catch (boughtItemsError) {
+              console.debug('No bought_items subcollection for fertilizer record:', boughtItemsError);
             }
           }
-        }
-        
-        // If still no fertilizers found, check basal fertilizer record as last resort
-        if (!fertilizersUsed) {
-          const basalQuery = query(
-            collection(db, 'records'),
-            where('fieldId', '==', fieldId),
-            where('taskType', '==', 'basal_fertilizer')
-          );
-          const basalSnap = await getDocs(basalQuery);
           
-          if (!basalSnap.empty) {
-            const basalRecordDoc = basalSnap.docs[0];
-            const basalRecord = basalRecordDoc.data();
-            
-            // Check fertilizer type in record data
-            if (basalRecord.data && basalRecord.data.fertilizerType) {
-              fertilizersUsed = basalRecord.data.fertilizerType;
-            } else {
-              // Check bought items subcollection
-              try {
-                const basalBoughtItemsSnapshot = await getDocs(collection(db, 'records', basalRecordDoc.id, 'bought_items'));
-                const basalBoughtItems = basalBoughtItemsSnapshot.docs.map(doc => doc.data());
-                
-                if (basalBoughtItems.length > 0) {
-                  const fertilizerItems = basalBoughtItems.filter(item => 
-                    item.itemName && item.itemName.toLowerCase().includes('fertilizer')
-                  );
-                  if (fertilizerItems.length > 0) {
-                    fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
-                  }
-                }
-              } catch (basalBoughtItemsError) {
-                console.debug('No bought items subcollection for basal fertilizer record:', basalBoughtItemsError);
-              }
-            }
+          // Priority 3: Check fertilizerUsed field (legacy compatibility)
+          if (!fertilizersUsed && latestFertilizerRecord.data && latestFertilizerRecord.data.fertilizerUsed) {
+            fertilizersUsed = latestFertilizerRecord.data.fertilizerUsed;
+            console.log(`✅ Fertilizer Used found in record.data.fertilizerUsed: ${fertilizersUsed}`);
           }
+        } else {
+          console.log(`⚠️ No fertilizer records found for field ${fieldId}`);
         }
+      } else {
+        console.log(`⚠️ No DONE records found for field ${fieldId}`);
       }
+      
     } catch (recordsError) {
-      console.debug('Error fetching seed rate and fertilizers from records:', recordsError);
+      console.error('Error fetching seed rate and fertilizers from records:', recordsError);
       // Continue without these fields if records query fails
     }
 
-    // CRITICAL: Only calculate growth data if planting date exists
-    // Planting record is the single source of truth for growth tracking
+    // =========================================================
+    // ✅ STAGE-WEIGHTED TIMELINE (RECORD-DRIVEN, NO PARTIALS)
+    // =========================================================
+    // The timeline stage/progress MUST be based on DONE input records only.
+    // - Highest main stage reached always wins
+    // - Timestamp is tie-breaker ONLY within the same stage
+    // - Optional stages (Detrashing, Replanting, Ratooning) do NOT affect stage/progress
+    let currentGrowthStage = null;
+    let stageWeightedProgress = 0; // 0..100, stage-weighted only
+    let stageMeta = { highestStageOrder: -1, latestRecord: null };
+    
+    try {
+      const doneRecordsQuery = query(
+            collection(db, 'records'),
+            where('fieldId', '==', fieldId),
+        where('recordStatus', '==', 'Done')
+      );
+      const doneRecordsSnap = await getDocs(doneRecordsQuery);
+      
+      if (!doneRecordsSnap.empty) {
+        const doneRecords = doneRecordsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        const stageResult = determineCurrentStageFromRecords(doneRecords);
+        if (stageResult.currentStage) {
+          currentGrowthStage = stageResult.currentStage;
+          stageMeta = {
+            highestStageOrder: stageResult.progressData?.highestStageOrder ?? -1,
+            latestRecord: stageResult.latestRecord || null
+          };
+          stageWeightedProgress = calculateStageWeightedProgress(stageMeta.highestStageOrder);
+        }
+      }
+    } catch (recordError) {
+      console.debug('Could not fetch DONE records for stage determination:', recordError);
+    }
+    
+    // If no main-stage DONE records exist:
+    // - If no planting date either: Not Planted (0%)
+    // - If planting exists: No Records (0%)
+    if (!currentGrowthStage) {
+      currentGrowthStage = plantingDate ? 'No Records' : 'Not Planted';
+      stageWeightedProgress = 0;
+    }
+
+    // CRITICAL: If planting date does NOT exist, we STILL return stage/progress (Land Preparation can exist pre-planting)
     if (!plantingDate) {
       return {
         fieldId,
@@ -1532,10 +1645,13 @@ export async function getFieldGrowthData(fieldId) {
         variety: variety || null,
         plantingDate: null,
         expectedHarvestDate: null,
+        expectedHarvestDateFormatted: null,
         basalFertilizationDate: null,
         mainFertilizationDate: null,
         DAP: null,
-        currentGrowthStage: 'Not Planted',
+        currentGrowthStage,
+        stageWeightedProgress,
+        recordBasedProgress: stageWeightedProgress, // backward-compatible alias
         daysRemaining: null,
         delayInfo: { isDelayed: false, delayDays: 0, delayType: null },
         overdueInfo: { isOverdue: false, overdueDays: 0 },
@@ -1547,9 +1663,8 @@ export async function getFieldGrowthData(fieldId) {
       };
     }
 
-    // Calculate growth data only when planting date exists
+    // Planting exists: compute DAP-based analytics (days remaining, delays, etc.)
     const DAP = calculateDAP(plantingDate);
-    const currentGrowthStage = getGrowthStage(DAP, variety);
     
     // CRITICAL: Use Expected Harvest Date from Input Record if available, otherwise calculate
     let harvestDateRange = null;
@@ -1594,12 +1709,14 @@ export async function getFieldGrowthData(fieldId) {
       fieldName: fieldData.field_name || fieldData.fieldName,
       variety: variety,
       plantingDate,
-      expectedHarvestDate: expectedHarvestDateForCalc, // Date object for calculations
-      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY)
+      expectedHarvestDate: expectedHarvestDateForCalc, // Date object for calculations (start of harvest window)
+      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (MMM D, YYYY – MMM D, YYYY format)
       basalFertilizationDate,
       mainFertilizationDate,
       DAP,
-      currentGrowthStage,
+      currentGrowthStage, // record-driven stage (no DAP fallback)
+      stageWeightedProgress, // stage-weighted progress (0..100)
+      recordBasedProgress: stageWeightedProgress, // backward-compatible alias for older UIs
       daysRemaining,
       delayInfo,
       overdueInfo,
@@ -1614,6 +1731,240 @@ export async function getFieldGrowthData(fieldId) {
     console.error('Error getting field growth data:', error);
     throw error;
   }
+}
+
+/**
+ * Map task type to growth stage
+ * This is the canonical mapping that determines which stage a task belongs to
+ * @param {string} taskType - Task type from input record
+ * @param {string} operation - Field operation (Pre-Planting, Planting, Post-Planting, etc.)
+ * @returns {string|null} Growth stage name or null if optional/unknown
+ */
+export function mapTaskTypeToStage(taskType, operation) {
+  if (!taskType || !operation) return null;
+  
+  // Normalize task type and operation
+  const normalizedTaskType = taskType.trim();
+  const normalizedOperation = operation.trim();
+  
+  // OPTIONAL STAGES - These do NOT affect progress
+  if (normalizedOperation === 'Detrashing' || normalizedTaskType.includes('Detrashing')) {
+    return 'Detrashing'; // Optional - does not affect progress
+  }
+  if (normalizedOperation === 'Replanting' || normalizedTaskType.includes('Replanting') || normalizedTaskType.includes('Replanting Operation')) {
+    return 'Replanting'; // Optional - does not affect progress
+  }
+  if (normalizedOperation === 'Ratooning' || normalizedTaskType.includes('Ratooning')) {
+    return 'Ratooning'; // Optional - does not affect progress
+  }
+  
+  // MAIN GROWTH FLOW STAGES
+  
+  // Land Preparation - All Pre-Planting tasks
+  if (normalizedOperation === 'Pre-Planting') {
+    return 'Land Preparation';
+  }
+  
+  // Planting - All Planting tasks
+  if (normalizedOperation === 'Planting' || normalizedTaskType === 'Planting Operation' || normalizedTaskType.includes('Planting Operation')) {
+    return 'Planting';
+  }
+  
+  // Post-Planting tasks map to specific stages
+  if (normalizedOperation === 'Post-Planting') {
+    // Germination stage tasks
+    if (normalizedTaskType.includes('Germination Monitoring') || 
+        normalizedTaskType.includes('Germination') ||
+        normalizedTaskType.includes('Gap Filling') ||
+        (normalizedTaskType.includes('Replanting') && !normalizedTaskType.includes('Operation'))) {
+      return 'Germination';
+    }
+    
+    // Tillering stage tasks
+    if (normalizedTaskType.includes('Weeding') ||
+        normalizedTaskType.includes('Pagpananom') || // Cebuano for weeding
+        (normalizedTaskType.includes('First Dose Fertilization') && normalizedTaskType.includes('After Emergence')) ||
+        normalizedTaskType.includes('Unang Abono') || // Cebuano for first dose
+        normalizedTaskType.includes('Hilling-up') ||
+        normalizedTaskType.includes('Off-barring') ||
+        normalizedTaskType.includes('Pagtabon') || // Cebuano for hilling-up
+        normalizedTaskType.includes('Earthing-Up')) {
+      return 'Tillering';
+    }
+    
+    // Grand Growth stage tasks
+    if (normalizedTaskType.includes('Second Dose Fertilization') ||
+        normalizedTaskType.includes('Ikaduhang Abono') || // Cebuano for second dose
+        normalizedTaskType.includes('Irrigation') ||
+        normalizedTaskType.includes('Watering') ||
+        normalizedTaskType.includes('Pagpatubig') || // Cebuano for irrigation
+        (normalizedTaskType.includes('Brushing') && normalizedTaskType.includes('Light')) ||
+        normalizedTaskType.includes('Light Detrashing') ||
+        normalizedTaskType.includes('Side Cleaning')) {
+      return 'Grand Growth';
+    }
+    
+    // Maturing/Ripening stage tasks
+    if (normalizedTaskType.includes('Ripener Application') ||
+        normalizedTaskType.includes('Ripener') ||
+        normalizedTaskType.includes('Pagbutang og ripener') || // Cebuano
+        normalizedTaskType.includes('Crop Monitoring') ||
+        normalizedTaskType.includes('Growth Monitoring') ||
+        normalizedTaskType.includes('Pagbantay sa kahamtong') || // Cebuano for crop monitoring
+        normalizedTaskType.includes('Pre-Harvest Assessment')) {
+      return 'Maturing / Ripening';
+    }
+    
+    // Default for Post-Planting (fallback to Grand Growth)
+    return 'Grand Growth';
+  }
+  
+  // Harvesting - All harvesting tasks
+  if (normalizedOperation === 'Harvesting' || normalizedTaskType === 'Harvesting' || normalizedTaskType.includes('Harvesting')) {
+    return 'Harvesting';
+  }
+  
+  // Legacy task type mappings (for backward compatibility)
+  const legacyMappings = {
+    'Land Assessment': 'Land Preparation',
+    'Land Clearing': 'Land Preparation',
+    'Sub-Soiling': 'Land Preparation',
+    'Soil Analysis': 'Land Preparation',
+    'Plowing': 'Land Preparation',
+    'Harrowing': 'Land Preparation',
+    'Furrow Making': 'Land Preparation',
+    'Field Leveling': 'Land Preparation',
+    'Lime Application': 'Land Preparation',
+    'Pre-Planting Fertilization (basal)': 'Land Preparation',
+    'Seed Cane Preparation': 'Land Preparation',
+    'Replanting Operation': 'Planting',
+    'Germination Monitoring': 'Germination',
+    'Post-Planting Fertilization': 'Tillering', // Default to Tillering for post-planting fertilization
+    'Cultivation': 'Tillering',
+    'Weeding': 'Tillering',
+    'Drainage': 'Grand Growth',
+    'Irrigation': 'Grand Growth',
+    'Side Cleaning': 'Grand Growth',
+    'Control of Pest & Diseases': 'Grand Growth',
+    'Earthing-Up': 'Tillering',
+    'Growth Monitoring': 'Maturing / Ripening',
+    'Pre-Harvest Assessment': 'Maturing / Ripening',
+    'Ripener Application': 'Maturing / Ripening',
+    'Hauling': 'Harvesting'
+  };
+  
+  // Check legacy mappings
+  for (const [legacyTask, stage] of Object.entries(legacyMappings)) {
+    if (normalizedTaskType.includes(legacyTask) || normalizedTaskType === legacyTask) {
+      return stage;
+    }
+  }
+  
+  return null; // Unknown task type
+}
+
+/**
+ * Get stage order for progress calculation
+ * Returns the order index of a stage (0 = Land Preparation, 6 = Harvesting)
+ * @param {string} stage - Stage name
+ * @returns {number} Stage order index (-1 for optional stages)
+ */
+export function getStageOrder(stage) {
+  const index = MAIN_GROWTH_STAGES.indexOf(stage);
+  return index >= 0 ? index : -1; // -1 for optional stages
+}
+
+// =========================================================
+// ✅ STAGE-WEIGHTED TIMELINE CONFIG (IMMUTABLE ONCE SET)
+// =========================================================
+export const MAIN_GROWTH_STAGES = [
+  'Land Preparation',
+  'Planting',
+  'Germination',
+  'Tillering',
+  'Grand Growth',
+  'Maturing / Ripening',
+  'Harvesting'
+];
+
+// Fixed segment positions (stage-weighted only; no partials inside a stage)
+// Matches typical UI distribution (~14%, ~28%, ~42%, ~56%, ~70%, ~85%, 100%)
+export const STAGE_PROGRESS_POSITIONS = [14, 28, 42, 56, 70, 85, 100];
+
+/**
+ * Stage-weighted progress for the main timeline
+ * @param {number} highestStageOrder - 0..6 (Land Prep..Harvesting)
+ * @returns {number} 0..100
+ */
+export function calculateStageWeightedProgress(highestStageOrder) {
+  if (highestStageOrder === null || highestStageOrder === undefined) return 0;
+  if (typeof highestStageOrder !== 'number') return 0;
+  if (highestStageOrder < 0) return 0;
+  if (highestStageOrder >= STAGE_PROGRESS_POSITIONS.length) return 100;
+  return STAGE_PROGRESS_POSITIONS[highestStageOrder];
+}
+
+/**
+ * Determine current stage from latest DONE records
+ * This is the source of truth for current stage - based on actual submitted records
+ * @param {Array} doneRecords - Array of DONE records sorted by timestamp (latest first)
+ * @returns {Object} { currentStage: string, latestRecord: Object|null, progressData: Object }
+ */
+export function determineCurrentStageFromRecords(doneRecords) {
+  if (!doneRecords || doneRecords.length === 0) {
+    return {
+      currentStage: null,
+      latestRecord: null,
+      progressData: {
+        highestStage: null,
+        highestStageOrder: -1,
+        allStages: []
+      }
+    };
+  }
+  
+  // Map each DONE record to its main-stage order (optional stages excluded)
+  const recordsWithStages = doneRecords.map(record => {
+    const stage = mapTaskTypeToStage(record.taskType, record.operation);
+    const stageOrder = getStageOrder(stage);
+    return { ...record, _mappedStage: stage, _stageOrder: stageOrder };
+  }).filter(r => r._stageOrder >= 0); // MAIN stages only
+
+  if (recordsWithStages.length === 0) {
+    return {
+      currentStage: null,
+      latestRecord: null,
+      progressData: {
+        highestStage: null,
+        highestStageOrder: -1,
+        allStages: []
+      }
+    };
+  }
+  
+  // Highest stage reached always wins (no regression)
+  const highestStageOrder = Math.max(...recordsWithStages.map(r => r._stageOrder));
+  const highestStage = MAIN_GROWTH_STAGES[highestStageOrder] || null;
+
+  // Tie-breaker within the same stage: latest timestamp wins
+  const sameStage = recordsWithStages.filter(r => r._stageOrder === highestStageOrder);
+  const getRecordTime = (r) => {
+    const d = r.recordDate?.toDate?.() || r.createdAt?.toDate?.() || r.recordDate || r.createdAt || new Date(0);
+    const dt = d instanceof Date ? d : new Date(d);
+    return isNaN(dt.getTime()) ? new Date(0) : dt;
+  };
+  sameStage.sort((a, b) => getRecordTime(b) - getRecordTime(a));
+  const latestRecord = sameStage[0] || null;
+
+  return {
+    currentStage: highestStage,
+    latestRecord,
+    progressData: {
+      highestStage: highestStage,
+      highestStageOrder: highestStageOrder,
+      allStages: recordsWithStages.map(r => r._mappedStage) // Only main stages
+    }
+  };
 }
 
 // Export for global access
@@ -1636,6 +1987,14 @@ if (typeof window !== 'undefined') {
     calculateExpectedHarvestDate,
     getHarvestDaysRange,
     parseExpectedHarvestDateFromRecord,
+    formatHarvestDate,
+    formatHarvestDateRange,
+    mapTaskTypeToStage,
+    getStageOrder,
+    determineCurrentStageFromRecords,
+    MAIN_GROWTH_STAGES,
+    STAGE_PROGRESS_POSITIONS,
+    calculateStageWeightedProgress,
     VARIETY_HARVEST_DAYS,
     VARIETY_HARVEST_DAYS_RANGE,
     VARIETY_HARVEST_MONTHS_RANGE,

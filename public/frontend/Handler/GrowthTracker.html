@@ -1110,7 +1110,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -1510,12 +1510,14 @@
             // Update fertilizers used
             const uiFertilizers = document.getElementById('uiFertilizers');
             if (uiFertilizers) {
+              console.log('📊 Growth Status Details - Fertilizers Used:', growthData.fertilizersUsed);
               uiFertilizers.textContent = growthData.fertilizersUsed || '—';
             }
 
             // Update seed rate
             const uiSeedRate = document.getElementById('uiSeedRate');
             if (uiSeedRate) {
+              console.log('📊 Growth Status Details - Seed Rate:', growthData.seedRate);
               if (growthData.seedRate) {
                 // Format seed rate with units if it's a number
                 const seedRateValue = typeof growthData.seedRate === 'number' 
@@ -1534,18 +1536,37 @@
               uiAreaSize.textContent = areaValue ? `${areaValue} ha` : '—';
             }
 
-            // CRITICAL: Check if field has been planted FIRST
-            // All growth-related data (DAP, stage, progress, harvest) requires planting
-            // This check happens early to prevent any growth data from being displayed
+            // CRITICAL: Timeline progress is STAGE-WEIGHTED and RECORD-DRIVEN
+            // Land Preparation can exist BEFORE planting date, so we must still render timeline even if plantingDate is missing.
             if (!growthData.plantingDate) {
-              // No planting - show not planted state and reset all growth UI
+              // If there are no main-stage DONE records, show not planted baseline UI.
+              // If there ARE pre-planting records (e.g. Land Preparation), do NOT reset timeline/progress.
+              const stageName = growthData.currentGrowthStage || 'Not Planted';
+              if (stageName === 'Not Planted') {
               showNotPlantedState();
-              resetTimeline();
-              // Hide predicted harvest modal
+              } else {
+                // Minimal “not planted yet” state, but keep record-based stage/progress
+                const uiDays = document.getElementById('uiDays');
+                const uiStage = document.getElementById('uiStage');
+                const uiPlanted = document.getElementById('uiPlanted');
+                const uiHarvest = document.getElementById('uiHarvest');
+                const uiRemain = document.getElementById('uiRemain');
+                const uiMonths = document.getElementById('uiMonths');
+                const plantedDateDisplay = document.getElementById('plantedDateDisplay');
+                if (uiDays) uiDays.textContent = '—';
+                if (uiStage) uiStage.textContent = stageName;
+                if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
+                if (uiHarvest) uiHarvest.textContent = '—';
+                if (uiRemain) uiRemain.textContent = '—';
+                if (uiMonths) uiMonths.textContent = '—';
+                if (plantedDateDisplay) plantedDateDisplay.textContent = '—';
               document.getElementById('predictedHarvestModal')?.classList.add('hidden');
-              // Still load timeline nodes to show all submitted reports (without DAP/stage mapping)
+              }
+
+              // Always update timeline (stage-weighted) even without planting date
+              updateTimeline(growthData);
+              // Still load timeline nodes to show submitted reports
               await loadTimelineNodes(fieldId);
-              // Update ratoon button state (works for both planted and unplanted fields)
               updateRatoonButtonState(growthData);
               return;
             }
@@ -1587,18 +1608,15 @@
             // Update expected harvest date (only when planting exists)
             const uiHarvest = document.getElementById('uiHarvest');
             if (uiHarvest) {
-              // Use formatted string if available (shows range in DD/MM/YYYY format)
+              // Use formatted string if available (now in MMM D, YYYY format)
               if (growthData.expectedHarvestDateFormatted) {
                 uiHarvest.textContent = growthData.expectedHarvestDateFormatted;
               } else if (growthData.expectedHarvestDate) {
-                // Fallback: format date in DD/MM/YYYY format for consistency
+                // Fallback: format date using standardized format
                 const date = growthData.expectedHarvestDate instanceof Date 
                   ? growthData.expectedHarvestDate 
                   : new Date(growthData.expectedHarvestDate);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                uiHarvest.textContent = `${day}/${month}/${year}`;
+                uiHarvest.textContent = formatHarvestDate(date) || '—';
               } else {
                 uiHarvest.textContent = '—';
               }
@@ -1706,204 +1724,113 @@
 
         // Update timeline with progress
         function updateTimeline(growthData) {
-          // CRITICAL: Do not update timeline if no planting date exists
-          if (!growthData.plantingDate) {
-            resetTimeline();
-            return;
-          }
+          // Stage-weighted progress ONLY (no DAP fallback, no partials inside a stage)
+          const currentStage = growthData.currentGrowthStage || '—';
+          const progress = (growthData.stageWeightedProgress ?? growthData.recordBasedProgress ?? 0);
 
-          const DAP = growthData.DAP || 0;
-          const variety = growthData.variety || '';
-          const totalDays = VARIETY_HARVEST_DAYS[variety] || 365;
-
-          // Update progress bar
-          const progress = Math.min(100, Math.round((DAP / totalDays) * 100));
           const tlBar = document.getElementById('tlBar');
           const tlPct = document.getElementById('tlPct');
           const progressPercentage = document.getElementById('progressPercentage');
           const progressCurrent = document.getElementById('progressCurrent');
 
-          if (tlBar) tlBar.style.width = progress + '%';
-          if (tlPct) tlPct.textContent = progress.toString();
-          if (progressPercentage) progressPercentage.textContent = progress + '%';
-          if (progressCurrent) progressCurrent.textContent = growthData.currentGrowthStage || '—';
+          if (tlBar) tlBar.style.width = `${progress}%`;
+          if (tlPct) tlPct.textContent = String(progress);
+          if (progressPercentage) progressPercentage.textContent = `${progress}%`;
+          if (progressCurrent) progressCurrent.textContent = currentStage;
 
-          // Calculate stage percentages based on DAP and variety-specific ranges
-          const stageProgress = getAllStageProgress(variety, DAP);
+          // Update per-stage “Status” labels (no per-task or DAP progress)
+          const stageOrder = {
+            'Land Preparation': 0,
+            'Planting': 1,
+            'Germination': 2,
+            'Tillering': 3,
+            'Grand Growth': 4,
+            'Maturing / Ripening': 5,
+            'Harvesting': 6
+          };
+          const currentOrder = stageOrder[currentStage] ?? -1;
 
-          // Update timeline labels and stage indicators with percentages
-          const plantingDate = growthData.plantingDate;
-          const currentStage = growthData.currentGrowthStage || 'Not Planted';
+          const setStatus = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+          };
 
-          // Ensure plantingDate is a valid Date object
-          if (!(plantingDate instanceof Date)) {
-            console.error('Invalid planting date in updateTimeline:', plantingDate);
-            resetTimeline();
-            return;
-          }
+          // Main stage status text blocks
+          setStatus('tlPrePlanting', `Status: ${currentOrder < 0 ? 'No Records' : (currentOrder > 0 ? 'Completed' : 'In Progress')}`);
+          setStatus('tlPlantingStatus', `Status: ${currentOrder < 1 ? 'No Records' : (currentOrder > 1 ? 'Completed' : 'In Progress')}`);
+          setStatus('tlGerm', `Status: ${currentOrder < 2 ? 'No Records' : (currentOrder > 2 ? 'Completed' : 'In Progress')}`);
+          setStatus('tlTill', `Status: ${currentOrder < 3 ? 'No Records' : (currentOrder > 3 ? 'Completed' : 'In Progress')}`);
+          setStatus('tlGrand', `Status: ${currentOrder < 4 ? 'No Records' : (currentOrder > 4 ? 'Completed' : 'In Progress')}`);
+          setStatus('tlMat', `Status: ${currentOrder < 5 ? 'No Records' : (currentOrder > 5 ? 'Completed' : 'In Progress')}`);
 
-          // Get variety-specific DAP ranges
-          const stageRanges = DAP_STAGE_RANGES[variety] || {};
-          const germRange = stageRanges.Germination || { min: 0, max: 35 };
-          const tillRange = stageRanges.Tillering || { min: 35, max: 120 };
-          const grandRange = stageRanges['Grand Growth'] || { min: 120, max: 280 };
-          const matRange = stageRanges.Maturity || { min: 280, max: 360 };
+          // Harvest is final/locked (UI label is “Final Stage”, no per-stage status element here)
 
-          // Calculate end dates based on variety-specific ranges
-          const germEnd = new Date(plantingDate.getTime() + germRange.max * 24 * 60 * 60 * 1000);
-          const tillEnd = new Date(plantingDate.getTime() + tillRange.max * 24 * 60 * 60 * 1000);
-          const grandEnd = new Date(plantingDate.getTime() + grandRange.max * 24 * 60 * 60 * 1000);
-          const matEnd = new Date(plantingDate.getTime() + matRange.max * 24 * 60 * 60 * 1000);
-
-          // Update status text with percentages
-          const tlGerm = document.getElementById('tlGerm');
-          const tlTill = document.getElementById('tlTill');
-          const tlGrand = document.getElementById('tlGrand');
-          const tlMat = document.getElementById('tlMat');
-
-          // Helper function to determine status based on DAP and range
-          function getStageStatus(DAP, range, isInRange) {
-            if (DAP >= range.max) return 'Completed';
-            if (isInRange) return 'In Progress';
-            if (DAP < range.min) return 'Expected';
-            return 'Active';
-          }
-
-          // Update Germination stage - Display as currentDAP / maxDAP
-          // For current stage: show actual DAP (capped at max), for future: 0, for completed: max
-          if (tlGerm) {
-            let currentDAPInStage;
-            if (DAP < germRange.min) {
-              currentDAPInStage = 0; // Future stage
-            } else if (DAP >= germRange.max) {
-              currentDAPInStage = germRange.max; // Completed stage
-            } else {
-              currentDAPInStage = DAP; // Current stage in progress
-            }
-            const maxDAP = germRange.max;
-            tlGerm.textContent = `Germination (${currentDAPInStage} / ${maxDAP})`;
-          }
-
-          // Update Tillering stage - Display as currentDAP / maxDAP
-          if (tlTill) {
-            let currentDAPInStage;
-            if (DAP < tillRange.min) {
-              currentDAPInStage = 0; // Future stage
-            } else if (DAP >= tillRange.max) {
-              currentDAPInStage = tillRange.max; // Completed stage
-            } else {
-              currentDAPInStage = DAP; // Current stage in progress
-            }
-            const maxDAP = tillRange.max;
-            tlTill.textContent = `Tillering (${currentDAPInStage} / ${maxDAP})`;
-          }
-
-          // Update Grand Growth stage - Display as currentDAP / maxDAP
-          if (tlGrand) {
-            let currentDAPInStage;
-            if (DAP < grandRange.min) {
-              currentDAPInStage = 0; // Future stage
-            } else if (DAP >= grandRange.max) {
-              currentDAPInStage = grandRange.max; // Completed stage
-            } else {
-              currentDAPInStage = DAP; // Current stage in progress
-            }
-            const maxDAP = grandRange.max;
-            tlGrand.textContent = `Grand Growth (${currentDAPInStage} / ${maxDAP})`;
-          }
-
-          // Update Maturity stage - Display as currentDAP / maxDAP
-          if (tlMat) {
-            let currentDAPInStage;
-            if (DAP < matRange.min) {
-              currentDAPInStage = 0; // Future stage
-            } else if (DAP >= matRange.max) {
-              currentDAPInStage = matRange.max; // Completed stage
-            } else {
-              currentDAPInStage = DAP; // Current stage in progress
-            }
-            const maxDAP = matRange.max;
-            tlMat.textContent = `Maturity (${currentDAPInStage} / ${maxDAP})`;
-          }
-
-          // Update stage indicators and badges
-          updateStageIndicators(DAP, currentStage);
+          // Update stage indicators (record-driven stage completion)
+          updateStageIndicatorsByStage(currentStage);
         }
 
-        // Update stage visual indicators based on DAP and current stage
-        function updateStageIndicators(DAP, currentStage) {
-          // Normalize current stage name
-          const normalizedStage = currentStage?.replace('Stage', '').trim() || '';
+        // Stage-driven indicator updates (no DAP logic)
+        function updateStageIndicatorsByStage(currentStage) {
+          const stageOrder = {
+            'Land Preparation': 0,
+            'Planting': 1,
+            'Germination': 2,
+            'Tillering': 3,
+            'Grand Growth': 4,
+            'Maturing / Ripening': 5,
+            'Harvesting': 6
+          };
+          const currentOrder = stageOrder[currentStage] ?? -1;
           
           const stages = [
-            { name: 'Germination', threshold: 45, element: 'germination', startDAP: 0 },
-            { name: 'Tillering', threshold: 100, element: 'tillering', startDAP: 45 },
-            { name: 'Grand Growth', threshold: 240, element: 'grand', startDAP: 100 },
-            { name: 'Maturing / Ripening', threshold: 300, element: 'maturing', startDAP: 240 },
-            { name: 'Harvest', threshold: 365, element: 'harvest', startDAP: 300 }
+            { name: 'Land Preparation', element: 'preplanting' },
+            { name: 'Planting', element: 'planting' },
+            { name: 'Germination', element: 'germination' },
+            { name: 'Tillering', element: 'tillering' },
+            { name: 'Grand Growth', element: 'grand' },
+            { name: 'Maturing / Ripening', element: 'maturing' },
+            { name: 'Harvesting', element: 'harvest' }
           ];
 
-          stages.forEach((stage, index) => {
-            const indicator = document.getElementById(`stage-${stage.element}`);
-            const badge = document.getElementById(`badge-${stage.element}`);
-            const connector = document.getElementById(`connector-${stage.element}`);
-
+          stages.forEach((s, idx) => {
+            const indicator = document.getElementById(`stage-${s.element}`);
+            const badge = document.getElementById(`badge-${s.element}`);
+            const connector = document.getElementById(`connector-${s.element}`);
             if (!indicator) return;
 
-            // Reset classes
             indicator.classList.remove('active', 'completed', 'in-progress');
             if (badge) badge.style.display = 'none';
 
-            // Determine stage state based on DAP ranges
-            const isCompleted = DAP >= stage.threshold;
-            const isCurrent = (DAP >= stage.startDAP && DAP < stage.threshold) || 
-                             normalizedStage.toLowerCase().includes(stage.name.toLowerCase()) ||
-                             (stage.name === 'Germination' && (normalizedStage === 'Germination' || DAP < 45)) ||
-                             (stage.name === 'Tillering' && (normalizedStage === 'Tillering' || (DAP >= 45 && DAP < 100))) ||
-                             (stage.name === 'Grand Growth' && (normalizedStage.includes('Grand') || (DAP >= 100 && DAP < 240))) ||
-                             (stage.name === 'Maturing / Ripening' && (normalizedStage.includes('Matur') || normalizedStage.includes('Ripen') || (DAP >= 240 && DAP < 300))) ||
-                             (stage.name === 'Harvest' && (normalizedStage.includes('Harvest') || DAP >= 300));
-
-            // Update previous stages to completed
-            if (index > 0) {
-              const prevStage = stages[index - 1];
-              if (DAP >= prevStage.threshold) {
-                const prevIndicator = document.getElementById(`stage-${prevStage.element}`);
-                const prevBadge = document.getElementById(`badge-${prevStage.element}`);
-                const prevConnector = document.getElementById(`connector-${prevStage.element}`);
-                
-                if (prevIndicator) prevIndicator.classList.add('completed');
-                if (prevBadge) {
-                  prevBadge.textContent = 'Completed';
-                  prevBadge.className = 'badge badge-done text-xs';
-                  prevBadge.style.display = 'inline-block';
-                }
-                if (prevConnector) {
-                  prevConnector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
-                }
-              }
+            if (currentOrder < 0) {
+              // No main-stage records: leave all stages inactive
+              if (connector) connector.className = 'w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]';
+              return;
             }
 
-            if (isCompleted) {
+            if (idx < currentOrder) {
               indicator.classList.add('completed');
               if (badge) {
                 badge.textContent = 'Completed';
                 badge.className = 'badge badge-done text-xs';
                 badge.style.display = 'inline-block';
               }
-              if (connector) {
-                connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
-              }
-            } else if (isCurrent) {
-              indicator.classList.add('active', 'in-progress');
+              if (connector) connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
+            } else if (idx === currentOrder) {
+              // Harvesting is final/locked
+              const isHarvest = currentStage === 'Harvesting';
+              indicator.classList.add(isHarvest ? 'completed' : 'active', isHarvest ? '' : 'in-progress');
               if (badge) {
-                badge.textContent = 'In Progress';
-                badge.className = 'badge badge-progress text-xs';
+                badge.textContent = isHarvest ? 'Completed' : 'In Progress';
+                badge.className = isHarvest ? 'badge badge-done text-xs' : 'badge badge-progress text-xs';
                 badge.style.display = 'inline-block';
               }
-              if (connector && index < stages.length - 1) {
-                connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-400)] to-gray-300 mt-2 min-h-[40px]';
+              if (connector && idx < stages.length - 1) {
+                connector.className = isHarvest
+                  ? 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]'
+                  : 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-400)] to-gray-300 mt-2 min-h-[40px]';
               }
+            } else {
+              if (connector) connector.className = 'w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]';
             }
           });
         }
@@ -3344,7 +3271,7 @@
               const modal = document.getElementById('predictedHarvestModal');
               const content = document.getElementById('predictedHarvestContent');
               
-              // Use formatted string (DD/MM/YYYY or DD/MM/YYYY – DD/MM/YYYY)
+              // Use formatted string (MMM D, YYYY or MMM D, YYYY – MMM D, YYYY)
               const harvestDateStr = harvestDateRange.formatted;
               
               content.innerHTML = `

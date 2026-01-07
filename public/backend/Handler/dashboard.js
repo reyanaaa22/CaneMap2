@@ -5259,13 +5259,14 @@ export function initializeFieldsSection() {
       const irrigationMethod = field.irrigation_method || field.irrigationMethod || 'N/A';
       const previousCrop = field.previous_crop || field.previousCrop || 'N/A';
       
-      // Calculate growth stage from planting date
+      // CRITICAL: Use the same record-driven stage logic as Growth Tracker (no DAP-based stage for the timeline)
       let growthStage = '—';
-      const { calculateDAP, getGrowthStage } = await import('./growth-tracker.js');
-      const plantingDateObj = field.plantingDate?.toDate?.() || field.plantingDate;
-      if (plantingDateObj) {
-        const dap = calculateDAP(plantingDateObj);
-        growthStage = dap !== null ? getGrowthStage(dap, variety) : 'Not Planted';
+      try {
+        const { getFieldGrowthData } = await import('./growth-tracker.js');
+        const growthData = await getFieldGrowthData(fieldId);
+        growthStage = growthData?.currentGrowthStage || '—';
+      } catch (e) {
+        console.warn('Could not load record-driven growth stage:', e);
       }
       
       // Format dates to DD/MM/YYYY format (no time component)
@@ -5325,48 +5326,70 @@ export function initializeFieldsSection() {
         return String(dateValue);
       };
       
-      // CRITICAL: Get Expected Harvest Date from Input Record first, then fallback to field data
+      // CRITICAL: Get Expected Harvest Date using standardized format from getFieldGrowthData
+      // This ensures consistency with Growth Tracker page and uses the new calculation logic
       let expectedHarvestDate = '—';
       try {
-        // Use already imported Firestore functions
-        const recordsQuery = query(
-          collection(db, 'records'),
-          where('fieldId', '==', fieldId),
-          where('taskType', '==', 'Planting Operation')
-        );
-        const recordsSnap = await getDocs(recordsQuery);
+        const { getFieldGrowthData, calculateExpectedHarvestDateMonths, formatHarvestDateRange } = await import('./growth-tracker.js');
+        const growthData = await getFieldGrowthData(fieldId);
         
-        if (!recordsSnap.empty) {
-          const plantingRecord = recordsSnap.docs[0].data();
-          const recordData = plantingRecord.data || {};
-          const expectedHarvestDateString = recordData.expectedHarvestDate;
+        // Priority 1: Use formatted string from getFieldGrowthData (already in MMM D, YYYY format)
+        // This uses the new calculation: MAX months + 7 days operational buffer
+        if (growthData?.expectedHarvestDateFormatted) {
+          expectedHarvestDate = growthData.expectedHarvestDateFormatted;
+        } 
+        // Priority 2: If we have earliest and latest dates, format them
+        else if (growthData?.expectedHarvestDate) {
+          // Check if we have both earliest and latest from the calculation
+          const plantingDate = growthData.plantingDate;
+          const variety = growthData.variety;
           
-          if (expectedHarvestDateString) {
-            // Use Expected Harvest Date from Input Record (DD/MM/YYYY format)
-            // Handle range format: "DD/MM/YYYY – DD/MM/YYYY" or single date
-            if (expectedHarvestDateString.includes('–') || expectedHarvestDateString.includes('-')) {
-              // Range format - preserve range but remove time if present
-              const parts = expectedHarvestDateString.split(/[–-]/);
-              if (parts.length === 2) {
-                const date1 = parts[0].trim().split(' ')[0]; // Remove time component
-                const date2 = parts[1].trim().split(' ')[0]; // Remove time component
-                expectedHarvestDate = `${date1} – ${date2}`;
-              } else {
-                expectedHarvestDate = expectedHarvestDateString.split(' ')[0]; // Single date, remove time
-              }
+          if (plantingDate && variety) {
+            // Recalculate using the new logic to ensure consistency
+            const harvestRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
+            if (harvestRange && harvestRange.formatted) {
+              expectedHarvestDate = harvestRange.formatted;
             } else {
-              // Single date format - remove time component if present
-              expectedHarvestDate = expectedHarvestDateString.split(' ')[0];
+              // Fallback: format single date (shouldn't happen with new logic)
+              const date = growthData.expectedHarvestDate instanceof Date 
+                ? growthData.expectedHarvestDate 
+                : new Date(growthData.expectedHarvestDate);
+              const { formatHarvestDate } = await import('./growth-tracker.js');
+              expectedHarvestDate = formatHarvestDate(date) || '—';
+            }
+          }
+        }
+        // Priority 3: Try to calculate from field data if available
+        else {
+          const plantingDate = field.planting_date || field.plantingDate;
+          const variety = field.sugarcane_variety || field.variety;
+          
+          if (plantingDate && variety) {
+            const planting = plantingDate.toDate ? plantingDate.toDate() : new Date(plantingDate);
+            const harvestRange = calculateExpectedHarvestDateMonths(planting, variety);
+            if (harvestRange && harvestRange.formatted) {
+              expectedHarvestDate = harvestRange.formatted;
             }
           }
         }
       } catch (recordError) {
-        console.debug('Could not fetch Expected Harvest Date from Input Record:', recordError);
-      }
-      
-      // Fallback to field's expectedHarvestDate if not found in Input Record
-      if (expectedHarvestDate === '—') {
-        expectedHarvestDate = formatDateDDMMYYYY(field.expected_harvest_date || field.expectedHarvestDate);
+        console.error('Error calculating Expected Harvest Date:', recordError);
+        // Final fallback: try to calculate directly from field data
+        try {
+          const { calculateExpectedHarvestDateMonths } = await import('./growth-tracker.js');
+          const plantingDate = field.planting_date || field.plantingDate;
+          const variety = field.sugarcane_variety || field.variety;
+          
+          if (plantingDate && variety) {
+            const planting = plantingDate.toDate ? plantingDate.toDate() : new Date(plantingDate);
+            const harvestRange = calculateExpectedHarvestDateMonths(planting, variety);
+            if (harvestRange && harvestRange.formatted) {
+              expectedHarvestDate = harvestRange.formatted;
+            }
+          }
+        } catch (calcError) {
+          console.debug('Could not calculate expected harvest date:', calcError);
+        }
       }
       
       const plantingDate = formatDateDDMMYYYY(field.planting_date || field.plantingDate);
@@ -5550,27 +5573,24 @@ export function initializeFieldsSection() {
 
       // Load growth tracker status from Firebase
       try {
-        const { calculateDAP, getGrowthStage } = await import('./growth-tracker.js');
+        const { getFieldGrowthData } = await import('./growth-tracker.js');
         
-        // Get the latest field data from Firestore to ensure we have current growth tracking info
-        const fieldRef = doc(db, 'fields', fieldId);
-        const fieldSnap = await getDoc(fieldRef);
+        // CRITICAL: Use getFieldGrowthData which now includes record-based stage determination
+        // This ensures consistency with Growth Tracker page
+        const growthData = await getFieldGrowthData(fieldId);
         
-        if (fieldSnap.exists()) {
-          const latestField = fieldSnap.data();
-          
-          // Always calculate current growth stage from current DAP and variety (not from stored value which may be outdated)
-          let growthStageValue = '—';
+        if (growthData) {
+          // Use record-based current stage (falls back to DAP-based if no records)
+          let growthStageValue = growthData.currentGrowthStage || '—';
           let dapValue = '—';
           
-          const plantingDateObj = latestField.plantingDate?.toDate?.() || latestField.plantingDate;
-          const variety = latestField.sugarcane_variety || latestField.variety;
-          if (plantingDateObj) {
-            const dap = calculateDAP(plantingDateObj);
-            dapValue = dap !== null ? `${dap} days` : '—';
-            
-            // Always calculate growth stage from current DAP and variety for accurate display
-            growthStageValue = dap !== null ? getGrowthStage(dap, variety) : 'Not Planted';
+          if (growthData.DAP !== null && growthData.DAP !== undefined) {
+            dapValue = `${growthData.DAP} days`;
+          }
+          
+          // If no planting date, show "Not Planted"
+          if (!growthData.plantingDate) {
+            growthStageValue = 'Not Planted';
           }
           
           const growthStageEl = modal.querySelector('#fd_growth_stage');
