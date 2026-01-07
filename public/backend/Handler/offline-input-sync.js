@@ -462,6 +462,14 @@ async function syncSingleRecord(record) {
             recordDateType: mainPayload.recordDate?.constructor?.name
         });
 
+        // Restore original status if it was stored (for offline In-Progress records)
+        // If _originalStatus exists, use it; otherwise use the current recordStatus
+        // If recordStatus is 'Pending Sync', convert to 'In Progress' for online records
+        if (mainPayload.recordStatus === 'Pending Sync') {
+          mainPayload.recordStatus = mainPayload._originalStatus || 'In Progress';
+          delete mainPayload._originalStatus; // Clean up temporary field
+        }
+        
         // Save main record
         const recordRef = await addDoc(collection(db, 'records'), mainPayload);
         const recordId = recordRef.id;

@@ -682,9 +682,13 @@ function createRecordCard(record) {
   const status = record.status || 'Unknown';
   const colors = STATUS_COLORS[status] || { bg: '#f3f4f6', text: '#6b7280', border: '#9ca3af' };
   
-  // Get record status (Done or Not Done Yet)
+  // Get record status (Done, In Progress, or Pending Sync)
   const recordStatus = record.recordStatus || 'Done'; // Default to 'Done' for backward compatibility
-  const isDone = recordStatus === 'Done';
+  // Normalize legacy 'Not Done Yet' to 'In Progress'
+  const normalizedStatus = recordStatus === 'Not Done Yet' ? 'In Progress' : recordStatus;
+  const isDone = normalizedStatus === 'Done';
+  const isInProgress = normalizedStatus === 'In Progress';
+  const isPendingSync = normalizedStatus === 'Pending Sync';
   
   const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
   const dateStr = recordDate.toLocaleDateString('en-US', { 
@@ -697,13 +701,35 @@ function createRecordCard(record) {
   // Partial records may not have complete cost data
   const totalCost = isDone ? calculateTotalCost(record) : 0;
   
-  // Status badge styling
-  const statusBadgeClass = isDone 
-    ? 'px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 border border-green-300'
-    : 'px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300';
+  // Status badge styling with icon
+  let statusBadgeClass = '';
+  let statusBadgeIcon = '';
+  let statusBadgeText = '';
+  
+  if (isDone) {
+    statusBadgeClass = 'px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-800 border border-green-300 flex items-center gap-1';
+    statusBadgeIcon = '<i class="fas fa-check-circle text-xs"></i>';
+    statusBadgeText = 'Completed';
+  } else if (isPendingSync) {
+    statusBadgeClass = 'px-2 py-1 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 flex items-center gap-1';
+    statusBadgeIcon = '<i class="fas fa-sync-alt fa-spin text-xs"></i>';
+    statusBadgeText = 'Pending Sync';
+  } else if (isInProgress) {
+    statusBadgeClass = 'px-2 py-1 rounded text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-300 flex items-center gap-1';
+    statusBadgeIcon = '<i class="fas fa-clock text-xs"></i>';
+    statusBadgeText = 'In Progress';
+  } else {
+    // Fallback for unknown status
+    statusBadgeClass = 'px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-300';
+    statusBadgeText = normalizedStatus;
+  }
+  
+  // Apply muted styling for In-Progress records
+  const cardOpacity = (isInProgress || isPendingSync) ? 'opacity-75' : '';
+  const cardClass = `bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4 mb-4 relative ${cardOpacity}`;
   
   return `
-    <div class="bg-white rounded-lg shadow-sm border-l-4 hover:shadow-md transition-all p-4 mb-4 relative" 
+    <div class="${cardClass}" 
          style="border-left-color: ${colors.border};">
       <!-- Top Section: Status, Task Type, Details -->
       <div class="mb-4">
@@ -714,17 +740,17 @@ function createRecordCard(record) {
             ${escapeHtml(status)}
           </span>
           <span class="${statusBadgeClass}">
-            ${escapeHtml(recordStatus)}
+            ${statusBadgeIcon}${escapeHtml(statusBadgeText)}
           </span>
-          <h3 class="font-bold text-gray-900">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
+          <h3 class="font-bold ${(isInProgress || isPendingSync) ? 'text-gray-600' : 'text-gray-900'}">${escapeHtml(record.taskType || 'Unknown Task')}</h3>
         </div>
         
         <!-- Details with Icons -->
-        <div class="space-y-1 text-sm text-gray-600 mb-3">
+        <div class="space-y-1 text-sm ${(isInProgress || isPendingSync) ? 'text-gray-500' : 'text-gray-600'} mb-3">
           <p><i class="fas fa-map-marker-alt text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.fieldName || 'Unknown Field')}</p>
           <p><i class="fas fa-cogs text-[var(--cane-600)] w-4"></i> ${escapeHtml(record.operation || 'N/A')}</p>
           <p><i class="fas fa-calendar text-[var(--cane-600)] w-4"></i> ${dateStr}</p>
-          ${!isDone ? '<p class="text-xs text-yellow-700 mt-2"><i class="fas fa-info-circle"></i> This record is incomplete. Add an End Date and mark as Done to complete it.</p>' : ''}
+          ${!isDone ? `<p class="text-xs ${isPendingSync ? 'text-amber-700' : 'text-amber-600'} mt-2"><i class="fas fa-info-circle"></i> ${isPendingSync ? 'This record is pending sync. It will appear in Growth Tracker after syncing.' : 'This record is incomplete. Add an End Date and mark as Done to complete it.'}</p>` : ''}
         </div>
         
         <!-- Cost Display (inline with details for better mobile layout) -->
@@ -3880,7 +3906,7 @@ async function handleUndoDoneRecord(recordId) {
     // Update record: reset to "Not Done Yet" and clear all data
     const recordRef = doc(db, 'records', recordId);
     await updateDoc(recordRef, {
-      recordStatus: 'Not Done Yet',
+      recordStatus: 'In Progress',
       data: {}, // Reset all inputs to blank
       updatedAt: serverTimestamp()
     });
@@ -3943,7 +3969,7 @@ async function editRecord(recordId) {
       return;
     }
     
-    // Check if record is editable (only "Not Done Yet" records can be edited)
+    // Check if record is editable (only "In Progress" records can be edited)
     const recordStatus = record.recordStatus || 'Done';
     if (recordStatus === 'Done') {
       alert('This record is already completed and cannot be edited.');

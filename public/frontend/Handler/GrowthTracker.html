@@ -2210,17 +2210,24 @@
                 for (const recordDoc of recordsSnapshot.docs) {
                   const recordData = recordDoc.data();
                   
-                  // CRITICAL: Only show "Done" records in Growth Tracker
-                  // Partial records (recordStatus === 'Not Done Yet') are excluded
+                  // CRITICAL: Show "Done" records to all users
+                  // Show "In Progress" records ONLY to Handlers (owner of the field)
+                  // MAO/CAO and Admin roles see only Done records
                   const recordStatus = recordData.recordStatus;
-                  if (recordStatus === 'Not Done Yet') {
-                    console.log(`⏭️ Skipping partial record ${recordDoc.id} (status: ${recordStatus})`);
-                    continue; // Skip this record
-                  }
                   
-                  // For backward compatibility: if recordStatus is missing, assume it's "Done"
-                  // This ensures existing records without the status field still appear
-                  if (!recordStatus) {
+                  // Skip "In Progress" records for non-Handlers (MAO/CAO/Admin)
+                  // Since Growth Tracker is in Handler folder, we assume Handler access
+                  // But we still check if recordStatus is "In Progress" to handle edge cases
+                  if (recordStatus === 'In Progress') {
+                    // Only include In-Progress records for Handlers (field owner)
+                    // This is already handled since Growth Tracker is Handler-only
+                    console.log(`📝 Including In-Progress record ${recordDoc.id} for Handler view`);
+                  } else if (recordStatus === 'Not Done Yet') {
+                    // Legacy status - treat as In Progress for backward compatibility
+                    console.log(`📝 Including legacy In-Progress record ${recordDoc.id} (Not Done Yet -> In Progress)`);
+                    recordData.recordStatus = 'In Progress'; // Normalize to new status
+                  } else if (!recordStatus) {
+                    // For backward compatibility: if recordStatus is missing, assume it's "Done"
                     console.log(`⚠️ Record ${recordDoc.id} missing recordStatus, assuming "Done" for backward compatibility`);
                   }
                   
@@ -2283,15 +2290,19 @@
                           try {
                             const recordData = recordDoc.data();
                             
-                            // CRITICAL: Only show "Done" records in Growth Tracker
+                            // CRITICAL: Show "Done" records to all users
+                            // Show "In Progress" records ONLY to Handlers (owner of the field)
                             const recordStatus = recordData.recordStatus;
-                            if (recordStatus === 'Not Done Yet') {
-                              console.log(`⏭️ Skipping partial record ${recordDoc.id} (status: ${recordStatus})`);
-                              continue; // Skip this record
-                            }
                             
-                            // For backward compatibility: if recordStatus is missing, assume it's "Done"
-                            if (!recordStatus) {
+                            // Include In-Progress records for Handlers
+                            if (recordStatus === 'In Progress') {
+                              console.log(`📝 Including In-Progress record ${recordDoc.id} for Handler view`);
+                            } else if (recordStatus === 'Not Done Yet') {
+                              // Legacy status - treat as In Progress for backward compatibility
+                              console.log(`📝 Including legacy In-Progress record ${recordDoc.id} (Not Done Yet -> In Progress)`);
+                              recordData.recordStatus = 'In Progress'; // Normalize to new status
+                            } else if (!recordStatus) {
+                              // For backward compatibility: if recordStatus is missing, assume it's "Done"
                               console.log(`⚠️ Record ${recordDoc.id} missing recordStatus, assuming "Done" for backward compatibility`);
                             }
                             
@@ -2361,10 +2372,19 @@
                       for (const recordDoc of snapshot.docs) {
                         const recordData = recordDoc.data();
                         
-                        // CRITICAL: Only show "Done" records in Growth Tracker
+                        // CRITICAL: Show "Done" records to all users
+                        // Show "In Progress" records ONLY to Handlers
                         const recordStatus = recordData.recordStatus;
-                        if (recordStatus === 'Not Done Yet') {
-                          continue; // Skip partial records
+                        
+                        // Include In-Progress records for Handlers
+                        if (recordStatus === 'In Progress') {
+                          console.log(`📝 Including In-Progress record ${recordDoc.id} for Handler view`);
+                        } else if (recordStatus === 'Not Done Yet') {
+                          // Legacy status - treat as In Progress for backward compatibility
+                          recordData.recordStatus = 'In Progress'; // Normalize to new status
+                        } else if (!recordStatus) {
+                          // For backward compatibility: if recordStatus is missing, assume it's "Done"
+                          console.log(`⚠️ Record ${recordDoc.id} missing recordStatus, assuming "Done" for backward compatibility`);
                         }
                         
                         records.push({
@@ -2660,6 +2680,11 @@
               const taskType = record.taskType || record.operation || record.taskName || 'Activity Record';
               const dap = record._dap;
               
+              // Check if record is In Progress
+              const recordStatus = record.recordStatus || 'Done';
+              const isInProgress = recordStatus === 'In Progress' || recordStatus === 'Not Done Yet';
+              const isPendingSync = recordStatus === 'Pending Sync';
+              
               // Get brief summary from data
               let summary = '';
               if (record.data) {
@@ -2674,9 +2699,20 @@
               
               // Show DAP if available and planting exists
               const dapDisplay = (dap !== null && plantingDate) ? ` • ${dap} DAP` : '';
+              
+              // Apply muted styling for In-Progress records
+              const nodeClass = isInProgress ? 'activity-node opacity-75' : 'activity-node';
+              const textClass = isInProgress ? 'text-gray-500' : 'text-[var(--cane-800)]';
+              const dateClass = isInProgress ? 'text-gray-400' : 'text-gray-600';
+              const statusBadge = isInProgress 
+                ? `<span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                     <i class="fas fa-clock text-xs"></i>
+                     ${isPendingSync ? 'Pending Sync' : 'In Progress'}
+                   </span>`
+                : `<span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>`;
 
               html += `
-                <div class="activity-node" 
+                <div class="${nodeClass}" 
                      data-record-id="${record.id}"
                      onclick="window.openRecordModal('${record.id}')"
                      role="button"
@@ -2686,16 +2722,16 @@
                   <div class="flex items-start justify-between gap-2 w-full">
                     <div class="flex-1 min-w-0 overflow-hidden">
                       <div class="flex items-center gap-2 mb-1">
-                        <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1 min-w-0">${safeTaskType}</p>
-                        <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>
+                        <p class="font-medium text-sm ${textClass} truncate flex-1 min-w-0">${safeTaskType}</p>
+                        ${statusBadge}
                       </div>
                       <div class="flex items-center gap-2 mt-1">
-                        <i class="fas fa-calendar text-xs text-gray-400 flex-shrink-0"></i>
-                        <p class="text-xs text-gray-600 truncate min-w-0">${safeDateStr}</p>
+                        <i class="fas fa-calendar text-xs ${dateClass} flex-shrink-0"></i>
+                        <p class="text-xs ${dateClass} truncate min-w-0">${safeDateStr}</p>
                       </div>
-                      ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
+                      ${safeSummary ? `<p class="text-xs ${dateClass} mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
                     </div>
-                    <i class="fas fa-chevron-right text-gray-400 text-xs mt-1 flex-shrink-0"></i>
+                    <i class="fas fa-chevron-right ${dateClass} text-xs mt-1 flex-shrink-0"></i>
                   </div>
                 </div>
               `;
@@ -2751,6 +2787,11 @@
                   const taskType = record.taskType || record.operation || record.taskName || 'Activity Record';
                   const dap = record._dap;
                   
+                  // Check if record is In Progress
+                  const recordStatus = record.recordStatus || 'Done';
+                  const isInProgress = recordStatus === 'In Progress' || recordStatus === 'Not Done Yet';
+                  const isPendingSync = recordStatus === 'Pending Sync';
+                  
                   let summary = '';
                   if (record.data) {
                     const notes = record.data.notes || record.data.remarks || '';
@@ -2761,9 +2802,20 @@
                   const safeDateStr = escapeHtml(dateStr);
                   const safeSummary = escapeHtml(summary);
                   const dapDisplay = (dap !== null && plantingDate) ? ` • ${dap} DAP` : '';
+                  
+                  // Apply muted styling for In-Progress records
+                  const nodeClass = isInProgress ? 'activity-node opacity-75' : 'activity-node';
+                  const textClass = isInProgress ? 'text-gray-500' : 'text-[var(--cane-800)]';
+                  const dateClass = isInProgress ? 'text-gray-400' : 'text-gray-600';
+                  const statusBadge = isInProgress 
+                    ? `<span class="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                         <i class="fas fa-clock text-xs"></i>
+                         ${isPendingSync ? 'Pending Sync' : 'In Progress'}
+                       </span>`
+                    : `<span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>`;
 
                   html += `
-                    <div class="activity-node" 
+                    <div class="${nodeClass}" 
                          data-record-id="${record.id}"
                          onclick="window.openRecordModal('${record.id}')"
                          role="button"
@@ -2773,19 +2825,19 @@
                       <div class="flex items-start justify-between gap-2 w-full">
                         <div class="flex-1 min-w-0 overflow-hidden">
                           <div class="flex items-center gap-2 mb-1">
-                            <p class="font-medium text-sm text-[var(--cane-800)] truncate flex-1 min-w-0">${safeTaskType}</p>
-                            <span class="text-xs px-2 py-0.5 bg-[var(--cane-100)] text-[var(--cane-700)] rounded font-medium whitespace-nowrap flex-shrink-0">Preview</span>
+                            <p class="font-medium text-sm ${textClass} truncate flex-1 min-w-0">${safeTaskType}</p>
+                            ${statusBadge}
                           </div>
                           <div class="flex items-center gap-2 mt-1">
-                            <i class="fas fa-calendar text-xs text-gray-400 flex-shrink-0"></i>
-                            <p class="text-xs text-gray-600 truncate min-w-0">${safeDateStr}</p>
-                          </div>
-                          ${safeSummary ? `<p class="text-xs text-gray-500 mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-400 text-xs mt-1 flex-shrink-0"></i>
+                        <i class="fas fa-calendar text-xs ${dateClass} flex-shrink-0"></i>
+                        <p class="text-xs ${dateClass} truncate min-w-0">${safeDateStr}</p>
                       </div>
+                      ${safeSummary ? `<p class="text-xs ${dateClass} mt-1 truncate min-w-0">${safeSummary}</p>` : ''}
                     </div>
-                  `;
+                    <i class="fas fa-chevron-right ${dateClass} text-xs mt-1 flex-shrink-0"></i>
+                  </div>
+                </div>
+              `;
                 });
                 container.innerHTML = html;
               });

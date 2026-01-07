@@ -2173,7 +2173,7 @@ async function loadRecordForEdit(recordId) {
     const recordData = recordSnap.data();
     console.log('✅ Record loaded:', recordData);
     
-    // Check if record is editable (only "Not Done Yet" records can be edited)
+    // Check if record is editable (only "In Progress" records can be edited)
     const recordStatus = recordData.recordStatus || 'Done';
     if (recordStatus === 'Done') {
       window._isLoadingEditRecord = false;
@@ -4908,7 +4908,7 @@ for(const f of fields){
   // Note: Ratooning is handled in operationSelect.onchange, so it won't reach here
 
   // Determine record status based on isDone flag
-  const recordStatus = isDone ? 'Done' : 'Not Done Yet';
+  const recordStatus = isDone ? 'Done' : 'In Progress';
 
   pendingPayload = {
     userId: uid,
@@ -4920,7 +4920,7 @@ for(const f of fields){
     boughtItems: boughtItems.length > 0 ? boughtItems : null,
     vehicleUpdates: vehicleUpdates,
     recordDate: recordDateTimestamp,
-    recordStatus: recordStatus, // 'Done' or 'Not Done Yet'
+    recordStatus: recordStatus, // 'Done' or 'In Progress'
     status: growthStage, // Legacy field for Firestore rules compatibility (uses growthStage)
     createdAt: serverTimestamp()
   };
@@ -4953,7 +4953,7 @@ window.confirmSave = async () => {
 
   // Get record status from payload
   const isDone = pendingPayload._isDone === true;
-  const recordStatus = pendingPayload.recordStatus || (isDone ? 'Done' : 'Not Done Yet');
+  const recordStatus = pendingPayload.recordStatus || (isDone ? 'Done' : 'In Progress');
 
   // Check if offline
   const isOnline = getOnlineStatus();
@@ -4993,7 +4993,12 @@ window.confirmSave = async () => {
         return obj;
       };
       
-      const offlinePayload = serializeForIndexedDB(pendingPayload);
+      // Mark offline records as 'Pending Sync'
+      const offlinePayload = serializeForIndexedDB({
+        ...pendingPayload,
+        recordStatus: 'Pending Sync',
+        _originalStatus: pendingPayload.recordStatus // Store original status for sync
+      });
       
       await addPendingRecord(offlinePayload);
       
