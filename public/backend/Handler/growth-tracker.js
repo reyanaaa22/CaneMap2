@@ -273,6 +273,49 @@ export const RATOON_HARVEST_MONTHS_RANGE = {
   'VMC 87-95': { min: 9, max: 10 }
 };
 
+/**
+ * Build ratoon DAP ranges from PHILSURIN base stage ranges and ratoon maturity months.
+ * Ratoon maturity is shorter than new planting, so stage endpoints are proportionally compressed.
+ * @param {string} variety - Sugarcane variety
+ * @returns {{Germination:{start:number,end:number},Tillering:{start:number,end:number},'Grand Growth':{start:number,end:number},Maturity:{start:number,end:number}}|null}
+ */
+function buildRatoonGrowthStages(variety) {
+  const baseStages = VARIETY_GROWTH_STAGES[variety];
+  const plantRange = VARIETY_HARVEST_MONTHS_RANGE[variety];
+  const ratoonRange = RATOON_HARVEST_MONTHS_RANGE[variety];
+
+  if (!baseStages) return null;
+
+  const plantMaxMonths = plantRange?.max || 12;
+  const ratoonMaxMonths = ratoonRange?.max || plantMaxMonths;
+  const ratio = ratoonMaxMonths / plantMaxMonths;
+
+  const germinationEnd = Math.max(1, Math.round(baseStages.Germination.end * ratio));
+  const tilleringEnd = Math.max(germinationEnd + 1, Math.round(baseStages.Tillering.end * ratio));
+  const grandGrowthEnd = Math.max(tilleringEnd + 1, Math.round(baseStages['Grand Growth'].end * ratio));
+  const maturityEnd = Math.max(grandGrowthEnd + 1, Math.round(baseStages.Maturity.end * ratio));
+
+  return {
+    Germination: { start: 0, end: germinationEnd },
+    Tillering: { start: germinationEnd, end: tilleringEnd },
+    'Grand Growth': { start: tilleringEnd, end: grandGrowthEnd },
+    Maturity: { start: grandGrowthEnd, end: maturityEnd }
+  };
+}
+
+// PHILSURIN variety stage dataset grouped by crop type
+// New Plant uses published variety stage ranges; Ratoon uses ratoon maturity-adjusted ranges.
+export const PHILSURIN_GROWTH_STAGES_BY_CROP_TYPE = (() => {
+  const dataset = {};
+  for (const variety of Object.keys(VARIETY_GROWTH_STAGES)) {
+    dataset[variety] = {
+      new_plant: { ...VARIETY_GROWTH_STAGES[variety] },
+      ratoon: buildRatoonGrowthStages(variety) || { ...VARIETY_GROWTH_STAGES[variety] }
+    };
+  }
+  return dataset;
+})();
+
 // Variety-specific harvest days range (converted from months for backward compatibility)
 export const VARIETY_HARVEST_DAYS_RANGE = (() => {
   const daysRange = {};
@@ -331,8 +374,9 @@ export function calculateDAP(plantingDate) {
  * @param {string} variety - Sugarcane variety (optional, falls back to default ranges if not provided)
  * @returns {string} Current growth stage
  */
-export function getGrowthStage(DAP, variety = null) {
+export function getGrowthStage(DAP, variety = null, cropType = null, isRatoon = false) {
   if (DAP === null || DAP === undefined) return "Not Planted";
+  if (DAP === 0) return "Planting";
 
   // Normalize variety name to handle aliases
   let normalizedVariety = variety;
@@ -351,12 +395,14 @@ export function getGrowthStage(DAP, variety = null) {
     }
   }
 
-  // Get variety-specific growth stages
-  const growthStages = normalizedVariety ? VARIETY_GROWTH_STAGES[normalizedVariety] : null;
+  // Get variety + crop-type specific growth stages
+  const growthStages = normalizedVariety
+    ? getGrowthStageRanges(normalizedVariety, cropType, isRatoon)
+    : null;
 
   if (growthStages) {
     // Use variety-specific DAP ranges
-    if (DAP >= growthStages.Germination.start && DAP < growthStages.Germination.end) {
+    if (DAP > 0 && DAP >= growthStages.Germination.start && DAP < growthStages.Germination.end) {
       return "Germination";
     }
     if (DAP >= growthStages.Tillering.start && DAP < growthStages.Tillering.end) {
@@ -366,7 +412,7 @@ export function getGrowthStage(DAP, variety = null) {
       return "Grand Growth";
     }
     if (DAP >= growthStages.Maturity.start && DAP < growthStages.Maturity.end) {
-      return "Maturity";
+      return "Maturing / Ripening";
     }
     // If DAP exceeds maturity range, consider it harvest-ready
     if (DAP >= growthStages.Maturity.end) {
@@ -374,10 +420,10 @@ export function getGrowthStage(DAP, variety = null) {
     }
   } else {
     // Fallback to default ranges if variety not found or not provided
-    if (DAP >= 0 && DAP < 35) return "Germination";
+    if (DAP > 0 && DAP < 35) return "Germination";
     if (DAP >= 35 && DAP < 120) return "Tillering";
     if (DAP >= 120 && DAP < 270) return "Grand Growth";
-    if (DAP >= 270 && DAP < 360) return "Maturity";
+    if (DAP >= 270 && DAP < 360) return "Maturing / Ripening";
     if (DAP >= 360) return "Harvest-ready";
   }
 
@@ -676,6 +722,49 @@ function normalizeVarietyName(variety) {
   }
   
   return variety.trim();
+}
+
+/**
+ * Normalize crop type to dataset key.
+ * @param {string|null} cropType - Crop type label/value
+ * @param {boolean} isRatoon - Field ratoon flag
+ * @returns {'new_plant'|'ratoon'}
+ */
+function normalizeCropType(cropType, isRatoon = false) {
+  if (isRatoon === true) return 'ratoon';
+  const text = (cropType || '').toString().toLowerCase().trim();
+  if (
+    text.includes('ratoon') ||
+    text.includes('ratoon cane') ||
+    text === 'sugarcane (ratoon)'
+  ) {
+    return 'ratoon';
+  }
+  return 'new_plant';
+}
+
+/**
+ * Get DAP stage ranges by variety and crop type.
+ * @param {string} variety - Sugarcane variety (may contain aliases)
+ * @param {string|null} cropType - Crop type (New Plant or Ratoon)
+ * @param {boolean} isRatoon - Ratoon flag
+ * @returns {{Germination:{start:number,end:number},Tillering:{start:number,end:number},'Grand Growth':{start:number,end:number},Maturity:{start:number,end:number}}|null}
+ */
+export function getGrowthStageRanges(variety, cropType = null, isRatoon = false) {
+  if (!variety) return null;
+
+  const normalizedVariety = normalizeVarietyName(variety);
+  const cropTypeKey = normalizeCropType(cropType, isRatoon);
+
+  const byVariety = PHILSURIN_GROWTH_STAGES_BY_CROP_TYPE[normalizedVariety]
+    || PHILSURIN_GROWTH_STAGES_BY_CROP_TYPE[variety];
+
+  if (byVariety && byVariety[cropTypeKey]) {
+    return byVariety[cropTypeKey];
+  }
+
+  // Fallback to legacy variety-only ranges
+  return VARIETY_GROWTH_STAGES[normalizedVariety] || VARIETY_GROWTH_STAGES[variety] || null;
 }
 
 /**
@@ -1364,8 +1453,10 @@ export async function updateGrowthStage(userId, fieldId) {
     }
 
     const variety = fieldData.sugarcane_variety || fieldData.variety;
+    const isRatoon = fieldData.isRatoon === true;
+    const cropType = normalizeCropType(fieldData.cropType || fieldData.crop_type || fieldData.previousCrop || null, isRatoon);
     const DAP = calculateDAP(plantingDate);
-    const currentGrowthStage = getGrowthStage(DAP, variety);
+    const currentGrowthStage = getGrowthStage(DAP, variety, cropType, isRatoon);
 
     // Only update if growth stage has changed
     if (fieldData.currentGrowthStage !== currentGrowthStage) {
@@ -1454,6 +1545,8 @@ export async function getFieldGrowthData(fieldId) {
     const expectedHarvestDate = fieldData.expectedHarvestDate?.toDate ? fieldData.expectedHarvestDate.toDate() : fieldData.expectedHarvestDate;
     const basalFertilizationDate = fieldData.basalFertilizationDate?.toDate ? fieldData.basalFertilizationDate.toDate() : fieldData.basalFertilizationDate;
     const mainFertilizationDate = fieldData.mainFertilizationDate?.toDate ? fieldData.mainFertilizationDate.toDate() : fieldData.mainFertilizationDate;
+    const isRatoon = fieldData.isRatoon === true;
+    const cropType = normalizeCropType(fieldData.cropType || fieldData.crop_type || fieldData.previousCrop || null, isRatoon);
 
     // =========================================================
     // ✅ FETCH SEED RATE AND FERTILIZERS FROM LATEST DONE RECORDS
@@ -1649,6 +1742,9 @@ export async function getFieldGrowthData(fieldId) {
         basalFertilizationDate: null,
         mainFertilizationDate: null,
         DAP: null,
+        cropType,
+        growthStageRanges: getGrowthStageRanges(variety, cropType, isRatoon),
+        dapCurrentGrowthStage: 'Not Planted',
         currentGrowthStage,
         stageWeightedProgress,
         recordBasedProgress: stageWeightedProgress, // backward-compatible alias
@@ -1665,6 +1761,8 @@ export async function getFieldGrowthData(fieldId) {
 
     // Planting exists: compute DAP-based analytics (days remaining, delays, etc.)
     const DAP = calculateDAP(plantingDate);
+    const growthStageRanges = getGrowthStageRanges(variety, cropType, isRatoon);
+    const dapCurrentGrowthStage = getGrowthStage(DAP, variety, cropType, isRatoon);
     
     // CRITICAL: Use Expected Harvest Date from Input Record if available, otherwise calculate
     let harvestDateRange = null;
@@ -1714,6 +1812,9 @@ export async function getFieldGrowthData(fieldId) {
       basalFertilizationDate,
       mainFertilizationDate,
       DAP,
+      cropType,
+      growthStageRanges,
+      dapCurrentGrowthStage,
       currentGrowthStage, // record-driven stage (no DAP fallback)
       stageWeightedProgress, // stage-weighted progress (0..100)
       recordBasedProgress: stageWeightedProgress, // backward-compatible alias for older UIs
@@ -1998,6 +2099,8 @@ if (typeof window !== 'undefined') {
     VARIETY_HARVEST_DAYS,
     VARIETY_HARVEST_DAYS_RANGE,
     VARIETY_HARVEST_MONTHS_RANGE,
-    VARIETY_GROWTH_STAGES
+    VARIETY_GROWTH_STAGES,
+    PHILSURIN_GROWTH_STAGES_BY_CROP_TYPE,
+    getGrowthStageRanges
   };
 }

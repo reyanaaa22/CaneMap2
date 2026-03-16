@@ -821,6 +821,7 @@
                     <div>
                       <p class="font-semibold text-sm">Land Preparation</p>
                       <p class="text-xs text-gray-600" id="tlPrePlanting">Status: -</p>
+                      <p class="text-xs text-gray-500" id="tlPrePlantingDap">DAP: Not Applicable</p>
                     </div>
                     <span class="badge badge-done text-xs" id="badge-preplanting" style="display: none;">Active</span>
                   </div>
@@ -843,6 +844,7 @@
                     <div>
                       <p class="font-semibold text-sm">Planting</p>
                       <p class="text-xs text-gray-600" id="tlPlantingStatus">Status: -</p>
+                      <p class="text-xs text-gray-500" id="tlPlantingDap">DAP: Day 0</p>
                     </div>
                     <span class="badge badge-done text-xs" id="badge-planting" style="display: none;">Active</span>
                   </div>
@@ -865,6 +867,7 @@
               <div>
                       <p class="font-semibold text-sm">Germination</p>
                       <p class="text-xs text-gray-600" id="tlGerm">Status: -</p>
+                      <p class="text-xs text-gray-500" id="tlGermDap">DAP Range: -</p>
               </div>
                     <span class="badge badge-done text-xs" id="badge-germination" style="display: none;">Active</span>
             </div>
@@ -887,6 +890,7 @@
               <div class="min-w-0 flex-1">
                       <p class="font-semibold text-sm">Tillering</p>
                       <p class="text-xs text-gray-600 truncate" id="tlTill">0% Complete - Expected</p>
+                      <p class="text-xs text-gray-500" id="tlTillDap">DAP Range: -</p>
               </div>
                     <span class="badge badge-progress text-xs flex-shrink-0" id="badge-tillering" style="display: none;">In Progress</span>
             </div>
@@ -909,6 +913,7 @@
               <div>
                       <p class="font-semibold text-sm">Grand Growth</p>
                       <p class="text-xs text-gray-600" id="tlGrand">Status: -</p>
+                      <p class="text-xs text-gray-500" id="tlGrandDap">DAP Range: -</p>
               </div>
                     <span class="badge badge-not text-xs" id="badge-grand" style="display: none;">Expected</span>
             </div>
@@ -929,8 +934,9 @@
                 <div class="flex-1 pt-0.5">
                   <div class="flex items-center justify-between mb-2">
               <div>
-                      <p class="font-semibold text-sm">Maturing / Ripening</p>
+                      <p class="font-semibold text-sm">Maturity</p>
                       <p class="text-xs text-gray-600" id="tlMat">Status: -</p>
+                      <p class="text-xs text-gray-500" id="tlMatDap">DAP Range: -</p>
               </div>
                     <span class="badge badge-not text-xs" id="badge-maturing" style="display: none;">Expected</span>
             </div>
@@ -1110,7 +1116,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange, getGrowthStageRanges } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -1190,6 +1196,103 @@
           }
           return converted;
         })();
+
+        function getReadableCropType(cropType) {
+          const normalized = (cropType || '').toString().toLowerCase();
+          return normalized.includes('ratoon') ? 'Ratoon' : 'New Plant';
+        }
+
+        function formatDapRange(start, end) {
+          if (start === null || start === undefined || end === null || end === undefined) return '-';
+          return `${start}-${end}`;
+        }
+
+        function normalizeDapStageName(stageName) {
+          if (!stageName) return null;
+          if (stageName === 'Maturity') return 'Maturing / Ripening';
+          return stageName;
+        }
+
+        function resolveStageRangesForGrowthData(growthData) {
+          if (!growthData || !growthData.variety) return null;
+          const cropType = growthData.cropType || 'new_plant';
+          const isRatoonCrop = cropType.toString().toLowerCase().includes('ratoon');
+          return growthData.growthStageRanges || getGrowthStageRanges(growthData.variety, cropType, isRatoonCrop);
+        }
+
+        function updateStageDapRanges(growthData) {
+          const ranges = resolveStageRangesForGrowthData(growthData);
+          const cropTypeLabel = getReadableCropType(growthData?.cropType);
+
+          const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+          };
+
+          setText('tlPrePlantingDap', 'DAP: Not Applicable');
+          setText('tlPlantingDap', 'DAP: Day 0');
+
+          if (!ranges) {
+            setText('tlGermDap', `DAP Range: - (${cropTypeLabel})`);
+            setText('tlTillDap', `DAP Range: - (${cropTypeLabel})`);
+            setText('tlGrandDap', `DAP Range: - (${cropTypeLabel})`);
+            setText('tlMatDap', `DAP Range: - (${cropTypeLabel})`);
+            return;
+          }
+
+          setText('tlGermDap', `DAP Range: ${formatDapRange(ranges.Germination?.start, ranges.Germination?.end)} (${cropTypeLabel})`);
+          setText('tlTillDap', `DAP Range: ${formatDapRange(ranges.Tillering?.start, ranges.Tillering?.end)} (${cropTypeLabel})`);
+          setText('tlGrandDap', `DAP Range: ${formatDapRange(ranges['Grand Growth']?.start, ranges['Grand Growth']?.end)} (${cropTypeLabel})`);
+          setText('tlMatDap', `DAP Range: ${formatDapRange(ranges.Maturity?.start, ranges.Maturity?.end)} (${cropTypeLabel})`);
+        }
+
+        function updateDapBasedStageStatus(growthData) {
+          if (!growthData || growthData.DAP === null || growthData.DAP === undefined) return;
+
+          const ranges = resolveStageRangesForGrowthData(growthData);
+          const isRatoonCrop = (growthData.cropType || '').toString().toLowerCase().includes('ratoon');
+          const computedStage = normalizeDapStageName(
+            growthData.dapCurrentGrowthStage || getGrowthStage(growthData.DAP, growthData.variety, growthData.cropType, isRatoonCrop)
+          );
+
+          const stageOrder = {
+            'Land Preparation': 0,
+            'Planting': 1,
+            'Germination': 2,
+            'Tillering': 3,
+            'Grand Growth': 4,
+            'Maturing / Ripening': 5
+          };
+
+          let currentOrder = stageOrder[computedStage] ?? -1;
+          if (computedStage === 'Harvest-ready') {
+            currentOrder = 5;
+          }
+
+          const setStatus = (id, text) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = text;
+          };
+
+          const labelFor = (idx) => {
+            if (currentOrder < 0) return 'Upcoming';
+            if (idx < currentOrder) return 'Completed';
+            if (idx === currentOrder) return 'Current Stage';
+            return 'Upcoming';
+          };
+
+          setStatus('tlPrePlanting', `Status: ${labelFor(0)}`);
+          setStatus('tlPlantingStatus', `Status: ${labelFor(1)}`);
+          setStatus('tlGerm', `Status: ${labelFor(2)}`);
+          setStatus('tlTill', `Status: ${labelFor(3)}`);
+          setStatus('tlGrand', `Status: ${labelFor(4)}`);
+          setStatus('tlMat', `Status: ${labelFor(5)}`);
+
+          if (ranges && document.getElementById('progressCurrent')) {
+            const readableStage = computedStage === 'Maturing / Ripening' ? 'Maturity' : computedStage;
+            document.getElementById('progressCurrent').textContent = readableStage || '—';
+          }
+        }
 
         // Auth state listener
         onAuthStateChanged(auth, async (user) => {
@@ -1507,6 +1610,9 @@
               uiVariety.textContent = growthData.variety || 'Not specified';
             }
 
+            // Always refresh DAP range rows using variety + crop type.
+            updateStageDapRanges(growthData);
+
             // Update fertilizers used
             const uiFertilizers = document.getElementById('uiFertilizers');
             if (uiFertilizers) {
@@ -1602,7 +1708,8 @@
             // Update current growth stage (only when planting exists)
             const uiStage = document.getElementById('uiStage');
             if (uiStage) {
-              uiStage.textContent = growthData.currentGrowthStage || '—';
+              const currentDapStage = normalizeDapStageName(growthData.dapCurrentGrowthStage);
+              uiStage.textContent = currentDapStage || growthData.currentGrowthStage || '—';
             }
 
             // Update expected harvest date (only when planting exists)
@@ -1639,6 +1746,8 @@
             // All of these require planting to exist
             // Update timeline progress (this will update stage indicators and progress bar)
             updateTimeline(growthData);
+            // Override stage labels with DAP-driven status interpretation
+            updateDapBasedStageStatus(growthData);
 
             // Show warnings for delays or overdue harvest
             showWarnings(growthData);
@@ -1675,6 +1784,12 @@
           const tlTill = document.getElementById('tlTill');
           const tlGrand = document.getElementById('tlGrand');
           const tlMat = document.getElementById('tlMat');
+          const tlPrePlantingDap = document.getElementById('tlPrePlantingDap');
+          const tlPlantingDap = document.getElementById('tlPlantingDap');
+          const tlGermDap = document.getElementById('tlGermDap');
+          const tlTillDap = document.getElementById('tlTillDap');
+          const tlGrandDap = document.getElementById('tlGrandDap');
+          const tlMatDap = document.getElementById('tlMatDap');
 
           if (tlBar) tlBar.style.width = '0%';
           if (tlPct) tlPct.textContent = '0';
@@ -1697,6 +1812,13 @@
           if (tlDetrashing) tlDetrashing.textContent = 'Status: -';
           if (tlReplanting) tlReplanting.textContent = 'Status: -';
           if (tlRatooning) tlRatooning.textContent = 'Status: -';
+
+          if (tlPrePlantingDap) tlPrePlantingDap.textContent = 'DAP: Not Applicable';
+          if (tlPlantingDap) tlPlantingDap.textContent = 'DAP: Day 0';
+          if (tlGermDap) tlGermDap.textContent = 'DAP Range: -';
+          if (tlTillDap) tlTillDap.textContent = 'DAP Range: -';
+          if (tlGrandDap) tlGrandDap.textContent = 'DAP Range: -';
+          if (tlMatDap) tlMatDap.textContent = 'DAP Range: -';
 
           // Reset all stage indicators (main timeline + optional)
           const mainStages = ['preplanting', 'planting', 'germination', 'tillering', 'grand', 'maturing', 'harvest'];
