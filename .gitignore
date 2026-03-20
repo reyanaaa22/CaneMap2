@@ -92,6 +92,7 @@ emulator-data/
 
 # OS files
 .DS_Store
+Icon?
 Thumbs.db
 
 # Admin service account keys (security)
