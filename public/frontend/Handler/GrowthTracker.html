@@ -1320,13 +1320,36 @@
 
             // Load ALL fields for the user (no status filter, same as Input Records)
             // This ensures handlers see all their fields regardless of status
-            const fieldsQuery = query(
+            const fieldsByUserQuery = query(
               collection(db, 'fields'),
               where('userId', '==', currentUserId)
             );
+            const fieldsByRequesterQuery = query(
+              collection(db, 'fields'),
+              where('requestedBy', '==', currentUserId)
+            );
 
-            const snapshot = await getDocs(fieldsQuery);
-            userFields = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const [userSnapshot, requesterSnapshot] = await Promise.all([
+              getDocs(fieldsByUserQuery),
+              getDocs(fieldsByRequesterQuery)
+            ]);
+
+            const mergedFields = new Map();
+            userSnapshot.docs.forEach((docSnap) => {
+              mergedFields.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+            });
+            requesterSnapshot.docs.forEach((docSnap) => {
+              if (!mergedFields.has(docSnap.id)) {
+                mergedFields.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+              }
+            });
+
+            userFields = Array.from(mergedFields.values())
+              .sort((a, b) => {
+                const aName = (a.field_name || a.fieldName || '').toString().toLowerCase();
+                const bName = (b.field_name || b.fieldName || '').toString().toLowerCase();
+                return aName.localeCompare(bName);
+              });
 
             console.log(`📋 Loaded ${userFields.length} fields for handler (userId: ${currentUserId})`);
             console.log('📋 Field details:', userFields.map(f => ({ 
@@ -1378,37 +1401,47 @@
                   window.history.replaceState({}, '', newUrl);
                 } else {
                   console.warn(`⚠️ Field ${urlFieldId} not found in handler's fields`);
-                  // Fallback to first field if URL fieldId doesn't exist
-              selectedFieldId = userFields[0].id;
-              if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
-              await displayFieldGrowthData(selectedFieldId);
+                  // Keep selector unselected when URL field doesn't match any field
+                  selectedFieldId = null;
+                  if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = null;
+                  const dropdownTriggerText = document.getElementById('dropdownTriggerText');
+                  if (dropdownTriggerText) dropdownTriggerText.textContent = 'Select a field';
                 }
-              } else {
-                // Normal navigation (no URL parameter) - select first field
+              } else if (userFields.length === 1) {
+                // Auto-select ONLY when exactly one field exists
                 selectedFieldId = userFields[0].id;
                 if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
                 
-                // Ensure dropdowns are set to first field
                 const fieldSelect = document.getElementById('gtField');
-                if (fieldSelect) {
-                  fieldSelect.value = selectedFieldId;
-                }
-                
+                if (fieldSelect) fieldSelect.value = selectedFieldId;
+
                 const dropdownTriggerText = document.getElementById('dropdownTriggerText');
                 const firstField = userFields[0];
                 if (dropdownTriggerText && firstField) {
                   dropdownTriggerText.textContent = firstField.field_name || firstField.fieldName || 'Unnamed Field';
                 }
-                
-                // Update selected state in custom dropdown
-                document.querySelectorAll('.dropdown-option').forEach((opt, index) => {
-                  opt.classList.remove('selected');
-                  if (index === 0) {
-                    opt.classList.add('selected');
-                  }
+
+                document.querySelectorAll('.dropdown-option').forEach((opt) => {
+                  opt.classList.toggle('selected', opt.dataset.value === selectedFieldId);
                 });
-                
+
                 await displayFieldGrowthData(selectedFieldId);
+              } else {
+                // Multiple fields: do not auto-select, keep selector ready for user choice.
+                selectedFieldId = null;
+                if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = null;
+
+                const fieldSelect = document.getElementById('gtField');
+                if (fieldSelect) {
+                  fieldSelect.value = '';
+                }
+                
+                const dropdownTriggerText = document.getElementById('dropdownTriggerText');
+                if (dropdownTriggerText) {
+                  dropdownTriggerText.textContent = 'Select a field';
+                }
+                
+                document.querySelectorAll('.dropdown-option').forEach((opt) => opt.classList.remove('selected'));
               }
             } else {
               showNoFieldsMessage();
@@ -1446,11 +1479,20 @@
             if (dropdownTriggerText) dropdownTriggerText.textContent = 'No fields available';
             return;
           }
+          fieldSelect.disabled = false;
+
+          // Placeholder option for multi-field selection
+          if (userFields.length > 1) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Select a field...';
+            fieldSelect.appendChild(placeholder);
+          }
 
           // Populate native select with ALL fields
           userFields.forEach((field, index) => {
             const option = document.createElement('option');
-            option.value = field.id;
+            option.value = String(field.id);
             const fieldName = field.field_name || field.fieldName || 'Unnamed Field';
             option.textContent = fieldName;
             fieldSelect.appendChild(option);
@@ -1465,16 +1507,17 @@
               // Don't set selected state here - it will be set by loadUserFields after checking URL
               optionBtn.className = 'dropdown-option';
               optionBtn.textContent = field.field_name || field.fieldName || 'Unnamed Field';
-              optionBtn.dataset.value = field.id;
+              optionBtn.dataset.value = String(field.id);
 
               optionBtn.addEventListener('click', async () => {
                 try {
-                selectedFieldId = field.id;
+                selectedFieldId = String(field.id);
                 if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
                   
                   // Update native select
                   if (fieldSelect) {
                     fieldSelect.value = selectedFieldId;
+                    fieldSelect.dispatchEvent(new Event('change'));
                   }
                   
                   // Update custom dropdown trigger text
@@ -1483,8 +1526,9 @@
                   }
 
                 // Update selected state
-                document.querySelectorAll('.dropdown-option').forEach(opt => opt.classList.remove('selected'));
-                optionBtn.classList.add('selected');
+                document.querySelectorAll('.dropdown-option').forEach(opt => {
+                  opt.classList.toggle('selected', opt.dataset.value === selectedFieldId);
+                });
 
                 // Close dropdown
                 closeDropdown();
@@ -1508,16 +1552,19 @@
           }
 
           // Native select change handler
-          fieldSelect.addEventListener('change', async (e) => {
+          fieldSelect.onchange = async (e) => {
             try {
-            selectedFieldId = e.target.value;
+            selectedFieldId = (e.target.value || '').toString();
             if (window.selectedFieldIdRef) window.selectedFieldIdRef.value = selectedFieldId;
               if (!selectedFieldId) return;
               
-            const selectedField = userFields.find(f => f.id === selectedFieldId);
+            const selectedField = userFields.find(f => String(f.id) === selectedFieldId);
             if (dropdownTriggerText && selectedField) {
               dropdownTriggerText.textContent = selectedField.field_name || selectedField.fieldName || 'Unnamed Field';
             }
+            document.querySelectorAll('.dropdown-option').forEach(opt => {
+              opt.classList.toggle('selected', opt.dataset.value === selectedFieldId);
+            });
               
               // Unsubscribe from previous field's listener
               if (recordsUnsubscribe) {
@@ -1530,7 +1577,7 @@
               console.error('Error changing field:', error);
               showError('Failed to load field data. Please try again.');
             }
-          });
+          };
         }
 
         // Custom dropdown functions

@@ -803,6 +803,7 @@ function showCenterMessage(msg) {
 // Maps Visayas task type names (with Cebuano) to taskFieldMap keys
 const taskNameAliases = {
   'Clearing (Paglimpyo sa uma)': 'Land Clearing',
+  'Cleaning/Cutting (Paglimpyo ug Pagputol sa tubo)': 'Land Clearing',
   'Plowing (Arado / Araro)': 'Plowing',
   'Harrowing (Suyod)': 'Harrowing',
   'Field Leveling (Pagpatag sa uma)': 'Field Leveling',
@@ -867,6 +868,7 @@ function deriveGrowthStage(operation, taskType) {
 const operationToTasks = {
   'Pre-Planting': [
     'Clearing (Paglimpyo sa uma)',
+    'Cleaning/Cutting (Paglimpyo ug Pagputol sa tubo)',
     'Plowing (Arado / Araro)',
     'Harrowing (Suyod)',
     'Field Leveling (Pagpatag sa uma)',
@@ -2531,6 +2533,24 @@ async function loadRecordForEdit(recordId) {
       const hasAnimal = (data.equipment && (data.equipment === 'Animal-Drawn' || data.equipment.includes('Animal-Drawn') || (data.equipment.includes('Animal') && !data.equipment.includes('Mechanical')))) ||
                         (data.method && (data.method === 'Animal-Drawn' || data.method.includes('Animal-Drawn') || (data.method.includes('Animal') && !data.method.includes('Mechanical')))) ||
                         (data.cleaningMethod && (data.cleaningMethod === 'Animal-Drawn' || data.cleaningMethod.includes('Animal-Drawn') || (data.cleaningMethod.includes('Animal') && !data.cleaningMethod.includes('Mechanical'))));
+
+      // Hide Fuel Cost for Animal-Drawn methods (and restore for others) on edit load.
+      const fuelCostInput = document.getElementById('fuelCost');
+      const fuelCostContainer = fuelCostInput ? fuelCostInput.closest('.mb-4') : null;
+      const fuelDynamicContainer = document.getElementById('fuelContainer');
+      const fuelDynamicWrapper = fuelDynamicContainer ? fuelDynamicContainer.closest('.mb-4') : null;
+      if (fuelCostContainer) fuelCostContainer.classList.toggle('hidden', hasAnimal);
+      if (fuelDynamicWrapper) fuelDynamicWrapper.classList.toggle('hidden', hasAnimal);
+      if (hasAnimal) {
+        if (fuelCostInput) fuelCostInput.value = '';
+        if (fuelDynamicContainer) {
+          fuelDynamicContainer.querySelectorAll('.fuelInput').forEach((input) => {
+            input.value = '0';
+          });
+          const fuelSum = document.getElementById('fuelSum');
+          if (fuelSum) fuelSum.textContent = 'Total Fuel Cost: 0';
+        }
+      }
       
       // Determine which field ID triggers truckRented/animalRented
       let methodFieldId = null;
@@ -4003,8 +4023,8 @@ function renderForm(type){
     const laborWorkingDaysInput = document.getElementById('laborWorkingDays');
     const laborCostTotalInput = document.getElementById('laborCost');
     
-    // Function to calculate working days (inclusive of both dates)
-    // Uses external Start Date and End Date
+    // Function to calculate working days (Mon-Fri only, inclusive of both dates)
+    // Uses external Start Date and End Date, excludes Saturdays and Sundays
     const calculateWorkingDays = () => {
       if (!startDateInput || !endDateInput) return 0;
       
@@ -4031,15 +4051,25 @@ function renderForm(type){
         endDateInput.setCustomValidity('');
       }
       
-      // Calculate days (inclusive): difference + 1
-      const diffTime = Math.abs(end - start);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      
-      if (laborWorkingDaysInput) {
-        laborWorkingDaysInput.value = diffDays;
+      // Count business days only (exclude Saturday=6 and Sunday=0)
+      let workingDays = 0;
+      const cursor = new Date(start);
+      cursor.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+
+      while (cursor <= end) {
+        const day = cursor.getDay();
+        if (day !== 0 && day !== 6) {
+          workingDays += 1;
+        }
+        cursor.setDate(cursor.getDate() + 1);
       }
       
-      return diffDays;
+      if (laborWorkingDaysInput) {
+        laborWorkingDaysInput.value = workingDays;
+      }
+      
+      return workingDays;
     };
     
     // Function to calculate total labor cost
@@ -4188,6 +4218,38 @@ function renderForm(type){
   }
 
   // --- Handle Mechanical and Animal-Drawn selection to show rent question ---
+  const toggleFuelCostVisibilityByMethod = (isAnimalDrawn) => {
+    const fuelCostInput = document.getElementById('fuelCost');
+    const fuelCostContainer = fuelCostInput ? fuelCostInput.closest('.mb-4') : null;
+    const fuelDynamicContainer = document.getElementById('fuelContainer');
+    const fuelDynamicWrapper = fuelDynamicContainer ? fuelDynamicContainer.closest('.mb-4') : null;
+
+    const setHidden = (wrapper) => {
+      if (!wrapper) return;
+      if (isAnimalDrawn) {
+        wrapper.classList.add('hidden');
+      } else {
+        wrapper.classList.remove('hidden');
+      }
+    };
+
+    setHidden(fuelCostContainer);
+    setHidden(fuelDynamicWrapper);
+
+    // Reset hidden fuel values so they won't affect total cost.
+    if (isAnimalDrawn) {
+      if (fuelCostInput) fuelCostInput.value = '';
+      if (fuelDynamicContainer) {
+        fuelDynamicContainer.querySelectorAll('.fuelInput').forEach((input) => {
+          input.value = '0';
+        });
+        const fuelSum = document.getElementById('fuelSum');
+        if (fuelSum) fuelSum.textContent = 'Total Fuel Cost: 0';
+      }
+      if (typeof updateTotalCost === 'function') updateTotalCost();
+    }
+  };
+
   const methodFields = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod'];
   methodFields.forEach(fieldId => {
     const select = document.getElementById(fieldId);
@@ -4199,6 +4261,7 @@ function renderForm(type){
         select.addEventListener('change', function() {
           const isMechanical = this.value === 'Mechanical' || this.value.includes('Mechanical');
           const isAnimal = this.value === 'Animal-Drawn' || this.value.includes('Animal-Drawn') || (this.value.includes('Animal') && !this.value.includes('Mechanical'));
+          toggleFuelCostVisibilityByMethod(isAnimal);
           const truckRentedContainer = document.getElementById('truckRentedContainer');
           const rentCostContainer = document.getElementById('rentCostContainer');
           
@@ -4351,6 +4414,9 @@ function renderForm(type){
             }
           }
         });
+        // Initial visibility (important for edit mode with prefilled method/equipment)
+        const isInitiallyAnimal = select.value === 'Animal-Drawn' || select.value.includes('Animal-Drawn') || (select.value.includes('Animal') && !select.value.includes('Mechanical'));
+        toggleFuelCostVisibilityByMethod(isInitiallyAnimal);
       }
     }
   });
@@ -4715,13 +4781,22 @@ for(const f of fields){
       return;
     }
     
-    // Calculate working days and labor totals if both dates are provided (no strict requirement)
+    // Calculate working days and labor totals if both dates are provided (exclude weekends)
     if (endDate && endDate.value && startDate && startDate.value) {
       const start = new Date(startDate.value);
       const end = new Date(endDate.value);
-      const diffTime = end - start;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end days
-      const workingDays = Math.max(1, diffDays);
+      let workingDays = 0;
+      const cursor = new Date(start);
+      cursor.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+
+      while (cursor <= end) {
+        const day = cursor.getDay();
+        if (day !== 0 && day !== 6) {
+          workingDays += 1;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
       
       if (laborWorkingDays) {
         laborWorkingDays.value = workingDays.toString();
