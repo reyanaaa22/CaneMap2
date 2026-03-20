@@ -393,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const fieldName = form.querySelector("#field_name")?.value.trim() || "";
+    const ownerName = form.querySelector("#owner_name")?.value.trim() || "";
     const sugarVariety = form.querySelector("#sugarcane_variety")?.value.trim() || "";
     // ✅ Use dropdown value for barangay (with fallback to auto-detected)
     const barangay = form.querySelector("#barangay_select")?.value.trim() || window.selectedBarangay?.trim() || "";
@@ -415,6 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ✅ Validation with proper error handling
     if (
       !fieldName ||
+      !ownerName ||
       !barangay ||
       !street ||
       !size ||
@@ -427,6 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
       console.log("DEBUG CHECK:", {
         fieldName,
+        ownerName,
         barangay,
         street,
         size,
@@ -547,6 +550,8 @@ document.addEventListener("DOMContentLoaded", () => {
         requestedBy: currentUser.uid,
         field_name: fieldName,
         fieldName,
+        owner_name: ownerName,
+        ownerName: ownerName,
         barangay,
         street,
         sugarcane_variety: sugarVariety,

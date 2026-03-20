@@ -4651,6 +4651,7 @@ window.__syncDashboardProfile = async function () {
 let fieldsMap = null;
 let markersLayer = null;
 let fieldsData = [];
+const FIELD_GROWTH_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 const fieldGrowthDisplayCache = new Map();
 let topFieldsUnsub = null;
 let nestedFieldsUnsub = null;
@@ -5102,19 +5103,52 @@ export function initializeFieldsSection() {
 
     try {
       const { getFieldGrowthData } = await import('./growth-tracker.js');
-      await Promise.all(fields.map(async (field) => {
+      const now = Date.now();
+      const currentFieldIds = new Set(
+        fields
+          .map((f) => f.id || f.field_id || f.fieldId)
+          .filter(Boolean)
+      );
+
+      // Remove cache entries for fields no longer in the current view.
+      for (const cachedFieldId of fieldGrowthDisplayCache.keys()) {
+        if (!currentFieldIds.has(cachedFieldId)) {
+          fieldGrowthDisplayCache.delete(cachedFieldId);
+        }
+      }
+
+      // Fetch only missing/stale entries instead of refetching all fields.
+      const fieldsToRefresh = fields.filter((field) => {
+        const fieldId = field.id || field.field_id || field.fieldId;
+        if (!fieldId) return false;
+        const cached = fieldGrowthDisplayCache.get(fieldId);
+        if (!cached) return true;
+        return (now - (cached.fetchedAt || 0)) > FIELD_GROWTH_CACHE_TTL_MS;
+      });
+
+      if (fieldsToRefresh.length === 0) {
+        return;
+      }
+
+      await Promise.all(fieldsToRefresh.map(async (field) => {
         const fieldId = field.id || field.field_id || field.fieldId;
         if (!fieldId) return;
         try {
           const growthData = await getFieldGrowthData(fieldId);
-          fieldGrowthDisplayCache.set(fieldId, growthData || null);
+          fieldGrowthDisplayCache.set(fieldId, {
+            data: growthData || null,
+            fetchedAt: Date.now()
+          });
         } catch (error) {
           console.debug(`Could not refresh growth cache for field ${fieldId}:`, error);
-          fieldGrowthDisplayCache.set(fieldId, null);
+          fieldGrowthDisplayCache.set(fieldId, {
+            data: null,
+            fetchedAt: Date.now()
+          });
         }
       }));
 
-      // Re-render list with record-driven growth values.
+      // Re-render list after background refresh completes.
       updateFieldsList();
     } catch (error) {
       console.debug('Could not refresh growth display cache:', error);
@@ -5136,8 +5170,10 @@ export function initializeFieldsSection() {
 
     listContainer.innerHTML = fieldsData.map(field => {
       const fieldId = field.id || field.field_id || field.fieldId;
-      const growthData = fieldGrowthDisplayCache.get(fieldId) || null;
-      const effectiveStatus = growthData?.fieldStatus || field.status;
+      const growthData = fieldGrowthDisplayCache.get(fieldId)?.data || null;
+      // Keep SRA approval status independent from growth record resets.
+      // Deleting input records should reset growth details, not field approval status.
+      const effectiveStatus = field.status;
       const statusLabel = getStatusLabel(effectiveStatus);
       const { badgeClass, textClass } = getBadgeClasses(effectiveStatus);
       
@@ -5280,7 +5316,12 @@ export function initializeFieldsSection() {
       }
 
       const fieldName = field.field_name || field.fieldName || 'Unnamed Field';
-      const owner = field.owner || field.applicant_name || field.applicantName || 'N/A';
+      const rawFieldOwner = field.owner_name || field.ownerName || field.field_owner || field.fieldOwner || '';
+      const normalizedFieldName = (field.field_name || field.fieldName || '').toString().trim().toLowerCase();
+      const defaultPanomaOwner = 'St. Jude CVE Agricultural Marketing Corporation';
+      const shouldUsePanomaOwner = normalizedFieldName.includes('panoma');
+      const fieldOwner = rawFieldOwner || (shouldUsePanomaOwner ? defaultPanomaOwner : 'N/A');
+      const handlerAssigned = field.applicant_name || field.applicantName || 'N/A';
       const street = field.street || '—';
       const barangay = field.barangay || '—';
       const size = field.field_size || field.area_size || field.area || field.size || 'N/A';
@@ -5299,10 +5340,27 @@ export function initializeFieldsSection() {
       let plantingDate = '—';
       let delayDays = '—';
       let status = field.status || 'active';
+
+      // Backfill owner for existing Panoma records so it persists in Firestore.
+      if (!rawFieldOwner && shouldUsePanomaOwner && fieldId) {
+        try {
+          await updateDoc(doc(db, 'fields', fieldId), {
+            owner_name: defaultPanomaOwner,
+            ownerName: defaultPanomaOwner,
+            updatedAt: serverTimestamp()
+          });
+          field.owner_name = defaultPanomaOwner;
+          field.ownerName = defaultPanomaOwner;
+        } catch (ownerUpdateError) {
+          console.warn('Could not backfill owner for Panoma field:', ownerUpdateError);
+        }
+      }
       try {
         const { getFieldGrowthData } = await import('./growth-tracker.js');
         growthData = await getFieldGrowthData(fieldId);
-        status = growthData?.fieldStatus || status;
+        // Keep field lifecycle status from approved field document.
+        // Growth data should not override reviewed/active approval state.
+        status = field.status || status;
         growthStage = growthData?.currentGrowthStage || '—';
 
         if (!growthData?.plantingDate) {
@@ -5415,8 +5473,12 @@ export function initializeFieldsSection() {
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(fieldName)}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
-                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Handler</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(owner)}</p>
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Owner</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(fieldOwner)}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Handler Assigned</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(handlerAssigned)}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
                   <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">📍 Location</p>
@@ -5711,27 +5773,19 @@ export function initializeFieldsSection() {
     }
   });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      currentUserId = user.uid;
-      console.log('✅ User logged in:', currentUserId);
-      if (fieldsMap) {
-        console.log('🗺️ Map exists, loading fields...');
-        loadUserFields();
-      } else {
-        console.log('⏳ Map not ready yet, will load fields after init');
-      }
-    } else {
-      console.warn('❌ No user logged in');
-      currentUserId = null;
-      fieldsData = [];
-      if (markersLayer) {
-        markersLayer.clearLayers();
-      }
-      updateFieldsList();
-      updateFieldsCount();
+  // Use the main dashboard auth handler as source of truth (avoid duplicate listeners here).
+  if (currentUserId) {
+    console.log('✅ Fields section using current user:', currentUserId);
+    if (fieldsMap) {
+      loadUserFields();
     }
-  });
+  } else if (auth.currentUser?.uid) {
+    currentUserId = auth.currentUser.uid;
+    console.log('✅ Fields section recovered auth user:', currentUserId);
+    if (fieldsMap) {
+      loadUserFields();
+    }
+  }
 
   const initWhenReady = () => {
     console.log('🚀 Initializing fields map...');
@@ -5749,17 +5803,10 @@ export function initializeFieldsSection() {
       return;
     }
     
-    const rect = mapContainer.getBoundingClientRect();
-    if (mapContainer.offsetParent === null || rect.width === 0 || rect.height === 0) {
-      console.log('⏳ Map container not visible yet, retrying...');
-      setTimeout(initWhenReady, 200);
-      return;
-    }
-    
-    console.log('✅ All conditions met, initializing map...');
+    console.log('✅ Map container found, initializing now...');
     setTimeout(() => {
       initFieldsMap();
-    }, 100);
+    }, 0);
   };
 
   window.addEventListener('load', () => {
