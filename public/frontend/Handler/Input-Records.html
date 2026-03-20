@@ -1866,7 +1866,7 @@ const taskFieldMap = {
 
   {
     id:'averageWeightPerTruck',
-    label:'Average Weight per Truck',
+    label:'Average Weight per Truck (tons)',
     type:'number',
     step:'0.01'
   },
@@ -1881,7 +1881,7 @@ const taskFieldMap = {
 
   {
     id:'priceOfSugarcane',
-    label:'Price of Sugarcane',
+    label:'Price of Sugarcane (per ton)',
     type:'number',
     step:'0.01'
   },
@@ -3464,7 +3464,7 @@ taskType.onchange = () => {
   const taskDisplayName = taskType.value;
   
   if (!taskDisplayName) {
-    dynamicForm.classList.add('hidden');261735
+    dynamicForm.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     return;
@@ -4164,38 +4164,60 @@ function renderForm(type){
     ensureAtLeastOneRow();
   }
 
-  // Harvesting: auto-calculate production and value metrics
-  if (type === 'Harvesting') {
-    const numberOfTruckTripsInput = document.getElementById('numberOfTruckTrips');
-    const averageWeightPerTruckInput = document.getElementById('averageWeightPerTruck');
-    const totalSugarcaneHarvestedInput = document.getElementById('totalSugarcaneHarvested');
-    const priceOfSugarcaneInput = document.getElementById('priceOfSugarcane');
+  // Dedicated harvesting auto-calculation (isolated from total cost/labor cost logic).
+  const parseHarvestNumber = (value) => {
+    const cleaned = String(value || '').replace(/,/g, '').trim();
+    const parsed = parseFloat(cleaned);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const updateHarvestingTotals = () => {
+    const tripsInput = document.getElementById('numberOfTruckTrips');
+    const averageWeightInput = document.getElementById('averageWeightPerTruck');
+    const totalHarvestedInput = document.getElementById('totalSugarcaneHarvested');
+    const priceInput = document.getElementById('priceOfSugarcane');
     const totalValueInput = document.getElementById('totalValue');
 
-    const updateHarvestingTotals = () => {
-      const trips = parseFloat(numberOfTruckTripsInput?.value) || 0;
-      const avgWeight = parseFloat(averageWeightPerTruckInput?.value) || 0;
-      const totalHarvested = trips * avgWeight;
+    if (!tripsInput || !averageWeightInput || !totalHarvestedInput) return;
 
-      if (totalSugarcaneHarvestedInput) {
-        totalSugarcaneHarvestedInput.value = totalHarvested.toFixed(2);
-      }
+    const trips = parseHarvestNumber(tripsInput.value);
+    const averageWeight = parseHarvestNumber(averageWeightInput.value);
+    const totalHarvested = trips * averageWeight;
+    totalHarvestedInput.value = totalHarvested.toFixed(2);
 
-      const price = parseFloat(priceOfSugarcaneInput?.value) || 0;
-      const totalValue = totalHarvested * price;
-      if (totalValueInput) {
-        totalValueInput.value = totalValue.toFixed(2);
+    if (priceInput && totalValueInput) {
+      const pricePerTon = parseHarvestNumber(priceInput.value);
+      totalValueInput.value = (totalHarvested * pricePerTon).toFixed(2);
+    }
+  };
+
+  // Expose dedicated refresh hook for this calculation only.
+  window.refreshHarvestingTotals = updateHarvestingTotals;
+
+  // Direct listeners for current rendered harvesting inputs.
+  ['numberOfTruckTrips', 'averageWeightPerTruck', 'priceOfSugarcane'].forEach((fieldId) => {
+    const input = document.getElementById(fieldId);
+    if (!input) return;
+    input.addEventListener('input', updateHarvestingTotals);
+    input.addEventListener('change', updateHarvestingTotals);
+  });
+
+  // Delegated fallback to handle re-rendered nodes.
+  const harvestingForm = document.getElementById('dynamicForm');
+  if (harvestingForm && !harvestingForm.dataset.harvestingTotalsBound) {
+    const handleHarvestingChange = (event) => {
+      const targetId = event?.target?.id;
+      if (targetId === 'numberOfTruckTrips' || targetId === 'averageWeightPerTruck' || targetId === 'priceOfSugarcane') {
+        updateHarvestingTotals();
       }
     };
-
-    [numberOfTruckTripsInput, averageWeightPerTruckInput, priceOfSugarcaneInput].forEach((input) => {
-      if (!input) return;
-      input.addEventListener('input', updateHarvestingTotals);
-      input.addEventListener('change', updateHarvestingTotals);
-    });
-
-    updateHarvestingTotals();
+    harvestingForm.addEventListener('input', handleHarvestingChange);
+    harvestingForm.addEventListener('change', handleHarvestingChange);
+    harvestingForm.dataset.harvestingTotalsBound = 'true';
   }
+
+  // Initial compute for pre-filled/edit values.
+  updateHarvestingTotals();
 
   // Always add Notes / Remarks field at the bottom (optional, always visible)
   // Safety check: ensure fields is still an array
@@ -4384,7 +4406,7 @@ function renderForm(type){
   // This function calculates totalCost by summing ONLY cost-related fields
   // It explicitly excludes all non-cost fields (quantities, measurements, counts, etc.)
   // Make it available globally so it can be accessed from loadRecordForEdit
-  window.updateTotalCost = function updateTotalCost(){
+  function updateTotalCost(){
     const totalCostInput = document.getElementById('totalCost');
     if(!totalCostInput) return;
     
@@ -4470,6 +4492,7 @@ function renderForm(type){
     // Update totalCost with 2 decimal places
     totalCostInput.value = total.toFixed(2);
   }
+  window.updateTotalCost = updateTotalCost;
 
   // 1️⃣ Dynamic inputs handler (weight, laborCost, fuel)
   // Safety check: ensure array exists before forEach
