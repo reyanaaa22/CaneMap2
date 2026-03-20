@@ -3268,20 +3268,8 @@ operationSelect.onchange = async () => {
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     
-    // Show confirmation and handle ratooning immediately
-    const ratooningConfirm = confirm('Ratooning will archive the current crop cycle and prepare the field for a new cycle. Continue?');
-    if (!ratooningConfirm) {
-      // Reset operation selection if user cancels
-      operationSelect.value = '';
-  const operationSelectInstance = customSelectInstances.get('operationSelect');
-  if (operationSelectInstance) {
-        operationSelectInstance.updateSelectedLabel();
-      }
-      return;
-  }
-  
-    // Handle ratooning asynchronously
-    (async () => {
+    // Show custom confirmation popup (system notification style)
+    const runRatooning = async () => {
       try {
         showLoading(true);
         
@@ -3310,7 +3298,31 @@ operationSelect.onchange = async () => {
       operationSelectInstance.updateSelectedLabel();
     }
       }
-    })();
+    };
+
+    showNotification(
+      'info',
+      'Confirm Ratooning',
+      'Ratooning will archive the current crop cycle and prepare the field for a new cycle. Continue?',
+      [
+        {
+          text: 'Cancel',
+          type: 'secondary',
+          action: () => {
+            operationSelect.value = '';
+            const operationSelectInstance = customSelectInstances.get('operationSelect');
+            if (operationSelectInstance) {
+              operationSelectInstance.updateSelectedLabel();
+            }
+          }
+        },
+        {
+          text: 'Continue',
+          type: 'primary',
+          action: runRatooning
+        }
+      ]
+    );
     }
     return;
   }

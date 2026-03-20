@@ -1491,8 +1491,8 @@ export async function getFieldGrowthData(fieldId) {
 
     const fieldData = fieldSnap.data();
     
-    // CRITICAL: Get planting date and variety from Planting Operation record (single source of truth)
-    // This ensures consistency with the calculation used in the Planting Operation form
+    // CRITICAL: Get planting date from submitted Planting records only (single source of truth)
+    // If planting records are deleted, planting-dependent data in Growth Tracker must reset.
     let plantingDate = null;
     let variety = null;
     let expectedHarvestDateFromRecord = null; // Store Expected Harvest Date from Input Record
@@ -1501,23 +1501,42 @@ export async function getFieldGrowthData(fieldId) {
       const recordsQuery = query(
         collection(db, 'records'),
         where('fieldId', '==', fieldId),
-        where('taskType', '==', 'Planting Operation')
+        where('recordStatus', '==', 'Done')
       );
       const recordsSnap = await getDocs(recordsQuery);
       
       if (!recordsSnap.empty) {
-        const plantingRecord = recordsSnap.docs[0].data();
-        const recordData = plantingRecord.data || {};
+        const doneRecords = recordsSnap.docs.map((d) => d.data());
+        const plantingRecords = doneRecords.filter((record) => {
+          const taskType = (record.taskType || '').toString();
+          const operation = (record.operation || '').toString();
+          return (
+            operation === 'Planting' ||
+            taskType.includes('Planting Operation') ||
+            taskType.includes('Replanting Operation')
+          );
+        });
+
+        if (plantingRecords.length > 0) {
+          plantingRecords.sort((a, b) => {
+            const aDate = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
+            const bDate = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
+            return bDate - aDate;
+          });
+        }
+
+        const plantingRecord = plantingRecords[0];
+        const recordData = plantingRecord?.data || {};
         
         // Get planting date from record (prioritize startDate, then fallback to other fields)
-        const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
+        const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date || plantingRecord?.recordDate;
         if (plantingDateValue) {
           // Use safe date parsing helper
           plantingDate = parseDateValue(plantingDateValue);
         }
         
         // Get variety from record
-        variety = recordData.variety || plantingRecord.variety;
+        variety = recordData.variety || plantingRecord?.variety;
         
         // CRITICAL: Get Expected Harvest Date from Input Record if available
         // This takes priority over calculated dates to match user input
@@ -1534,10 +1553,8 @@ export async function getFieldGrowthData(fieldId) {
       console.debug('Could not fetch planting record, falling back to field data:', recordError);
     }
     
-    // Fallback to field data if planting record not found
-    if (!plantingDate) {
-      plantingDate = fieldData.plantingDate?.toDate ? fieldData.plantingDate.toDate() : fieldData.plantingDate;
-    }
+    // IMPORTANT: Do not fallback planting date to field document.
+    // Planting date display and all planting-dependent analytics must be record-driven.
     if (!variety) {
       variety = fieldData.sugarcane_variety || fieldData.variety;
     }
@@ -1752,7 +1769,7 @@ export async function getFieldGrowthData(fieldId) {
         delayInfo: { isDelayed: false, delayDays: 0, delayType: null },
         overdueInfo: { isOverdue: false, overdueDays: 0 },
         fieldStatus: 'not_planted',
-        status: fieldData.status,
+        status: 'not_planted',
         area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
         seedRate: seedRate,
         fertilizersUsed: fertilizersUsed

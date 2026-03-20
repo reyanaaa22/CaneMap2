@@ -4651,6 +4651,7 @@ window.__syncDashboardProfile = async function () {
 let fieldsMap = null;
 let markersLayer = null;
 let fieldsData = [];
+const fieldGrowthDisplayCache = new Map();
 let topFieldsUnsub = null;
 let nestedFieldsUnsub = null;
 const fieldStore = new Map();
@@ -4920,6 +4921,7 @@ export function initializeFieldsSection() {
         });
 
         updateFieldsList();
+        refreshFieldGrowthDisplayCache(fieldsData);
         updateFieldsCount();
 
         if (fieldsData.length > 0 && markersAdded > 0) {
@@ -5092,6 +5094,33 @@ export function initializeFieldsSection() {
     }
   }
 
+  async function refreshFieldGrowthDisplayCache(fields) {
+    if (!Array.isArray(fields) || fields.length === 0) {
+      fieldGrowthDisplayCache.clear();
+      return;
+    }
+
+    try {
+      const { getFieldGrowthData } = await import('./growth-tracker.js');
+      await Promise.all(fields.map(async (field) => {
+        const fieldId = field.id || field.field_id || field.fieldId;
+        if (!fieldId) return;
+        try {
+          const growthData = await getFieldGrowthData(fieldId);
+          fieldGrowthDisplayCache.set(fieldId, growthData || null);
+        } catch (error) {
+          console.debug(`Could not refresh growth cache for field ${fieldId}:`, error);
+          fieldGrowthDisplayCache.set(fieldId, null);
+        }
+      }));
+
+      // Re-render list with record-driven growth values.
+      updateFieldsList();
+    } catch (error) {
+      console.debug('Could not refresh growth display cache:', error);
+    }
+  }
+
   function updateFieldsList() {
     const listContainer = document.getElementById('handlerFieldsList');
     
@@ -5106,17 +5135,22 @@ export function initializeFieldsSection() {
     listContainer.classList.remove('hidden');
 
     listContainer.innerHTML = fieldsData.map(field => {
-      const statusLabel = getStatusLabel(field.status);
-      const { badgeClass, textClass } = getBadgeClasses(field.status);
+      const fieldId = field.id || field.field_id || field.fieldId;
+      const growthData = fieldGrowthDisplayCache.get(fieldId) || null;
+      const effectiveStatus = growthData?.fieldStatus || field.status;
+      const statusLabel = getStatusLabel(effectiveStatus);
+      const { badgeClass, textClass } = getBadgeClasses(effectiveStatus);
       
       // Extract field information
       const variety = field.sugarcane_variety || field.variety || 'N/A';
-      const plantingDate = field.plantingDate;
-      const growthStage = field.currentGrowthStage || 'N/A';
+      const plantingDate = growthData?.plantingDate || null;
+      const growthStage = plantingDate
+        ? (growthData?.currentGrowthStage || field.currentGrowthStage || 'N/A')
+        : 'Not Planted';
       const cropAgeMonths = calculateCropAgeInMonths(plantingDate);
       
       // Format planting date
-      let plantingDateStr = 'N/A';
+      let plantingDateStr = '—';
       if (plantingDate) {
         try {
           const date = plantingDate?.toDate ? plantingDate.toDate() : new Date(plantingDate);
@@ -5251,7 +5285,6 @@ export function initializeFieldsSection() {
       const barangay = field.barangay || '—';
       const size = field.field_size || field.area_size || field.area || field.size || 'N/A';
       const terrain = field.fieldTerrain || field.field_terrain || 'N/A';
-      const status = field.status || 'active';
       const latitude = field.latitude || field.lat || 'N/A';
       const longitude = field.longitude || field.lng || 'N/A';
       const variety = field.sugarcane_variety || field.variety || 'N/A';
@@ -5259,12 +5292,29 @@ export function initializeFieldsSection() {
       const irrigationMethod = field.irrigation_method || field.irrigationMethod || 'N/A';
       const previousCrop = field.previous_crop || field.previousCrop || 'N/A';
       
-      // CRITICAL: Use the same record-driven stage logic as Growth Tracker (no DAP-based stage for the timeline)
+      // Keep dashboard details aligned with Growth Tracker (record-driven).
+      let growthData = null;
       let growthStage = '—';
+      let expectedHarvestDate = '—';
+      let plantingDate = '—';
+      let delayDays = '—';
+      let status = field.status || 'active';
       try {
         const { getFieldGrowthData } = await import('./growth-tracker.js');
-        const growthData = await getFieldGrowthData(fieldId);
+        growthData = await getFieldGrowthData(fieldId);
+        status = growthData?.fieldStatus || status;
         growthStage = growthData?.currentGrowthStage || '—';
+
+        if (!growthData?.plantingDate) {
+          growthStage = 'Not Planted';
+          plantingDate = '—';
+          expectedHarvestDate = '—';
+          delayDays = '—';
+        } else {
+          plantingDate = formatDateDDMMYYYY(growthData.plantingDate);
+          expectedHarvestDate = growthData.expectedHarvestDateFormatted || '—';
+          delayDays = growthData?.delayInfo?.isDelayed ? growthData.delayInfo.delayDays : '—';
+        }
       } catch (e) {
         console.warn('Could not load record-driven growth stage:', e);
       }
@@ -5326,74 +5376,7 @@ export function initializeFieldsSection() {
         return String(dateValue);
       };
       
-      // CRITICAL: Get Expected Harvest Date using standardized format from getFieldGrowthData
-      // This ensures consistency with Growth Tracker page and uses the new calculation logic
-      let expectedHarvestDate = '—';
-      try {
-        const { getFieldGrowthData, calculateExpectedHarvestDateMonths, formatHarvestDateRange } = await import('./growth-tracker.js');
-        const growthData = await getFieldGrowthData(fieldId);
-        
-        // Priority 1: Use formatted string from getFieldGrowthData (already in MMM D, YYYY format)
-        // This uses the new calculation: MAX months + 7 days operational buffer
-        if (growthData?.expectedHarvestDateFormatted) {
-          expectedHarvestDate = growthData.expectedHarvestDateFormatted;
-        } 
-        // Priority 2: If we have earliest and latest dates, format them
-        else if (growthData?.expectedHarvestDate) {
-          // Check if we have both earliest and latest from the calculation
-          const plantingDate = growthData.plantingDate;
-          const variety = growthData.variety;
-          
-          if (plantingDate && variety) {
-            // Recalculate using the new logic to ensure consistency
-            const harvestRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
-            if (harvestRange && harvestRange.formatted) {
-              expectedHarvestDate = harvestRange.formatted;
-            } else {
-              // Fallback: format single date (shouldn't happen with new logic)
-              const date = growthData.expectedHarvestDate instanceof Date 
-                ? growthData.expectedHarvestDate 
-                : new Date(growthData.expectedHarvestDate);
-              const { formatHarvestDate } = await import('./growth-tracker.js');
-              expectedHarvestDate = formatHarvestDate(date) || '—';
-            }
-          }
-        }
-        // Priority 3: Try to calculate from field data if available
-        else {
-          const plantingDate = field.planting_date || field.plantingDate;
-          const variety = field.sugarcane_variety || field.variety;
-          
-          if (plantingDate && variety) {
-            const planting = plantingDate.toDate ? plantingDate.toDate() : new Date(plantingDate);
-            const harvestRange = calculateExpectedHarvestDateMonths(planting, variety);
-            if (harvestRange && harvestRange.formatted) {
-              expectedHarvestDate = harvestRange.formatted;
-            }
-          }
-        }
-      } catch (recordError) {
-        console.error('Error calculating Expected Harvest Date:', recordError);
-        // Final fallback: try to calculate directly from field data
-        try {
-          const { calculateExpectedHarvestDateMonths } = await import('./growth-tracker.js');
-          const plantingDate = field.planting_date || field.plantingDate;
-          const variety = field.sugarcane_variety || field.variety;
-          
-          if (plantingDate && variety) {
-            const planting = plantingDate.toDate ? plantingDate.toDate() : new Date(plantingDate);
-            const harvestRange = calculateExpectedHarvestDateMonths(planting, variety);
-            if (harvestRange && harvestRange.formatted) {
-              expectedHarvestDate = harvestRange.formatted;
-            }
-          }
-        } catch (calcError) {
-          console.debug('Could not calculate expected harvest date:', calcError);
-        }
-      }
       
-      const plantingDate = formatDateDDMMYYYY(field.planting_date || field.plantingDate);
-      const delayDays = field.delay_days || field.delayDays || '—';
       const createdOn = formatFirestoreDate(field.created_on || field.createdOn || field.timestamp);
 
       const existing = document.getElementById('fieldDetailsModal');
@@ -5571,51 +5554,24 @@ export function initializeFieldsSection() {
       document.addEventListener('keydown', escHandler);
       modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); });
 
-      // Load growth tracker status from Firebase
-      try {
-        const { getFieldGrowthData } = await import('./growth-tracker.js');
-        
-        // CRITICAL: Use getFieldGrowthData which now includes record-based stage determination
-        // This ensures consistency with Growth Tracker page
-        const growthData = await getFieldGrowthData(fieldId);
-        
-        if (growthData) {
-          // Use record-based current stage (falls back to DAP-based if no records)
-          let growthStageValue = growthData.currentGrowthStage || '—';
-          let dapValue = '—';
-          
-          if (growthData.DAP !== null && growthData.DAP !== undefined) {
-            dapValue = `${growthData.DAP} days`;
-          }
-          
-          // If no planting date, show "Not Planted"
-          if (!growthData.plantingDate) {
-            growthStageValue = 'Not Planted';
-          }
-          
-          const growthStageEl = modal.querySelector('#fd_growth_stage');
-          const dapEl = modal.querySelector('#fd_dap');
-          
-          if (growthStageEl) growthStageEl.textContent = growthStageValue;
-          if (dapEl) dapEl.textContent = dapValue;
-        }
-        
-        // Add click handler for growth tracker button
-        const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');
-        if (growthTrackerBtn) {
-          growthTrackerBtn.addEventListener('click', () => {
-            window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
-          });
-        }
-      } catch (growthErr) {
-        console.warn('Failed to load growth tracker status:', growthErr);
-        // Still set up the button even if data loading fails
-        const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');
-        if (growthTrackerBtn) {
-          growthTrackerBtn.addEventListener('click', () => {
-            window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
-          });
-        }
+      // Apply growth tracker status values already fetched above.
+      const growthStageEl = modal.querySelector('#fd_growth_stage');
+      const dapEl = modal.querySelector('#fd_dap');
+      const growthStageValue = growthData?.plantingDate
+        ? (growthData.currentGrowthStage || '—')
+        : 'Not Planted';
+      const dapValue = (growthData && growthData.DAP !== null && growthData.DAP !== undefined)
+        ? `${growthData.DAP} days`
+        : '—';
+      if (growthStageEl) growthStageEl.textContent = growthStageValue;
+      if (dapEl) dapEl.textContent = dapValue;
+
+      // Add click handler for growth tracker button
+      const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');
+      if (growthTrackerBtn) {
+        growthTrackerBtn.addEventListener('click', () => {
+          window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
+        });
       }
 
 
