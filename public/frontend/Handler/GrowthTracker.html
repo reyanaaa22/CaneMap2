@@ -748,11 +748,15 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div>
               <div class="text-[var(--cane-800)] mb-1">Fertilizers Used:</div>
-              <div class="inner-box rounded px-3 py-1.5" id="uiFertilizers">—</div>
+              <div class="inner-box rounded px-3 py-1.5 break-words" id="uiFertilizers">—</div>
             </div>
             <div>
               <div class="text-[var(--cane-800)] mb-1">Seed Rate:</div>
               <div class="inner-box rounded px-3 py-1.5" id="uiSeedRate">—</div>
+            </div>
+            <div>
+              <div class="text-[var(--cane-800)] mb-1">Weeding / Weed Control Used:</div>
+              <div class="inner-box rounded px-3 py-1.5 break-words" id="uiWeedingUsed">—</div>
             </div>
           </div>
 
@@ -1595,8 +1599,16 @@
           if (dropdownTrigger) dropdownTrigger.classList.remove('open');
         }
 
+        // Replanting and Ratooning are now task types under Planting, not optional stages.
+        function hidePlantingSubtaskOptionalStages() {
+          document.querySelectorAll('.timeline-stage[data-stage="Replanting"], .timeline-stage[data-stage="Ratooning"]').forEach((stageEl) => {
+            stageEl.classList.add('hidden');
+          });
+        }
+
         // Dropdown event listeners
         document.addEventListener('DOMContentLoaded', () => {
+          hidePlantingSubtaskOptionalStages();
           const dropdownTrigger = document.getElementById('dropdownTrigger');
           const dropdownMenu = document.getElementById('dropdownMenu');
 
@@ -1660,11 +1672,28 @@
             // Always refresh DAP range rows using variety + crop type.
             updateStageDapRanges(growthData);
 
+            const formatUsedItems = (value) => {
+              if (!value) return '—';
+              const normalizedItems = String(value)
+                .split(',')
+                .map(item => item.trim())
+                .filter(Boolean);
+              if (normalizedItems.length === 0) return '—';
+              return normalizedItems.join(', ');
+            };
+
             // Update fertilizers used
             const uiFertilizers = document.getElementById('uiFertilizers');
             if (uiFertilizers) {
               console.log('📊 Growth Status Details - Fertilizers Used:', growthData.fertilizersUsed);
-              uiFertilizers.textContent = growthData.fertilizersUsed || '—';
+              uiFertilizers.textContent = formatUsedItems(growthData.fertilizersUsed);
+            }
+
+            // Update weeding / weed control used
+            const uiWeedingUsed = document.getElementById('uiWeedingUsed');
+            if (uiWeedingUsed) {
+              console.log('📊 Growth Status Details - Weeding Used:', growthData.weedingUsed);
+              uiWeedingUsed.textContent = formatUsedItems(growthData.weedingUsed);
             }
 
             // Update seed rate
@@ -2737,8 +2766,8 @@
             if (normalized === 'Stem Elongation & Grand Growth') return 'Grand Growth';
             if (normalized === 'Ripening & Maturation') return 'Ripening / Maturing';
             if (normalized === 'Harvesting (Ani sa Tubo)') return 'Harvesting';
-            if (normalized === 'Detrashing Stage') return 'Detrashing';
-            if (normalized === 'Replanting Stage') return 'Replanting';
+            if (normalized === 'Detrashing Stage') return 'Grand Growth';
+            if (normalized === 'Replanting Stage') return 'Planting';
             
             // Legacy stage names (backward compatibility)
             if (normalized === 'Germination') return 'Germination';
@@ -2748,6 +2777,7 @@
             if (normalized === 'Harvest' || normalized === 'Harvesting') return 'Harvesting';
             if (normalized === 'Pre-Planting') return 'Land Preparation';
             if (normalized === 'Planting') return 'Planting';
+            if (normalized === 'Replanting' || normalized === 'Ratooning') return 'Planting';
             
             return null;
           };
@@ -2760,11 +2790,7 @@
             'Tillering': [],
             'Grand Growth': [],
             'Ripening / Maturing': [],
-            'Harvesting': [],
-            // Optional stages (displayed separately)
-            'Detrashing': [],
-            'Replanting': [],
-            'Ratooning': []
+            'Harvesting': []
           };
 
           // Process ALL records and map them to stages
@@ -2826,11 +2852,7 @@
             'Tillering': 'tillering',
             'Grand Growth': 'grand',
             'Ripening / Maturing': 'maturing',
-            'Harvesting': 'harvest',
-            // Optional stages
-            'Detrashing': 'detrashing',
-            'Replanting': 'replanting',
-            'Ratooning': 'ratooning'
+            'Harvesting': 'harvest'
           };
 
           // Define main timeline stages in order
@@ -2844,8 +2866,8 @@
             'Harvesting'
           ];
           
-          // Define optional stages
-          const optionalStages = ['Detrashing', 'Replanting', 'Ratooning'];
+          // Optional stages removed from timeline flow
+          const optionalStages = [];
           
           // Render main timeline stages in order
           mainTimelineStages.forEach(stage => {

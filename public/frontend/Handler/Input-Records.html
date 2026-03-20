@@ -819,11 +819,12 @@ const taskNameAliases = {
   'Second Dose Fertilization (Ikaduhang Abono)': 'Post-Planting Fertilization',
   'Irrigation / Watering (Pagpatubig)': 'Irrigation',
   'Brushing / Light Detrashing (Pagpanitan – magaan)': 'Side Cleaning',
-  'Ripener Application (Pagbutang og ripener)': 'Ripener Application',
+  'Spray Selection / Weed Control (Pagpili sa Spray / Weed Control)': 'Weeding',
   'Crop Monitoring (Pagbantay sa kahamtong)': 'Growth Monitoring',
   'Detrashing / Brushing (Pagpanitan sa uga nga dahon)': 'Detrashing',
   'Harvesting (Ani sa Tubo)': 'Harvesting',
-  'Replanting Operation (Pag-usab og tanom)': 'Replanting Operation'
+  'Replanting Operation (Pag-usab og tanom)': 'Replanting Operation',
+  'Ratooning (Pagpatubo pag-usab gikan sa tuod)': 'Ratooning'
 };
 
 // Auto-derive growth stage from Operation + Task Type
@@ -848,7 +849,7 @@ function deriveGrowthStage(operation, taskType) {
       'Brushing / Light Detrashing (Pagpanitan – magaan)': 'Stem Elongation & Grand Growth',
       
       // Ripening & Maturation
-      'Ripener Application (Pagbutang og ripener)': 'Ripening & Maturation',
+      'Spray Selection / Weed Control (Pagpili sa Spray / Weed Control)': 'Ripening & Maturation',
       'Crop Monitoring (Pagbantay sa kahamtong)': 'Ripening & Maturation'
     };
     return taskToStage[taskType] || 'Stem Elongation & Grand Growth'; // Default fallback
@@ -877,22 +878,22 @@ const operationToTasks = {
   ],
   'Planting': [
     'Planting Operation (Pagtanom sa tubo)',
-    'First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)'
+    'First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)',
+    'Replanting Operation (Pag-usab og tanom)',
+    'Ratooning (Pagpatubo pag-usab gikan sa tuod)'
   ],
   'Post-Planting': [
     'Germination Monitoring (Pagmonitor sa pagturok)',
     'Gap Filling / Replanting (Pagpuli sa wala miturok)',
     'Weeding (Pagpananom / Paglimpyo sa sagbot)',
+    'Detrashing / Brushing (Pagpanitan sa uga nga dahon)',
     'First Dose Fertilization – After Emergence (Unang Abono)',
     'Hilling-up / Off-barring (Pagtabon sa gamot)',
     'Second Dose Fertilization (Ikaduhang Abono)',
     'Irrigation / Watering (Pagpatubig)',
     'Brushing / Light Detrashing (Pagpanitan – magaan)',
-    'Ripener Application (Pagbutang og ripener)',
+    'Spray Selection / Weed Control (Pagpili sa Spray / Weed Control)',
     'Crop Monitoring (Pagbantay sa kahamtong)'
-  ],
-  'Detrashing': [
-    'Detrashing / Brushing (Pagpanitan sa uga nga dahon)'
   ],
   'Harvesting': [
     'Harvesting (Ani sa Tubo)'
@@ -1166,19 +1167,6 @@ const taskFieldMap = {
     ] 
   },
 
-  { id:'amount', label:'Amount Applied (kg)', type:'number', step:'0.01' },
-
-  { id:'applicationMethod', label:'Application Method', type:'select',
-    options:[
-      'Broadcasting',
-      'Banding',
-      'Side Dressing',
-      'Foliar Spray',
-      'Mudpress Application',
-      'Others'
-    ] 
-  },
-
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1423,19 +1411,6 @@ const taskFieldMap = {
     ] 
   },
 
-  { id:'amount', label:'Amount Applied (kg)', type:'number', step:'0.01' },
-
-  { id:'applicationMethod', label:'Application Method', type:'select',
-    options:[
-      'Broadcasting',
-      'Banding',
-      'Side Dressing',
-      'Foliar Spray',
-      'Mudpress Application',
-      'Others'
-    ] 
-  },
-
   { id:'fertilizerCost', label:'Fertilizer Cost', type:'number', step:'0.01' },
   { id:'laborCost', label:'Labor Cost', type:'number', step:'0.01', enhanced: true },
   { id:'totalCost', label:'Total Cost', type:'number', step:'0.01' }
@@ -1486,6 +1461,8 @@ const taskFieldMap = {
     type:'select', 
     options:['Manual Weeding','Chemical Weeding','Others'] 
   },
+
+  { id:'toolsUsed', label:'Tools Used', type:'text' },
 
   // Only shown if Chemical Weeding is selected
   { 
@@ -1832,29 +1809,16 @@ const taskFieldMap = {
     type:'select',
     options:[
       'Plant Cane',
-      'Ratoon Cane'
+      'Ratoon Cane',
+      'Replant Cane'
     ]
   },
 
-  { 
-    id:'yieldTcHa', 
-    label:'Yield (tc/ha)', 
-    type:'number',
-    step:'0.01'
-  },
-
-  { 
-    id:'areaHarvested', 
-    label:'Area Harvested (ha)', 
-    type:'number',
-    step:'0.01'
-  },
-
-  { 
-    id:'totalCaneYield', 
-    label:'Total Cane Yield (tons)', 
-    type:'number',
-    step:'0.01'
+  {
+    id:'toolsUsed',
+    label:'Tools Used',
+    type:'text',
+    dependsOn:{ field:'harvestMethod', values:['Manual', 'Manual Harvesting'] }
   },
 
   { 
@@ -1875,6 +1839,59 @@ const taskFieldMap = {
       'Animal-Drawn Cart',
       'Others'
     ]
+  },
+
+  {
+    id:'truckRented',
+    label:'Transport Rented?',
+    type:'select',
+    options:['Yes','No'],
+    dependsOn:{ field:'transportUsed', values:['Truck', 'Tractor + Trailer', 'Animal-Drawn Cart', 'Others'] }
+  },
+
+  {
+    id:'rentCost',
+    label:'Rent Cost',
+    type:'number',
+    step:'0.01',
+    dependsOn:{ field:'truckRented', values:['Yes'] }
+  },
+
+  {
+    id:'numberOfTruckTrips',
+    label:'Number of Truck Trips',
+    type:'number',
+    step:'1'
+  },
+
+  {
+    id:'averageWeightPerTruck',
+    label:'Average Weight per Truck',
+    type:'number',
+    step:'0.01'
+  },
+
+  {
+    id:'totalSugarcaneHarvested',
+    label:'Total Sugarcane Harvested',
+    type:'number',
+    step:'0.01',
+    readonly:true
+  },
+
+  {
+    id:'priceOfSugarcane',
+    label:'Price of Sugarcane',
+    type:'number',
+    step:'0.01'
+  },
+
+  {
+    id:'totalValue',
+    label:'Total Value',
+    type:'number',
+    step:'0.01',
+    readonly:true
   },
 
   { 
@@ -3528,11 +3545,163 @@ function renderForm(type){
   
   dynamicForm.classList.remove('hidden');
 
+  // Delegate herbicide interactions once so behavior remains reliable
+  // even if the form is re-rendered multiple times.
+  if (!dynamicForm.dataset.weedingChemicalDelegationBound) {
+    dynamicForm.addEventListener('click', (event) => {
+      const addBtn = event.target.closest('#addHerbicideBtn');
+      if (addBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const helpers = dynamicForm._weedingChemicalHelpers;
+        const container = document.getElementById('herbicideRowsContainer');
+        if (helpers && container) {
+          const row = helpers.createHerbicideRow();
+          container.appendChild(row);
+          helpers.bindRowEvents(row);
+          helpers.updateHerbicideTotals();
+        }
+        return;
+      }
+
+      const addFertilizerBtn = event.target.closest('#addFertilizerBtn');
+      if (addFertilizerBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const helpers = dynamicForm._fertilizerHelpers;
+        const container = document.getElementById('fertilizerRowsContainer');
+        if (helpers && container) {
+          const row = helpers.createFertilizerRow();
+          container.appendChild(row);
+          helpers.bindRowEvents(row);
+          helpers.updateFertilizerTotals();
+        }
+        return;
+      }
+
+      const removeBtn = event.target.closest('.removeHerbicideRow');
+      if (removeBtn) {
+        event.preventDefault();
+        const row = removeBtn.closest('.herbicide-row');
+        if (row) row.remove();
+        const helpers = dynamicForm._weedingChemicalHelpers;
+        if (helpers) helpers.ensureAtLeastOneRow();
+        return;
+      }
+
+      const removeFertilizerBtn = event.target.closest('.removeFertilizerRow');
+      if (removeFertilizerBtn) {
+        event.preventDefault();
+        const row = removeFertilizerBtn.closest('.fertilizer-row');
+        if (row) row.remove();
+        const helpers = dynamicForm._fertilizerHelpers;
+        if (helpers) helpers.ensureAtLeastOneRow();
+      }
+    });
+
+    dynamicForm.addEventListener('input', (event) => {
+      if (event.target.closest('.herbicide-row')) {
+        const helpers = dynamicForm._weedingChemicalHelpers;
+        if (helpers) {
+          helpers.updateHerbicideTotals();
+        } else if (typeof window.refreshWeedingChemicalTotals === 'function') {
+          window.refreshWeedingChemicalTotals();
+        }
+      }
+      if (event.target.closest('.fertilizer-row')) {
+        const helpers = dynamicForm._fertilizerHelpers;
+        if (helpers) {
+          helpers.updateFertilizerTotals();
+        } else if (typeof window.refreshFertilizerTotals === 'function') {
+          window.refreshFertilizerTotals();
+        }
+      }
+    });
+
+    dynamicForm.addEventListener('change', (event) => {
+      if (event.target.closest('.herbicide-row')) {
+        const helpers = dynamicForm._weedingChemicalHelpers;
+        if (helpers) {
+          helpers.updateHerbicideTotals();
+        } else if (typeof window.refreshWeedingChemicalTotals === 'function') {
+          window.refreshWeedingChemicalTotals();
+        }
+      }
+      if (event.target.closest('.fertilizer-row')) {
+        const helpers = dynamicForm._fertilizerHelpers;
+        if (helpers) {
+          helpers.updateFertilizerTotals();
+        } else if (typeof window.refreshFertilizerTotals === 'function') {
+          window.refreshFertilizerTotals();
+        }
+      }
+    });
+
+    dynamicForm.dataset.weedingChemicalDelegationBound = 'true';
+  }
+
+  const is_first_dose_fertilization_task = (
+    type === 'Pre-Planting Fertilization (basal)' ||
+    type === 'Post-Planting Fertilization'
+  );
+
   fields.forEach(f => {
+    // Weeding chemical fields are rendered as a multi-row custom block.
+    if (type === 'Weeding' && (f.id === 'dosage' || f.id === 'chemicalCost')) {
+      return;
+    }
+    // Fertilizer details are rendered in a dynamic multi-row block.
+    if (is_first_dose_fertilization_task && f.id === 'fertilizerCost') {
+      return;
+    }
+
     let inputHTML = '';
 
     // 🔽 SELECT WITH "Other" OPTION
     if(f.type === 'select'){
+      if (type === 'Weeding' && f.id === 'herbicide') {
+        inputHTML = `
+          <div id="weedingChemicalBlock" class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-gray-700">Herbicide Entries</label>
+              <button type="button" id="addHerbicideBtn" class="border rounded px-2 py-1 text-xs font-semibold hover:bg-gray-50">
+                <i class="fas fa-plus mr-1"></i>Add Herbicide
+              </button>
+            </div>
+            <div id="herbicideRowsContainer" class="grid grid-cols-1 gap-2"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div>
+                <label class="text-xs font-semibold">Total Chemical Cost (auto-calculated)</label>
+                <input type="number" step="0.01" id="totalChemicalCost" class="w-full border rounded px-3 py-2 bg-gray-100 font-semibold" readonly />
+              </div>
+            </div>
+            <!-- Hidden compatibility fields used by save logic -->
+            <input type="hidden" id="herbicide" />
+            <input type="hidden" id="dosage" />
+            <input type="hidden" id="dosageUnit" />
+            <input type="hidden" id="chemicalCost" />
+          </div>
+        `;
+      } else if (is_first_dose_fertilization_task && f.id === 'fertilizerType') {
+        inputHTML = `
+          <div id="fertilizerCostBlock" class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-gray-700">Fertilizer Entries</label>
+              <button type="button" id="addFertilizerBtn" class="border rounded px-2 py-1 text-xs font-semibold hover:bg-gray-50">
+                <i class="fas fa-plus mr-1"></i>Add Fertilizer
+              </button>
+            </div>
+            <div id="fertilizerRowsContainer" class="grid grid-cols-1 gap-2"></div>
+            <div>
+              <label class="text-xs font-semibold">Total Fertilizer Cost (auto-calculated)</label>
+              <input type="number" step="0.01" id="totalFertilizerCost" class="w-full border rounded px-3 py-2 bg-gray-100 font-semibold" readonly />
+            </div>
+            <!-- Hidden compatibility fields used by save and existing totals -->
+            <input type="hidden" id="fertilizerType" />
+            <input type="hidden" id="fertilizerCost" />
+          </div>
+        `;
+      } else {
       const optionsHTML = `
         <option value="">Select</option>
         ${f.options.map(opt=>`<option value="${opt}">${opt}</option>`).join('')}
@@ -3541,6 +3710,7 @@ function renderForm(type){
         ${getCustomSelectTemplate(f.id, optionsHTML, 'Select', `required onchange="handleOtherSelect('${f.id}')"`)}
         <input type="text" id="${f.id}_other" placeholder="Please specify" class="w-full border rounded px-3 py-2 mt-2 hidden" />
       `;
+      }
     } 
 
     // 🔢 NUMBER INPUT (regular)
@@ -3670,12 +3840,362 @@ function renderForm(type){
 
     // Append field
     dynamicForm.innerHTML += `
-      <div class="mb-4">
+      <div class="mb-4" data-field-id="${f.id}">
         <label class="text-xs font-medium">${f.label}</label>
         ${inputHTML}
       </div>
     `;
   });
+
+  // Weeding: multi-herbicide support for Chemical Weeding method
+  if (type === 'Weeding') {
+    const methodSelect = document.getElementById('method');
+    const weedingChemicalBlock = document.getElementById('weedingChemicalBlock');
+    const herbicideRowsContainer = document.getElementById('herbicideRowsContainer');
+    const addHerbicideBtn = document.getElementById('addHerbicideBtn');
+    const totalChemicalCostInput = document.getElementById('totalChemicalCost');
+    const hiddenHerbicide = document.getElementById('herbicide');
+    const hiddenDosage = document.getElementById('dosage');
+    const hiddenDosageUnit = document.getElementById('dosageUnit');
+    const hiddenChemicalCost = document.getElementById('chemicalCost');
+    const herbicideFieldContainer = dynamicForm.querySelector('[data-field-id="herbicide"]');
+    const areaCoveredFieldContainer = dynamicForm.querySelector('[data-field-id="areaCovered"]');
+
+    // Layout: keep Herbicide and Area Covered side-by-side on desktop.
+    if (herbicideFieldContainer) {
+      herbicideFieldContainer.classList.add('md:col-start-1', 'mb-2');
+    }
+    if (areaCoveredFieldContainer) {
+      areaCoveredFieldContainer.classList.add('mb-2');
+    }
+    if (herbicideFieldContainer && areaCoveredFieldContainer) {
+      areaCoveredFieldContainer.insertAdjacentElement('beforebegin', herbicideFieldContainer);
+    }
+
+    const herbicideOptions = ['Glyphosate', 'Paraquat', '2,4-D', 'Atrazine', 'Simazine', 'JU Clear', 'Others'];
+    const dosageUnits = ['Liter', 'Kilogram'];
+
+    const createHerbicideRow = () => {
+      const row = document.createElement('div');
+      row.className = 'herbicide-row border rounded p-2 grid grid-cols-1 md:grid-cols-12 gap-2 items-end bg-white';
+      row.innerHTML = `
+        <div class="md:col-span-3">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Herbicide Used</label>
+          <select class="herbicideName w-full min-w-0 border rounded px-3 py-2" onchange="if(window.refreshWeedingChemicalTotals){window.refreshWeedingChemicalTotals();}">
+            <option value="">Select herbicide</option>
+            ${herbicideOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Dosage / Quantity</label>
+          <input type="number" step="0.01" class="herbicideDosage w-full min-w-0 border rounded px-3 py-2" placeholder="0.00" oninput="if(window.refreshWeedingChemicalTotals){window.refreshWeedingChemicalTotals();}" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Unit</label>
+          <select class="herbicideDosageUnit w-full min-w-0 border rounded px-3 py-2" onchange="if(window.refreshWeedingChemicalTotals){window.refreshWeedingChemicalTotals();}">
+            <option value="">Unit</option>
+            ${dosageUnits.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Price per Unit</label>
+          <input type="number" step="0.01" class="herbicidePricePerUnit w-full min-w-0 border rounded px-3 py-2" placeholder="0.00" oninput="if(window.refreshWeedingChemicalTotals){window.refreshWeedingChemicalTotals();}" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Total Cost</label>
+          <input type="number" step="0.01" class="herbicideRowTotal w-full min-w-0 border rounded px-3 py-2 bg-gray-100" readonly />
+        </div>
+        <div class="md:col-span-1 flex items-end justify-end md:justify-center">
+          <button type="button" class="removeHerbicideRow w-full md:w-10 h-10 border rounded text-xs hover:bg-red-50" title="Remove row">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `;
+      return row;
+    };
+
+    const updateHerbicideTotals = () => {
+      const liveRowsContainer = document.getElementById('herbicideRowsContainer');
+      const liveTotalChemicalCostInput = document.getElementById('totalChemicalCost');
+      const liveHiddenHerbicide = document.getElementById('herbicide');
+      const liveHiddenDosage = document.getElementById('dosage');
+      const liveHiddenDosageUnit = document.getElementById('dosageUnit');
+      const liveHiddenChemicalCost = document.getElementById('chemicalCost');
+      if (!liveRowsContainer) return;
+
+      const rows = Array.from(liveRowsContainer.querySelectorAll('.herbicide-row'));
+      let totalChemical = 0;
+
+      rows.forEach((row) => {
+        const dosageValue = parseFloat(row.querySelector('.herbicideDosage')?.value) || 0;
+        const pricePerUnitValue = parseFloat(row.querySelector('.herbicidePricePerUnit')?.value) || 0;
+        const rowTotal = dosageValue * pricePerUnitValue;
+        const rowTotalInput = row.querySelector('.herbicideRowTotal');
+        if (rowTotalInput) rowTotalInput.value = rowTotal.toFixed(2);
+        totalChemical += rowTotal;
+      });
+
+      if (liveTotalChemicalCostInput) liveTotalChemicalCostInput.value = totalChemical.toFixed(2);
+      if (liveHiddenChemicalCost) liveHiddenChemicalCost.value = totalChemical.toFixed(2);
+
+      // Mirror values to legacy hidden fields (keeps compatibility while storing all herbicides)
+      const firstRow = rows[0];
+      if (firstRow) {
+        if (liveHiddenHerbicide) {
+          const allHerbicides = rows
+            .map((row) => row.querySelector('.herbicideName')?.value || '')
+            .map((name) => name.trim())
+            .filter(Boolean);
+          liveHiddenHerbicide.value = allHerbicides.join(', ');
+        }
+        if (liveHiddenDosage) liveHiddenDosage.value = firstRow.querySelector('.herbicideDosage')?.value || '';
+        if (liveHiddenDosageUnit) liveHiddenDosageUnit.value = firstRow.querySelector('.herbicideDosageUnit')?.value || '';
+      } else {
+        if (liveHiddenHerbicide) liveHiddenHerbicide.value = '';
+        if (liveHiddenDosage) liveHiddenDosage.value = '';
+        if (liveHiddenDosageUnit) liveHiddenDosageUnit.value = '';
+      }
+
+      if (typeof window.updateTotalCost === 'function') window.updateTotalCost();
+    };
+
+    const bindRowEvents = (row) => {
+      if (!row) return;
+      const herbicideInput = row.querySelector('.herbicideName');
+      const dosageInput = row.querySelector('.herbicideDosage');
+      const unitInput = row.querySelector('.herbicideDosageUnit');
+      const pricePerUnitInput = row.querySelector('.herbicidePricePerUnit');
+
+      [herbicideInput, dosageInput, unitInput, pricePerUnitInput].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('input', updateHerbicideTotals);
+        el.addEventListener('change', updateHerbicideTotals);
+      });
+    };
+
+    const ensureAtLeastOneRow = () => {
+      if (!herbicideRowsContainer) return;
+      if (herbicideRowsContainer.children.length === 0) {
+        const firstRow = createHerbicideRow();
+        herbicideRowsContainer.appendChild(firstRow);
+        bindRowEvents(firstRow);
+      }
+      updateHerbicideTotals();
+    };
+
+    // Global fallback updater for inline handlers (resilient across re-renders/cache issues)
+    window.refreshWeedingChemicalTotals = updateHerbicideTotals;
+
+    dynamicForm._weedingChemicalHelpers = {
+      createHerbicideRow,
+      bindRowEvents,
+      updateHerbicideTotals,
+      ensureAtLeastOneRow
+    };
+
+    if (addHerbicideBtn && herbicideRowsContainer) {
+      addHerbicideBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const newRow = createHerbicideRow();
+        herbicideRowsContainer.appendChild(newRow);
+        bindRowEvents(newRow);
+        updateHerbicideTotals();
+      };
+
+      herbicideRowsContainer.addEventListener('input', updateHerbicideTotals);
+      herbicideRowsContainer.addEventListener('change', updateHerbicideTotals);
+    }
+
+    // Keep one row ready; field visibility itself is handled by existing dependsOn logic.
+    ensureAtLeastOneRow();
+  }
+
+  // First Dose Fertilization: dynamic multi-fertilizer rows
+  if (is_first_dose_fertilization_task) {
+    const fertilizerRowsContainer = document.getElementById('fertilizerRowsContainer');
+    const addFertilizerBtn = document.getElementById('addFertilizerBtn');
+    const fertilizerTypeHidden = document.getElementById('fertilizerType');
+    const fertilizerCostHidden = document.getElementById('fertilizerCost');
+    const totalFertilizerCostInput = document.getElementById('totalFertilizerCost');
+    const fertilizerFieldContainer = dynamicForm.querySelector('[data-field-id="fertilizerType"]');
+
+    if (fertilizerFieldContainer) {
+      fertilizerFieldContainer.classList.add('md:col-span-2');
+    }
+
+    const fertilizerConfig = fields.find((field) => field && field.id === 'fertilizerType');
+    const fertilizerOptions = Array.isArray(fertilizerConfig?.options)
+      ? fertilizerConfig.options
+      : ['Urea (46-0-0)', 'Ammonium Sulfate (21-0-0)', 'Complete (14-14-14)', 'Others'];
+
+    const createFertilizerRow = () => {
+      const row = document.createElement('div');
+      row.className = 'fertilizer-row border rounded p-2 grid grid-cols-1 md:grid-cols-12 gap-2 items-end bg-white';
+      row.innerHTML = `
+        <div class="md:col-span-5">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Fertilizer Type</label>
+          <select class="fertilizerTypeItem w-full min-w-0 border rounded px-3 py-2">
+            <option value="">Select fertilizer</option>
+            ${fertilizerOptions.map((opt) => `<option value="${opt}">${opt}</option>`).join('')}
+          </select>
+          <input type="text" class="fertilizerTypeOtherItem w-full min-w-0 border rounded px-3 py-2 mt-2 hidden" placeholder="Please specify" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Quantity</label>
+          <input type="number" step="0.01" class="fertilizerQuantityItem w-full min-w-0 border rounded px-3 py-2" placeholder="0.00" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Price per Sack</label>
+          <input type="number" step="0.01" class="fertilizerPricePerSackItem w-full min-w-0 border rounded px-3 py-2" placeholder="0.00" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-[11px] font-medium text-gray-600 mb-0.5">Total Cost</label>
+          <input type="number" step="0.01" class="fertilizerRowTotalItem w-full min-w-0 border rounded px-3 py-2 bg-gray-100" readonly />
+        </div>
+        <div class="md:col-span-1 flex items-end justify-end md:justify-center">
+          <button type="button" class="removeFertilizerRow w-full md:w-10 h-10 border rounded text-xs hover:bg-red-50" title="Remove row">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `;
+      return row;
+    };
+
+    const updateFertilizerTotals = () => {
+      const liveRowsContainer = document.getElementById('fertilizerRowsContainer');
+      const liveTotalFertilizerCostInput = document.getElementById('totalFertilizerCost');
+      const liveFertilizerTypeHidden = document.getElementById('fertilizerType');
+      const liveFertilizerCostHidden = document.getElementById('fertilizerCost');
+      if (!liveRowsContainer) return;
+
+      const rows = Array.from(liveRowsContainer.querySelectorAll('.fertilizer-row'));
+      let totalFertilizer = 0;
+
+      rows.forEach((row) => {
+        const quantity = parseFloat(row.querySelector('.fertilizerQuantityItem')?.value) || 0;
+        const pricePerSack = parseFloat(row.querySelector('.fertilizerPricePerSackItem')?.value) || 0;
+        const rowTotal = quantity * pricePerSack;
+        const rowTotalInput = row.querySelector('.fertilizerRowTotalItem');
+        if (rowTotalInput) rowTotalInput.value = rowTotal.toFixed(2);
+        totalFertilizer += rowTotal;
+      });
+
+      if (liveTotalFertilizerCostInput) liveTotalFertilizerCostInput.value = totalFertilizer.toFixed(2);
+      if (liveFertilizerCostHidden) liveFertilizerCostHidden.value = totalFertilizer.toFixed(2);
+
+      const firstRow = rows[0];
+      if (firstRow) {
+        if (liveFertilizerTypeHidden) {
+          const allFertilizers = rows
+            .map((row) => {
+              const typeValue = row.querySelector('.fertilizerTypeItem')?.value || '';
+              const typeOtherValue = row.querySelector('.fertilizerTypeOtherItem')?.value || '';
+              return typeValue === 'Others' ? typeOtherValue : typeValue;
+            })
+            .map((name) => String(name || '').trim())
+            .filter(Boolean);
+          liveFertilizerTypeHidden.value = allFertilizers.join(', ');
+        }
+      } else if (liveFertilizerTypeHidden) {
+        liveFertilizerTypeHidden.value = '';
+      }
+
+      if (typeof window.updateTotalCost === 'function') window.updateTotalCost();
+    };
+
+    const bindRowEvents = (row) => {
+      if (!row) return;
+      const typeInput = row.querySelector('.fertilizerTypeItem');
+      const typeOtherInput = row.querySelector('.fertilizerTypeOtherItem');
+      const qtyInput = row.querySelector('.fertilizerQuantityItem');
+      const priceInput = row.querySelector('.fertilizerPricePerSackItem');
+      const syncOtherVisibility = () => {
+        if (!typeInput || !typeOtherInput) return;
+        const isOthers = typeInput.value === 'Others';
+        typeOtherInput.classList.toggle('hidden', !isOthers);
+        typeOtherInput.required = isOthers;
+        if (!isOthers) typeOtherInput.value = '';
+      };
+      if (typeInput) {
+        typeInput.addEventListener('change', syncOtherVisibility);
+        syncOtherVisibility();
+      }
+      [typeInput, qtyInput, priceInput].forEach((el) => {
+        if (!el) return;
+        el.addEventListener('input', updateFertilizerTotals);
+        el.addEventListener('change', updateFertilizerTotals);
+      });
+      if (typeOtherInput) {
+        typeOtherInput.addEventListener('input', updateFertilizerTotals);
+        typeOtherInput.addEventListener('change', updateFertilizerTotals);
+      }
+    };
+
+    const ensureAtLeastOneRow = () => {
+      if (!fertilizerRowsContainer) return;
+      if (fertilizerRowsContainer.children.length === 0) {
+        const firstRow = createFertilizerRow();
+        fertilizerRowsContainer.appendChild(firstRow);
+        bindRowEvents(firstRow);
+      }
+      updateFertilizerTotals();
+    };
+
+    window.refreshFertilizerTotals = updateFertilizerTotals;
+    dynamicForm._fertilizerHelpers = {
+      createFertilizerRow,
+      bindRowEvents,
+      updateFertilizerTotals,
+      ensureAtLeastOneRow
+    };
+
+    if (addFertilizerBtn && fertilizerRowsContainer) {
+      addFertilizerBtn.onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const newRow = createFertilizerRow();
+        fertilizerRowsContainer.appendChild(newRow);
+        bindRowEvents(newRow);
+        updateFertilizerTotals();
+      };
+    }
+
+    ensureAtLeastOneRow();
+  }
+
+  // Harvesting: auto-calculate production and value metrics
+  if (type === 'Harvesting') {
+    const numberOfTruckTripsInput = document.getElementById('numberOfTruckTrips');
+    const averageWeightPerTruckInput = document.getElementById('averageWeightPerTruck');
+    const totalSugarcaneHarvestedInput = document.getElementById('totalSugarcaneHarvested');
+    const priceOfSugarcaneInput = document.getElementById('priceOfSugarcane');
+    const totalValueInput = document.getElementById('totalValue');
+
+    const updateHarvestingTotals = () => {
+      const trips = parseFloat(numberOfTruckTripsInput?.value) || 0;
+      const avgWeight = parseFloat(averageWeightPerTruckInput?.value) || 0;
+      const totalHarvested = trips * avgWeight;
+
+      if (totalSugarcaneHarvestedInput) {
+        totalSugarcaneHarvestedInput.value = totalHarvested.toFixed(2);
+      }
+
+      const price = parseFloat(priceOfSugarcaneInput?.value) || 0;
+      const totalValue = totalHarvested * price;
+      if (totalValueInput) {
+        totalValueInput.value = totalValue.toFixed(2);
+      }
+    };
+
+    [numberOfTruckTripsInput, averageWeightPerTruckInput, priceOfSugarcaneInput].forEach((input) => {
+      if (!input) return;
+      input.addEventListener('input', updateHarvestingTotals);
+      input.addEventListener('change', updateHarvestingTotals);
+    });
+
+    updateHarvestingTotals();
+  }
 
   // Always add Notes / Remarks field at the bottom (optional, always visible)
   // Safety check: ensure fields is still an array
@@ -3708,7 +4228,7 @@ function renderForm(type){
   
   selectFields.forEach(f => {
       const selectEl = document.getElementById(f.id);
-      if (selectEl) {
+      if (selectEl && selectEl.tagName === 'SELECT') {
         initializeCustomSelect(selectEl);
         
         // Handle conditional field visibility (dependsOn)
@@ -3890,6 +4410,31 @@ function renderForm(type){
       if(laborCostHidden) {
         total += parseFloat(laborCostHidden.value) || 0;
       }
+    }
+
+    // Weeding + Chemical method: total cost must be Total Chemical Cost + Total Labor Cost only
+    const currentTaskDisplay = document.getElementById('taskType')?.value || '';
+    const currentTaskKey = taskNameAliases[currentTaskDisplay] || currentTaskDisplay;
+    const weedingMethod = document.getElementById('method')?.value || '';
+    const totalChemicalCostInput = document.getElementById('totalChemicalCost');
+    if (currentTaskKey === 'Weeding' && weedingMethod === 'Chemical Weeding' && totalChemicalCostInput) {
+      const totalChemical = parseFloat(totalChemicalCostInput.value) || 0;
+      total = totalChemical + (parseFloat(document.getElementById('laborCost')?.value) || 0);
+      totalCostInput.value = total.toFixed(2);
+      return;
+    }
+
+    // First dose fertilization: total cost must be Total Fertilizer Cost + Total Labor Cost
+    const totalFertilizerCostInput = document.getElementById('totalFertilizerCost');
+    if (
+      (currentTaskKey === 'Pre-Planting Fertilization (basal)' || currentTaskKey === 'Post-Planting Fertilization') &&
+      totalFertilizerCostInput
+    ) {
+      const totalFertilizer = parseFloat(totalFertilizerCostInput.value) || 0;
+      const totalLabor = parseFloat(document.getElementById('laborCost')?.value) || 0;
+      total = totalFertilizer + totalLabor;
+      totalCostInput.value = total.toFixed(2);
+      return;
     }
     
     // Explicitly include Rent Cost if it exists (dynamically created field)
@@ -4752,11 +5297,30 @@ for(const f of fields){
   
   const chemicalQuantityInput = document.getElementById('chemicalQuantity');
   const chemicalPricePerPieceInput = document.getElementById('chemicalPricePerPiece');
+  const totalChemicalCostInput = document.getElementById('totalChemicalCost');
+  const totalFertilizerCostInput = document.getElementById('totalFertilizerCost');
+  const firstFertilizerRow = document.querySelector('#fertilizerRowsContainer .fertilizer-row');
   if (chemicalQuantityInput) {
     recordData.chemicalQuantity = parseFloat(chemicalQuantityInput.value) || 0;
   }
   if (chemicalPricePerPieceInput) {
     recordData.chemicalPricePerPiece = parseFloat(chemicalPricePerPieceInput.value) || 0;
+  }
+  if (totalChemicalCostInput && totalChemicalCostInput.value !== '') {
+    recordData.totalChemicalCost = parseFloat(totalChemicalCostInput.value) || 0;
+  }
+  if (totalFertilizerCostInput && totalFertilizerCostInput.value !== '') {
+    recordData.totalFertilizerCost = parseFloat(totalFertilizerCostInput.value) || 0;
+  }
+  if (firstFertilizerRow) {
+    const fertilizerQuantityItem = firstFertilizerRow.querySelector('.fertilizerQuantityItem');
+    const fertilizerPricePerSackItem = firstFertilizerRow.querySelector('.fertilizerPricePerSackItem');
+    if (fertilizerQuantityItem) {
+      recordData.fertilizerQuantity = parseFloat(fertilizerQuantityItem.value) || 0;
+    }
+    if (fertilizerPricePerSackItem) {
+      recordData.fertilizerPricePerSack = parseFloat(fertilizerPricePerSackItem.value) || 0;
+    }
   }
   
   // Collect enhanced Labor Cost supporting fields if enhanced version exists

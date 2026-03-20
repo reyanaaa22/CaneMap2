@@ -1569,9 +1569,10 @@ export async function getFieldGrowthData(fieldId) {
     // ✅ FETCH SEED RATE AND FERTILIZERS FROM LATEST DONE RECORDS
     // =========================================================
     // Seed Rate: From latest DONE "Planting Operation" record
-    // Fertilizers Used: From latest DONE fertilizer-related records
+    // Fertilizers Used / Weeding Used: Aggregated from DONE records
     let seedRate = null;
     let fertilizersUsed = null;
+    let weedingUsed = null;
     
     try {
       // 1️⃣ FETCH ALL DONE RECORDS for this field to search for seed rate and fertilizers
@@ -1627,7 +1628,26 @@ export async function getFieldGrowthData(fieldId) {
           console.log(`⚠️ No planting records found for field ${fieldId}`);
         }
         
-        // 3️⃣ FETCH FERTILIZERS USED from fertilizer-related records
+        const normalizeUsedName = (value) => {
+          if (!value) return null;
+          return String(value).replace(/\s+/g, ' ').trim();
+        };
+        const pushNamesToSet = (value, targetSet) => {
+          if (!value || !targetSet) return;
+          if (Array.isArray(value)) {
+            value.forEach((item) => pushNamesToSet(item, targetSet));
+            return;
+          }
+          const asString = String(value).trim();
+          if (!asString) return;
+          asString
+            .split(',')
+            .map((part) => normalizeUsedName(part))
+            .filter(Boolean)
+            .forEach((name) => targetSet.add(name));
+        };
+
+        // 3️⃣ FETCH FERTILIZERS USED from fertilizer-related records (all first/second dose entries)
         // Task types that contain fertilizer info (display names and variations)
         const fertilizerKeywords = [
           'Fertilization',
@@ -1645,51 +1665,70 @@ export async function getFieldGrowthData(fieldId) {
         );
         
         console.log(`📋 Found ${fertilizerRecords.length} fertilizer-related records`);
-        
+
         if (fertilizerRecords.length > 0) {
-          // Sort by date to get most recent
-          fertilizerRecords.sort((a, b) => {
-            const dateA = a.recordDate?.toDate?.() || a.createdAt?.toDate?.() || new Date(0);
-            const dateB = b.recordDate?.toDate?.() || b.createdAt?.toDate?.() || new Date(0);
-                  return dateB - dateA; // Most recent first
-                });
-          
-          const latestFertilizerRecord = fertilizerRecords[0];
-          console.log(`📋 Latest Fertilizer Record:`, latestFertilizerRecord.taskType);
-          console.log(`📋 Fertilizer Record Data:`, latestFertilizerRecord.data);
-          
-          // Priority 1: Check fertilizerType in record.data
-          if (latestFertilizerRecord.data && latestFertilizerRecord.data.fertilizerType) {
-            fertilizersUsed = latestFertilizerRecord.data.fertilizerType;
-            console.log(`✅ Fertilizer Used found in record.data.fertilizerType: ${fertilizersUsed}`);
-          }
-          // Priority 2: Check bought_items subcollection
-          else {
+          const fertilizerSet = new Set();
+          for (const fertilizerRecord of fertilizerRecords) {
+            const fertilizerData = fertilizerRecord.data || {};
+            pushNamesToSet(fertilizerData.fertilizerType, fertilizerSet);
+            pushNamesToSet(fertilizerData.fertilizerUsed, fertilizerSet);
+
+            // Fallback: check bought_items for this fertilizer record
             try {
-              const boughtItemsSnapshot = await getDocs(collection(db, 'records', latestFertilizerRecord.id, 'bought_items'));
-              const boughtItems = boughtItemsSnapshot.docs.map(doc => doc.data());
-              
-              if (boughtItems.length > 0) {
-                const fertilizerItems = boughtItems.filter(item => 
-                      item.itemName && item.itemName.toLowerCase().includes('fertilizer')
-                    );
-                    if (fertilizerItems.length > 0) {
-                      fertilizersUsed = fertilizerItems.map(item => item.itemName).join(', ');
-                  console.log(`✅ Fertilizer Used found in bought_items: ${fertilizersUsed}`);
+              const boughtItemsSnapshot = await getDocs(collection(db, 'records', fertilizerRecord.id, 'bought_items'));
+              const boughtItems = boughtItemsSnapshot.docs.map((docSnap) => docSnap.data());
+              boughtItems.forEach((item) => {
+                if (item?.itemName && item.itemName.toLowerCase().includes('fertilizer')) {
+                  pushNamesToSet(item.itemName, fertilizerSet);
                 }
-              }
+              });
             } catch (boughtItemsError) {
               console.debug('No bought_items subcollection for fertilizer record:', boughtItemsError);
             }
           }
-          
-          // Priority 3: Check fertilizerUsed field (legacy compatibility)
-          if (!fertilizersUsed && latestFertilizerRecord.data && latestFertilizerRecord.data.fertilizerUsed) {
-            fertilizersUsed = latestFertilizerRecord.data.fertilizerUsed;
-            console.log(`✅ Fertilizer Used found in record.data.fertilizerUsed: ${fertilizersUsed}`);
-          }
+          fertilizersUsed = fertilizerSet.size > 0 ? Array.from(fertilizerSet).join(', ') : null;
         } else {
           console.log(`⚠️ No fertilizer records found for field ${fieldId}`);
+        }
+
+        // 4️⃣ FETCH WEEDING / WEED CONTROL USED (all herbicides from weeding + spray/weed control)
+        const weedingKeywords = [
+          'Weeding',
+          'Pagpananom',
+          'Herbicide',
+          'Spray Selection',
+          'Weed Control',
+          'Chemical Weeding'
+        ];
+        const weedingRecords = allDoneRecords.filter((record) =>
+          record.taskType && weedingKeywords.some((keyword) =>
+            record.taskType.toLowerCase().includes(keyword.toLowerCase())
+          )
+        );
+
+        if (weedingRecords.length > 0) {
+          const weedingSet = new Set();
+          for (const weedingRecord of weedingRecords) {
+            const weedingData = weedingRecord.data || {};
+            pushNamesToSet(weedingData.herbicide, weedingSet);
+            pushNamesToSet(weedingData.herbicideUsed, weedingSet);
+            pushNamesToSet(weedingData.chemicalUsed, weedingSet);
+
+            // Fallback: check bought_items for herbicide/chemical item names
+            try {
+              const boughtItemsSnapshot = await getDocs(collection(db, 'records', weedingRecord.id, 'bought_items'));
+              const boughtItems = boughtItemsSnapshot.docs.map((docSnap) => docSnap.data());
+              boughtItems.forEach((item) => {
+                const itemName = item?.itemName ? String(item.itemName).toLowerCase() : '';
+                if (itemName.includes('herbicide') || itemName.includes('chemical') || itemName.includes('weed')) {
+                  pushNamesToSet(item.itemName, weedingSet);
+                }
+              });
+            } catch (boughtItemsError) {
+              console.debug('No bought_items subcollection for weeding record:', boughtItemsError);
+            }
+          }
+          weedingUsed = weedingSet.size > 0 ? Array.from(weedingSet).join(', ') : null;
         }
       } else {
         console.log(`⚠️ No DONE records found for field ${fieldId}`);
@@ -1772,7 +1811,8 @@ export async function getFieldGrowthData(fieldId) {
         status: 'not_planted',
         area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
         seedRate: seedRate,
-        fertilizersUsed: fertilizersUsed
+        fertilizersUsed: fertilizersUsed,
+        weedingUsed: weedingUsed
       };
     }
 
@@ -1842,7 +1882,8 @@ export async function getFieldGrowthData(fieldId) {
       status: fieldData.status, // Include actual database status field
       area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
       seedRate: seedRate,
-      fertilizersUsed: fertilizersUsed
+      fertilizersUsed: fertilizersUsed,
+      weedingUsed: weedingUsed
     };
 
   } catch (error) {
@@ -1865,15 +1906,15 @@ export function mapTaskTypeToStage(taskType, operation) {
   const normalizedTaskType = taskType.trim();
   const normalizedOperation = operation.trim();
   
-  // OPTIONAL STAGES - These do NOT affect progress
+  // Detrashing is now part of main Post-Planting flow (Grand Growth)
   if (normalizedOperation === 'Detrashing' || normalizedTaskType.includes('Detrashing')) {
-    return 'Detrashing'; // Optional - does not affect progress
+    return 'Grand Growth';
   }
   if (normalizedOperation === 'Replanting' || normalizedTaskType.includes('Replanting') || normalizedTaskType.includes('Replanting Operation')) {
-    return 'Replanting'; // Optional - does not affect progress
+    return 'Planting'; // Replanting is treated as a Planting-stage task
   }
   if (normalizedOperation === 'Ratooning' || normalizedTaskType.includes('Ratooning')) {
-    return 'Ratooning'; // Optional - does not affect progress
+    return 'Planting'; // Ratooning is treated as a Planting-stage task
   }
   
   // MAIN GROWTH FLOW STAGES
@@ -1926,6 +1967,8 @@ export function mapTaskTypeToStage(taskType, operation) {
     if (normalizedTaskType.includes('Ripener Application') ||
         normalizedTaskType.includes('Ripener') ||
         normalizedTaskType.includes('Pagbutang og ripener') || // Cebuano
+        normalizedTaskType.includes('Spray Selection / Weed Control') ||
+        normalizedTaskType.includes('Pagpili sa Spray / Weed Control') || // Cebuano
         normalizedTaskType.includes('Crop Monitoring') ||
         normalizedTaskType.includes('Growth Monitoring') ||
         normalizedTaskType.includes('Pagbantay sa kahamtong') || // Cebuano for crop monitoring
@@ -1968,6 +2011,7 @@ export function mapTaskTypeToStage(taskType, operation) {
     'Growth Monitoring': 'Maturing / Ripening',
     'Pre-Harvest Assessment': 'Maturing / Ripening',
     'Ripener Application': 'Maturing / Ripening',
+    'Spray Selection / Weed Control': 'Maturing / Ripening',
     'Hauling': 'Harvesting'
   };
   
