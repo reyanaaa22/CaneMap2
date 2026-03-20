@@ -5177,11 +5177,12 @@ export function initializeFieldsSection() {
       const statusLabel = getStatusLabel(effectiveStatus);
       const { badgeClass, textClass } = getBadgeClasses(effectiveStatus);
       
-      // Extract field information
-      const variety = field.sugarcane_variety || field.variety || 'N/A';
+      // Use record-driven variety from Growth Tracker when available
+      const variety = growthData?.variety || field.sugarcane_variety || field.variety || 'N/A';
       const plantingDate = growthData?.plantingDate || null;
+      const rawDapStage = growthData?.dapCurrentGrowthStage || growthData?.currentGrowthStage || field.currentGrowthStage || 'N/A';
       const growthStage = plantingDate
-        ? (growthData?.currentGrowthStage || field.currentGrowthStage || 'N/A')
+        ? (rawDapStage === 'Maturity' ? 'Maturing / Ripening' : rawDapStage)
         : 'Not Planted';
       const cropAgeMonths = calculateCropAgeInMonths(plantingDate);
       
@@ -5336,9 +5337,19 @@ export function initializeFieldsSection() {
       // Keep dashboard details aligned with Growth Tracker (record-driven).
       let growthData = null;
       let growthStage = '—';
+      let dapStage = '—';
       let expectedHarvestDate = '—';
       let plantingDate = '—';
       let delayDays = '—';
+      let dapValue = '—';
+      let daysRemaining = '—';
+      let daysRemainingLatest = '—';
+      let maturityText = '—';
+      let cropTypeLabel = 'Plant Cane';
+      let recordVariety = variety;
+      let seedRate = '—';
+      let fertilizersUsed = '—';
+      let weedingUsed = '—';
       let status = field.status || 'active';
 
       // Backfill owner for existing Panoma records so it persists in Firestore.
@@ -5356,22 +5367,72 @@ export function initializeFieldsSection() {
         }
       }
       try {
-        const { getFieldGrowthData } = await import('./growth-tracker.js');
+        const { getFieldGrowthData, formatHarvestDate } = await import('./growth-tracker.js');
         growthData = await getFieldGrowthData(fieldId);
-        // Keep field lifecycle status from approved field document.
-        // Growth data should not override reviewed/active approval state.
         status = field.status || status;
-        growthStage = growthData?.currentGrowthStage || '—';
+
+        // Record-driven variety takes priority
+        if (growthData?.variety) {
+          recordVariety = growthData.variety;
+        }
+
+        // Crop type label (Plant Cane / Ratoon)
+        const cropTypeNormalized = (growthData?.cropType || '').toString().toLowerCase();
+        cropTypeLabel = cropTypeNormalized.includes('ratoon') ? 'Ratoon' : 'Plant Cane';
+
+        // Seed rate, fertilizers, weeding from input records
+        seedRate = growthData?.seedRate || '—';
+        if (typeof seedRate === 'number') {
+          seedRate = seedRate.toLocaleString('en-US', { maximumFractionDigits: 2 });
+        }
+
+        const formatUsedItems = (value) => {
+          if (!value) return '—';
+          const items = String(value).split(',').map(i => i.trim()).filter(Boolean);
+          return items.length > 0 ? items.join(', ') : '—';
+        };
+        fertilizersUsed = formatUsedItems(growthData?.fertilizersUsed);
+        weedingUsed = formatUsedItems(growthData?.weedingUsed);
 
         if (!growthData?.plantingDate) {
-          growthStage = 'Not Planted';
+          growthStage = growthData?.currentGrowthStage || 'Not Planted';
+          dapStage = 'Not Planted';
           plantingDate = '—';
           expectedHarvestDate = '—';
           delayDays = '—';
         } else {
-          plantingDate = formatDateDDMMYYYY(growthData.plantingDate);
+          growthStage = growthData.currentGrowthStage || '—';
+          // DAP-based stage for display
+          const rawDapStage = growthData.dapCurrentGrowthStage || growthData.currentGrowthStage || '—';
+          dapStage = rawDapStage === 'Maturity' ? 'Maturing / Ripening' : rawDapStage;
+
+          // Use formatHarvestDate for consistent formatting
+          plantingDate = growthData.plantingDate instanceof Date
+            ? formatHarvestDate(growthData.plantingDate)
+            : String(growthData.plantingDate);
+
           expectedHarvestDate = growthData.expectedHarvestDateFormatted || '—';
           delayDays = growthData?.delayInfo?.isDelayed ? growthData.delayInfo.delayDays : '—';
+          dapValue = (growthData.DAP !== null && growthData.DAP !== undefined)
+            ? `${growthData.DAP} days`
+            : '—';
+
+          // Days remaining range
+          const drEarliest = growthData.daysRemaining;
+          const drLatest = growthData.daysRemainingToLatest;
+          if (drEarliest !== null && drLatest !== null) {
+            daysRemaining = Math.max(0, drEarliest).toString();
+            daysRemainingLatest = Math.max(0, drLatest).toString();
+          } else if (drEarliest !== null) {
+            daysRemaining = Math.max(0, drEarliest).toString();
+            daysRemainingLatest = daysRemaining;
+          }
+        }
+
+        // Maturity months range
+        const mat = growthData?.maturityMonths;
+        if (mat) {
+          maturityText = mat.min === mat.max ? `${mat.min} months` : `${mat.min}–${mat.max} months`;
         }
       } catch (e) {
         console.warn('Could not load record-driven growth stage:', e);
@@ -5509,8 +5570,12 @@ export function initializeFieldsSection() {
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div class="bg-gradient-to-br from-green-50 to-green-100 rounded p-3 border border-green-200">
-                  <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Variety</p>
-                  <p class="text-sm font-semibold text-green-900 mt-1">${escapeHtml(variety)}</p>
+                  <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Crop Variety</p>
+                  <p class="text-sm font-semibold text-green-900 mt-1">${escapeHtml(recordVariety)}</p>
+                </div>
+                <div class="bg-gradient-to-br from-green-50 to-green-100 rounded p-3 border border-green-200">
+                  <p class="text-xs font-bold text-green-700 uppercase tracking-wide">Crop Type</p>
+                  <p class="text-sm font-semibold text-green-900 mt-1">${escapeHtml(cropTypeLabel)}</p>
                 </div>
                 <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded p-3 border border-blue-200">
                   <p class="text-xs font-bold text-blue-700 uppercase tracking-wide">Soil Type</p>
@@ -5523,6 +5588,10 @@ export function initializeFieldsSection() {
                 <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded p-3 border border-purple-200">
                   <p class="text-xs font-bold text-purple-700 uppercase tracking-wide">Previous Crop</p>
                   <p class="text-sm font-semibold text-purple-900 mt-1">${escapeHtml(previousCrop)}</p>
+                </div>
+                <div class="bg-gradient-to-br from-teal-50 to-teal-100 rounded p-3 border border-teal-200">
+                  <p class="text-xs font-bold text-teal-700 uppercase tracking-wide">Maturity Period</p>
+                  <p class="text-sm font-semibold text-teal-900 mt-1">${escapeHtml(maturityText)}</p>
                 </div>
               </div>
             </div>
@@ -5547,45 +5616,95 @@ export function initializeFieldsSection() {
               </div>
             </div>
 
-            <!-- Growth & Planting Section -->
+            <!-- Growth Status Section (mirrors Growth Tracker page) -->
             <div>
               <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--cane-300)]">
                 <div class="w-6 h-6 rounded-full bg-[var(--cane-600)] text-white flex items-center justify-center text-xs font-bold">
-                  <i class="fas fa-chart-line text-xs"></i>
+                  <i class="fas fa-seedling text-xs"></i>
                 </div>
-                <h3 class="text-sm font-bold text-[var(--cane-900)]">Growth & Planting</h3>
+                <h3 class="text-sm font-bold text-[var(--cane-900)]">Growth Status</h3>
+                <span class="ml-auto text-[10px] text-gray-500">Synced with Growth Tracker</span>
               </div>
-              <div class="grid grid-cols-2 gap-3 mb-3">
+              <div class="grid grid-cols-3 gap-3 mb-3">
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
-                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Growth Stage</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(growthStage)}</p>
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Crop Variety</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(recordVariety)}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
-                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Planting Date</p>
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Age (DAP)</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1" id="fd_dap">${escapeHtml(dapValue)}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Date Planted</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(plantingDate))}</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
-                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Expected Harvest</p>
-                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(expectedHarvestDate))}</p>
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Current Growth Stage</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1" id="fd_growth_stage">${escapeHtml(dapStage)}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Area Size</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(size))} ha</p>
                 </div>
                 <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
                   <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Delay Days</p>
                   <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(delayDays))}</p>
                 </div>
               </div>
+              <div class="grid grid-cols-3 gap-3 mb-3">
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Seed Rate</p>
+                  <p class="text-sm font-semibold text-[var(--cane-900)] mt-1">${escapeHtml(String(seedRate))}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Fertilizers Used</p>
+                  <p class="text-xs font-semibold text-[var(--cane-900)] mt-1 break-words">${escapeHtml(fertilizersUsed)}</p>
+                </div>
+                <div class="bg-[var(--cane-50)] rounded p-3 border border-[var(--cane-100)]">
+                  <p class="text-xs font-bold text-[var(--cane-600)] uppercase tracking-wide">Weeding Used</p>
+                  <p class="text-xs font-semibold text-[var(--cane-900)] mt-1 break-words">${escapeHtml(weedingUsed)}</p>
+                </div>
+              </div>
+
+              <!-- Harvest Estimate (connected to variety maturity from Growth Tracker) -->
+              <div class="bg-gradient-to-r from-[var(--cane-50)] to-[var(--cane-100)] rounded-lg p-4 border border-[var(--cane-200)] mb-3">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-xs font-bold text-[var(--cane-700)] uppercase tracking-wide flex items-center gap-1">
+                    <i class="fas fa-calendar-check text-xs"></i> Harvest Estimate
+                  </p>
+                  <span class="text-[10px] text-gray-500">${escapeHtml(maturityText)} maturity</span>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <p class="text-[10px] text-[var(--cane-600)]">Estimated Harvest Window</p>
+                    <p class="text-sm font-bold text-[var(--cane-900)]">${escapeHtml(String(expectedHarvestDate))}</p>
+                    <p class="text-[10px] text-gray-500 mt-0.5">Based on ${escapeHtml(recordVariety)} maturity</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-[var(--cane-600)]">Days Remaining</p>
+                    <p class="text-sm font-bold text-[var(--cane-900)]">${escapeHtml(daysRemaining)} – ${escapeHtml(daysRemainingLatest)} days</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] text-[var(--cane-600)]">Crop Type</p>
+                    <p class="text-sm font-bold text-[var(--cane-900)]">${escapeHtml(cropTypeLabel)}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Growth Tracker link -->
               <div id="fd_growth_tracker_container" class="bg-gradient-to-r from-[var(--cane-600)] to-[var(--cane-700)] rounded p-3 border border-[var(--cane-400)]">
                 <div class="flex items-center justify-between mb-3">
                   <div>
                     <p class="text-xs font-bold text-[var(--cane-100)] uppercase tracking-wide">Current Stage</p>
-                    <p class="text-lg font-bold text-white mt-0.5" id="fd_growth_stage">—</p>
+                    <p class="text-lg font-bold text-white mt-0.5">${escapeHtml(dapStage)}</p>
                   </div>
                   <div class="text-right">
                     <p class="text-xs font-bold text-[var(--cane-100)] uppercase tracking-wide">Days After Planting</p>
-                    <p class="text-lg font-bold text-white mt-0.5" id="fd_dap">—</p>
+                    <p class="text-lg font-bold text-white mt-0.5">${escapeHtml(dapValue)}</p>
                   </div>
                 </div>
                 <button id="fd_view_growth_tracker_btn" class="w-full px-3 py-2 rounded font-semibold text-xs bg-white hover:bg-[var(--cane-100)] text-[var(--cane-700)] transition-colors flex items-center justify-center gap-1">
-                  <i class="fas fa-chart-line text-xs"></i>View Growth Tracker
+                  <i class="fas fa-chart-line text-xs"></i>View Full Growth Tracker
                 </button>
               </div>
             </div>
@@ -5615,18 +5734,6 @@ export function initializeFieldsSection() {
       const escHandler = (e) => { if (e.key === 'Escape') modal.remove(); };
       document.addEventListener('keydown', escHandler);
       modal.addEventListener('remove', () => { document.removeEventListener('keydown', escHandler); });
-
-      // Apply growth tracker status values already fetched above.
-      const growthStageEl = modal.querySelector('#fd_growth_stage');
-      const dapEl = modal.querySelector('#fd_dap');
-      const growthStageValue = growthData?.plantingDate
-        ? (growthData.currentGrowthStage || '—')
-        : 'Not Planted';
-      const dapValue = (growthData && growthData.DAP !== null && growthData.DAP !== undefined)
-        ? `${growthData.DAP} days`
-        : '—';
-      if (growthStageEl) growthStageEl.textContent = growthStageValue;
-      if (dapEl) dapEl.textContent = dapValue;
 
       // Add click handler for growth tracker button
       const growthTrackerBtn = modal.querySelector('#fd_view_growth_tracker_btn');

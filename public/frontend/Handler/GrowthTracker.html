@@ -764,21 +764,27 @@
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-2 text-base font-semibold"><i
                   class="fa-solid fa-calendar-check text-[var(--cane-700)] mr-1"></i> Harvest Estimate</div>
+              <div class="text-xs text-gray-500" id="uiMaturityRange">—</div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-base">
               <div>
-                <div class="text-[var(--cane-800)] text-xs">Estimated Harvest Date</div>
+                <div class="text-[var(--cane-800)] text-xs">Estimated Harvest Window</div>
                 <div class="font-semibold" id="uiHarvest">-</div>
-                <div class="text-[10px] text-gray-600">± 5 days variance</div>
+                <div class="text-[10px] text-gray-600" id="uiHarvestVarietyNote">Based on crop variety maturity</div>
               </div>
               <div>
                 <div class="text-[var(--cane-800)] text-xs">Days Remaining</div>
-                <div class="font-semibold"><span id="uiRemain">0</span> Days</div>
-                <div class="text-[10px] text-gray-600">Approximately <span id="uiMonths">0</span> months</div>
+                <div class="font-semibold"><span id="uiRemain">0</span> – <span id="uiRemainLatest">0</span> Days</div>
+                <div class="text-[10px] text-gray-600">Approximately <span id="uiMonths">0</span> – <span id="uiMonthsLatest">0</span> months</div>
+              </div>
+              <div>
+                <div class="text-[var(--cane-800)] text-xs">Crop Variety</div>
+                <div class="font-semibold text-sm" id="uiHarvestVariety">—</div>
+                <div class="text-[10px] text-gray-600" id="uiCropTypeLabel">—</div>
               </div>
             </div>
             <div class="mt-3 flex items-center gap-2 text-[10px] text-gray-700"><i class="fa-solid fa-circle-info"></i>
-              90% estimate accuracy based on continuous task logs and timestamps</div>
+              <span id="uiHarvestAccuracyNote">Harvest window based on variety-specific maturity range and planting date from submitted input records</span></div>
           </div>
 
           <!-- Unified Growth & Activity Timeline with Enhanced Progress Bar -->
@@ -1120,7 +1126,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange, getGrowthStageRanges } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange, getGrowthStageRanges, VARIETY_HARVEST_MONTHS_RANGE, RATOON_HARVEST_MONTHS_RANGE, calculateExpectedHarvestDateMonths, parseDateValue, parseExpectedHarvestDateFromRecord } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -1131,65 +1137,11 @@
         // Expose selectedFieldId globally for button handlers
         window.selectedFieldIdRef = { value: null };
 
-        // Ratoon duration mapping (in months) for each variety
-        // These are the ratoon-specific maturity months (different from initial planting)
-        const RATOON_DURATIONS = {
-          'K 88-65': { min: 11, max: 13 },
-          'K 88-87': { min: 11, max: 13 },
-          'PS 1': { min: 10, max: 11 },
-          'VMC 84-947': { min: 10, max: 11 },
-          'PS 2': { min: 8, max: 9 },
-          'VMC 88-354': { min: 8, max: 9 },
-          'PS 3': { min: 9, max: 10 },
-          'VMC 84-524': { min: 9, max: 10 },
-          'CADP Sc1': { min: 9, max: 10 },
-          'PS 4': { min: 9, max: 11 },
-          'VMC 95-152': { min: 9, max: 11 },
-          'PS 5': { min: 9, max: 11 },
-          'VMC 95-09': { min: 9, max: 11 },
-          'PSR 2000-161': { min: 10, max: 11 },
-          'PSR 2000-343': { min: 10, max: 11 },
-          'PSR 2000-34': { min: 10, max: 11 },
-          'PSR 97-41': { min: 10, max: 10 },
-          'PSR 97-45': { min: 9, max: 10 },
-          'PS 862': { min: 9, max: 11 },
-          'VMC 71-39': { min: 9, max: 11 },
-          'VMC 84-549': { min: 9, max: 9 },
-          'VMC 86-550': { min: 10, max: 11 },
-          'VMC 87-599': { min: 9, max: 11 },
-          'VMC 87-95': { min: 9, max: 10 }
-        };
+        // Use imported data from growth-tracker.js (single source of truth)
+        // RATOON_HARVEST_MONTHS_RANGE, VARIETY_HARVEST_MONTHS_RANGE, VARIETY_GROWTH_STAGES
+        // are all imported above — no duplicates needed here
 
-        // Variety months-to-harvest mapping for expected harvest date calculation
-        const VARIETY_HARVEST_MONTHS = {
-          'K 88-65': { min: 12, max: 14 },
-          'K 88-87': { min: 12, max: 14 },
-          'PS 1': { min: 11, max: 12 },
-          'VMC 84-947': { min: 11, max: 12 },
-          'PS 2': { min: 9, max: 10 },
-          'VMC 88-354': { min: 9, max: 10 },
-          'PS 3': { min: 10, max: 11 },
-          'VMC 84-524': { min: 10, max: 11 },
-          'CADP Sc1': { min: 10, max: 11 },
-          'PS 4': { min: 10, max: 12 },
-          'VMC 95-152': { min: 10, max: 12 },
-          'PS 5': { min: 10, max: 12 },
-          'VMC 95-09': { min: 10, max: 12 },
-          'PSR 2000-161': { min: 11, max: 12 },
-          'PSR 2000-343': { min: 11, max: 11.5 },
-          'PSR 2000-34': { min: 11, max: 12 },
-          'PSR 97-41': { min: 11, max: 11 },
-          'PSR 97-45': { min: 10, max: 11 },
-          'Ps 862': { min: 10, max: 12 },
-          'VMC 71-39': { min: 10, max: 12 },
-          'VMC 84-549': { min: 10, max: 10 },
-          'VMC 86-550': { min: 11, max: 12 },
-          'VMC 87-599': { min: 10, max: 12 },
-          'VMC 87-95': { min: 10, max: 11 }
-        };
-
-        // DAP (Days After Planting) stage ranges for each variety
-        // Use imported VARIETY_GROWTH_STAGES and convert start/end to min/max for compatibility
+        // DAP stage ranges derived from imported VARIETY_GROWTH_STAGES for local convenience
         const DAP_STAGE_RANGES = (() => {
           const converted = {};
           for (const [variety, stages] of Object.entries(VARIETY_GROWTH_STAGES)) {
@@ -1203,7 +1155,8 @@
 
         function getReadableCropType(cropType) {
           const normalized = (cropType || '').toString().toLowerCase();
-          return normalized.includes('ratoon') ? 'Ratoon' : 'New Plant';
+          if (normalized.includes('ratoon')) return 'Ratoon';
+          return 'Plant Cane';
         }
 
         function formatDapRange(start, end) {
@@ -1295,6 +1248,119 @@
           if (ranges && document.getElementById('progressCurrent')) {
             const readableStage = computedStage === 'Maturing / Ripening' ? 'Maturity' : computedStage;
             document.getElementById('progressCurrent').textContent = readableStage || '—';
+          }
+        }
+
+        /**
+         * Update the Harvest Estimate display section with variety-specific information.
+         * Pulls data from the Growth Status section (same growthData object) to ensure consistency.
+         */
+        function updateHarvestEstimateDisplay(growthData) {
+          const uiHarvest = document.getElementById('uiHarvest');
+          const uiRemain = document.getElementById('uiRemain');
+          const uiRemainLatest = document.getElementById('uiRemainLatest');
+          const uiMonths = document.getElementById('uiMonths');
+          const uiMonthsLatest = document.getElementById('uiMonthsLatest');
+          const uiMaturityRange = document.getElementById('uiMaturityRange');
+          const uiHarvestVariety = document.getElementById('uiHarvestVariety');
+          const uiCropTypeLabel = document.getElementById('uiCropTypeLabel');
+          const uiHarvestVarietyNote = document.getElementById('uiHarvestVarietyNote');
+          const uiHarvestAccuracyNote = document.getElementById('uiHarvestAccuracyNote');
+
+          if (!growthData || !growthData.plantingDate) {
+            if (uiHarvest) uiHarvest.textContent = '—';
+            if (uiRemain) uiRemain.textContent = '—';
+            if (uiRemainLatest) uiRemainLatest.textContent = '—';
+            if (uiMonths) uiMonths.textContent = '—';
+            if (uiMonthsLatest) uiMonthsLatest.textContent = '—';
+            if (uiMaturityRange) uiMaturityRange.textContent = '—';
+            if (uiHarvestVariety) uiHarvestVariety.textContent = '—';
+            if (uiCropTypeLabel) uiCropTypeLabel.textContent = '—';
+            return;
+          }
+
+          const variety = growthData.variety;
+          const maturity = growthData.maturityMonths;
+          const cropTypeLabel = getReadableCropType(growthData.cropType);
+
+          // Harvest window date display
+          if (uiHarvest) {
+            if (growthData.expectedHarvestDateFormatted) {
+              uiHarvest.textContent = growthData.expectedHarvestDateFormatted;
+            } else if (growthData.expectedHarvestDate) {
+              const date = growthData.expectedHarvestDate instanceof Date
+                ? growthData.expectedHarvestDate
+                : new Date(growthData.expectedHarvestDate);
+              uiHarvest.textContent = formatHarvestDate(date) || '—';
+            } else {
+              uiHarvest.textContent = '—';
+            }
+          }
+
+          // Days remaining (earliest to latest range)
+          if (uiRemain && uiRemainLatest) {
+            const daysEarliest = growthData.daysRemaining;
+            const daysLatest = growthData.daysRemainingToLatest;
+            if (daysEarliest !== null && daysLatest !== null) {
+              uiRemain.textContent = Math.max(0, daysEarliest).toString();
+              uiRemainLatest.textContent = Math.max(0, daysLatest).toString();
+            } else if (daysEarliest !== null) {
+              uiRemain.textContent = Math.max(0, daysEarliest).toString();
+              uiRemainLatest.textContent = uiRemain.textContent;
+            } else {
+              uiRemain.textContent = '—';
+              uiRemainLatest.textContent = '—';
+            }
+          }
+
+          // Months remaining (earliest to latest range)
+          if (uiMonths && uiMonthsLatest) {
+            const daysEarliest = growthData.daysRemaining;
+            const daysLatest = growthData.daysRemainingToLatest;
+            if (daysEarliest !== null && daysLatest !== null) {
+              uiMonths.textContent = Math.max(0, Math.round(daysEarliest / 30.5)).toString();
+              uiMonthsLatest.textContent = Math.max(0, Math.round(daysLatest / 30.5)).toString();
+            } else if (daysEarliest !== null) {
+              uiMonths.textContent = Math.max(0, Math.round(daysEarliest / 30.5)).toString();
+              uiMonthsLatest.textContent = uiMonths.textContent;
+            } else {
+              uiMonths.textContent = '—';
+              uiMonthsLatest.textContent = '—';
+            }
+          }
+
+          // Maturity range badge (top-right of Harvest Estimate card)
+          if (uiMaturityRange) {
+            if (maturity) {
+              uiMaturityRange.textContent = maturity.min === maturity.max
+                ? `${maturity.min} months maturity`
+                : `${maturity.min}–${maturity.max} months maturity`;
+            } else {
+              uiMaturityRange.textContent = '—';
+            }
+          }
+
+          // Crop variety display inside harvest estimate (connected to Growth Status above)
+          if (uiHarvestVariety) {
+            uiHarvestVariety.textContent = variety || 'Not specified';
+          }
+          if (uiCropTypeLabel) {
+            uiCropTypeLabel.textContent = cropTypeLabel || '—';
+          }
+          if (uiHarvestVarietyNote) {
+            uiHarvestVarietyNote.textContent = variety
+              ? `Based on ${variety} maturity cycle`
+              : 'Based on crop variety maturity';
+          }
+          if (uiHarvestAccuracyNote) {
+            if (variety && maturity) {
+              const rangeText = maturity.min === maturity.max
+                ? `${maturity.min} months`
+                : `${maturity.min}–${maturity.max} months`;
+              uiHarvestAccuracyNote.textContent = `${variety} matures in ${rangeText}. Harvest window calculated from planting date in submitted input records.`;
+            } else {
+              uiHarvestAccuracyNote.textContent = 'Harvest window based on variety-specific maturity range and planting date from submitted input records';
+            }
           }
         }
 
@@ -1731,17 +1797,12 @@
                 const uiDays = document.getElementById('uiDays');
                 const uiStage = document.getElementById('uiStage');
                 const uiPlanted = document.getElementById('uiPlanted');
-                const uiHarvest = document.getElementById('uiHarvest');
-                const uiRemain = document.getElementById('uiRemain');
-                const uiMonths = document.getElementById('uiMonths');
                 const plantedDateDisplay = document.getElementById('plantedDateDisplay');
                 if (uiDays) uiDays.textContent = '—';
                 if (uiStage) uiStage.textContent = stageName;
                 if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
-                if (uiHarvest) uiHarvest.textContent = '—';
-                if (uiRemain) uiRemain.textContent = '—';
-                if (uiMonths) uiMonths.textContent = '—';
                 if (plantedDateDisplay) plantedDateDisplay.textContent = '—';
+                updateHarvestEstimateDisplay(null);
               document.getElementById('predictedHarvestModal')?.classList.add('hidden');
               }
 
@@ -1788,35 +1849,8 @@
               uiStage.textContent = currentDapStage || growthData.currentGrowthStage || '—';
             }
 
-            // Update expected harvest date (only when planting exists)
-            const uiHarvest = document.getElementById('uiHarvest');
-            if (uiHarvest) {
-              // Use formatted string if available (now in MMM D, YYYY format)
-              if (growthData.expectedHarvestDateFormatted) {
-                uiHarvest.textContent = growthData.expectedHarvestDateFormatted;
-              } else if (growthData.expectedHarvestDate) {
-                // Fallback: format date using standardized format
-                const date = growthData.expectedHarvestDate instanceof Date 
-                  ? growthData.expectedHarvestDate 
-                  : new Date(growthData.expectedHarvestDate);
-                uiHarvest.textContent = formatHarvestDate(date) || '—';
-              } else {
-                uiHarvest.textContent = '—';
-              }
-            }
-
-            // Update days remaining (only when planting exists)
-            const uiRemain = document.getElementById('uiRemain');
-            const uiMonths = document.getElementById('uiMonths');
-            if (uiRemain && uiMonths) {
-              if (growthData.daysRemaining !== null) {
-                uiRemain.textContent = Math.max(0, growthData.daysRemaining).toString();
-                uiMonths.textContent = Math.max(0, Math.round(growthData.daysRemaining / 30.5)).toString();
-              } else {
-                uiRemain.textContent = '—';
-                uiMonths.textContent = '—';
-              }
-            }
+            // Update harvest estimate section (connected to crop variety from Growth Status)
+            updateHarvestEstimateDisplay(growthData);
 
             // CRITICAL: Update timeline progress and all growth-related features
             // All of these require planting to exist
@@ -1834,8 +1868,8 @@
             // ✅ Load and display timeline nodes (integrated into stages)
             await loadTimelineNodes(fieldId);
 
-            // ✅ Check and display predicted harvest
-            await checkPredictedHarvest(fieldId);
+            // Display predicted harvest (uses already-loaded growthData, no extra queries)
+            checkPredictedHarvest(fieldId);
 
             // Update ratoon button state (works for both planted and unplanted fields)
             updateRatoonButtonState(growthData);
@@ -2202,9 +2236,6 @@
           const uiDays = document.getElementById('uiDays');
           const uiStage = document.getElementById('uiStage');
           const uiPlanted = document.getElementById('uiPlanted');
-          const uiHarvest = document.getElementById('uiHarvest');
-          const uiRemain = document.getElementById('uiRemain');
-          const uiMonths = document.getElementById('uiMonths');
           const tlBar = document.getElementById('tlBar');
           const tlPct = document.getElementById('tlPct');
           const progressPercentage = document.getElementById('progressPercentage');
@@ -2215,10 +2246,8 @@
           if (uiDays) uiDays.textContent = '—';
           if (uiStage) uiStage.textContent = 'Not Planted';
           if (uiPlanted) uiPlanted.textContent = 'Not planted yet';
-          if (uiHarvest) uiHarvest.textContent = '—';
-          if (uiRemain) uiRemain.textContent = '—';
-          if (uiMonths) uiMonths.textContent = '—';
           if (plantedDateDisplay) plantedDateDisplay.textContent = '—';
+          updateHarvestEstimateDisplay(null);
           
           // Reset progress bar
           if (tlBar) tlBar.style.width = '0%';
@@ -3443,138 +3472,99 @@
           });
         }
 
-        // Check and display predicted harvest
-        async function checkPredictedHarvest(fieldId) {
-          try {
-            // Get planting date and variety from Planting Operation record (single source of truth)
-            let plantingDate = null;
-            let variety = null;
-            
-            try {
-              const { query, where, getDocs, collection } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
-              const recordsQuery = query(
-                collection(db, 'records'),
-                where('fieldId', '==', fieldId),
-                where('taskType', '==', 'Planting Operation')
-              );
-              const recordsSnap = await getDocs(recordsQuery);
-              
-              if (!recordsSnap.empty) {
-                const plantingRecord = recordsSnap.docs[0].data();
-                const recordData = plantingRecord.data || {};
-                
-                // Get planting date from record
-                const plantingDateValue = recordData.startDate || recordData.plantingDate || recordData.date;
-                if (plantingDateValue) {
-                  // Import parseDateValue helper for consistent date parsing
-                  const { parseDateValue } = await import('../../backend/Handler/growth-tracker.js');
-                  plantingDate = parseDateValue(plantingDateValue);
-                }
-                
-                // Get variety from record
-                variety = recordData.variety || plantingRecord.variety;
-              }
-            } catch (recordError) {
-              console.debug('Could not fetch planting record, falling back to field data:', recordError);
-            }
-            
-            // Fallback to field data if planting record not found
-            if (!plantingDate || !variety) {
-              const fieldRef = doc(db, 'fields', fieldId);
-              const fieldSnap = await getDoc(fieldRef);
-              
-              if (!fieldSnap.exists()) {
-                document.getElementById('predictedHarvestModal')?.classList.add('hidden');
-                return;
-              }
-              
-              const fieldData = fieldSnap.data();
-              plantingDate = fieldData.plantingDate?.toDate?.() || fieldData.plantingDate;
-              variety = variety || fieldData.sugarcane_variety || fieldData.variety;
-            }
-            
-            // CRITICAL: Only show predicted harvest if planting date and variety exist
-            if (!plantingDate || !variety) {
-              document.getElementById('predictedHarvestModal')?.classList.add('hidden');
-              return;
-            }
-            
-            // CRITICAL: Get Expected Harvest Date from Input Record first, then calculate if not available
-            let harvestDateRange = null;
-            
-            // Try to get Expected Harvest Date from Planting Operation Input Record
-            try {
-              // Use already imported Firestore functions
-              const recordsQuery = query(
-                collection(db, 'records'),
-                where('fieldId', '==', fieldId),
-                where('taskType', '==', 'Planting Operation')
-              );
-              const recordsSnap = await getDocs(recordsQuery);
-              
-              if (!recordsSnap.empty) {
-                const plantingRecord = recordsSnap.docs[0].data();
-                const recordData = plantingRecord.data || {};
-                const expectedHarvestDateString = recordData.expectedHarvestDate;
-                
-                if (expectedHarvestDateString) {
-                  // Parse DD/MM/YYYY format from Input Record
-                  const { parseExpectedHarvestDateFromRecord } = await import('../../backend/Handler/growth-tracker.js');
-                  harvestDateRange = parseExpectedHarvestDateFromRecord(expectedHarvestDateString);
-                  if (harvestDateRange) {
-                    console.log(`✅ Using Expected Harvest Date from Input Record: ${harvestDateRange.formatted}`);
-                  }
-                }
-              }
-            } catch (recordError) {
-              console.debug('Could not fetch Expected Harvest Date from Input Record:', recordError);
-            }
-            
-            // If not found in Input Record, calculate using months-based formula
-            if (!harvestDateRange) {
-              const { calculateExpectedHarvestDateMonths } = await import('../../backend/Handler/growth-tracker.js');
-              harvestDateRange = calculateExpectedHarvestDateMonths(plantingDate, variety);
-              if (harvestDateRange) {
-                console.log(`📅 Calculated Expected Harvest Date: ${harvestDateRange.formatted}`);
-              }
-            }
-            
-            if (!harvestDateRange) {
-              document.getElementById('predictedHarvestModal')?.classList.add('hidden');
-              return;
-            }
-            
-            // Get current status
-            const fieldRef = doc(db, 'fields', fieldId);
-            const fieldSnap = await getDoc(fieldRef);
-            const fieldData = fieldSnap.exists() ? fieldSnap.data() : {};
-            const currentStatus = fieldData.currentGrowthStage || fieldData.status;
-            
-            // Only show if not yet harvested
-            if (currentStatus !== 'Harvested' && currentStatus !== 'harvested') {
-              const modal = document.getElementById('predictedHarvestModal');
-              const content = document.getElementById('predictedHarvestContent');
-              
-              // Use formatted string (MMM D, YYYY or MMM D, YYYY – MMM D, YYYY)
-              const harvestDateStr = harvestDateRange.formatted;
-              
-              content.innerHTML = `
-                <div class="space-y-2">
-                  <div><span class="font-medium">Variety:</span> ${variety || 'Not specified'}</div>
-                  <div><span class="font-medium">Predicted Harvest Date:</span> ${harvestDateStr}</div>
-                  <div class="text-xs text-gray-600 mt-2">
-                    <i class="fas fa-info-circle"></i> Based on planting date and variety growth cycle
-                  </div>
-                </div>
-              `;
-              
-              modal.classList.remove('hidden');
-            } else {
-              document.getElementById('predictedHarvestModal').classList.add('hidden');
-            }
-          } catch (error) {
-            console.error('Error checking predicted harvest:', error);
+        /**
+         * Display predicted harvest using already-loaded growthData (no redundant queries).
+         * Connected to the Growth Status Information section above.
+         */
+        function checkPredictedHarvest(fieldId) {
+          const modal = document.getElementById('predictedHarvestModal');
+          const content = document.getElementById('predictedHarvestContent');
+          if (!modal || !content) return;
+
+          const growthData = window.latestGrowthData;
+          if (!growthData || !growthData.plantingDate || !growthData.variety) {
+            modal.classList.add('hidden');
+            return;
           }
+
+          // Hide if already harvested
+          const currentStatus = growthData.status || growthData.currentGrowthStage;
+          if (currentStatus === 'Harvested' || currentStatus === 'harvested') {
+            modal.classList.add('hidden');
+            return;
+          }
+
+          if (!growthData.expectedHarvestDateFormatted && !growthData.expectedHarvestDate) {
+            modal.classList.add('hidden');
+            return;
+          }
+
+          const variety = growthData.variety;
+          const maturity = growthData.maturityMonths;
+          const cropTypeLabel = getReadableCropType(growthData.cropType);
+          const harvestDateStr = growthData.expectedHarvestDateFormatted
+            || formatHarvestDate(growthData.expectedHarvestDate)
+            || '—';
+
+          // Format planting date for display
+          const plantingDateStr = growthData.plantingDate instanceof Date
+            ? formatHarvestDate(growthData.plantingDate)
+            : '—';
+
+          // Build maturity info text
+          const maturityText = maturity
+            ? (maturity.min === maturity.max
+              ? `${maturity.min} months`
+              : `${maturity.min}–${maturity.max} months`)
+            : 'N/A';
+
+          // Days remaining range
+          const daysEarliest = growthData.daysRemaining !== null ? Math.max(0, growthData.daysRemaining) : null;
+          const daysLatest = growthData.daysRemainingToLatest !== null ? Math.max(0, growthData.daysRemainingToLatest) : null;
+          let daysRemainingText = '—';
+          if (daysEarliest !== null && daysLatest !== null) {
+            daysRemainingText = daysEarliest === daysLatest
+              ? `${daysEarliest} days`
+              : `${daysEarliest} – ${daysLatest} days`;
+          } else if (daysEarliest !== null) {
+            daysRemainingText = `${daysEarliest} days`;
+          }
+
+          content.innerHTML = `
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500 text-xs">Crop Variety</span>
+                  <div class="font-semibold">${variety}</div>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs">Crop Type</span>
+                  <div class="font-semibold">${cropTypeLabel}</div>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-500 text-xs">Date Planted</span>
+                  <div class="font-semibold">${plantingDateStr}</div>
+                </div>
+                <div>
+                  <span class="text-gray-500 text-xs">Maturity Period</span>
+                  <div class="font-semibold">${maturityText}</div>
+                </div>
+              </div>
+              <div class="border-t border-gray-200 pt-2">
+                <span class="text-gray-500 text-xs">Predicted Harvest Window</span>
+                <div class="font-semibold text-[var(--cane-700)]">${harvestDateStr}</div>
+                <div class="text-xs text-gray-500 mt-1">${daysRemainingText} remaining</div>
+              </div>
+              <div class="text-xs text-gray-500 flex items-start gap-1.5 mt-1">
+                <i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+                <span>Calculated from ${variety} maturity cycle (${maturityText}) and the planting date recorded in your submitted input records.</span>
+              </div>
+            </div>
+          `;
+
+          modal.classList.remove('hidden');
         }
 
         // Close predicted harvest modal
@@ -3932,7 +3922,7 @@
           }
           
           // Also check for individual variety names that might be in the alias string
-          const varietyNames = Object.keys(RATOON_DURATIONS);
+          const varietyNames = Object.keys(RATOON_HARVEST_MONTHS_RANGE);
           for (const name of varietyNames) {
             if (variety.includes(name)) {
               return name;
@@ -3946,9 +3936,9 @@
           if (!variety || !harvestDate) return null;
           
           const normalized = normalizeVarietyName(variety);
-          const duration = RATOON_DURATIONS[normalized] || RATOON_DURATIONS[variety];
+          const duration = RATOON_HARVEST_MONTHS_RANGE[normalized] || RATOON_HARVEST_MONTHS_RANGE[variety];
           if (!duration) {
-            console.warn(`Variety ${variety} (normalized: ${normalized}) not found in ratoon durations`);
+            console.warn(`Variety ${variety} (normalized: ${normalized}) not found in ratoon harvest months range`);
             return null;
           }
           

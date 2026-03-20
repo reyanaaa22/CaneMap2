@@ -1069,66 +1069,99 @@ function renderRecordDetails(record) {
   const status = record.status || 'Unknown';
   const colors = STATUS_COLORS[status] || { bg: '#f3f4f6', text: '#6b7280' };
   
-  // Calculate costs using the comprehensive function
-  const grandTotal = calculateTotalCost(record);
-  
-  // Break down for display in modal
-  const taskCost = parseFloat(record.data?.totalCost || 0) || 0;
-  const boughtItemsCost = (record.boughtItems || []).reduce((sum, item) => {
-    // Support both field name variants: totalCost or total
-    return sum + (parseFloat(item.totalCost || item.total || 0) || 0);
-  }, 0);
-  const vehicleCost = parseFloat(record.vehicleUpdates?.totalCost || 0) || 0;
-  
-  // Calculate additional costs from record.data (all cost fields except totalCost)
-  let additionalTaskCosts = 0;
+  // Build transparent cost breakdown — every individual cost field as a labeled line item
+  const costLineItems = [];
+  let runningTotal = 0;
+
+  // 1. Extract each cost field from record.data individually
   if (record.data && typeof record.data === 'object') {
+    // Labor cost breakdown: show calculation if detail fields exist
+    const laborRate = parseFloat(record.data.laborRatePerDay || record.data.ratePerDay || 0) || 0;
+    const laborWorkers = parseFloat(record.data.laborWorkers || record.data.workers || record.data.numberOfWorkers || 0) || 0;
+    const laborDays = parseFloat(record.data.laborWorkingDays || record.data.workingDays || 0) || 0;
+    const laborCostValue = parseFloat(record.data.laborCost || 0) || 0;
+    const hasLaborBreakdown = laborRate > 0 && laborWorkers > 0 && laborDays > 0;
+
     for (const [key, value] of Object.entries(record.data)) {
       if (key === 'totalCost') continue;
-      const keyLower = key.toLowerCase();
-      if ((keyLower.includes('cost') || 
-           keyLower.includes('price') || 
-           keyLower.includes('amount') ||
-           keyLower.includes('expense') ||
-           keyLower.includes('fee') ||
-           keyLower.includes('charge')) && 
-          typeof value === 'number') {
-        additionalTaskCosts += parseFloat(value) || 0;
+      if (EXCLUDED_FIELD_NAMES.includes(key)) continue;
+      if (!isCostField(key)) continue;
+      const numValue = parseFloat(value) || 0;
+      if (numValue <= 0) continue;
+
+      const label = formatFieldLabel(key);
+
+      // Show labor cost with calculation breakdown if available
+      if (key === 'laborCost' && hasLaborBreakdown) {
+        costLineItems.push({
+          label: label,
+          amount: numValue,
+          detail: `₱${laborRate.toFixed(2)} × ${laborWorkers} worker${laborWorkers > 1 ? 's' : ''} × ${laborDays} day${laborDays > 1 ? 's' : ''}`
+        });
+      } else {
+        costLineItems.push({ label: label, amount: numValue, detail: null });
       }
+      runningTotal += numValue;
     }
   }
-  
-  // Calculate additional vehicle costs
-  let additionalVehicleCosts = 0;
+
+  // 2. Add bought items — each item listed individually for transparency
+  const boughtItems = record.boughtItems || [];
+  const boughtItemsCost = boughtItems.reduce((sum, item) => {
+    return sum + (parseFloat(item.totalCost || item.total || 0) || 0);
+  }, 0);
+  if (boughtItemsCost > 0) {
+    boughtItems.forEach(item => {
+      const itemTotal = parseFloat(item.totalCost || item.total || 0) || 0;
+      if (itemTotal <= 0) return;
+      const itemName = item.itemName || 'Unnamed Item';
+      const qty = parseFloat(item.quantity || 0) || 0;
+      const unit = item.unit || '';
+      const price = parseFloat(item.price || item.pricePerUnit || 0) || 0;
+      const detailParts = [];
+      if (qty > 0 && price > 0) {
+        detailParts.push(`${qty} ${unit} × ₱${price.toFixed(2)}`);
+      }
+      if (item.supplier) detailParts.push(`from ${item.supplier}`);
+      costLineItems.push({
+        label: `Bought: ${itemName}`,
+        amount: itemTotal,
+        detail: detailParts.length > 0 ? detailParts.join(' — ') : null,
+        isBoughtItem: true
+      });
+    });
+    runningTotal += boughtItemsCost;
+  }
+
+  // 3. Add vehicle costs (broken down, not lumped)
   if (record.vehicleUpdates && typeof record.vehicleUpdates === 'object') {
+    const vFuel = parseFloat(record.vehicleUpdates.fuelCost || 0) || 0;
+    const vLabor = parseFloat(record.vehicleUpdates.laborCost || 0) || 0;
+
+    if (vFuel > 0) {
+      costLineItems.push({ label: 'Vehicle Fuel Cost', amount: vFuel, detail: null });
+      runningTotal += vFuel;
+    }
+    if (vLabor > 0) {
+      costLineItems.push({ label: 'Vehicle Labor Cost', amount: vLabor, detail: null });
+      runningTotal += vLabor;
+    }
+
+    // Any other vehicle cost fields beyond fuel and labor
     for (const [key, value] of Object.entries(record.vehicleUpdates)) {
-      if (key === 'totalCost') continue;
-      const keyLower = key.toLowerCase();
-      if ((keyLower.includes('cost') || 
-           keyLower.includes('price') || 
-           keyLower.includes('amount')) && 
-          typeof value === 'number') {
-        additionalVehicleCosts += parseFloat(value) || 0;
-      }
+      if (['totalCost', 'fuelCost', 'laborCost'].includes(key)) continue;
+      if (!isCostField(key)) continue;
+      const numValue = parseFloat(value) || 0;
+      if (numValue <= 0) continue;
+      costLineItems.push({ label: `Vehicle ${formatFieldLabel(key)}`, amount: numValue, detail: null });
+      runningTotal += numValue;
     }
   }
-  
-  // Calculate additional bought items costs
-  let additionalBoughtItemsCosts = 0;
-  (record.boughtItems || []).forEach(item => {
-    if (item && typeof item === 'object') {
-      for (const [key, value] of Object.entries(item)) {
-        // Skip totalCost, total, and price (price is per-unit, not additional cost)
-        if (key === 'totalCost' || key === 'total' || key === 'price' || key === 'pricePerUnit') continue;
-        const keyLower = key.toLowerCase();
-        if ((keyLower.includes('cost') || 
-             keyLower.includes('amount')) && 
-            typeof value === 'number') {
-          additionalBoughtItemsCosts += parseFloat(value) || 0;
-        }
-      }
-    }
-  });
+
+  // Use the saved totalCost as the grand total when available (it's what the user confirmed),
+  // otherwise fall back to the sum of all individual line items
+  const savedTotal = parseFloat(record.data?.totalCost || 0) || 0;
+  const grandTotal = savedTotal > 0 ? savedTotal : runningTotal;
   
   // Get task-specific fields
   const taskFields = getTaskFields(record.taskType, record.data);
@@ -1220,33 +1253,38 @@ function renderRecordDetails(record) {
           <h3 class="text-lg font-bold text-[var(--cane-900)] mb-4 flex items-center gap-2">
             <i class="fas fa-shopping-cart text-[var(--cane-600)]"></i>
             Bought Items
+            <span class="ml-auto text-sm font-normal text-gray-500">${record.boughtItems.length} item${record.boughtItems.length > 1 ? 's' : ''}</span>
           </h3>
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead class="bg-[var(--cane-50)]">
                 <tr>
-                  <th class="px-4 py-2 text-left font-semibold text-[var(--cane-900)]">Item Name</th>
-                  <th class="px-4 py-2 text-left font-semibold text-[var(--cane-900)]">Quantity</th>
-                  <th class="px-4 py-2 text-left font-semibold text-[var(--cane-900)]">Unit</th>
-                  <th class="px-4 py-2 text-right font-semibold text-[var(--cane-900)]">Price per Unit</th>
-                  <th class="px-4 py-2 text-right font-semibold text-[var(--cane-900)]">Total Cost</th>
+                  <th class="px-3 py-2 text-left font-semibold text-[var(--cane-900)]">Item Name</th>
+                  <th class="px-3 py-2 text-center font-semibold text-[var(--cane-900)]">Qty</th>
+                  <th class="px-3 py-2 text-left font-semibold text-[var(--cane-900)]">Unit</th>
+                  <th class="px-3 py-2 text-right font-semibold text-[var(--cane-900)]">Unit Price</th>
+                  <th class="px-3 py-2 text-right font-semibold text-[var(--cane-900)]">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                ${record.boughtItems.map(item => `
-                  <tr class="border-b border-gray-100">
-                    <td class="px-4 py-2">${escapeHtml(item.itemName || 'N/A')}</td>
-                    <td class="px-4 py-2">${escapeHtml(item.quantity || '0')}</td>
-                    <td class="px-4 py-2">${escapeHtml(item.unit || 'N/A')}</td>
-                    <td class="px-4 py-2 text-right">₱${parseFloat(item.price || item.pricePerUnit || 0).toFixed(2)}</td>
-                    <td class="px-4 py-2 text-right font-semibold">₱${parseFloat(item.totalCost || item.total || 0).toFixed(2)}</td>
+                ${record.boughtItems.map((item, idx) => `
+                  <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100">
+                    <td class="px-3 py-2">
+                      <div class="font-medium text-gray-900">${escapeHtml(item.itemName || 'N/A')}</div>
+                      ${item.supplier ? `<div class="text-xs text-gray-500">Supplier: ${escapeHtml(item.supplier)}</div>` : ''}
+                      ${item.notes ? `<div class="text-xs text-gray-400 italic">${escapeHtml(item.notes)}</div>` : ''}
+                    </td>
+                    <td class="px-3 py-2 text-center">${item.quantity || '0'}</td>
+                    <td class="px-3 py-2">${escapeHtml(item.unit || 'N/A')}</td>
+                    <td class="px-3 py-2 text-right">₱${parseFloat(item.price || item.pricePerUnit || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="px-3 py-2 text-right font-semibold">₱${parseFloat(item.totalCost || item.total || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   </tr>
                 `).join('')}
               </tbody>
               <tfoot class="bg-[var(--cane-50)]">
                 <tr>
-                  <td colspan="4" class="px-4 py-2 text-right font-bold text-[var(--cane-900)]">Bought Items Total:</td>
-                  <td class="px-4 py-2 text-right font-bold text-[var(--cane-700)]">₱${boughtItemsCost.toFixed(2)}</td>
+                  <td colspan="4" class="px-3 py-2 text-right font-bold text-[var(--cane-900)]">Bought Items Total:</td>
+                  <td class="px-3 py-2 text-right font-bold text-[var(--cane-700)]">₱${boughtItemsCost.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1262,38 +1300,48 @@ function renderRecordDetails(record) {
             Vehicle Updates
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</label>
-              <p class="mt-1 text-gray-900">${record.vehicleUpdates.date ? new Date(record.vehicleUpdates.date).toLocaleDateString() : 'N/A'}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vehicle Type</label>
-              <p class="mt-1 text-gray-900">${escapeHtml(record.vehicleUpdates.vehicleType || 'N/A')}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Active Drivers</label>
-              <p class="mt-1 text-gray-900">${record.vehicleUpdates.activeDrivers || 0}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Returning Drivers</label>
-              <p class="mt-1 text-gray-900">${record.vehicleUpdates.returningDrivers || 0}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Boxes Transported</label>
-              <p class="mt-1 text-gray-900">${record.vehicleUpdates.boxes || 0}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Cane Weight</label>
-              <p class="mt-1 text-gray-900">${record.vehicleUpdates.weight || 0} kg</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fuel Cost</label>
-              <p class="mt-1 text-gray-900">₱${parseFloat(record.vehicleUpdates.fuelCost || 0).toFixed(2)}</p>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Labor Cost</label>
-              <p class="mt-1 text-gray-900">₱${parseFloat(record.vehicleUpdates.laborCost || 0).toFixed(2)}</p>
-            </div>
+            ${record.vehicleUpdates.vehicleType ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vehicle Type</label>
+                <p class="mt-1 text-gray-900">${escapeHtml(record.vehicleUpdates.vehicleType)}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.route ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Route</label>
+                <p class="mt-1 text-gray-900">${escapeHtml(record.vehicleUpdates.route)}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.tripsBoxes ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trips / Boxes</label>
+                <p class="mt-1 text-gray-900">${escapeHtml(String(record.vehicleUpdates.tripsBoxes))}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.activeDrivers ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Active Drivers</label>
+                <p class="mt-1 text-gray-900">${record.vehicleUpdates.activeDrivers}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.returningDrivers ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Returning Drivers</label>
+                <p class="mt-1 text-gray-900">${record.vehicleUpdates.returningDrivers}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.boxes ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Boxes Transported</label>
+                <p class="mt-1 text-gray-900">${record.vehicleUpdates.boxes}</p>
+              </div>
+            ` : ''}
+            ${record.vehicleUpdates.weight ? `
+              <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Cane Weight</label>
+                <p class="mt-1 text-gray-900">${record.vehicleUpdates.weight} kg</p>
+              </div>
+            ` : ''}
             ${record.vehicleUpdates.notes ? `
               <div class="md:col-span-2">
                 <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</label>
@@ -1304,43 +1352,36 @@ function renderRecordDetails(record) {
         </div>
       ` : ''}
       
-              <!-- Section 5: Cost Summary -->
-              <div class="bg-gradient-to-r from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg p-5 border-2 border-[var(--cane-300)]">
-                <h3 class="text-lg font-bold text-[var(--cane-900)] mb-4 flex items-center gap-2">
-                  <i class="fas fa-calculator text-[var(--cane-600)]"></i>
-                  Cost Summary
-                </h3>
-                <div class="space-y-2">
-                  ${taskCost > 0 ? `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span class="text-gray-700">Task Base Cost:</span>
-                      <span class="font-semibold text-gray-900">₱${taskCost.toFixed(2)}</span>
-                    </div>
-                  ` : ''}
-                  ${additionalTaskCosts > 0 ? `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span class="text-gray-700">Additional Task Costs:</span>
-                      <span class="font-semibold text-gray-900">₱${additionalTaskCosts.toFixed(2)}</span>
-                    </div>
-                  ` : ''}
-                  ${(boughtItemsCost + additionalBoughtItemsCosts) > 0 ? `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span class="text-gray-700">Bought Items Cost:</span>
-                      <span class="font-semibold text-gray-900">₱${(boughtItemsCost + additionalBoughtItemsCosts).toFixed(2)}</span>
-                    </div>
-                  ` : ''}
-                  ${(vehicleCost + additionalVehicleCosts) > 0 ? `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                      <span class="text-gray-700">Vehicle Cost:</span>
-                      <span class="font-semibold text-gray-900">₱${(vehicleCost + additionalVehicleCosts).toFixed(2)}</span>
-                    </div>
-                  ` : ''}
-                  <div class="flex justify-between items-center py-3 border-t-2 border-[var(--cane-600)] mt-2">
-                    <span class="text-lg font-bold text-[var(--cane-900)]">Grand Total:</span>
-                    <span class="text-xl font-bold text-[var(--cane-700)]">₱${grandTotal.toFixed(2)}</span>
-                  </div>
+      <!-- Section 5: Cost Breakdown -->
+      <div class="bg-gradient-to-r from-[var(--cane-100)] to-[var(--cane-50)] rounded-lg p-5 border-2 border-[var(--cane-300)]">
+        <h3 class="text-lg font-bold text-[var(--cane-900)] mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt text-[var(--cane-600)]"></i>
+          Cost Breakdown
+        </h3>
+        ${costLineItems.length > 0 ? `
+          <div class="space-y-1">
+            ${costLineItems.map(item => `
+              <div class="flex justify-between items-start py-2 border-b border-[var(--cane-200)]/60">
+                <div class="flex-1 min-w-0 pr-4">
+                  <span class="text-gray-800 font-medium">${escapeHtml(item.label)}</span>
+                  ${item.detail ? `<p class="text-xs text-gray-500 mt-0.5">${escapeHtml(item.detail)}</p>` : ''}
                 </div>
+                <span class="font-semibold text-gray-900 whitespace-nowrap">₱${item.amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
+            `).join('')}
+
+            <div class="flex justify-between items-center pt-3 mt-2 border-t-2 border-[var(--cane-600)]">
+              <span class="text-lg font-bold text-[var(--cane-900)]">Total Cost</span>
+              <span class="text-xl font-bold text-[var(--cane-700)]">₱${grandTotal.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+        ` : `
+          <div class="text-center py-4 text-gray-500">
+            <i class="fas fa-info-circle text-gray-400 mr-1"></i>
+            No cost data recorded for this task.
+          </div>
+        `}
+      </div>
     </div>
   `;
 }
@@ -1383,19 +1424,18 @@ function getTaskFieldsForPrint(taskType, data) {
   return fields.length > 0 ? `<div style="margin-top: 5px; padding-left: 5px;">${fields.join('')}</div>` : '';
 }
 
-// Get task-specific fields for display
+// Get task-specific fields for display (non-cost fields only; costs are in Cost Breakdown)
 function getTaskFields(taskType, data) {
   if (!data || !taskType) return '';
   
   const fields = [];
   const skipFields = ['totalCost', 'userId', 'fieldId', 'status', 'operation', 'taskType', 'recordDate', 'createdAt', 'boughtItems', 'vehicleUpdates', 'notes', 'remarks'];
-  // Note: 'notes' and 'remarks' are skipped here - they are displayed in a separate section
   
   for (const [key, value] of Object.entries(data)) {
-    // Skip internal fields and notes/remarks (they have their own section)
     if (skipFields.includes(key)) continue;
-    // Skip empty values
     if (value === null || value === undefined || value === '') continue;
+    // Cost fields are shown in the Cost Breakdown section — skip to avoid duplication
+    if (isCostField(key) && typeof value === 'number') continue;
     
     // Skip if it's an object (unless it's a date/timestamp)
     if (typeof value === 'object' && !(value instanceof Date) && !(value && typeof value.toDate === 'function')) {

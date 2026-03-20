@@ -65,9 +65,9 @@ export function formatHarvestDateRange(earliest, latest) {
 }
 
 // Variety-specific harvest months range (min-max months)
-// CALCULATION LOGIC: Only the MAXIMUM value is used for harvest date calculation
-// Harvest Window = Date Planted + MAX months → +7 days operational buffer
-// Example: PSR 2000-34 (max: 11 months) + Feb 4, 2025 = Jan 4, 2026 – Jan 11, 2026
+// CALCULATION LOGIC: Both MIN and MAX months are used for the harvest window
+// Earliest harvest = Date Planted + MIN months, Latest harvest = Date Planted + MAX months
+// Example: PSR 2000-34 (10–11 months) + Feb 4, 2025 = Dec 4, 2025 – Jan 4, 2026
 export const VARIETY_HARVEST_MONTHS_RANGE = {
   'K 88-65': { min: 12, max: 14 },
   'K 88-87': { min: 12, max: 14 },
@@ -304,7 +304,7 @@ function buildRatoonGrowthStages(variety) {
 }
 
 // PHILSURIN variety stage dataset grouped by crop type
-// New Plant uses published variety stage ranges; Ratoon uses ratoon maturity-adjusted ranges.
+// Plant Cane (new_plant) uses published variety stage ranges; Ratoon uses maturity-adjusted ranges.
 export const PHILSURIN_GROWTH_STAGES_BY_CROP_TYPE = (() => {
   const dataset = {};
   for (const variety of Object.keys(VARIETY_GROWTH_STAGES)) {
@@ -666,26 +666,24 @@ export function calculateExpectedHarvestDateMonths(plantingDate, variety) {
   }
   
   // =========================================================
-  // ✅ HARVEST CALCULATION LOGIC (AUTHORITATIVE)
+  // HARVEST CALCULATION LOGIC (AUTHORITATIVE)
+  // Uses MIN and MAX maturity months for accurate harvest window
   // =========================================================
-  // Step 1: Compute Latest Harvest Date using MAXIMUM growth duration
-  // This is the biological maturity date based on variety
+  // Earliest harvest = plantingDate + MIN months (earliest biological maturity)
+  const earliestHarvestDate = new Date(planting);
+  earliestHarvestDate.setMonth(earliestHarvestDate.getMonth() + maturity.min);
+  
+  // Latest harvest = plantingDate + MAX months (latest biological maturity)
   const latestHarvestDate = new Date(planting);
   latestHarvestDate.setMonth(latestHarvestDate.getMonth() + maturity.max);
   
-  // Step 2: Compute Harvest Window End (7-day operational buffer)
-  // This is a fixed operational buffer, NOT a biological estimate
-  const harvestWindowEnd = new Date(latestHarvestDate);
-  harvestWindowEnd.setDate(harvestWindowEnd.getDate() + 7);
-  
-  // Format dates using standardized format: "MMM D, YYYY"
-  // Result: "Jan 4, 2026 – Jan 11, 2026" (example for PSR 2000-34 planted Feb 4, 2025)
-  const formatted = formatHarvestDateRange(latestHarvestDate, harvestWindowEnd);
+  const formatted = formatHarvestDateRange(earliestHarvestDate, latestHarvestDate);
   
   return {
-    earliest: latestHarvestDate,      // Start of harvest window (latest biological maturity)
-    latest: harvestWindowEnd,          // End of harvest window (+7 days operational buffer)
-    formatted: formatted
+    earliest: earliestHarvestDate,
+    latest: latestHarvestDate,
+    formatted: formatted,
+    maturityMonths: { min: maturity.min, max: maturity.max }
   };
 }
 
@@ -746,7 +744,7 @@ function normalizeCropType(cropType, isRatoon = false) {
 /**
  * Get DAP stage ranges by variety and crop type.
  * @param {string} variety - Sugarcane variety (may contain aliases)
- * @param {string|null} cropType - Crop type (New Plant or Ratoon)
+ * @param {string|null} cropType - Crop type (Plant Cane or Ratoon)
  * @param {boolean} isRatoon - Ratoon flag
  * @returns {{Germination:{start:number,end:number},Tillering:{start:number,end:number},'Grand Growth':{start:number,end:number},Maturity:{start:number,end:number}}|null}
  */
@@ -1786,7 +1784,6 @@ export async function getFieldGrowthData(fieldId) {
       stageWeightedProgress = 0;
     }
 
-    // CRITICAL: If planting date does NOT exist, we STILL return stage/progress (Land Preparation can exist pre-planting)
     if (!plantingDate) {
       return {
         fieldId,
@@ -1794,6 +1791,7 @@ export async function getFieldGrowthData(fieldId) {
         variety: variety || null,
         plantingDate: null,
         expectedHarvestDate: null,
+        expectedHarvestDateLatest: null,
         expectedHarvestDateFormatted: null,
         basalFertilizationDate: null,
         mainFertilizationDate: null,
@@ -1803,8 +1801,10 @@ export async function getFieldGrowthData(fieldId) {
         dapCurrentGrowthStage: 'Not Planted',
         currentGrowthStage,
         stageWeightedProgress,
-        recordBasedProgress: stageWeightedProgress, // backward-compatible alias
+        recordBasedProgress: stageWeightedProgress,
         daysRemaining: null,
+        daysRemainingToLatest: null,
+        maturityMonths: variety ? (VARIETY_HARVEST_MONTHS_RANGE[variety] || null) : null,
         delayInfo: { isDelayed: false, delayDays: 0, delayType: null },
         overdueInfo: { isOverdue: false, overdueDays: 0 },
         fieldStatus: 'not_planted',
@@ -1859,27 +1859,40 @@ export async function getFieldGrowthData(fieldId) {
       mainFertilizationDate
     });
 
+    // Get maturity months for the variety (used for display in UI)
+    const maturityMonths = harvestDateRange?.maturityMonths
+      || VARIETY_HARVEST_MONTHS_RANGE[variety]
+      || null;
+
+    // Calculate days remaining until latest harvest date for more accurate countdown
+    const daysRemainingToLatest = harvestDateRange?.latest
+      ? calculateDaysRemaining(harvestDateRange.latest)
+      : null;
+
     return {
       fieldId,
       fieldName: fieldData.field_name || fieldData.fieldName,
       variety: variety,
       plantingDate,
-      expectedHarvestDate: expectedHarvestDateForCalc, // Date object for calculations (start of harvest window)
-      expectedHarvestDateFormatted: expectedHarvestDateFormatted, // Formatted string for display (MMM D, YYYY – MMM D, YYYY format)
+      expectedHarvestDate: expectedHarvestDateForCalc,
+      expectedHarvestDateLatest: harvestDateRange?.latest || null,
+      expectedHarvestDateFormatted: expectedHarvestDateFormatted,
       basalFertilizationDate,
       mainFertilizationDate,
       DAP,
       cropType,
       growthStageRanges,
       dapCurrentGrowthStage,
-      currentGrowthStage, // record-driven stage (no DAP fallback)
-      stageWeightedProgress, // stage-weighted progress (0..100)
-      recordBasedProgress: stageWeightedProgress, // backward-compatible alias for older UIs
+      currentGrowthStage,
+      stageWeightedProgress,
+      recordBasedProgress: stageWeightedProgress,
       daysRemaining,
+      daysRemainingToLatest,
+      maturityMonths,
       delayInfo,
       overdueInfo,
       fieldStatus,
-      status: fieldData.status, // Include actual database status field
+      status: fieldData.status,
       area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
       seedRate: seedRate,
       fertilizersUsed: fertilizersUsed,
