@@ -533,6 +533,45 @@ This file handles ALL functionalities described in the PDF:
   <div id="dynamicForm" class="grid grid-cols-1 md:grid-cols-2 gap-3 hidden"></div>
 
   <!-- OPTIONAL SUPPORTING SECTIONS -->
+
+  <!-- Other Work During Harvest Section -->
+  <div id="harvestOtherWorkSection" class="hidden">
+    <div class="border-t pt-4 mt-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold">Other Work During Harvest (Optional)</h3>
+        <button type="button" id="toggleHarvestOtherWork" class="text-xs text-[var(--cane-700)] hover:underline">
+          Show Section
+        </button>
+      </div>
+      <div id="harvestOtherWorkContent" class="hidden space-y-3">
+        <div>
+          <label class="text-xs font-medium">Task Work</label>
+          <input type="text" id="harvestOtherWorkTask" class="w-full mt-1 px-3 py-2 border rounded" placeholder="e.g. Extra loading / cleanup" />
+        </div>
+        <div id="harvestOtherWorkLaborDetails" class="space-y-3 p-3 border rounded-lg bg-gray-50">
+          <div class="text-xs font-semibold text-gray-700">Labor Cost Details</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs font-medium">Rate per Day</label>
+              <input type="number" step="0.01" id="harvestOtherWorkRatePerDay" class="w-full mt-1 px-3 py-2 border rounded" value="0" />
+            </div>
+            <div>
+              <label class="text-xs font-medium">Number of Workers</label>
+              <input type="number" id="harvestOtherWorkWorkers" class="w-full mt-1 px-3 py-2 border rounded" value="0" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-xs font-medium">Working Days (auto-calculated from Start Date and End Date)</label>
+              <input type="number" id="harvestOtherWorkWorkingDays" class="w-full mt-1 px-3 py-2 border rounded bg-gray-100" readonly />
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-xs font-semibold">Total Labor Cost (auto-calculated)</label>
+              <input type="number" step="0.01" id="harvestOtherWorkTotalLaborCost" class="w-full mt-1 px-3 py-2 border rounded bg-gray-100 font-semibold" readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- Bought Items Section -->
   <div id="boughtItemsSection" class="hidden">
@@ -2389,10 +2428,15 @@ async function loadRecordForEdit(recordId) {
       // Manually render the form (don't rely on change event in edit mode)
       console.log('🔄 Rendering form for task:', taskKey);
       renderForm(taskKey);
+      if (typeof window.bindHarvestOtherWorkLaborCostHandlers === 'function') {
+        window.bindHarvestOtherWorkLaborCostHandlers();
+      }
       
       // Show optional sections
+      const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
       const boughtItemsSection = document.getElementById('boughtItemsSection');
       const vehicleUpdatesSection = document.getElementById('vehicleUpdatesSection');
+      if (harvestOtherWorkSection) harvestOtherWorkSection.classList.remove('hidden');
       if (boughtItemsSection) boughtItemsSection.classList.remove('hidden');
       if (vehicleUpdatesSection) vehicleUpdatesSection.classList.remove('hidden');
       
@@ -2786,6 +2830,49 @@ async function loadRecordForEdit(recordId) {
       if (updateTotalCostFn && typeof updateTotalCostFn === 'function') {
         setTimeout(() => updateTotalCostFn(), 300);
       }
+
+      // Step 4.1: Populate optional "Other Work During Harvest" section if saved data exists
+      const harvestOtherWorkTaskInput = document.getElementById('harvestOtherWorkTask');
+      const harvestOtherWorkRateInput = document.getElementById('harvestOtherWorkRatePerDay');
+      const harvestOtherWorkWorkersInput = document.getElementById('harvestOtherWorkWorkers');
+      const harvestOtherWorkWorkingDaysInput = document.getElementById('harvestOtherWorkWorkingDays');
+      const harvestOtherWorkTotalLaborCostInput = document.getElementById('harvestOtherWorkTotalLaborCost');
+      const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+      const harvestOtherWorkContent = document.getElementById('harvestOtherWorkContent');
+      const toggleHarvestOtherWork = document.getElementById('toggleHarvestOtherWork');
+      const hasHarvestOtherWorkData =
+        (data.harvestOtherWorkTask && String(data.harvestOtherWorkTask).trim() !== '') ||
+        (parseFloat(data.harvestOtherWorkRatePerDay) || 0) > 0 ||
+        (parseFloat(data.harvestOtherWorkWorkers) || 0) > 0 ||
+        (parseFloat(data.harvestOtherWorkTotalLaborCost) || 0) > 0 ||
+        (parseFloat(data.harvestOtherWorkLaborCost) || 0) > 0;
+
+      if (harvestOtherWorkSection) {
+        harvestOtherWorkSection.classList.remove('hidden');
+      }
+      if (harvestOtherWorkTaskInput && data.harvestOtherWorkTask !== undefined) {
+        harvestOtherWorkTaskInput.value = data.harvestOtherWorkTask || '';
+      }
+      if (harvestOtherWorkRateInput && data.harvestOtherWorkRatePerDay !== undefined) {
+        harvestOtherWorkRateInput.value = data.harvestOtherWorkRatePerDay || 0;
+      }
+      if (harvestOtherWorkWorkersInput && data.harvestOtherWorkWorkers !== undefined) {
+        harvestOtherWorkWorkersInput.value = data.harvestOtherWorkWorkers || 0;
+      }
+      if (harvestOtherWorkWorkingDaysInput && data.harvestOtherWorkWorkingDays !== undefined) {
+        harvestOtherWorkWorkingDaysInput.value = data.harvestOtherWorkWorkingDays || '';
+      }
+      if (harvestOtherWorkTotalLaborCostInput) {
+        const savedTotalLaborCost = data.harvestOtherWorkTotalLaborCost ?? data.harvestOtherWorkLaborCost ?? 0;
+        harvestOtherWorkTotalLaborCostInput.value = savedTotalLaborCost || 0;
+      }
+      if (hasHarvestOtherWorkData) {
+        if (harvestOtherWorkContent) harvestOtherWorkContent.classList.remove('hidden');
+        if (toggleHarvestOtherWork) toggleHarvestOtherWork.textContent = 'Hide Section';
+      }
+      if (typeof window.updateHarvestOtherWorkLaborCost === 'function') {
+        window.updateHarvestOtherWorkLaborCost();
+      }
     }
     
     // Step 5: Populate bought items
@@ -3134,6 +3221,8 @@ function showOperations() {
   operationWrap.classList.remove('hidden');
   taskTypeWrap.classList.add('hidden');
   dynamicForm.classList.add('hidden');
+  const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+  if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
   boughtItemsSection.classList.add('hidden');
   vehicleUpdatesSection.classList.add('hidden');
   
@@ -3180,6 +3269,8 @@ fieldSelect.addEventListener('change', async function() {
     operationWrap.classList.add('hidden');
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     
@@ -3291,6 +3382,8 @@ operationSelect.onchange = async () => {
     taskTypeWrap.classList.add('hidden');
     if (!isEditMode) {
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     }
@@ -3302,6 +3395,8 @@ operationSelect.onchange = async () => {
     if (!isEditMode) {
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     
@@ -3371,6 +3466,8 @@ operationSelect.onchange = async () => {
     taskTypeWrap.classList.add('hidden');
     if (!isEditMode) {
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     }
@@ -3428,6 +3525,8 @@ operationSelect.onchange = async () => {
   if (!isEditMode && availableTasks.length === 0) {
     taskTypeWrap.classList.add('hidden');
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     return;
@@ -3447,6 +3546,8 @@ operationSelect.onchange = async () => {
   // Only hide form in normal mode (in edit mode, form will be shown when task type is set)
   if (!isEditMode) {
   dynamicForm.classList.add('hidden');
+  const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+  if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
   boughtItemsSection.classList.add('hidden');
   vehicleUpdatesSection.classList.add('hidden');
   
@@ -3465,6 +3566,8 @@ taskType.onchange = () => {
   
   if (!taskDisplayName) {
     dynamicForm.classList.add('hidden');
+    const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+    if (harvestOtherWorkSection) harvestOtherWorkSection.classList.add('hidden');
     boughtItemsSection.classList.add('hidden');
     vehicleUpdatesSection.classList.add('hidden');
     return;
@@ -3473,8 +3576,13 @@ taskType.onchange = () => {
   // Map display name to taskFieldMap key
   const taskKey = taskNameAliases[taskDisplayName] || taskDisplayName;
   renderForm(taskKey);
+  if (typeof window.bindHarvestOtherWorkLaborCostHandlers === 'function') {
+    window.bindHarvestOtherWorkLaborCostHandlers();
+  }
   
   // Show optional sections after task fields
+  const harvestOtherWorkSection = document.getElementById('harvestOtherWorkSection');
+  if (harvestOtherWorkSection) harvestOtherWorkSection.classList.remove('hidden');
   boughtItemsSection.classList.remove('hidden');
   vehicleUpdatesSection.classList.remove('hidden');
 }
@@ -4380,7 +4488,8 @@ function renderForm(type){
     'cost', // Legacy field name
     // Other expense fields
     'haulingExpense',
-    'rentCost' // Dynamically created field
+    'rentCost', // Dynamically created field
+    'harvestOtherWorkTotalLaborCost' // Optional other work during harvest (computed)
   ];
 
   // List of field IDs that should NEVER be included in total cost calculation
@@ -5082,6 +5191,82 @@ window.selectCurrentDate = function(fieldId) {
 // Optional sections handlers
 let boughtItemsCount = 0;
 
+const toggleHarvestOtherWorkBtn = document.getElementById('toggleHarvestOtherWork');
+const harvestOtherWorkContent = document.getElementById('harvestOtherWorkContent');
+if (toggleHarvestOtherWorkBtn && harvestOtherWorkContent) {
+  toggleHarvestOtherWorkBtn.onclick = () => {
+    const isHidden = harvestOtherWorkContent.classList.contains('hidden');
+    if (isHidden) {
+      harvestOtherWorkContent.classList.remove('hidden');
+      toggleHarvestOtherWorkBtn.textContent = 'Hide Section';
+    } else {
+      harvestOtherWorkContent.classList.add('hidden');
+      toggleHarvestOtherWorkBtn.textContent = 'Show Section';
+    }
+  };
+}
+
+function updateHarvestOtherWorkLaborCost() {
+  const rateInput = document.getElementById('harvestOtherWorkRatePerDay');
+  const workersInput = document.getElementById('harvestOtherWorkWorkers');
+  const workingDaysInput = document.getElementById('harvestOtherWorkWorkingDays');
+  const totalLaborCostInput = document.getElementById('harvestOtherWorkTotalLaborCost');
+  const startDateInput = document.getElementById('startDate');
+  const endDateInput = document.getElementById('endDate');
+
+  if (!rateInput || !workersInput || !totalLaborCostInput) return;
+
+  let workingDays = 0;
+  if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+    const start = new Date(startDateInput.value);
+    const end = new Date(endDateInput.value);
+    if (end >= start) {
+      const cursor = new Date(start);
+      cursor.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      while (cursor <= end) {
+        const day = cursor.getDay();
+        if (day !== 0 && day !== 6) workingDays += 1;
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+  }
+
+  if (workingDaysInput) {
+    workingDaysInput.value = (startDateInput?.value && endDateInput?.value) ? String(workingDays) : '';
+  }
+
+  const rate = parseFloat(rateInput.value) || 0;
+  const workers = parseFloat(workersInput.value) || 0;
+  totalLaborCostInput.value = (rate * workers * workingDays).toFixed(2);
+
+  if (typeof window.updateTotalCost === 'function') window.updateTotalCost();
+}
+
+window.updateHarvestOtherWorkLaborCost = updateHarvestOtherWorkLaborCost;
+
+function bindHarvestOtherWorkLaborCostHandlers() {
+  const triggerFieldIds = [
+    'harvestOtherWorkRatePerDay',
+    'harvestOtherWorkWorkers',
+    'startDate',
+    'endDate'
+  ];
+
+  triggerFieldIds.forEach((fieldId) => {
+    const input = document.getElementById(fieldId);
+    if (!input || input.dataset.harvestOtherWorkHandlerAttached === 'true') return;
+    input.dataset.harvestOtherWorkHandlerAttached = 'true';
+    input.addEventListener('input', updateHarvestOtherWorkLaborCost);
+    input.addEventListener('change', updateHarvestOtherWorkLaborCost);
+  });
+
+  updateHarvestOtherWorkLaborCost();
+}
+
+window.bindHarvestOtherWorkLaborCostHandlers = bindHarvestOtherWorkLaborCostHandlers;
+bindHarvestOtherWorkLaborCostHandlers();
+
 const toggleBoughtItemsBtn = document.getElementById('toggleBoughtItems');
 const boughtItemsContent = document.getElementById('boughtItemsContent');
 const boughtItemsList = document.getElementById('boughtItemsList');
@@ -5497,6 +5682,36 @@ for(const f of fields){
           }
         }
       }
+    }
+  }
+
+  // Collect optional "Other Work During Harvest" fields
+  const harvestOtherWorkTaskInput = document.getElementById('harvestOtherWorkTask');
+  const harvestOtherWorkRateInput = document.getElementById('harvestOtherWorkRatePerDay');
+  const harvestOtherWorkWorkersInput = document.getElementById('harvestOtherWorkWorkers');
+  const harvestOtherWorkWorkingDaysInput = document.getElementById('harvestOtherWorkWorkingDays');
+  const harvestOtherWorkTotalLaborCostInput = document.getElementById('harvestOtherWorkTotalLaborCost');
+  if (harvestOtherWorkTaskInput || harvestOtherWorkTotalLaborCostInput) {
+    const harvestOtherWorkTask = harvestOtherWorkTaskInput?.value?.trim() || '';
+    const harvestOtherWorkRatePerDay = parseFloat(harvestOtherWorkRateInput?.value) || 0;
+    const harvestOtherWorkWorkers = parseFloat(harvestOtherWorkWorkersInput?.value) || 0;
+    const harvestOtherWorkWorkingDays = parseFloat(harvestOtherWorkWorkingDaysInput?.value) || 0;
+    const harvestOtherWorkTotalLaborCost = parseFloat(harvestOtherWorkTotalLaborCostInput?.value) || 0;
+    if (
+      editingRecordId ||
+      harvestOtherWorkTask ||
+      harvestOtherWorkRatePerDay > 0 ||
+      harvestOtherWorkWorkers > 0 ||
+      harvestOtherWorkWorkingDays > 0 ||
+      harvestOtherWorkTotalLaborCost > 0
+    ) {
+      recordData.harvestOtherWorkTask = harvestOtherWorkTask;
+      recordData.harvestOtherWorkRatePerDay = harvestOtherWorkRatePerDay;
+      recordData.harvestOtherWorkWorkers = harvestOtherWorkWorkers;
+      recordData.harvestOtherWorkWorkingDays = harvestOtherWorkWorkingDays;
+      recordData.harvestOtherWorkTotalLaborCost = harvestOtherWorkTotalLaborCost;
+      // Backward-compatible key for older records/reports.
+      recordData.harvestOtherWorkLaborCost = harvestOtherWorkTotalLaborCost;
     }
   }
 

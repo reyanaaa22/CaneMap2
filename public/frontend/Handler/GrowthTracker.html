@@ -2016,7 +2016,11 @@
             } else if (idx === currentOrder) {
               // Harvesting is final/locked
               const isHarvest = currentStage === 'Harvesting';
-              indicator.classList.add(isHarvest ? 'completed' : 'active', isHarvest ? '' : 'in-progress');
+              if (isHarvest) {
+                indicator.classList.add('completed');
+              } else {
+                indicator.classList.add('active', 'in-progress');
+              }
               if (badge) {
                 badge.textContent = isHarvest ? 'Completed' : 'In Progress';
                 badge.className = isHarvest ? 'badge badge-done text-xs' : 'badge badge-progress text-xs';
