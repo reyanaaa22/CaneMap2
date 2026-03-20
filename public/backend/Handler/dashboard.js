@@ -5227,7 +5227,7 @@ export function initializeFieldsSection() {
       `;
       
       return `
-        <div class="p-3 bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg hover:shadow-md transition-all cursor-pointer">
+        <div class="p-3 bg-gradient-to-r from-green-50 to-white border border-green-200 rounded-lg hover:shadow-md transition-all cursor-pointer" onclick="viewFieldDetails('${field.id}')">
           <div class="flex items-start justify-between">
             <div class="flex-1">
               <h3 class="font-semibold text-gray-900 text-sm">${field.field_name || field.fieldName || 'Unnamed Field'}</h3>
@@ -5245,10 +5245,10 @@ export function initializeFieldsSection() {
             </div>
           </div>
           <div class="flex gap-2 mt-2">
-            <button class="flex-1 px-2 py-1.5 bg-[var(--cane-600)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--cane-700)] transition-colors flex items-center justify-center gap-1" onclick="focusField('${field.id}')">
+            <button class="flex-1 px-2 py-1.5 bg-[var(--cane-600)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--cane-700)] transition-colors flex items-center justify-center gap-1" onclick="event.stopPropagation(); focusField('${field.id}')">
               <i class="fas fa-map"></i>Focus on Map
             </button>
-            <button class="flex-1 px-2 py-1.5 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-1" onclick="viewFieldDetails('${field.id}')">
+            <button class="flex-1 px-2 py-1.5 bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-1" onclick="event.stopPropagation(); viewFieldDetails('${field.id}')">
               <i class="fas fa-eye"></i>View Details
             </button>
           </div>
