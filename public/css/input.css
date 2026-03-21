@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area insets for mobile apps (Capacitor / notch devices) */
+html {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
 /* CaneMap custom CSS variables (for compatibility with existing code) */
 :root {
   --cane-50: #f7fee7;
