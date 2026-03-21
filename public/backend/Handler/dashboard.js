@@ -5378,7 +5378,7 @@ export function initializeFieldsSection() {
 
         // Crop type label (Plant Cane / Ratoon)
         const cropTypeNormalized = (growthData?.cropType || '').toString().toLowerCase();
-        cropTypeLabel = cropTypeNormalized.includes('ratoon') ? 'Ratoon' : 'Plant Cane';
+        cropTypeLabel = cropTypeNormalized.includes('ratoon') ? 'Ratoon Cane' : (cropTypeNormalized.includes('replant') ? 'Replant Cane' : 'Plant Cane');
 
         // Seed rate, fertilizers, weeding from input records
         seedRate = growthData?.seedRate || '—';

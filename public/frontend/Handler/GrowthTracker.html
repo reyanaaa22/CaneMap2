@@ -615,6 +615,19 @@
         margin-left: auto;
       }
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
   </style>
 </head>
 
@@ -670,11 +683,19 @@
             <p class="text-sm text-[var(--cane-800)]">Monitor sugarcane growth and estimate harvest times with 90%
               accuracy</p>
           </div>
-          <div class="btn-tooltip ml-4">
-            <button id="ratoonBtn" class="px-4 py-2 bg-[var(--cane-600)] text-white rounded-lg font-semibold hover:bg-[var(--cane-700)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" disabled title="Available only when field is harvested">
-              <i class="fa-solid fa-leaf mr-2"></i>Ratoon Field
-            </button>
-            <span id="ratoonBtnTooltip" class="tooltip-text">Available only when field is harvested</span>
+          <div class="flex items-center gap-2 ml-4">
+            <div class="btn-tooltip">
+              <button id="ratoonBtn" class="px-3 py-2 bg-[var(--cane-600)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--cane-700)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" disabled title="Available only when field is harvested">
+                <i class="fa-solid fa-leaf mr-1"></i>Ratoon Field
+              </button>
+              <span id="ratoonBtnTooltip" class="tooltip-text">Available only when field is harvested</span>
+            </div>
+            <div class="btn-tooltip">
+              <button id="replantBtn" class="px-3 py-2 bg-[var(--cane-700)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--cane-800)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap" disabled title="Available only when field is harvested">
+                <i class="fa-solid fa-seedling mr-1"></i>Replant Field
+              </button>
+              <span id="replantBtnTooltip" class="tooltip-text">Available only when field is harvested</span>
+            </div>
           </div>
         </div>
         <!-- Field select -->
@@ -1126,7 +1147,7 @@
         import { auth, db } from '../../backend/Common/firebase-config.js';
         import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js';
         import { collection, query, where, getDocs, onSnapshot, getDoc, doc, orderBy, Timestamp } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
-        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange, getGrowthStageRanges, VARIETY_HARVEST_MONTHS_RANGE, RATOON_HARVEST_MONTHS_RANGE, calculateExpectedHarvestDateMonths, parseDateValue, parseExpectedHarvestDateFromRecord } from '../../backend/Handler/growth-tracker.js';
+        import { getFieldGrowthData, calculateDAP, getGrowthStage, calculateDaysRemaining, VARIETY_HARVEST_DAYS, handleRatooning, handleReplanting, calculateRatoonExpectedHarvestDate, VARIETY_GROWTH_STAGES, formatHarvestDate, formatHarvestDateRange, getGrowthStageRanges, VARIETY_HARVEST_MONTHS_RANGE, RATOON_HARVEST_MONTHS_RANGE, calculateExpectedHarvestDateMonths, parseDateValue, parseExpectedHarvestDateFromRecord } from '../../backend/Handler/growth-tracker.js';
         import { updateDoc } from 'https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js';
 
         let currentUserId = null;
@@ -1155,7 +1176,8 @@
 
         function getReadableCropType(cropType) {
           const normalized = (cropType || '').toString().toLowerCase();
-          if (normalized.includes('ratoon')) return 'Ratoon';
+          if (normalized.includes('ratoon')) return 'Ratoon Cane';
+          if (normalized.includes('replant')) return 'Replant Cane';
           return 'Plant Cane';
         }
 
@@ -1218,13 +1240,12 @@
             'Germination': 2,
             'Tillering': 3,
             'Grand Growth': 4,
-            'Maturing / Ripening': 5
+            'Maturing / Ripening': 5,
+            'Harvest-ready': 6,
+            'Harvested': 6
           };
 
           let currentOrder = stageOrder[computedStage] ?? -1;
-          if (computedStage === 'Harvest-ready') {
-            currentOrder = 5;
-          }
 
           const setStatus = (id, text) => {
             const el = document.getElementById(id);
@@ -1810,7 +1831,7 @@
               updateTimeline(growthData);
               // Still load timeline nodes to show submitted reports
               await loadTimelineNodes(fieldId);
-              updateRatoonButtonState(growthData);
+              updateFieldActionButtonStates(growthData);
               return;
             }
 
@@ -1872,7 +1893,7 @@
             checkPredictedHarvest(fieldId);
 
             // Update ratoon button state (works for both planted and unplanted fields)
-            updateRatoonButtonState(growthData);
+            updateFieldActionButtonStates(growthData);
 
           } catch (error) {
             console.error('Error displaying field growth data:', error);
@@ -1939,7 +1960,7 @@
             const badge = document.getElementById(`badge-${stage}`);
             const connector = document.getElementById(`connector-${stage}`);
             if (indicator) {
-              indicator.classList.remove('active', 'completed', 'in-progress');
+              try { indicator.classList.remove('active', 'completed', 'in-progress'); } catch (_) { /* guard empty token */ }
             }
             if (badge) badge.style.display = 'none';
             if (connector) {
@@ -1956,8 +1977,9 @@
 
         // Update timeline with progress
         function updateTimeline(growthData) {
-          // Stage-weighted progress ONLY (no DAP fallback, no partials inside a stage)
-          const currentStage = growthData.currentGrowthStage || '—';
+          // Use DAP-based stage as primary display; record-based stage drives timeline progression
+          const dapStage = growthData.dapCurrentGrowthStage || '—';
+          const recordStage = growthData.currentGrowthStage || '—';
           const progress = (growthData.stageWeightedProgress ?? growthData.recordBasedProgress ?? 0);
 
           const tlBar = document.getElementById('tlBar');
@@ -1968,9 +1990,9 @@
           if (tlBar) tlBar.style.width = `${progress}%`;
           if (tlPct) tlPct.textContent = String(progress);
           if (progressPercentage) progressPercentage.textContent = `${progress}%`;
-          if (progressCurrent) progressCurrent.textContent = currentStage;
+          if (progressCurrent) progressCurrent.textContent = dapStage;
 
-          // Update per-stage “Status” labels (no per-task or DAP progress)
+          // Use the higher of DAP-based or record-based for timeline indicator state
           const stageOrder = {
             'Land Preparation': 0,
             'Planting': 1,
@@ -1978,9 +2000,14 @@
             'Tillering': 3,
             'Grand Growth': 4,
             'Maturing / Ripening': 5,
-            'Harvesting': 6
+            'Harvesting': 6,
+            'Harvest-ready': 6,
+            'Harvested': 6
           };
-          const currentOrder = stageOrder[currentStage] ?? -1;
+          const dapOrder = stageOrder[dapStage] ?? -1;
+          const recordOrder = stageOrder[recordStage] ?? -1;
+          const currentOrder = Math.max(dapOrder, recordOrder);
+          const currentStage = currentOrder === dapOrder ? dapStage : recordStage;
 
           const setStatus = (id, text) => {
             const el = document.getElementById(id);
@@ -2024,23 +2051,31 @@
             { name: 'Harvesting', element: 'harvest' }
           ];
 
+          const safeAdd = (el, ...tokens) => {
+            const valid = tokens.filter(t => typeof t === 'string' && t.length > 0);
+            if (valid.length > 0) el.classList.add(...valid);
+          };
+          const safeRemove = (el, ...tokens) => {
+            const valid = tokens.filter(t => typeof t === 'string' && t.length > 0);
+            if (valid.length > 0) el.classList.remove(...valid);
+          };
+
           stages.forEach((s, idx) => {
             const indicator = document.getElementById(`stage-${s.element}`);
             const badge = document.getElementById(`badge-${s.element}`);
             const connector = document.getElementById(`connector-${s.element}`);
             if (!indicator) return;
 
-            indicator.classList.remove('active', 'completed', 'in-progress');
+            safeRemove(indicator, 'active', 'completed', 'in-progress');
             if (badge) badge.style.display = 'none';
 
             if (currentOrder < 0) {
-              // No main-stage records: leave all stages inactive
               if (connector) connector.className = 'w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-300 mt-2 min-h-[40px]';
               return;
             }
 
             if (idx < currentOrder) {
-              indicator.classList.add('completed');
+              safeAdd(indicator, 'completed');
               if (badge) {
                 badge.textContent = 'Completed';
                 badge.className = 'badge badge-done text-xs';
@@ -2048,12 +2083,11 @@
               }
               if (connector) connector.className = 'w-0.5 h-full bg-gradient-to-b from-[var(--cane-600)] to-[var(--cane-400)] mt-2 min-h-[40px]';
             } else if (idx === currentOrder) {
-              // Harvesting is final/locked
               const isHarvest = currentStage === 'Harvesting';
               if (isHarvest) {
-                indicator.classList.add('completed');
+                safeAdd(indicator, 'completed');
               } else {
-                indicator.classList.add('active', 'in-progress');
+                safeAdd(indicator, 'active', 'in-progress');
               }
               if (badge) {
                 badge.textContent = isHarvest ? 'Completed' : 'In Progress';
@@ -2287,6 +2321,72 @@
           errorDiv.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
           document.body.appendChild(errorDiv);
           setTimeout(() => errorDiv.remove(), 4000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+          const successDiv = document.createElement('div');
+          successDiv.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
+          successDiv.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message.replace(/\n/g, '<br>')}`;
+          document.body.appendChild(successDiv);
+          setTimeout(() => successDiv.remove(), 5000);
+        }
+
+        /**
+         * Custom styled confirmation modal that returns a Promise<boolean>.
+         * @param {object} options - Modal content options
+         * @param {string} options.title - Modal title
+         * @param {string} options.message - Main message body (HTML supported)
+         * @param {string} options.icon - FontAwesome icon class
+         * @param {string} options.iconColor - Tailwind text color class for the icon
+         * @param {string} options.confirmText - Confirm button label
+         * @param {string} options.confirmColor - Tailwind bg color class for confirm button
+         * @param {string} options.confirmHover - Tailwind hover bg color class
+         * @returns {Promise<boolean>}
+         */
+        function showConfirmModal({ title, message, icon, iconColor, confirmText, confirmColor, confirmHover }) {
+          return new Promise((resolve) => {
+            const existing = document.getElementById('fieldActionModal');
+            if (existing) existing.remove();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'fieldActionModal';
+            overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center p-4';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            overlay.style.backdropFilter = 'blur(4px)';
+            overlay.style.animation = 'fadeIn 0.2s ease-out';
+
+            overlay.innerHTML = `
+              <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden" style="animation: slideUp 0.25s ease-out">
+                <div class="px-6 pt-6 pb-4 text-center">
+                  <div class="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-4 ${iconColor.replace('text-', 'bg-').replace('600', '100').replace('700', '100')}">
+                    <i class="${icon} text-2xl ${iconColor}"></i>
+                  </div>
+                  <h3 class="text-lg font-bold text-gray-900 mb-2">${title}</h3>
+                  <div class="text-sm text-gray-600 leading-relaxed">${message}</div>
+                </div>
+                <div class="px-6 pb-6 flex gap-3">
+                  <button id="fieldActionCancel" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button id="fieldActionConfirm" class="flex-1 px-4 py-2.5 rounded-xl ${confirmColor} text-white font-semibold text-sm ${confirmHover} transition-colors">
+                    ${confirmText}
+                  </button>
+                </div>
+              </div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            const cleanup = (result) => {
+              overlay.style.animation = 'fadeOut 0.15s ease-in forwards';
+              setTimeout(() => { overlay.remove(); resolve(result); }, 150);
+            };
+
+            document.getElementById('fieldActionCancel').addEventListener('click', () => cleanup(false));
+            document.getElementById('fieldActionConfirm').addEventListener('click', () => cleanup(true));
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) cleanup(false); });
+          });
         }
 
         // ✅ Display historical planting & harvest data
@@ -3586,6 +3686,241 @@
             recordsUnsubscribe = null;
           }
         });
+
+        // =========================================================
+        // RATOON & REPLANT BUTTON FUNCTIONALITY
+        // =========================================================
+        function updateFieldActionButtonStates(growthData) {
+          const ratoonBtn = document.getElementById('ratoonBtn');
+          const ratoonTooltip = document.getElementById('ratoonBtnTooltip');
+          const replantBtn = document.getElementById('replantBtn');
+          const replantTooltip = document.getElementById('replantBtnTooltip');
+
+          const isHarvested = growthData && growthData.status === 'harvested';
+
+          if (ratoonBtn) {
+            if (isHarvested) {
+              ratoonBtn.disabled = false;
+              ratoonBtn.title = 'Click to ratoon this field';
+              if (ratoonTooltip) {
+                ratoonTooltip.textContent = 'Click to ratoon this field';
+                ratoonTooltip.classList.remove('text-gray-600');
+                ratoonTooltip.classList.add('text-[var(--cane-600)]');
+              }
+            } else {
+              ratoonBtn.disabled = true;
+              ratoonBtn.title = 'Available only when field is harvested';
+              if (ratoonTooltip) {
+                ratoonTooltip.textContent = 'Available only when field is harvested';
+                ratoonTooltip.classList.remove('text-[var(--cane-600)]');
+                ratoonTooltip.classList.add('text-gray-600');
+              }
+            }
+          }
+
+          if (replantBtn) {
+            if (isHarvested) {
+              replantBtn.disabled = false;
+              replantBtn.title = 'Click to replant this field';
+              if (replantTooltip) {
+                replantTooltip.textContent = 'Click to replant this field';
+                replantTooltip.classList.remove('text-gray-600');
+                replantTooltip.classList.add('text-[var(--cane-700)]');
+              }
+            } else {
+              replantBtn.disabled = true;
+              replantBtn.title = 'Available only when field is harvested';
+              if (replantTooltip) {
+                replantTooltip.textContent = 'Available only when field is harvested';
+                replantTooltip.classList.remove('text-[var(--cane-700)]');
+                replantTooltip.classList.add('text-gray-600');
+              }
+            }
+          }
+        }
+
+        function normalizeVarietyName(variety) {
+          if (!variety) return variety;
+          const aliasPatterns = [
+            { pattern: /^PS 1\s+or\s+VMC 84-947/i, normalized: 'PS 1' },
+            { pattern: /^PS 2\s+or\s+VMC 88-354/i, normalized: 'PS 2' },
+            { pattern: /^PS 3\s+or\s+VMC 84-524\s+or\s+CADP Sc1/i, normalized: 'PS 3' },
+            { pattern: /^PS 4\s+or\s+VMC 95-152/i, normalized: 'PS 4' },
+            { pattern: /^PS 5\s+or\s+VMC 95-09/i, normalized: 'PS 5' }
+          ];
+          for (const alias of aliasPatterns) {
+            if (alias.pattern.test(variety)) return alias.normalized;
+          }
+          const varietyNames = Object.keys(RATOON_HARVEST_MONTHS_RANGE);
+          for (const name of varietyNames) {
+            if (variety.includes(name)) return name;
+          }
+          return variety.trim();
+        }
+
+        function getRatoonHarvestDateRange(variety, harvestDate) {
+          if (!variety || !harvestDate) return null;
+          const normalized = normalizeVarietyName(variety);
+          const duration = RATOON_HARVEST_MONTHS_RANGE[normalized] || RATOON_HARVEST_MONTHS_RANGE[variety];
+          if (!duration) {
+            console.warn(`Variety ${variety} (normalized: ${normalized}) not found in ratoon harvest months range`);
+            return null;
+          }
+          const daysPerMonth = 30.44;
+          const minDays = Math.round(duration.min * daysPerMonth);
+          const maxDays = Math.round(duration.max * daysPerMonth);
+          const harvest = harvestDate instanceof Date ? harvestDate : new Date(harvestDate);
+          return {
+            earliest: new Date(harvest.getTime() + minDays * 24 * 60 * 60 * 1000),
+            latest: new Date(harvest.getTime() + maxDays * 24 * 60 * 60 * 1000)
+          };
+        }
+
+        function formatDateDDMMYYYY(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${day}/${month}/${year}`;
+        }
+
+        async function handleRatoon() {
+          if (!selectedFieldId) { showError('No field selected'); return; }
+          if (!currentUserId) { showError('User not authenticated'); return; }
+
+          const growthData = window.latestGrowthData;
+          if (!growthData || growthData.status !== 'harvested') {
+            showError('Field must be harvested before ratooning');
+            return;
+          }
+
+          const fieldRef = doc(db, 'fields', selectedFieldId);
+          const fieldSnap = await getDoc(fieldRef);
+          const fieldData = fieldSnap.data();
+          const harvestDate = fieldData?.actualHarvestDate?.toDate?.() || fieldData?.actualHarvestDate;
+          const variety = growthData?.variety || 'Unknown';
+
+          let harvestWindowHtml = '';
+          if (harvestDate && variety) {
+            const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
+            if (harvestRange) {
+              harvestWindowHtml = `
+                <div class="mt-3 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-left">
+                  <p class="text-xs font-semibold text-green-700 mb-1"><i class="fas fa-calendar-alt mr-1"></i>Expected Harvest Window</p>
+                  <p class="text-sm text-green-800 font-medium">${formatDateDDMMYYYY(harvestRange.earliest)} – ${formatDateDDMMYYYY(harvestRange.latest)}</p>
+                </div>`;
+            }
+          }
+
+          const confirmed = await showConfirmModal({
+            title: 'Ratoon This Field?',
+            message: `
+              <p>This will start a <strong>new growth cycle</strong> as <span class="inline-block px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-bold">Ratoon Cane</span></p>
+              <div class="mt-3 space-y-1.5 text-left">
+                <div class="flex items-start gap-2"><i class="fas fa-check-circle text-green-500 mt-0.5 text-xs"></i><span>Growth tracker will reset to a fresh cycle</span></div>
+                <div class="flex items-start gap-2"><i class="fas fa-check-circle text-green-500 mt-0.5 text-xs"></i><span>Progress bar and stages will reset to 0%</span></div>
+                <div class="flex items-start gap-2"><i class="fas fa-shield-alt text-blue-500 mt-0.5 text-xs"></i><span>All existing records will be <strong>preserved</strong></span></div>
+              </div>
+              ${harvestWindowHtml}
+            `,
+            icon: 'fas fa-leaf',
+            iconColor: 'text-green-600',
+            confirmText: 'Yes, Ratoon Field',
+            confirmColor: 'bg-[var(--cane-600)]',
+            confirmHover: 'hover:bg-[var(--cane-700)]'
+          });
+
+          if (!confirmed) return;
+
+          const ratoonBtn = document.getElementById('ratoonBtn');
+          const originalContent = ratoonBtn.innerHTML;
+          try {
+            ratoonBtn.disabled = true;
+            ratoonBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+            const result = await handleRatooning(currentUserId, selectedFieldId);
+
+            if (result.success) {
+              showSuccess('Field successfully ratooned! Growth tracking has been reset. Crop type is now: Ratoon Cane');
+              await displayFieldGrowthData(selectedFieldId);
+            } else {
+              showError('Failed to ratoon field. Please try again.');
+            }
+          } catch (error) {
+            console.error('Error ratooning field:', error);
+            showError(error.message || 'Failed to ratoon field. Please try again.');
+          } finally {
+            ratoonBtn.disabled = false;
+            ratoonBtn.innerHTML = originalContent;
+          }
+        }
+
+        async function handleReplant() {
+          if (!selectedFieldId) { showError('No field selected'); return; }
+          if (!currentUserId) { showError('User not authenticated'); return; }
+
+          const growthData = window.latestGrowthData;
+          if (!growthData || growthData.status !== 'harvested') {
+            showError('Field must be harvested before replanting');
+            return;
+          }
+
+          const confirmed = await showConfirmModal({
+            title: 'Replant This Field?',
+            message: `
+              <p>This will start a <strong>completely new planting cycle</strong> as <span class="inline-block px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-xs font-bold">Replant Cane</span></p>
+              <div class="mt-3 space-y-1.5 text-left">
+                <div class="flex items-start gap-2"><i class="fas fa-check-circle text-green-500 mt-0.5 text-xs"></i><span>Growth tracker will reset to a fresh cycle</span></div>
+                <div class="flex items-start gap-2"><i class="fas fa-check-circle text-green-500 mt-0.5 text-xs"></i><span>Progress bar and stages will reset to 0%</span></div>
+                <div class="flex items-start gap-2"><i class="fas fa-check-circle text-green-500 mt-0.5 text-xs"></i><span>Ratoon count will reset to 0</span></div>
+                <div class="flex items-start gap-2"><i class="fas fa-shield-alt text-blue-500 mt-0.5 text-xs"></i><span>All existing records will be <strong>preserved</strong></span></div>
+              </div>
+            `,
+            icon: 'fas fa-seedling',
+            iconColor: 'text-amber-600',
+            confirmText: 'Yes, Replant Field',
+            confirmColor: 'bg-[var(--cane-700)]',
+            confirmHover: 'hover:bg-[var(--cane-800)]'
+          });
+
+          if (!confirmed) return;
+
+          const replantBtn = document.getElementById('replantBtn');
+          const originalContent = replantBtn.innerHTML;
+          try {
+            replantBtn.disabled = true;
+            replantBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+            const result = await handleReplanting(currentUserId, selectedFieldId);
+
+            if (result.success) {
+              showSuccess('Field successfully replanted! Growth tracking has been reset. Crop type is now: Replant Cane');
+              await displayFieldGrowthData(selectedFieldId);
+            } else {
+              showError('Failed to replant field. Please try again.');
+            }
+          } catch (error) {
+            console.error('Error replanting field:', error);
+            showError(error.message || 'Failed to replant field. Please try again.');
+          } finally {
+            replantBtn.disabled = false;
+            replantBtn.innerHTML = originalContent;
+          }
+        }
+
+        // Initialize ratoon & replant button event listeners
+        const ratoonBtnEl = document.getElementById('ratoonBtn');
+        if (ratoonBtnEl) {
+          ratoonBtnEl.addEventListener('click', handleRatoon);
+        } else {
+          console.warn('Ratoon button not found in DOM');
+        }
+
+        const replantBtnEl = document.getElementById('replantBtn');
+        if (replantBtnEl) {
+          replantBtnEl.addEventListener('click', handleReplant);
+        } else {
+          console.warn('Replant button not found in DOM');
+        }
       </script>
 
       <script>
@@ -3874,182 +4209,7 @@
           initializeButtons();
         }
 
-        // RATOON BUTTON FUNCTIONALITY
-        function updateRatoonButtonState(growthData) {
-          const ratoonBtn = document.getElementById('ratoonBtn');
-          const ratoonTooltip = document.getElementById('ratoonBtnTooltip');
-          
-          if (!ratoonBtn) return;
-
-          // Check if field status is 'harvested' (from database)
-          const isHarvested = growthData && growthData.status === 'harvested';
-          
-          if (isHarvested) {
-            ratoonBtn.disabled = false;
-            ratoonBtn.title = 'Click to ratoon this field';
-            if (ratoonTooltip) {
-              ratoonTooltip.textContent = 'Click to ratoon this field';
-              ratoonTooltip.classList.remove('text-gray-600');
-              ratoonTooltip.classList.add('text-[var(--cane-600)]');
-            }
-          } else {
-            ratoonBtn.disabled = true;
-            ratoonBtn.title = 'Available only when field is harvested';
-            if (ratoonTooltip) {
-              ratoonTooltip.textContent = 'Available only when field is harvested';
-              ratoonTooltip.classList.remove('text-[var(--cane-600)]');
-              ratoonTooltip.classList.add('text-gray-600');
-            }
-          }
-        }
-
-        function normalizeVarietyName(variety) {
-          if (!variety) return variety;
-          
-          // Handle aliases by extracting the first variety name
-          const aliasPatterns = [
-            { pattern: /^PS 1\s+or\s+VMC 84-947/i, normalized: 'PS 1' },
-            { pattern: /^PS 2\s+or\s+VMC 88-354/i, normalized: 'PS 2' },
-            { pattern: /^PS 3\s+or\s+VMC 84-524\s+or\s+CADP Sc1/i, normalized: 'PS 3' },
-            { pattern: /^PS 4\s+or\s+VMC 95-152/i, normalized: 'PS 4' },
-            { pattern: /^PS 5\s+or\s+VMC 95-09/i, normalized: 'PS 5' }
-          ];
-          
-          for (const alias of aliasPatterns) {
-            if (alias.pattern.test(variety)) {
-              return alias.normalized;
-            }
-          }
-          
-          // Also check for individual variety names that might be in the alias string
-          const varietyNames = Object.keys(RATOON_HARVEST_MONTHS_RANGE);
-          for (const name of varietyNames) {
-            if (variety.includes(name)) {
-              return name;
-            }
-          }
-          
-          return variety.trim();
-        }
-
-        function getRatoonHarvestDateRange(variety, harvestDate) {
-          if (!variety || !harvestDate) return null;
-          
-          const normalized = normalizeVarietyName(variety);
-          const duration = RATOON_HARVEST_MONTHS_RANGE[normalized] || RATOON_HARVEST_MONTHS_RANGE[variety];
-          if (!duration) {
-            console.warn(`Variety ${variety} (normalized: ${normalized}) not found in ratoon harvest months range`);
-            return null;
-          }
-          
-          // Convert months to days (using average 30.44 days per month)
-          const daysPerMonth = 30.44;
-          const minDays = Math.round(duration.min * daysPerMonth);
-          const maxDays = Math.round(duration.max * daysPerMonth);
-          
-          const harvest = harvestDate instanceof Date ? harvestDate : new Date(harvestDate);
-          
-          return {
-            earliest: new Date(harvest.getTime() + minDays * 24 * 60 * 60 * 1000),
-            latest: new Date(harvest.getTime() + maxDays * 24 * 60 * 60 * 1000)
-          };
-        }
-
-        async function handleRatoon() {
-          if (!selectedFieldId) {
-            showError('No field selected');
-            return;
-          }
-
-          if (!currentUserId) {
-            showError('User not authenticated');
-            return;
-          }
-
-          const growthData = window.latestGrowthData;
-          if (!growthData || growthData.status !== 'harvested') {
-            showError('Field must be harvested before ratooning');
-            return;
-          }
-
-          // Get harvest date for calculating expected harvest range
-          const fieldRef = doc(db, 'fields', selectedFieldId);
-          const fieldSnap = await getDoc(fieldRef);
-          const fieldData = fieldSnap.data();
-          const harvestDate = fieldData?.actualHarvestDate?.toDate?.() || fieldData?.actualHarvestDate;
-          const variety = growthData?.variety || 'Unknown';
-
-          // Calculate and display expected harvest date range
-          let confirmMessage = 'Are you sure you want to ratoon this field? This will reset all growth tracking data.';
-          if (harvestDate && variety) {
-            const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
-            if (harvestRange) {
-              // Format dates in DD/MM/YYYY format for consistency
-              const formatDateDDMMYYYY = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${day}/${month}/${year}`;
-              };
-              const earliestStr = formatDateDDMMYYYY(harvestRange.earliest);
-              const latestStr = formatDateDDMMYYYY(harvestRange.latest);
-              confirmMessage += `\n\nExpected Harvest Date Range: ${earliestStr} – ${latestStr}`;
-            }
-          }
-          
-          const confirmed = confirm(confirmMessage);
-          if (!confirmed) return;
-
-          try {
-            const ratoonBtn = document.getElementById('ratoonBtn');
-            ratoonBtn.disabled = true;
-            const originalContent = ratoonBtn.innerHTML;
-            ratoonBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-
-            // Use backend handleRatooning function
-            const result = await handleRatooning(currentUserId, selectedFieldId);
-            
-            if (result.success) {
-              // Display success message with harvest date range if available
-              let successMessage = 'Field successfully ratoon! Growth tracking has been reset.';
-              if (harvestDate && variety) {
-                const harvestRange = getRatoonHarvestDateRange(variety, harvestDate);
-                if (harvestRange) {
-                  // Format dates in DD/MM/YYYY format for consistency
-                  const formatDateDDMMYYYY = (date) => {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    return `${day}/${month}/${year}`;
-                  };
-                  const earliestStr = formatDateDDMMYYYY(harvestRange.earliest);
-                  const latestStr = formatDateDDMMYYYY(harvestRange.latest);
-                  successMessage += `\n\nExpected Harvest Date Range: ${earliestStr} – ${latestStr}`;
-                }
-              }
-              showSuccess(successMessage);
-              
-              await displayFieldGrowthData(selectedFieldId);
-            } else {
-              showError('Failed to ratoon field. Please try again.');
-            }
-          } catch (error) {
-            console.error('Error ratoon field:', error);
-            showError(error.message || 'Failed to ratoon field. Please try again.');
-          } finally {
-            const ratoonBtn = document.getElementById('ratoonBtn');
-            ratoonBtn.disabled = false;
-            ratoonBtn.innerHTML = originalContent;
-          }
-        }
-
-        // Initialize ratoon button event listener
-        const ratoonBtn = document.getElementById('ratoonBtn');
-        if (ratoonBtn) {
-          ratoonBtn.addEventListener('click', handleRatoon);
-        } else {
-          console.warn('Ratoon button not found in DOM');
-        }
+        // (Ratoon & Replant logic moved to module script for proper scope access)
       </script>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>

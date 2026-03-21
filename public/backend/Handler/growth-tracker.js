@@ -1282,6 +1282,7 @@ export async function handleRatooning(userId, fieldId, ratoonStartDate = null) {
       expectedHarvestDate: Timestamp.fromDate(expectedHarvestDate),
       ratoonNumber: ratoonNumber,
       currentGrowthStage: currentGrowthStage,
+      cropType: 'ratoon',
       isRatoon: true,
       delayDays: 0,
 
@@ -1390,6 +1391,7 @@ export async function handleReplanting(userId, fieldId, newPlantingDate = null, 
       sugarcane_variety: newVariety,
       plantingCycleNumber: plantingCycleNumber,
       currentGrowthStage: currentGrowthStage,
+      cropType: 'replant_cane',
       isRatoon: false,
       ratoonNumber: 0,
       delayDays: 0,
@@ -1407,6 +1409,9 @@ export async function handleReplanting(userId, fieldId, newPlantingDate = null, 
       basalFertilizationDate: null,
       mainFertilizationDate: null,
       growthHistory: {},
+
+      // Reset DAP to 0 for new planting cycle
+      DAP: 0,
 
       replantedAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -1819,7 +1824,13 @@ export async function getFieldGrowthData(fieldId) {
     // Planting exists: compute DAP-based analytics (days remaining, delays, etc.)
     const DAP = calculateDAP(plantingDate);
     const growthStageRanges = getGrowthStageRanges(variety, cropType, isRatoon);
-    const dapCurrentGrowthStage = getGrowthStage(DAP, variety, cropType, isRatoon);
+    let dapCurrentGrowthStage = getGrowthStage(DAP, variety, cropType, isRatoon);
+
+    // If a harvest Done record exists, the field is Harvested — override DAP "Harvest-ready"
+    const hasHarvestRecord = currentGrowthStage === 'Harvesting';
+    if (hasHarvestRecord && (dapCurrentGrowthStage === 'Harvest-ready' || dapCurrentGrowthStage === 'Maturing / Ripening')) {
+      dapCurrentGrowthStage = 'Harvested';
+    }
     
     // CRITICAL: Use Expected Harvest Date from Input Record if available, otherwise calculate
     let harvestDateRange = null;
@@ -1869,6 +1880,10 @@ export async function getFieldGrowthData(fieldId) {
       ? calculateDaysRemaining(harvestDateRange.latest)
       : null;
 
+    // Derive the effective status: if a harvest record exists, treat as harvested
+    // regardless of whether the field document was updated
+    const effectiveStatus = hasHarvestRecord ? 'harvested' : (fieldData.status || fieldStatus);
+
     return {
       fieldId,
       fieldName: fieldData.field_name || fieldData.fieldName,
@@ -1892,7 +1907,7 @@ export async function getFieldGrowthData(fieldId) {
       delayInfo,
       overdueInfo,
       fieldStatus,
-      status: fieldData.status,
+      status: effectiveStatus,
       area: fieldData.field_size || fieldData.area_size || fieldData.area || fieldData.size,
       seedRate: seedRate,
       fertilizersUsed: fertilizersUsed,
