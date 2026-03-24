@@ -1969,6 +1969,16 @@
                         </a>
                     </div>
 
+                    <!-- Growth Tracker -->
+                    <div class="mb-4">
+                        <a href="GrowthTracker.html"
+                            class="nav-item flex items-center space-x-3 px-4 py-3 text-gray-300 hover:text-white rounded-lg transition-colors"
+                            data-href="GrowthTracker.html">
+                            <i class="fas fa-seedling w-5 h-5"></i>
+                            <span>Growth Tracker</span>
+                        </a>
+                    </div>
+
                 </nav>
             </div>
         </aside>
@@ -2293,6 +2303,12 @@
 
             navItems.forEach(item => {
                 item.addEventListener('click', function (e) {
+                    // External page links navigate directly
+                    if (this.dataset.href) {
+                        window.location.href = this.dataset.href;
+                        return;
+                    }
+
                     e.preventDefault();
 
                     // Remove active class from all items

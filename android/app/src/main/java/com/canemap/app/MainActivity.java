@@ -8,6 +8,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.print.PrintManager;
+import android.print.PrintDocumentAdapter;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
 import android.webkit.DownloadListener;
@@ -185,6 +187,20 @@ public class MainActivity extends BridgeActivity {
                             webView.evaluateJavascript(
                                 "window.__onPermissionResult && window.__onPermissionResult('" + callbackId + "', true, 'camera');",
                                 null);
+                        }
+                    });
+                }
+
+                @android.webkit.JavascriptInterface
+                public void printWebPage() {
+                    runOnUiThread(() -> {
+                        WebView wv = getBridge().getWebView();
+                        if (wv != null) {
+                            PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+                            if (printManager != null) {
+                                PrintDocumentAdapter printAdapter = wv.createPrintDocumentAdapter("CaneMap_Growth_Report");
+                                printManager.print("CaneMap Growth Report", printAdapter, null);
+                            }
                         }
                     });
                 }
