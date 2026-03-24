@@ -1,6 +1,6 @@
 {
   "name": "canemap",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "CaneMap is a comprehensive digital platform designed for managing sugarcane fields, tracking farming activities, and facilitating communication between farmers, landowners, and SRA (Sugar Regulatory Administration) officers.",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
         "build:android:release": "cd android && chmod +x gradlew && ./gradlew assembleRelease && cd .. && npm run copy:apk",
         "build:android:signed": "cd android && chmod +x gradlew && ./gradlew assembleRelease && cd .. && npm run copy:apk",
     "copy:apk": "node scripts/copy-apk.js",
+    "build:apk:release": "npm run build && npx cap sync android && cd android && chmod +x gradlew && ./gradlew assembleRelease && cd .. && npm run copy:apk",
     "build:full": "npm run build && npm run build:android && npm run copy:apk",
     "rebuild:android": "npm run clean:android && npm run build:android",
     "sync:android": "npm run build && npx cap sync android && npm run copy:apk",

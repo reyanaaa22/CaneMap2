@@ -2281,7 +2281,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script type="module" src="../../backend/Common/activity-logger.js"></script>
-    <script type="module" src="../../backend/Handler/dashboard.js?v=1763446084"></script>
+    <script type="module" src="../../backend/Handler/dashboard.js?v=1742852400"></script>
     <script>
         // Clear WebView cache on app load (Android only)
         if (window.AndroidCache && typeof window.AndroidCache.clearCache === 'function') {
@@ -2358,7 +2358,7 @@
                         // Initialize Records Section
                         (async () => {
                             try {
-                                const { initializeRecordsSection, cleanupRecordsSection } = await import('../../backend/Handler/records-section.js');
+                                const { initializeRecordsSection, cleanupRecordsSection } = await import('../../backend/Handler/records-section.js?v=1742852400');
                                 
                                 // Cleanup previous instance if exists
                                 if (typeof cleanupRecordsSection === 'function') {
@@ -2378,7 +2378,7 @@
                         // Cleanup Records section when navigating away
                         (async () => {
                             try {
-                                const { cleanupRecordsSection } = await import('../../backend/Handler/records-section.js');
+                                const { cleanupRecordsSection } = await import('../../backend/Handler/records-section.js?v=1742852400');
                                 if (typeof cleanupRecordsSection === 'function') {
                                     cleanupRecordsSection();
                                 }
