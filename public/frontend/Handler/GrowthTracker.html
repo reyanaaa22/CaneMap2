@@ -1325,6 +1325,125 @@
           return 'Plant Cane';
         }
 
+        /** Human-readable field lifecycle line — aligned with Growth Tracker summary. */
+        function describeFieldLifecycleStatus(growthData) {
+          if (!growthData) return '—';
+          const st = (growthData.status || '').toString().toLowerCase();
+          if (st === 'harvested') return 'Harvested';
+          if (!growthData.plantingDate) {
+            const cgs = growthData.currentGrowthStage || '';
+            if (cgs === 'Not Planted' || !cgs) return 'Not planted';
+            return cgs;
+          }
+          return 'Growing';
+        }
+
+        /**
+         * Shown at top of Record Details when viewing a record for the currently selected field.
+         * Uses window.latestGrowthData so the modal stays aligned with the tracker after ratoon/replant.
+         */
+        function buildLiveFieldContextHtml(growthData) {
+          if (!growthData) return '';
+          const cropLabel = getReadableCropType(growthData.cropType);
+          const fieldStatus = describeFieldLifecycleStatus(growthData);
+          const stage = normalizeDapStageName(growthData.dapCurrentGrowthStage)
+            || growthData.currentGrowthStage
+            || '—';
+          const readableStage = stage === 'Maturing / Ripening' ? 'Maturity' : stage;
+          const dapText =
+            growthData.DAP !== null && growthData.DAP !== undefined
+              ? `${growthData.DAP} day${growthData.DAP !== 1 ? 's' : ''}`
+              : '—';
+          const planted = growthData.plantingDate
+            ? formatHarvestDate(
+                growthData.plantingDate instanceof Date
+                  ? growthData.plantingDate
+                  : new Date(growthData.plantingDate)
+              )
+            : '—';
+          const harvestWin =
+            growthData.expectedHarvestDateFormatted ||
+            (growthData.expectedHarvestDate
+              ? formatHarvestDate(
+                  growthData.expectedHarvestDate instanceof Date
+                    ? growthData.expectedHarvestDate
+                    : new Date(growthData.expectedHarvestDate)
+                )
+              : '—');
+          const progress =
+            growthData.dapBasedProgress != null && growthData.dapBasedProgress !== undefined
+              ? `${growthData.dapBasedProgress}%`
+              : '—';
+
+          return `
+            <div class="record-info-card border-2 border-[var(--cane-300)] bg-gradient-to-r from-[var(--cane-50)] to-white">
+              <h4 class="record-section-title">
+                <i class="fas fa-sync text-[var(--cane-600)]"></i>
+                Live field status (matches Growth Tracker)
+              </h4>
+              <p class="text-xs text-gray-600 mb-3">Updates when the field changes (e.g. after Ratoon or Replant). Below is the archived input record for this task.</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div class="record-info-label"><i class="fas fa-leaf text-[var(--cane-600)]"></i> Crop cycle</div>
+                  <p class="record-info-value">${escapeHtml(cropLabel)}</p>
+                </div>
+                <div>
+                  <div class="record-info-label"><i class="fas fa-flag text-[var(--cane-600)]"></i> Field status</div>
+                  <p class="record-info-value">${escapeHtml(fieldStatus)}</p>
+                </div>
+                <div>
+                  <div class="record-info-label"><i class="fas fa-chart-line text-[var(--cane-600)]"></i> Growth stage</div>
+                  <p class="record-info-value">${escapeHtml(readableStage)}</p>
+                </div>
+                <div>
+                  <div class="record-info-label"><i class="fas fa-calendar-day text-[var(--cane-600)]"></i> DAP</div>
+                  <p class="record-info-value">${escapeHtml(dapText)}</p>
+                </div>
+                <div>
+                  <div class="record-info-label"><i class="fas fa-seedling text-[var(--cane-600)]"></i> Date planted (this cycle)</div>
+                  <p class="record-info-value">${escapeHtml(planted)}</p>
+                </div>
+                <div>
+                  <div class="record-info-label"><i class="fas fa-percent text-[var(--cane-600)]"></i> Timeline progress</div>
+                  <p class="record-info-value">${escapeHtml(progress)}</p>
+                </div>
+                <div class="sm:col-span-2">
+                  <div class="record-info-label"><i class="fas fa-calendar-check text-[var(--cane-600)]"></i> Est. harvest window</div>
+                  <p class="record-info-value">${escapeHtml(harvestWin)}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        window._gtOpenRecordDetailId = null;
+        window._gtOpenRecordFieldId = null;
+
+        async function syncRecordDetailModalIfOpen(fieldId) {
+          if (!fieldId) return;
+          const modal = document.getElementById('recordDetailModal');
+          if (!modal || modal.classList.contains('hidden')) return;
+          const rid = window._gtOpenRecordDetailId;
+          const rfid = window._gtOpenRecordFieldId;
+          if (!rid) return;
+          if (rfid != null && String(rfid) !== String(fieldId)) {
+            modal.classList.add('hidden');
+            window._gtOpenRecordDetailId = null;
+            window._gtOpenRecordFieldId = null;
+            return;
+          }
+          try {
+            await openRecordModal(rid);
+          } catch (e) {
+            console.warn('Could not sync record detail modal with Growth Tracker:', e);
+          }
+        }
+
+        function clearGrowthTrackerRecordModalTracking() {
+          window._gtOpenRecordDetailId = null;
+          window._gtOpenRecordFieldId = null;
+        }
+
         function formatDapRange(start, end) {
           if (start === null || start === undefined || end === null || end === undefined) return '-';
           return `${start}-${end}`;
@@ -2045,6 +2164,12 @@
           } catch (error) {
             console.error('Error displaying field growth data:', error);
             showError('Failed to load growth tracking data.');
+          } finally {
+            try {
+              await syncRecordDetailModalIfOpen(fieldId);
+            } catch (e) {
+              console.warn('Record detail modal sync:', e);
+            }
           }
         }
 
@@ -3213,6 +3338,12 @@
             if (!stage) {
               stage = getStageFromDAP(dap);
             }
+
+            // Weeding (Post-Planting): show under Germination in timeline (matches deriveGrowthStage in Input Records)
+            const weedingTaskLabel = 'Weeding (Pagpananom / Paglimpyo sa sagbot)';
+            if (record.taskType === weedingTaskLabel) {
+              stage = 'Germination';
+            }
             
             // Ensure stage is valid, default to Land Preparation if not
             if (!groupedByStage.hasOwnProperty(stage)) {
@@ -3476,6 +3607,7 @@
             
             if (!recordSnap.exists()) {
               showError('Record not found');
+              clearGrowthTrackerRecordModalTracking();
               return;
             }
 
@@ -3503,6 +3635,9 @@
               vehicleUpdates
             });
 
+            window._gtOpenRecordDetailId = recordId;
+            window._gtOpenRecordFieldId = recordData.fieldId || null;
+
             // Show modal
             const modal = document.getElementById('recordDetailModal');
             if (modal) {
@@ -3513,6 +3648,7 @@
           } catch (error) {
             console.error('Error opening record modal:', error);
             showError('Failed to load record details');
+            clearGrowthTrackerRecordModalTracking();
           }
         }
 
@@ -3554,9 +3690,16 @@
           
           const recordDate = record.recordDate?.toDate?.() || record.createdAt?.toDate?.() || new Date();
           const statusBadge = getStatusBadge(record.status);
+
+          const showLiveFieldContext =
+            record.fieldId &&
+            selectedFieldId &&
+            String(record.fieldId) === String(selectedFieldId) &&
+            window.latestGrowthData;
           
           let html = `
             <div class="space-y-6 animate-slideUp">
+              ${showLiveFieldContext ? buildLiveFieldContextHtml(window.latestGrowthData) : ''}
               <!-- Basic Information Card -->
               <div class="record-info-card">
                 <h4 class="record-section-title">
@@ -3818,6 +3961,7 @@
         if (closeRecordModalBtn) {
           closeRecordModalBtn.addEventListener('click', () => {
             if (recordDetailModalEl) recordDetailModalEl.classList.add('hidden');
+            clearGrowthTrackerRecordModalTracking();
           });
         }
 
@@ -3826,6 +3970,7 @@
           recordDetailModalEl.addEventListener('click', (e) => {
             if (e.target.id === 'recordDetailModal') {
               recordDetailModalEl.classList.add('hidden');
+              clearGrowthTrackerRecordModalTracking();
             }
           });
         }

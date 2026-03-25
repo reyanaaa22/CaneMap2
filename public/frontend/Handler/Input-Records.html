@@ -877,9 +877,9 @@ function deriveGrowthStage(operation, taskType) {
       // Germination & Early Growth
       'Germination Monitoring (Pagmonitor sa pagturok)': 'Germination & Early Growth',
       'Gap Filling / Replanting (Pagpuli sa wala miturok)': 'Germination & Early Growth',
+      'Weeding (Pagpananom / Paglimpyo sa sagbot)': 'Germination & Early Growth',
       
       // Tillering Stage
-      'Weeding (Pagpananom / Paglimpyo sa sagbot)': 'Tillering Stage',
       'First Dose Fertilization – After Emergence (Unang Abono)': 'Tillering Stage',
       'Hilling-up / Off-barring (Pagtabon sa gamot)': 'Tillering Stage',
       
@@ -943,6 +943,36 @@ const operationToTasks = {
   ],
   'Ratooning': [] // Special - no task types, handled separately
 };
+
+// Field Operation dropdown: `value` is stored in Firestore; `label` is English + Bisaya helper text.
+const FIELD_OPERATION_OPTIONS = [
+  { value: 'Pre-Planting', label: 'Pre-Planting (mga buhat pag-andam before pagtanom)' },
+  { value: 'Planting', label: 'Planting (pagtanom sa tubo)' },
+  {
+    value: 'Post-Planting',
+    label:
+      'Post-Planting (mga buhat after tanom sama sa abono, spray, limpyo sa sagbot)'
+  },
+  { value: 'Harvesting', label: 'Harvesting (pag-ani sa tubo)' }
+];
+
+// Shown only when editing an old record whose stored `operation` is no longer in the dropdown.
+const LEGACY_FIELD_OPERATION_LABELS = {
+  Detrashing: 'Detrashing (legacy record — pilia ang Post-Planting kon parehas nga buhaton)',
+  Replanting: 'Replanting (legacy record — pilia ang Planting o Post-Planting kon parehas nga buhaton)',
+  Ratooning: 'Ratooning (legacy record — pilia ang Planting o Post-Planting kon parehas nga buhaton)'
+};
+
+function buildFieldOperationSelectHtml(legacyOperation) {
+  let html = '<option value="">Select</option>';
+  for (const { value, label } of FIELD_OPERATION_OPTIONS) {
+    html += `<option value="${value}">${label}</option>`;
+  }
+  if (legacyOperation && LEGACY_FIELD_OPERATION_LABELS[legacyOperation]) {
+    html += `<option value="${legacyOperation}">${LEGACY_FIELD_OPERATION_LABELS[legacyOperation]}</option>`;
+  }
+  return html;
+}
 
 // Legacy operationMap for backward compatibility with taskFieldMap
 const operationMap = {
@@ -2296,18 +2326,8 @@ async function loadRecordForEdit(recordId) {
       // Manually show operations in edit mode (don't trigger change event which might clear things)
       console.log('🔄 Manually showing operations for edit mode');
       
-      // Populate operations manually
-      const allOperations = [
-        'Pre-Planting',
-        'Planting',
-        'Post-Planting',
-        'Detrashing',
-        'Harvesting',
-        'Replanting',
-        'Ratooning'
-      ];
-      operationSelect.innerHTML = '<option value="">Select</option>' +
-        allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+      // Populate operations manually (Bisaya labels; legacy ops only if old record still uses them)
+      operationSelect.innerHTML = buildFieldOperationSelectHtml(recordData.operation);
       
       // Show operation wrap
       operationWrap.classList.remove('hidden');
@@ -3198,20 +3218,9 @@ async function loadFields(){
   }
 }
 
-// Show and populate Field Operations (locked list of 7 operations)
+// Show and populate Field Operations (Visayas farming practices; values stay English for Firestore)
 function showOperations() {
-  // Locked list of operations (Visayas farming practices)
-  const allOperations = [
-    'Pre-Planting',
-    'Planting',
-    'Post-Planting',
-    'Detrashing',
-    'Harvesting',
-    'Replanting',
-    'Ratooning'
-  ];
-  operationSelect.innerHTML = '<option value="">Select</option>' +
-    allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+  operationSelect.innerHTML = buildFieldOperationSelectHtml();
   
   // Re-initialize custom select after updating options
   const operationSelectInstance = customSelectInstances.get('operationSelect');
@@ -3336,17 +3345,7 @@ fieldSelect.addEventListener('change', async function() {
       } else {
         // Fallback: populate operations if they weren't populated yet
         operationWrap.classList.remove('hidden');
-        const allOperations = [
-          'Pre-Planting',
-          'Planting',
-          'Post-Planting',
-          'Detrashing',
-          'Harvesting',
-          'Replanting',
-          'Ratooning'
-        ];
-        operationSelect.innerHTML = '<option value="">Select</option>' +
-          allOperations.map(op => `<option value="${op}">${op}</option>`).join('');
+        operationSelect.innerHTML = buildFieldOperationSelectHtml();
         
         const operationSelectInstance = customSelectInstances.get('operationSelect');
         if (operationSelectInstance) {
