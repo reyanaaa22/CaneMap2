@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>CaneMap - Field Handlers Dashboard</title>
+    <title>CaneMap - Field Care Takers Dashboard</title>
     <!-- Load Font Awesome first to prevent icon flash -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
@@ -45,8 +45,8 @@
                         const nameParts = name.trim().split(' ');
                         return nameParts[0].toUpperCase(); // Return only the first name in uppercase
                     }
-                    return (nick && nick.trim()) || (email ? email.split('@')[0] : 'Handler');
-                } catch (_) { return 'Handler'; }
+                    return (nick && nick.trim()) || (email ? email.split('@')[0] : 'Care Taker');
+                } catch (_) { return 'Care Taker'; }
             }
             
             function displayProfilePhoto(photoUrl) {
@@ -1784,7 +1784,7 @@
                                 <i class="fas fa-user text-gray-700 text-sm absolute" id="profileIconDefault"></i>
                                 <img id="profilePhoto" class="absolute inset-0 w-full h-full object-cover hidden" alt="Profile" />
                             </div>
-                            <span class="font-medium text-gray-800" id="topUserNameHeader">Handler</span>
+                            <span class="font-medium text-gray-800" id="topUserNameHeader">Care Taker</span>
                             <i class="fas fa-chevron-down text-xs text-gray-800 transition-transform duration-200"></i>
                         </button>
                         <div id="handlerHeaderMenu"
@@ -1844,7 +1844,7 @@
                     </div>
                     <div>
                         <h3 id="sidebarUserName" class="text-white font-semibold text-lg">Loading...</h3>
-                        <p id="sidebarUserRole" class="text-gray-400 text-sm">Field Handler</p>
+                        <p id="sidebarUserRole" class="text-gray-400 text-sm">Care Taker</p>
                     </div>
                     <!-- Logout modal for Handler dashboard - moved outside sidebar for proper z-index -->
 
