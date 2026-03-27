@@ -2590,6 +2590,9 @@ async function loadRecordForEdit(recordId) {
           input.value = value || '';
         }
       });
+
+      // Re-run date restrictions after edit data population.
+      applyDateInputRestrictions(dynamicForm);
       
       // Handle special fields that might need additional processing
       // Enhanced labor cost fields
@@ -3587,6 +3590,59 @@ taskType.onchange = () => {
   vehicleUpdatesSection.classList.remove('hidden');
 }
 
+function getLocalTodayISODate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function validateNoPastDate(input) {
+  if (!input || input.type !== 'date') return true;
+
+  const todayISO = getLocalTodayISODate();
+  if (!input.value) {
+    input.setCustomValidity('');
+    input.classList.remove('border-red-500');
+    return true;
+  }
+
+  if (input.value < todayISO) {
+    input.setCustomValidity('Past dates are not allowed. Please select today or a future date.');
+    input.classList.add('border-red-500');
+    return false;
+  }
+
+  input.setCustomValidity('');
+  input.classList.remove('border-red-500');
+  return true;
+}
+
+function applyDateInputRestrictions(scopeEl = document) {
+  const todayISO = getLocalTodayISODate();
+  const dateInputs = scopeEl.querySelectorAll('input[type="date"]');
+
+  dateInputs.forEach((input) => {
+    input.min = todayISO;
+
+    // Default to today only for Start Date when no value has been provided yet.
+    if (input.id === 'startDate' && !input.value) {
+      input.value = todayISO;
+    }
+
+    if (input.dataset.noPastDateHandlerAttached === 'true') {
+      validateNoPastDate(input);
+      return;
+    }
+
+    input.dataset.noPastDateHandlerAttached = 'true';
+    input.addEventListener('input', () => validateNoPastDate(input));
+    input.addEventListener('change', () => validateNoPastDate(input));
+    validateNoPastDate(input);
+  });
+}
+
 function renderForm(type){
   // Safety check: ensure type is valid and taskFieldMap exists
   if (!type || typeof type !== 'string') {
@@ -3893,6 +3949,7 @@ function renderForm(type){
 
     // 📅 DATE
     else if(f.type === 'date'){
+      const todayISO = getLocalTodayISODate();
       // Special handling for startDate fields - add current date dropdown
       if(f.id === 'startDate'){
         const today = new Date();
@@ -3908,7 +3965,7 @@ function renderForm(type){
         });
         inputHTML = `
           <div class="date-input-wrapper">
-            <input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />
+            <input type="date" id="${f.id}" min="${todayISO}" value="${todayISO}" class="w-full border rounded px-3 py-2" required />
             <div id="${f.id}_dropdown" class="current-date-dropdown">
               <div class="current-date-option" onclick="event.stopPropagation(); selectCurrentDate('${f.id}');">
                 <div class="date-label">Today</div>
@@ -3918,7 +3975,7 @@ function renderForm(type){
           </div>
         `;
       } else {
-        inputHTML = `<input type="date" id="${f.id}" class="w-full border rounded px-3 py-2" required />`;
+        inputHTML = `<input type="date" id="${f.id}" min="${todayISO}" class="w-full border rounded px-3 py-2" required />`;
       }
     }
 
@@ -4471,6 +4528,9 @@ function renderForm(type){
       });
     }
   });
+
+  // Enforce date restrictions for all rendered date inputs.
+  applyDateInputRestrictions(dynamicForm);
 
   // --- SPECIAL HANDLING ---
 
@@ -5168,6 +5228,8 @@ window.selectCurrentDate = function(fieldId) {
     
     // Set the date value - use the freshly calculated date
     input.value = todayFormatted;
+    input.min = todayFormatted;
+    validateNoPastDate(input);
     
     // Close all dropdowns immediately
     document.querySelectorAll('.current-date-dropdown').forEach(d => {
@@ -5444,6 +5506,15 @@ async function handleSubmit(isDone) {
   }
   
   console.log('✅ Basic validation passed');
+
+  // Block manual/edge-case past dates before preparing payload.
+  const dateInputs = document.querySelectorAll('#dynamicForm input[type="date"]');
+  const invalidPastDateInput = Array.from(dateInputs).find((input) => !validateNoPastDate(input));
+  if (invalidPastDateInput) {
+    invalidPastDateInput.focus();
+    showNotification('error', 'Invalid Date', 'Past dates are not allowed. Please use today or a future date.');
+    return;
+  }
 
   // For "Done Record", require Start Date and End Date
   const startDate = document.getElementById('startDate');

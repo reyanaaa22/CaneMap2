@@ -167,6 +167,13 @@
       font-weight: 500;
     }
 
+    .dropdown-trigger-text {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      padding-right: 0.5rem;
+      line-height: 1.3;
+    }
+
     .dropdown-trigger:hover {
       border-color: var(--cane-400);
       background-color: var(--cane-50);
@@ -244,6 +251,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+      gap: 0.75rem;
     }
 
     .dropdown-option:last-child {
@@ -505,12 +516,10 @@
               <select id="field_terrain" name="field_terrain" required
                 class="form-select w-full px-4 py-3 border-[var(--cane-300)] rounded-lg focus:outline-none transition-all duration-300">
                 <option value="">Select terrain type...</option>
-                <option value="Flat">Flat (0-3% slope, ideal for mechanization)</option>
-                <option value="Gently Sloping">Gently Sloping (3-8% slope, suitable for farming)</option>
-                <option value="Moderately Sloping">Moderately Sloping (8-15% slope, needs terracing)</option>
-                <option value="Steep">Steep (15-30% slope, challenging for machinery)</option>
-                <option value="Very Steep">Very Steep (>30% slope, requires special management)</option>
-                <option value="Undulating">Undulating (Mixed flat and slopes)</option>
+                <option value="Flat Terrain (patag – diretso ra ang yuta, walay saka-og-naog)">Flat Terrain (patag – diretso ra ang yuta, walay saka-og-naog)</option>
+                <option value="Slightly Sloping (medyo bakilid – naay gamay nga hilig pero dili lisod lakaran)">Slightly Sloping (medyo bakilid – naay gamay nga hilig pero dili lisod lakaran)</option>
+                <option value="Hilly (bukiron – saka-og-naog ang yuta, klaro ang kabukiran)">Hilly (bukiron – saka-og-naog ang yuta, klaro ang kabukiran)</option>
+                <option value="Mixed Flat &amp; Hilly (naay patag ug bukiron – part patag, part saka-og-naog)">Mixed Flat &amp; Hilly (naay patag ug bukiron – part patag, part saka-og-naog)</option>
               </select>
             </div>
 
