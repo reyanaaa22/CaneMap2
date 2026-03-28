@@ -296,3 +296,125 @@ async function sendOverdueNotification(handlerId, fieldName, daysOverdue, fieldI
     sentAt: admin.firestore.FieldValue.serverTimestamp()
   });
 }
+
+// Admin: migrate legacy `owner` (corporation stored in wrong field) into corporation_name for all fields.
+exports.migrate_fields_owner_corporation = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const userSnap = await db.collection('users').doc(context.auth.uid).get();
+  const role = userSnap.exists ? userSnap.data().role : null;
+  if (!['admin', 'system_admin'].includes(role)) {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Only admin or system_admin can run this migration.'
+    );
+  }
+
+  const FieldValue = admin.firestore.FieldValue;
+  const snapshot = await db.collection('fields').get();
+  let migrated = 0;
+  let batch = db.batch();
+  let ops = 0;
+
+  for (const docSnap of snapshot.docs) {
+    const d = docSnap.data() || {};
+    const legacyOwner = String(d.owner || '').trim();
+    const corp = String(
+      d.corporation_name || d.corporationName || d.corporation || ''
+    ).trim();
+    if (!legacyOwner || corp) continue;
+
+    batch.update(docSnap.ref, {
+      corporation_name: legacyOwner,
+      corporationName: legacyOwner,
+      owner: FieldValue.delete(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    migrated++;
+    ops++;
+    if (ops >= 450) {
+      await batch.commit();
+      batch = db.batch();
+      ops = 0;
+    }
+  }
+  if (ops > 0) {
+    await batch.commit();
+  }
+
+  // Registered field "Panoma 1": canonical owner vs corporation (idempotent on each run).
+  const PANOMA_NAME = 'Panoma 1';
+  const panomaOwner = 'Rey Fran Evangelista';
+  const panomaCorp = 'St. Jude CVE Agricultural Marketing Corporation';
+  let panomaUpdated = 0;
+  for (const docSnap of snapshot.docs) {
+    const d = docSnap.data() || {};
+    const n = String(d.field_name || d.fieldName || '').trim();
+    if (n !== PANOMA_NAME) continue;
+    await docSnap.ref.update({
+      owner_name: panomaOwner,
+      ownerName: panomaOwner,
+      corporation_name: panomaCorp,
+      corporationName: panomaCorp,
+      owner: FieldValue.delete(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+    panomaUpdated++;
+  }
+
+  return {
+    ok: true,
+    migratedCount: migrated,
+    totalFields: snapshot.size,
+    panomaFieldUpdated: panomaUpdated,
+  };
+});
+
+// Admin: set owner_name / ownerName (and optionally corporation) for field(s) matched by exact field_name / fieldName.
+exports.admin_set_field_owner_names = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Sign in required.');
+  }
+  const userSnap = await db.collection('users').doc(context.auth.uid).get();
+  const role = userSnap.exists ? userSnap.data().role : null;
+  if (!['admin', 'system_admin'].includes(role)) {
+    throw new functions.https.HttpsError('permission-denied', 'Only admin or system_admin can run this.');
+  }
+
+  const fieldName = data && data.fieldName ? String(data.fieldName).trim() : '';
+  const ownerName = data && data.ownerName ? String(data.ownerName).trim() : '';
+  if (!fieldName || !ownerName) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'fieldName and ownerName are required.'
+    );
+  }
+
+  const FieldValue = admin.firestore.FieldValue;
+  const snapshot = await db.collection('fields').get();
+  let updatedCount = 0;
+
+  for (const docSnap of snapshot.docs) {
+    const d = docSnap.data() || {};
+    const n = String(d.field_name || d.fieldName || '').trim();
+    if (n !== fieldName) continue;
+
+    const payload = {
+      owner_name: ownerName,
+      ownerName: ownerName,
+      updatedAt: FieldValue.serverTimestamp(),
+    };
+
+    if (data.corporationName !== undefined && data.corporationName !== null) {
+      const c = String(data.corporationName).trim();
+      payload.corporation_name = c;
+      payload.corporationName = c;
+    }
+
+    await docSnap.ref.update(payload);
+    updatedCount++;
+  }
+
+  return { ok: true, updatedCount, fieldName };
+});
