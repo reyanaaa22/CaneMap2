@@ -343,32 +343,7 @@ exports.migrate_fields_owner_corporation = functions.https.onCall(async (data, c
     await batch.commit();
   }
 
-  // Registered field "Panoma 1": canonical owner vs corporation (idempotent on each run).
-  const PANOMA_NAME = 'Panoma 1';
-  const panomaOwner = 'Rey Fran Evangelista';
-  const panomaCorp = 'St. Jude CVE Agricultural Marketing Corporation';
-  let panomaUpdated = 0;
-  for (const docSnap of snapshot.docs) {
-    const d = docSnap.data() || {};
-    const n = String(d.field_name || d.fieldName || '').trim();
-    if (n !== PANOMA_NAME) continue;
-    await docSnap.ref.update({
-      owner_name: panomaOwner,
-      ownerName: panomaOwner,
-      corporation_name: panomaCorp,
-      corporationName: panomaCorp,
-      owner: FieldValue.delete(),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-    panomaUpdated++;
-  }
-
-  return {
-    ok: true,
-    migratedCount: migrated,
-    totalFields: snapshot.size,
-    panomaFieldUpdated: panomaUpdated,
-  };
+  return { ok: true, migratedCount: migrated, totalFields: snapshot.size };
 });
 
 // Admin: set owner_name / ownerName (and optionally corporation) for field(s) matched by exact field_name / fieldName.
