@@ -2238,6 +2238,85 @@ function attachButtonHandlers() {
   }
 }
 
+// Fuel cost visibility: show only when the operation uses mechanical power (engine fuel), not manual or animal labor alone.
+function methodIndicatesMechanicalFuel(value) {
+  if (!value || typeof value !== 'string') return false;
+  return value.includes('Mechanical');
+}
+
+/** Equipment-only tasks (no Method dropdown): tractor / machine labels imply fuel use. */
+function equipmentIndicatesMotorizedFuel(value) {
+  if (!value || typeof value !== 'string') return false;
+  if (methodIndicatesMechanicalFuel(value)) return true;
+  const v = value;
+  if (/animal-drawn/i.test(v) && !/tractor/i.test(v)) return false;
+  if (/manual tools|manual spreading|^manual$/i.test(v.trim())) return false;
+  if (/tractor|laser leveler|planting machine|shredder|\bmower\b|ripper|chisel|furrower|mounted sprayer|aerial sprayer|spreader|subsoiler|harvester|boom/i.test(v)) return true;
+  return false;
+}
+
+function transportIndicatesMotorFuel(value) {
+  if (!value || typeof value !== 'string') return false;
+  return value === 'Truck' || /tractor/i.test(value);
+}
+
+function computeFuelCostShouldShowFromDOM() {
+  const taskTypeEl = document.getElementById('taskType');
+  const taskDisplay = taskTypeEl ? String(taskTypeEl.value || '') : '';
+  if (taskDisplay === 'Vehicle Updates') return true;
+
+  const methodEl = document.getElementById('method');
+  if (methodEl) return methodIndicatesMechanicalFuel(methodEl.value);
+
+  const plantingMethodEl = document.getElementById('plantingMethod');
+  if (plantingMethodEl) return methodIndicatesMechanicalFuel(plantingMethodEl.value);
+
+  const harvestMethodEl = document.getElementById('harvestMethod');
+  if (harvestMethodEl) return methodIndicatesMechanicalFuel(harvestMethodEl.value);
+
+  const cleaningMethodEl = document.getElementById('cleaningMethod');
+  if (cleaningMethodEl) return methodIndicatesMechanicalFuel(cleaningMethodEl.value);
+
+  const transportEl = document.getElementById('transportUsed');
+  if (transportEl) return transportIndicatesMotorFuel(transportEl.value);
+
+  const equipEl = document.getElementById('equipment');
+  if (equipEl) return equipmentIndicatesMotorizedFuel(equipEl.value);
+
+  return false;
+}
+
+function applyFuelCostVisibility(shouldShow) {
+  const fuelCostInput = document.getElementById('fuelCost');
+  const fuelCostContainer = fuelCostInput ? fuelCostInput.closest('.mb-4') : null;
+  const fuelDynamicContainer = document.getElementById('fuelContainer');
+  const fuelDynamicWrapper = fuelDynamicContainer ? fuelDynamicContainer.closest('.mb-4') : null;
+
+  const setHidden = (wrapper) => {
+    if (!wrapper) return;
+    if (!shouldShow) {
+      wrapper.classList.add('hidden');
+    } else {
+      wrapper.classList.remove('hidden');
+    }
+  };
+
+  setHidden(fuelCostContainer);
+  setHidden(fuelDynamicWrapper);
+
+  if (!shouldShow) {
+    if (fuelCostInput) fuelCostInput.value = '';
+    if (fuelDynamicContainer) {
+      fuelDynamicContainer.querySelectorAll('.fuelInput').forEach((input) => {
+        input.value = '0';
+      });
+      const fuelSum = document.getElementById('fuelSum');
+      if (fuelSum) fuelSum.textContent = 'Total Fuel Cost: 0';
+    }
+    if (typeof window.updateTotalCost === 'function') window.updateTotalCost();
+  }
+}
+
 // Load record data for editing
 async function loadRecordForEdit(recordId) {
   try {
@@ -2619,23 +2698,8 @@ async function loadRecordForEdit(recordId) {
                         (data.method && (data.method === 'Animal-Drawn' || data.method.includes('Animal-Drawn') || (data.method.includes('Animal') && !data.method.includes('Mechanical')))) ||
                         (data.cleaningMethod && (data.cleaningMethod === 'Animal-Drawn' || data.cleaningMethod.includes('Animal-Drawn') || (data.cleaningMethod.includes('Animal') && !data.cleaningMethod.includes('Mechanical'))));
 
-      // Hide Fuel Cost for Animal-Drawn methods (and restore for others) on edit load.
-      const fuelCostInput = document.getElementById('fuelCost');
-      const fuelCostContainer = fuelCostInput ? fuelCostInput.closest('.mb-4') : null;
-      const fuelDynamicContainer = document.getElementById('fuelContainer');
-      const fuelDynamicWrapper = fuelDynamicContainer ? fuelDynamicContainer.closest('.mb-4') : null;
-      if (fuelCostContainer) fuelCostContainer.classList.toggle('hidden', hasAnimal);
-      if (fuelDynamicWrapper) fuelDynamicWrapper.classList.toggle('hidden', hasAnimal);
-      if (hasAnimal) {
-        if (fuelCostInput) fuelCostInput.value = '';
-        if (fuelDynamicContainer) {
-          fuelDynamicContainer.querySelectorAll('.fuelInput').forEach((input) => {
-            input.value = '0';
-          });
-          const fuelSum = document.getElementById('fuelSum');
-          if (fuelSum) fuelSum.textContent = 'Total Fuel Cost: 0';
-        }
-      }
+      // Fuel cost: only for mechanical / motorized operations (same rules as renderForm).
+      applyFuelCostVisibility(computeFuelCostShouldShowFromDOM());
       
       // Determine which field ID triggers truckRented/animalRented
       let methodFieldId = null;
@@ -4954,52 +5018,20 @@ function renderForm(type){
     });
   }
 
-  // --- Handle Mechanical and Animal-Drawn selection to show rent question ---
-  const toggleFuelCostVisibilityByMethod = (isAnimalDrawn) => {
-    const fuelCostInput = document.getElementById('fuelCost');
-    const fuelCostContainer = fuelCostInput ? fuelCostInput.closest('.mb-4') : null;
-    const fuelDynamicContainer = document.getElementById('fuelContainer');
-    const fuelDynamicWrapper = fuelDynamicContainer ? fuelDynamicContainer.closest('.mb-4') : null;
-
-    const setHidden = (wrapper) => {
-      if (!wrapper) return;
-      if (isAnimalDrawn) {
-        wrapper.classList.add('hidden');
-      } else {
-        wrapper.classList.remove('hidden');
-      }
-    };
-
-    setHidden(fuelCostContainer);
-    setHidden(fuelDynamicWrapper);
-
-    // Reset hidden fuel values so they won't affect total cost.
-    if (isAnimalDrawn) {
-      if (fuelCostInput) fuelCostInput.value = '';
-      if (fuelDynamicContainer) {
-        fuelDynamicContainer.querySelectorAll('.fuelInput').forEach((input) => {
-          input.value = '0';
-        });
-        const fuelSum = document.getElementById('fuelSum');
-        if (fuelSum) fuelSum.textContent = 'Total Fuel Cost: 0';
-      }
-      if (typeof updateTotalCost === 'function') updateTotalCost();
-    }
-  };
-
-  const methodFields = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod'];
-  methodFields.forEach(fieldId => {
+  // --- Mechanical vs animal: fuel cost only when mechanical/motorized; rent question still for mechanical or animal ---
+  const methodFieldsForFuelAndRent = ['equipment', 'method', 'plantingMethod', 'cleaningMethod', 'harvestMethod', 'transportUsed'];
+  methodFieldsForFuelAndRent.forEach(fieldId => {
     const select = document.getElementById(fieldId);
-    if (select) {
-      const hasMechanical = select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical'));
-      const hasAnimal = select.options && Array.from(select.options).some(opt => opt.value === 'Animal-Drawn' || opt.value.includes('Animal') || opt.value.includes('Animal-Drawn'));
-      
-      if (hasMechanical || hasAnimal) {
-        select.addEventListener('change', function() {
-          const isMechanical = this.value === 'Mechanical' || this.value.includes('Mechanical');
-          const isAnimal = this.value === 'Animal-Drawn' || this.value.includes('Animal-Drawn') || (this.value.includes('Animal') && !this.value.includes('Mechanical'));
-          toggleFuelCostVisibilityByMethod(isAnimal);
-          const truckRentedContainer = document.getElementById('truckRentedContainer');
+    if (!select) return;
+    const hasMechanical = select.options && Array.from(select.options).some(opt => opt.value === 'Mechanical' || opt.value.includes('Mechanical'));
+    const hasAnimal = select.options && Array.from(select.options).some(opt => opt.value === 'Animal-Drawn' || opt.value.includes('Animal') || opt.value.includes('Animal-Drawn'));
+
+    select.addEventListener('change', function() {
+      applyFuelCostVisibility(computeFuelCostShouldShowFromDOM());
+      if (!hasMechanical && !hasAnimal) return;
+      const isMechanical = this.value === 'Mechanical' || this.value.includes('Mechanical');
+      const isAnimal = this.value === 'Animal-Drawn' || this.value.includes('Animal-Drawn') || (this.value.includes('Animal') && !this.value.includes('Mechanical'));
+      const truckRentedContainer = document.getElementById('truckRentedContainer');
           const rentCostContainer = document.getElementById('rentCostContainer');
           
           if (isMechanical || isAnimal) {
@@ -5151,12 +5183,8 @@ function renderForm(type){
             }
           }
         });
-        // Initial visibility (important for edit mode with prefilled method/equipment)
-        const isInitiallyAnimal = select.value === 'Animal-Drawn' || select.value.includes('Animal-Drawn') || (select.value.includes('Animal') && !select.value.includes('Mechanical'));
-        toggleFuelCostVisibilityByMethod(isInitiallyAnimal);
-      }
-    }
   });
+  applyFuelCostVisibility(computeFuelCostShouldShowFromDOM());
 
   // --- Legacy labor cost calculation (only if enhanced version doesn't exist) ---
   const legacyLaborCostContainer = document.getElementById('laborCostEnhancedContainer');
