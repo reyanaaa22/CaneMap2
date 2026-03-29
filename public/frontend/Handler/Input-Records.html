@@ -530,6 +530,19 @@ This file handles ALL functionalities described in the PDF:
     <select id="taskType" class="custom-native-hidden"></select>
   </div>
 
+  <!-- MANUAL COMPLETE (Option B) — stacked so the button is never clipped off-screen on narrow layouts -->
+  <div id="manualCompleteWrap" class="hidden">
+    <div class="flex flex-col gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="text-xs text-amber-900 min-w-0 flex-1">
+        <div class="font-semibold">Missing tasks for this field?</div>
+        <div class="text-amber-800">You can manually mark the current operation as complete to unlock the next operation.</div>
+      </div>
+      <button type="button" id="markOperationCompleteBtn" class="w-full sm:w-auto shrink-0 px-4 py-2.5 text-sm font-semibold rounded bg-green-600 text-white hover:bg-green-700 cursor-pointer relative z-10">
+        Mark Operation Complete
+      </button>
+    </div>
+  </div>
+
   <!-- DYNAMIC FORM -->
   <div id="dynamicForm" class="grid grid-cols-1 md:grid-cols-2 gap-3 hidden"></div>
 
@@ -2222,6 +2235,103 @@ function attachButtonHandlers() {
     console.warn('⚠️ Save Record button not found yet');
   }
 
+  // Manual operation complete (Option B)
+  const markOperationCompleteBtn = document.getElementById('markOperationCompleteBtn');
+  if (markOperationCompleteBtn && !markOperationCompleteBtn.dataset.handlerAttached) {
+    markOperationCompleteBtn.dataset.handlerAttached = 'true';
+    markOperationCompleteBtn.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const fieldId = fieldSelect?.value;
+      const operation = operationSelect?.value;
+      const isEditMode = window._isLoadingEditRecord;
+      if (isEditMode) {
+        showNotification('error', 'Not Available in Edit Mode', 'Finish editing the record first before marking an operation complete.');
+        return;
+      }
+      if (!fieldId || !operation) {
+        showNotification('error', 'Missing Selection', 'Please select a Field and Field Operation first.');
+        return;
+      }
+
+      // Confirmation banner
+      showNotification(
+        'info',
+        'Confirm Manual Completion',
+        `Mark "${operation}" as complete for this field? This will unlock the next operation even if some task types were not recorded.`,
+        [
+          { text: 'Cancel', type: 'secondary', action: () => {} },
+          {
+            text: 'Mark Complete',
+            type: 'primary',
+            action: async () => {
+              try {
+                showLoading(true);
+                const { doc, updateDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+                const fieldRef = doc(db, 'fields', fieldId);
+
+                // Use dot-path update so we don't overwrite other operations
+                await updateDoc(fieldRef, {
+                  [`operationOverrides.${operation}`]: {
+                    completed: true,
+                    completedAt: serverTimestamp(),
+                    completedBy: uid
+                  }
+                });
+
+                // Refresh caches/UI
+                clearDoneTasksCache();
+                clearOperationProgressCache();
+                clearOperationOverridesCache();
+                await showOperations();
+
+                // Auto-open the next operation in sequence (if available)
+                const operationOrder = ['Pre-Planting', 'Planting', 'Post-Planting', 'Harvesting'];
+                const idx = operationOrder.indexOf(operation);
+                const nextOp = idx >= 0 ? operationOrder[idx + 1] : null;
+                if (nextOp) {
+                  operationSelect.value = nextOp;
+                  const operationSelectInstance = customSelectInstances.get('operationSelect');
+                  if (operationSelectInstance) operationSelectInstance.updateSelectedLabel();
+                  operationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                showLoading(false);
+                showNotification(
+                  'success',
+                  'Operation Marked Complete',
+                  `"${operation}" is now marked complete for this field.`,
+                  [
+                    {
+                      text: 'View in Growth Tracker',
+                      type: 'primary',
+                      action: () => {
+                        window.location.href = `GrowthTracker.html?fieldId=${fieldId}`;
+                      }
+                    },
+                    {
+                      text: 'Stay Here',
+                      type: 'secondary',
+                      action: () => {
+                        window.location.href = 'Input-Records.html';
+                      }
+                    }
+                  ]
+                );
+              } catch (err) {
+                console.error('Error marking operation complete:', err);
+                showLoading(false);
+                showNotification('error', 'Failed to Mark Complete', err?.message || 'An error occurred. Please try again.');
+              }
+            }
+          }
+        ]
+      );
+    };
+    console.log('✅ Mark Operation Complete button handler attached');
+  }
+
   // Handle complete save (Done Record button)
   const submitBtn = document.getElementById('submitBtn');
   if (submitBtn && !submitBtn.dataset.handlerAttached) {
@@ -3114,6 +3224,42 @@ let currentFieldArea = null;
 // Cache for done tasks to avoid repeated queries
 let doneTasksCache = new Map(); // Key: `${fieldId}_${operation}_${taskType}`, Value: boolean
 
+// Manual operation completion overrides (Option B)
+let currentFieldIdForOverrides = null;
+let operationOverridesCache = {}; // { [operation]: { completed: boolean, ... } }
+
+function clearOperationOverridesCache() {
+  currentFieldIdForOverrides = null;
+  operationOverridesCache = {};
+}
+
+async function loadOperationOverrides(fieldId) {
+  if (!fieldId) return {};
+  if (currentFieldIdForOverrides === fieldId && operationOverridesCache) {
+    return operationOverridesCache;
+  }
+  try {
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js');
+    const fieldRef = doc(db, 'fields', fieldId);
+    const fieldSnap = await getDoc(fieldRef);
+    const data = fieldSnap.exists() ? fieldSnap.data() : {};
+    operationOverridesCache = (data && data.operationOverrides) ? data.operationOverrides : {};
+    currentFieldIdForOverrides = fieldId;
+    return operationOverridesCache;
+  } catch (e) {
+    console.error('Error loading operation overrides:', e);
+    operationOverridesCache = {};
+    currentFieldIdForOverrides = fieldId;
+    return {};
+  }
+}
+
+async function isOperationManuallyCompleted(fieldId, operation) {
+  if (!fieldId || !operation) return false;
+  const overrides = await loadOperationOverrides(fieldId);
+  return overrides?.[operation]?.completed === true;
+}
+
 /**
  * Check if a task is done (exists in Growth Tracker via records collection)
  * Growth Tracker = Final Authority: If a task appears in Growth Tracker, it is considered Done
@@ -3193,6 +3339,7 @@ async function getDoneTasks(fieldId, operation, taskTypes) {
 function clearDoneTasksCache() {
   doneTasksCache.clear();
   clearOperationProgressCache();
+  clearOperationOverridesCache();
 }
 
 /**
@@ -3204,6 +3351,9 @@ function clearDoneTasksCache() {
 async function isOperationCompleted(fieldId, operation) {
   if (!fieldId || !operation) return false;
   
+  // Option B override: allow manual completion for unlocking
+  if (await isOperationManuallyCompleted(fieldId, operation)) return true;
+
   const allTasks = operationToTasks[operation] || [];
   if (allTasks.length === 0) return false;
   
@@ -3517,6 +3667,15 @@ fieldSelect.addEventListener('change', async function() {
         }
       }
     }
+
+    // Preload operation overrides (Option B) for this field (so unlock/hide reacts immediately)
+    try {
+      operationOverridesCache = (fieldSnap.exists() && fieldSnap.data()?.operationOverrides) ? fieldSnap.data().operationOverrides : {};
+      currentFieldIdForOverrides = fieldId;
+    } catch (e) {
+      console.error('Error preloading operation overrides:', e);
+      clearOperationOverridesCache();
+    }
     
     // Show operations after field is selected
     // In edit mode, we've already populated operations manually, so just ensure they're visible
@@ -3553,6 +3712,16 @@ fieldSelect.addEventListener('change', async function() {
 operationSelect.onchange = async () => {
   const operation = operationSelect.value;
   const isEditMode = window._isLoadingEditRecord;
+
+  // Manual complete UI (Option B)
+  const manualCompleteWrap = document.getElementById('manualCompleteWrap');
+  if (manualCompleteWrap) {
+    if (!isEditMode && fieldSelect.value && operation) {
+      manualCompleteWrap.classList.remove('hidden');
+    } else {
+      manualCompleteWrap.classList.add('hidden');
+    }
+  }
   
   if (isEditMode) {
     console.log('⏸️ Edit mode: showing task types without clearing form');
@@ -3669,9 +3838,14 @@ operationSelect.onchange = async () => {
   let availableTasks = allTasks;
   if (!isEditMode && fieldSelect.value) {
     try {
+      // If operation is manually marked complete, hide all task types
+      if (await isOperationManuallyCompleted(fieldSelect.value, operation)) {
+        availableTasks = [];
+      } else {
       const doneTasks = await getDoneTasks(fieldSelect.value, operation, allTasks);
       const effectiveDone = getEffectiveSequentialDoneTasks(allTasks, doneTasks);
       availableTasks = allTasks.filter(task => !effectiveDone.has(task));
+      }
       
       // Update Field Operation display if all tasks are done
       const operationSelectInstance = customSelectInstances.get('operationSelect');
