@@ -963,10 +963,15 @@ const LEGACY_FIELD_OPERATION_LABELS = {
   Ratooning: 'Ratooning (legacy record — pilia ang Planting o Post-Planting kon parehas nga buhaton)'
 };
 
-function buildFieldOperationSelectHtml(legacyOperation) {
+function buildFieldOperationSelectHtml(legacyOperation, progress = null) {
   let html = '<option value="">Select</option>';
+  const lockedOps = progress?.locked || [];
+  
   for (const { value, label } of FIELD_OPERATION_OPTIONS) {
-    html += `<option value="${value}">${label}</option>`;
+    const isLocked = lockedOps.includes(value);
+    const lockIndicator = isLocked ? ' 🔒' : '';
+    const disabledAttr = isLocked ? ' disabled' : '';
+    html += `<option value="${value}"${disabledAttr}>${label}${lockIndicator}</option>`;
   }
   if (legacyOperation && LEGACY_FIELD_OPERATION_LABELS[legacyOperation]) {
     html += `<option value="${legacyOperation}">${LEGACY_FIELD_OPERATION_LABELS[legacyOperation]}</option>`;
@@ -3187,6 +3192,105 @@ async function getDoneTasks(fieldId, operation, taskTypes) {
  */
 function clearDoneTasksCache() {
   doneTasksCache.clear();
+  clearOperationProgressCache();
+}
+
+/**
+ * Check if an operation is fully completed (all tasks done) for a field
+ * @param {string} fieldId - Field ID
+ * @param {string} operation - Operation name (Pre-Planting, Planting, Post-Planting, Harvesting)
+ * @returns {Promise<boolean>} True if operation is fully completed
+ */
+async function isOperationCompleted(fieldId, operation) {
+  if (!fieldId || !operation) return false;
+  
+  const allTasks = operationToTasks[operation] || [];
+  if (allTasks.length === 0) return false;
+  
+  const doneTasks = await getDoneTasks(fieldId, operation, allTasks);
+  return doneTasks.size === allTasks.length;
+}
+
+// Special unlock logic: allow Planting once Seed Cane Preparation is done,
+// even if not all Pre-Planting tasks are completed.
+const PRE_PLANTING_FINAL_TASK = 'Seed Cane Preparation (Pag-andam sa binhi sa tubo)';
+async function isPrePlantingUnlockSatisfied(fieldId) {
+  if (!fieldId) return false;
+  try {
+    return await isTaskDone(fieldId, 'Pre-Planting', PRE_PLANTING_FINAL_TASK);
+  } catch (e) {
+    console.error('Error checking Pre-Planting unlock condition:', e);
+    return false;
+  }
+}
+
+/**
+ * Get the current operation progress for a field
+ * Returns which operations are unlocked based on sequential completion
+ * Order: Pre-Planting → Planting → Post-Planting → Harvesting
+ * @param {string} fieldId - Field ID
+ * @returns {Promise<Object>} Object with operation statuses and next unlocked operation
+ */
+async function getOperationProgress(fieldId) {
+  const operationOrder = ['Pre-Planting', 'Planting', 'Post-Planting', 'Harvesting'];
+  const progress = {
+    completed: [],
+    unlocked: [],
+    locked: [],
+    nextUnlocked: null
+  };
+  
+  let prevUnlockSatisfied = true; // first operation is always unlocked
+  for (let i = 0; i < operationOrder.length; i++) {
+    const operation = operationOrder[i];
+    const isCompleted = await isOperationCompleted(fieldId, operation); // strict completion (all tasks)
+    const unlockSatisfied =
+      isCompleted || (operation === 'Pre-Planting' && (await isPrePlantingUnlockSatisfied(fieldId)));
+    
+    if (isCompleted) {
+      progress.completed.push(operation);
+      progress.unlocked.push(operation);
+    } else if (i === 0 || prevUnlockSatisfied) {
+      // First operation is always unlocked, or previous operation met unlock condition
+      progress.unlocked.push(operation);
+      if (!progress.nextUnlocked) {
+        progress.nextUnlocked = operation;
+      }
+    } else {
+      progress.locked.push(operation);
+    }
+
+    // Update unlock chain for the *next* operation
+    if (i === 0) {
+      prevUnlockSatisfied = unlockSatisfied;
+    } else {
+      prevUnlockSatisfied = unlockSatisfied;
+    }
+  }
+  
+  return progress;
+}
+
+// Cache for operation progress to avoid repeated queries
+let operationProgressCache = null;
+
+/**
+ * Get cached operation progress or fetch new
+ * @param {string} fieldId - Field ID
+ * @returns {Promise<Object>} Operation progress
+ */
+async function getCachedOperationProgress(fieldId) {
+  if (!operationProgressCache) {
+    operationProgressCache = await getOperationProgress(fieldId);
+  }
+  return operationProgressCache;
+}
+
+/**
+ * Clear operation progress cache
+ */
+function clearOperationProgressCache() {
+  operationProgressCache = null;
 }
 
 // Helper function to auto-select and progress when only one option exists
@@ -3274,7 +3378,7 @@ async function loadFields(){
     // Auto-select field if only one exists
     if (autoSelectAndProgress(fieldSelect, 'fieldSelect', operationSelect)) {
       // Field was auto-selected, show operations immediately
-      showOperations();
+      await showOperations();
     }
   } catch (error) {
     console.error('Error loading fields:', error);
@@ -3286,8 +3390,21 @@ async function loadFields(){
 }
 
 // Show and populate Field Operations (Visayas farming practices; values stay English for Firestore)
-function showOperations() {
-  operationSelect.innerHTML = buildFieldOperationSelectHtml();
+async function showOperations() {
+  const fieldId = fieldSelect.value;
+  const isEditMode = window._isLoadingEditRecord;
+  
+  // Get operation progress for sequential enforcement
+  let progress = null;
+  if (fieldId && !isEditMode) {
+    try {
+      progress = await getCachedOperationProgress(fieldId);
+    } catch (error) {
+      console.error('Error getting operation progress:', error);
+    }
+  }
+  
+  operationSelect.innerHTML = buildFieldOperationSelectHtml(null, progress);
   
   // Re-initialize custom select after updating options
   const operationSelectInstance = customSelectInstances.get('operationSelect');
@@ -3398,7 +3515,7 @@ fieldSelect.addEventListener('change', async function() {
     // Show operations after field is selected
     // In edit mode, we've already populated operations manually, so just ensure they're visible
     if (!isEditMode) {
-    showOperations();
+    await showOperations();
     } else {
       // In edit mode, operations should already be populated by loadRecordForEdit
       // Just make sure the wrap is visible
@@ -6191,6 +6308,38 @@ window.confirmSave = async () => {
         }
       }
     ]);
+
+      // Auto-advance: If user completed the last Pre-Planting task (Seed Cane Preparation),
+      // open the next Field Operation (Planting) even if other Pre-Planting tasks aren't done.
+      try {
+        const shouldAutoAdvanceToPlanting =
+          pendingPayload?.recordStatus === 'Done' &&
+          pendingPayload?.operation === 'Pre-Planting' &&
+          pendingPayload?.taskType === PRE_PLANTING_FINAL_TASK;
+
+        if (shouldAutoAdvanceToPlanting) {
+          setTimeout(async () => {
+            try {
+              // Dismiss the success banner so user sees the form change
+              if (typeof hideNotification === 'function') hideNotification();
+
+              // Refresh operation options (Planting may have been locked before save)
+              clearOperationProgressCache();
+              await showOperations();
+
+              // Switch to Planting and open its Task Type dropdown
+              operationSelect.value = 'Planting';
+              const operationSelectInstance = customSelectInstances.get('operationSelect');
+              if (operationSelectInstance) operationSelectInstance.updateSelectedLabel();
+              operationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (e) {
+              console.error('Auto-advance to Planting failed:', e);
+            }
+          }, 650);
+        }
+      } catch (e) {
+        console.error('Error in auto-advance logic:', e);
+      }
     } else {
       // Partial save - don't reload, allow continued editing
       notificationTitle = isEditing ? 'Record Updated (Not Done Yet)' : 'Record Saved (Not Done Yet)';
