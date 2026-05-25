@@ -1,0 +1,594 @@
+================================================================================
+CaneMap — A. SYSTEM DATABASE
+Full Database Schema & API Provider Documentation
+================================================================================
+Prepared for: System turnover / capstone submission
+System name:    CaneMap (Sugar Cane Field Management System)
+Document date:  May 19, 2026
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. API / DATABASE PROVIDER
+--------------------------------------------------------------------------------
+
+Provider:        Google Firebase (Google Cloud Platform)
+Product:         Cloud Firestore (NoSQL document database) — PRIMARY DATA STORE
+                 Firebase Authentication — user accounts & login
+                 Firebase Cloud Storage — file uploads (photos, documents)
+                 Firebase Cloud Functions — server-side HTTP & scheduled jobs
+                 Firebase Hosting — web application hosting
+
+Project ID:      canemap-system
+Auth domain:     canemap-system.firebaseapp.com
+Hosting URL:     https://canemap-system.web.app
+Storage bucket:  canemap-system.firebasestorage.app
+Firestore region: asia-southeast1
+SDK (client):    Firebase JavaScript SDK v12.1.0 (modular)
+SDK (server):    firebase-admin (Node.js, Cloud Functions)
+
+Database type:   Document-oriented (NOT relational SQL). There are no SQL tables.
+                 Collections = logical tables; Documents = rows; Fields = columns.
+
+Client config:   public/backend/Common/firebase-config.js
+Security rules:  firestore.rules, storage.rules, database.rules.json
+Indexes:         firestore.indexes.json
+
+Note: Firebase Realtime Database is configured but locked (read/write: false).
+      All application data lives in Firestore.
+
+Alternative APIs used by the app (non-database):
+  - OpenStreetMap / Leaflet — map display (not a data API for business records)
+  - Weather APIs — advisories (referenced in handler dashboard; not primary storage)
+
+
+--------------------------------------------------------------------------------
+2. ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+
+  [Web / Android App]
+         |
+         |  Firebase JS SDK (Auth, Firestore, Storage)
+         v
+  +------------------+------------------+------------------+
+  | Firebase Auth    | Cloud Firestore  | Cloud Storage    |
+  | (users/UIDs)     | (all app data)   | (images, PDFs)   |
+  +------------------+------------------+------------------+
+         ^
+         |  firebase-admin (Cloud Functions)
+         |
+  [functions/index.js — email verify, create SRA, harvest cron]
+
+
+--------------------------------------------------------------------------------
+3. FIRESTORE — TOP-LEVEL COLLECTIONS (FULL SCHEMA)
+--------------------------------------------------------------------------------
+
+Legend:
+  string | number | boolean | timestamp | array | map | geopoint | reference
+  (?) = optional field seen in code or rules
+  [subcollection] = nested under parent document
+
+
+--- 3.1 users ---
+Path: /users/{userId}
+Document ID: Firebase Auth UID (recommended pattern)
+
+| Field                  | Type        | Description |
+|------------------------|-------------|-------------|
+| uid                    | string      | Firebase Auth UID |
+| name / fullname        | string      | Display name |
+| email                  | string      | Login email |
+| role                   | string      | farmer | handler | driver | sra | admin | system_admin | super_admin | security_admin |
+| status                 | string      | pending | verified | (account state) |
+| emailVerified          | boolean     | Email verification flag |
+| phone (?)              | string      | Contact number |
+| photoURL (?)           | string      | Profile image URL |
+| createdAt              | timestamp   | Registration time |
+| lastLogin (?)          | timestamp   | Last successful login |
+| verifiedAt (?)         | timestamp   | When email was verified |
+| failedLoginAttempts    | number      | Brute-force tracking |
+| lastFailedLogin (?)    | timestamp   | Last failed attempt |
+| roleUpdatedAt (?)      | timestamp   | When role last changed (e.g. driver approval) |
+
+Relationships:
+  - Linked 1:1 with Firebase Auth user (same UID)
+  - Referenced by fieldId ownership (fields.userId), tasks, records, reports, etc.
+
+
+--- 3.2 fields ---
+Path: /fields/{fieldId}
+Document ID: Auto-generated
+
+| Field                      | Type        | Description |
+|----------------------------|-------------|-------------|
+| userId                     | string      | Owner/handler UID |
+| landowner_id (?)           | string      | Legacy owner reference |
+| user_id / registered_by (?) | string     | Alternate owner keys (legacy) |
+| field_name / fieldName     | string      | Field label |
+| field_size / area (?)      | number      | Area in hectares |
+| barangay (?)               | string      | Location barangay |
+| municipality (?)           | string      | Municipality |
+| latitude / longitude (?)   | number      | Point location |
+| coordinates (?)            | array<map>  | Polygon [{ lat, lng }, ...] |
+| sugarcane_variety / variety | string     | Cane variety |
+| soilType (?)               | string      | Soil classification |
+| irrigationMethod (?)       | string      | Irrigation type |
+| fieldTerrain (?)           | string      | Terrain |
+| previousCrop (?)           | string      | Prior crop |
+| status                     | string      | pending | reviewed | active | harvested | rejected |
+| plantingDate (?)           | timestamp   | Planting date (growth tracking) |
+| expectedHarvestDate (?)    | timestamp   | Predicted harvest |
+| expectedHarvestDAP (?)     | number      | Days after planting to harvest |
+| currentGrowthStage (?)     | string      | Growth stage label |
+| delayDays (?)              | number      | Delay from schedule |
+| basalFertilizationDate (?) | timestamp   | Basal fertilizer date |
+| mainFertilizationDate (?)  | timestamp   | Main fertilizer date |
+| actualHarvestDate (?)      | timestamp   | Actual harvest |
+| finalDAP (?)               | number      | Final days after planting |
+| actualYield (?)            | number      | Harvest yield |
+| harvestTiming (?)          | string      | Early/on-time/late |
+| harvestTimingDays (?)      | number      | Variance days |
+| harvestedAt (?)            | timestamp   | Harvest completion time |
+| operationOverrides (?)     | map         | Manual operation completion flags |
+| validFrontUrl / validBackUrl / selfieUrl (?) | string | ID image URLs (Storage) |
+| createdAt / registeredAt / submittedAt (?) | timestamp | Audit timestamps |
+| updatedAt (?)              | timestamp   | Last update |
+
+Subcollections:
+  [remarks] /fields/{fieldId}/remarks/{remarkId}
+    - SRA/admin remarks on field review (string fields, timestamps)
+
+
+--- 3.3 records ---
+Path: /records/{recordId}
+Document ID: Auto-generated
+Purpose: Handler/farmer input records (operations, costs, activities)
+
+| Field          | Type        | Description |
+|----------------|-------------|-------------|
+| userId         | string      | Creator UID |
+| fieldId        | string      | Reference to fields/{fieldId} |
+| growthStage    | string      | Derived growth stage |
+| operation      | string      | Pre-Planting | Planting | Post-Planting | Harvesting | etc. |
+| taskType       | string      | Specific task under operation |
+| data           | map         | Dynamic form fields (costs, dates, inputs) |
+| recordDate     | timestamp   | Date of activity |
+| recordStatus   | string      | Done | In Progress | Pending Sync (offline) |
+| status         | string      | Legacy: mirrors growthStage for rules |
+| createdAt      | timestamp   | Created |
+| updatedAt (?)  | timestamp   | Last edit |
+
+Subcollections:
+  [bought_items] /records/{recordId}/bought_items/{itemId}
+    | itemName, quantity, unit, cost, supplier (?) | strings/numbers in map |
+
+  [vehicle_updates] /records/{recordId}/vehicle_updates/{updateId}
+    | vehicleType, fuel, hours, cost (?) | operational vehicle log fields |
+
+
+--- 3.4 tasks ---
+Path: /tasks/{taskId}
+
+| Field              | Type        | Description |
+|--------------------|-------------|-------------|
+| fieldId            | string      | Related field |
+| handlerId (?)      | string      | Handler who owns task |
+| created_by / createdBy (?) | string | Creator UID |
+| assignedTo (?)     | array<string> | Worker UIDs |
+| assigned_to (?)    | string      | Single assignee (legacy) |
+| title (?)          | string      | Task title |
+| status             | string      | pending | done | etc. |
+| taskType (?)       | string      | planting | basal fertilizer | etc. |
+| priority (?)       | string      | low | medium | high | critical |
+| autoGenerated (?)  | boolean     | From growth automation |
+| generatedAt (?)    | timestamp   | Auto-gen time |
+| dapWindow (?)      | string      | DAP window label |
+| growthStage (?)    | string      | Related stage |
+| completed_at (?)   | timestamp   | Completion |
+| completedAt (?)    | timestamp   | Completion (alt) |
+| archived (?)       | boolean     | Archived flag |
+| metadata (?)       | map         | variety, extra data |
+| timestamp / createdAt (?) | timestamp | Created |
+
+
+--- 3.5 reports ---
+Path: /reports/{reportId}
+Purpose: Field reports submitted by handlers to SRA
+
+| Field           | Type        | Description |
+|-----------------|-------------|-------------|
+| handlerId       | string      | Submitting handler |
+| fieldId         | string      | Field reference |
+| sraOfficerId (?) | string     | Assigned SRA officer |
+| reportStatus    | string      | Workflow status |
+| status (?)        | string      | Legacy status field |
+| createdAt / timestamp / submittedDate (?) | timestamp | Submitted |
+| reviewedBy (?)  | string      | Reviewer UID |
+| reviewedAt (?)  | timestamp   | Review time |
+| remarks (?)     | string      | SRA remarks |
+| (report body)   | map         | Report content fields |
+
+
+--- 3.6 notifications ---
+Path: /notifications/{notificationId}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| userId (?)  | string      | Personal notification recipient |
+| role (?)    | string      | Broadcast target role |
+| title (?)   | string      | Title |
+| message (?) | string      | Body |
+| type (?)    | string      | Notification category |
+| timestamp   | timestamp   | Created |
+| status (?)  | string      | read | unread (legacy) |
+| read (?)    | boolean     | Read flag (new schema) |
+| handlerId (?) | string    | Related handler |
+| fieldId (?) | string      | Related field |
+
+
+--- 3.7 field_joins ---
+Path: /field_joins/{joinId}
+Purpose: Driver join requests to handler fields (top-level collection)
+
+| Field        | Type        | Description |
+|--------------|-------------|-------------|
+| userId       | string      | Requesting user |
+| handlerId    | string      | Field handler |
+| fieldId (?)  | string      | Target field |
+| assignedAs   | string      | driver |
+| status       | string      | pending | approved | rejected | cancelled |
+| createdAt (?) | timestamp  | Request time |
+
+Legacy nested pattern (still in rules):
+  /field_joins/{userId}/join_fields/{fieldId}
+  - Per-user container with join_fields subcollection
+  - Fields: user_uid, userId, fieldId, role, status
+
+
+--- 3.8 field_workers ---
+Path: /field_workers/{requestId}
+Document ID pattern: {userId}_{fieldId} (legacy)
+
+| Field      | Type        | Description |
+|------------|-------------|-------------|
+| user_uid / userId / user_id | string | Worker UID |
+| field_id   | string      | Field reference |
+| status     | string      | pending | approved | rejected |
+
+
+--- 3.9 driver_rentals ---
+Path: /driver_rentals/{rentalId}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| handlerId   | string      | Requesting handler |
+| driverId    | string      | Driver UID |
+| status      | string      | pending | approved | rejected |
+| requestDate (?) | timestamp | Request date |
+| (rental details) | map    | Rental terms, field, dates |
+
+
+--- 3.10 Drivers_Badge ---
+Path: /Drivers_Badge/{docId}
+Document ID: Usually same as driver UID
+
+| Field            | Type        | Description |
+|------------------|-------------|-------------|
+| requestedBy      | string      | Driver UID |
+| fullname (?)     | string      | Driver name |
+| open_for_rental (?) | boolean  | Available for rental |
+| status           | string      | pending | approved | rejected |
+| lastEdit (?)     | timestamp   | Last profile edit (30-day rule) |
+| (license/docs)   | string/map  | URLs to Storage uploads |
+
+
+--- 3.11 task_logs ---
+Path: /task_logs/{logId}
+
+| Field      | Type        | Description |
+|------------|-------------|-------------|
+| user_uid   | string      | Worker UID |
+| field_id / fieldId | string | Field |
+| logged_at (?) | timestamp | Log time |
+| (log data) | map         | Task completion details |
+
+
+--- 3.12 user_activities ---
+Path: /user_activities/{activityId}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| userId      | string      | Actor UID |
+| type        | string      | profile_update | field_join | login | etc. |
+| title       | string      | Short label |
+| description | string      | Human-readable text |
+| timestamp   | timestamp   | When |
+| details (?) | map         | Extra metadata |
+
+
+--- 3.13 feedbacks ---
+Path: /feedbacks/{feedbackId}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| message (?) | string      | User feedback text |
+| email (?)   | string      | Submitter email |
+| createdAt   | timestamp   | Submitted |
+| (other)     | various     | Rating, name — public create allowed |
+
+
+--- 3.14 admin_pins ---
+Path: /admin_pins/{pinId}
+Purpose: System Admin PIN-based login (not Firebase Auth)
+
+| Field    | Type        | Description |
+|----------|-------------|-------------|
+| pin      | string      | Admin PIN (hashed or plain per implementation) |
+| uid (?)  | string      | Linked Firebase user if any |
+| name (?) | string      | Admin display name |
+| phone (?) | string     | Contact |
+| role (?) | string      | super_admin | system_admin |
+
+
+--- 3.15 admin_security_logs ---
+Path: /admin_security_logs/{logId}
+
+| Field      | Type        | Description |
+|------------|-------------|-------------|
+| eventType  | string      | login_failed | login_success | etc. |
+| timestamp  | timestamp   | Event time |
+| details (?) | map        | pinCode, IP, etc. |
+
+
+--- 3.16 failed_logins ---
+Path: /failed_logins/{attemptId}
+Purpose: Track failed logins for emails not yet in users collection
+
+| Field         | Type        | Description |
+|---------------|-------------|-------------|
+| email         | string      | Attempted email |
+| attemptCount  | number      | Count |
+| lastAttempt   | timestamp   | Last try |
+| ipAddress (?) | string      | Client IP |
+
+
+--- 3.17 admin_settings ---
+Path: /admin_settings/{docId}
+
+| Field  | Type | Description |
+|--------|------|-------------|
+| (config) | map | System-wide admin configuration key-value |
+
+
+--- 3.18 harvest_notification_logs ---
+Path: /harvest_notification_logs/{logId}
+Purpose: Prevent duplicate harvest reminder notifications
+
+| Field      | Type        | Description |
+|------------|-------------|-------------|
+| handlerId  | string      | Handler notified |
+| fieldId (?) | string     | Field |
+| type (?)   | string      | Notification type |
+| createdAt (?) | timestamp | Sent at |
+
+
+--- 3.19 email_queue ---
+Path: /email_queue/{emailId}
+Purpose: Outbound email jobs
+
+| Field  | Type | Description |
+|--------|------|-------------|
+| to     | string | Recipient |
+| subject | string | Subject |
+| body (?) | string | Content |
+| status (?) | string | pending | sent |
+| createdAt (?) | timestamp | Queued |
+
+
+--- 3.20 system_backups ---
+Path: /system_backups/{backupId}
+Purpose: Admin maintenance UI — backup job metadata (not full DB dump)
+
+| Field     | Type        | Description |
+|-----------|-------------|-------------|
+| name      | string      | Backup label |
+| type      | string      | Full | Manual |
+| status    | string      | in-progress | completed | failed |
+| size (?)  | string      | Display size |
+| options (?) | map       | users, fields, logs flags |
+| createdAt | timestamp   | Created |
+| createdBy | string      | Admin identifier |
+
+
+--- 3.21 cleanup_history ---
+Path: /cleanup_history/{id}
+
+| Field         | Type        | Description |
+|---------------|-------------|-------------|
+| type          | string      | Cleanup type |
+| status        | string      | completed | failed |
+| filesRemoved (?) | number   | Count |
+| spaceFreed (?) | string     | Display size |
+| createdAt     | timestamp   | Run time |
+
+
+--- 3.22 system_errors ---
+Path: /system_errors/{id}
+
+| Field     | Type        | Description |
+|-----------|-------------|-------------|
+| level     | string      | critical | error | warning | info |
+| message   | string      | Error text |
+| details (?) | string    | Stack or context |
+| source (?) | string     | Component name |
+| timestamp | timestamp   | When |
+
+
+--- 3.23 scheduled_maintenance ---
+Path: /scheduled_maintenance/{id}
+
+| Field        | Type        | Description |
+|--------------|-------------|-------------|
+| type         | string      | Maintenance type |
+| scheduledAt  | timestamp   | Start time |
+| duration     | number      | Minutes |
+| description  | string      | Details |
+| status       | string      | scheduled | in-progress |
+| notifyUsers (?) | boolean  | Notify flag |
+| createdAt    | timestamp   | Created |
+
+
+--- 3.24 maintenance_history ---
+Path: /maintenance_history/{id}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| startedAt   | timestamp   | Start |
+| completedAt (?) | timestamp | End |
+| type        | string      | Type |
+| description | string      | Details |
+| status      | string      | completed | failed |
+
+
+--- 3.25 maintenance_mode ---
+Path: /maintenance_mode/{id}
+
+| Field     | Type        | Description |
+|-----------|-------------|-------------|
+| enabled   | boolean     | System lockout |
+| enabledAt | timestamp   | When enabled |
+| message   | string      | User-facing message |
+
+
+--- 3.26 update_history ---
+Path: /update_history/{id}
+
+| Field       | Type        | Description |
+|-------------|-------------|-------------|
+| updateId    | string      | Update package id |
+| status      | string      | installing | done |
+| startedAt   | timestamp   | Start time |
+| installedBy | string      | Admin id |
+
+
+--------------------------------------------------------------------------------
+4. FIREBASE CLOUD STORAGE — PATH SCHEMA (FILES, NOT FIRESTORE)
+--------------------------------------------------------------------------------
+
+Bucket: canemap-system.firebasestorage.app
+
+| Storage path pattern                    | Contents |
+|----------------------------------------|----------|
+| field_applications/{userId}/**         | Barangay cert, land title, valid IDs |
+| Drivers_Badge/{userId}/**              | Driver license / badge uploads |
+| profilePhotos/{userId}/**              | User profile pictures |
+| (other paths per storage.rules)        | Field photos, attachments |
+
+Files are referenced by HTTPS download URLs stored in Firestore documents.
+
+
+--------------------------------------------------------------------------------
+5. FIREBASE AUTHENTICATION — USER RECORD SCHEMA
+--------------------------------------------------------------------------------
+
+Stored in Firebase Auth (separate from Firestore users/{uid} profile):
+
+| Attribute        | Type    | Description |
+|------------------|---------|-------------|
+| uid              | string  | Primary key (matches Firestore users doc) |
+| email            | string  | Login |
+| emailVerified    | boolean | Verified flag |
+| displayName      | string  | Name |
+| disabled         | boolean | Account disabled |
+| passwordHash     | (internal) | NOT exportable |
+| metadata.creationTime | string | Created |
+| metadata.lastSignInTime | string | Last login |
+
+Cloud Functions: verifyEmailLink, createSRA, dailyHarvestCheck (scheduled)
+
+
+--------------------------------------------------------------------------------
+6. ENTITY RELATIONSHIP SUMMARY
+--------------------------------------------------------------------------------
+
+  Firebase Auth (uid)
+       |
+       +---- users/{uid}  (profile, role)
+       |
+       +---- fields/{fieldId}  (owned via userId / landowner_id)
+       |         +---- remarks/{remarkId}
+       |
+       +---- records/{recordId}  (userId + fieldId)
+       |         +---- bought_items/{itemId}
+       |         +---- vehicle_updates/{updateId}
+       |
+       +---- tasks/{taskId}  (fieldId, handlerId, assignedTo[])
+       |
+       +---- reports/{reportId}  (handlerId, fieldId)
+       |
+       +---- field_joins/{joinId}  (userId, handlerId, fieldId)
+       |
+       +---- Drivers_Badge/{uid}
+       |
+       +---- notifications (userId or role broadcast)
+
+  field_workers, driver_rentals, task_logs — link users <-> fields
+
+
+--------------------------------------------------------------------------------
+7. COMPOSITE INDEXES (QUERY PERFORMANCE)
+--------------------------------------------------------------------------------
+
+Defined in firestore.indexes.json. Key indexes include:
+
+  - fields: status + submittedAt; userId + createdAt; userId + status
+  - records: fieldId + recordDate; fieldId + createdAt; userId + createdAt
+  - tasks: handlerId + status + completedAt; fieldId + archived; assignedTo + createdAt
+  - reports: handlerId + submittedDate; status + submittedDate
+  - notifications: userId + timestamp
+  - user_activities: userId + timestamp
+  - join_fields (collection group): fieldId + status; fieldId + user_uid
+  - admin_security_logs: eventType + timestamp
+  - driver_rentals: driverId + requestDate
+  - Drivers_Badge: open_for_rental + fullname
+  - task_logs: fieldId + logged_at
+
+
+--------------------------------------------------------------------------------
+8. HOW TO EXPORT LIVE DATA (FOR TURNOVER PACKAGE)
+--------------------------------------------------------------------------------
+
+Schema (this document) describes STRUCTURE. For actual DATA export:
+
+  Option A — Project script (recommended):
+    1. Firebase Console → Service accounts → Generate new private key
+    2. export GOOGLE_APPLICATION_CREDENTIALS="/path/to/key.json"
+    3. npm run export:system-database
+    4. Output folder: "System Database/" (JSON files + auth users list)
+
+  Option B — Firebase Console:
+    Firestore → Import/Export → Export to Google Cloud Storage bucket
+
+  Option C — Manual:
+    Firebase Console → Firestore → browse collections → export per collection
+
+Include this schema .txt file together with the data export in your turnover ZIP.
+
+
+--------------------------------------------------------------------------------
+9. SOURCE FILES FOR VERIFICATION
+--------------------------------------------------------------------------------
+
+  firestore.rules          — collection paths & field validation
+  firestore.indexes.json   — composite indexes
+  storage.rules            — Storage path rules
+  firebase.json            — project services configuration
+  public/backend/Common/firebase-config.js — client Firebase init
+  functions/index.js       — server-side Firestore usage
+  scripts/export-system-database.js — full data export script
+
+
+================================================================================
+END OF DOCUMENT — A. SYSTEM DATABASE
+================================================================================
