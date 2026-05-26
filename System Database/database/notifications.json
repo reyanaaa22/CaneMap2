@@ -1,0 +1,3534 @@
+{
+  "025fd33f-12a7-432c-959a-5aaadb41659b": {
+    "title": "Drivers Badge Approved!",
+    "message": "Your drivers badge application has been reviewed by the System Admin. You can now check your dashboard <a href=\"../../frontend/Driver/Driver_Dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "timestamp": {
+      "_seconds": 1764147414,
+      "_nanoseconds": 23000000
+    },
+    "userId": "pqUoCWgSbwc8gNBazAG1gBQbJ3X2",
+    "status": "unread"
+  },
+  "07VXBjTe5lup0dnaIjJ8": {
+    "createdAt": {
+      "_seconds": 1773317827,
+      "_nanoseconds": 810000000
+    },
+    "read": false,
+    "type": "field_registration",
+    "timestamp": {
+      "_seconds": 1773317827,
+      "_nanoseconds": 810000000
+    },
+    "role": "sra",
+    "title": "New Field Registration",
+    "status": "unread",
+    "message": "A new field \"PS 2 / VMC 88-354\" has been registered in Donghol and requires review.",
+    "relatedEntityId": "OKpT4ePaQam8iZvOXHos"
+  },
+  "0HuWK4P4jg4WhmOUxz0Y": {
+    "read": true,
+    "status": "unread",
+    "role": "sra",
+    "title": "Field Report Received",
+    "fieldName": "Panoma 1",
+    "handlerId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "type": "report_sent",
+    "handlerName": "Ramon Boholst Jr.",
+    "reportId": "PanlyyCSohvhX8KDkj1B",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "createdAt": {
+      "_seconds": 1766004650,
+      "_nanoseconds": 973000000
+    },
+    "relatedEntityId": "PanlyyCSohvhX8KDkj1B",
+    "timestamp": {
+      "_seconds": 1766004650,
+      "_nanoseconds": 973000000
+    },
+    "message": "Handler has sent a field report for \"Panoma 1\".",
+    "readAt": {
+      "_seconds": 1766004738,
+      "_nanoseconds": 403000000
+    }
+  },
+  "0wFiy1zj1Oa7jbd7GkNS": {
+    "timestamp": {
+      "_seconds": 1773319016,
+      "_nanoseconds": 366000000
+    },
+    "readAt": {
+      "_seconds": 1774781023,
+      "_nanoseconds": 287000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "read",
+    "title": "Field Registration Approved!"
+  },
+  "1CxX2mvl3YI834bzD7aI": {
+    "message": "Handler has sent a field report for \"Sugarcane\".",
+    "readAt": {
+      "_seconds": 1765902353,
+      "_nanoseconds": 196000000
+    },
+    "status": "unread",
+    "relatedEntityId": "MhYIOzO6gDEPlg8NShiV",
+    "fieldName": "Sugarcane",
+    "role": "sra",
+    "createdAt": {
+      "_seconds": 1765902246,
+      "_nanoseconds": 368000000
+    },
+    "read": true,
+    "handlerName": "dyn dyn",
+    "reportId": "MhYIOzO6gDEPlg8NShiV",
+    "title": "Field Report Received",
+    "type": "report_sent",
+    "fieldId": "NFRougQtPVxDQyWVTYLL",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765902246,
+      "_nanoseconds": 368000000
+    }
+  },
+  "2TagtDWlVGRP28zQPkAI": {
+    "type": "task_assigned",
+    "timestamp": {
+      "_seconds": 1765723259,
+      "_nanoseconds": 665000000
+    },
+    "message": "New task: Basal Fertilizer (0–30 DAP) at Dyn",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "relatedEntityId": "RnBFZ159DBGUou16e8hX",
+    "read": false
+  },
+  "3KSwO1RyniF34mkzMJAE": {
+    "read": true,
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "type": "report_requested",
+    "relatedEntityId": "harvest_schedules",
+    "timestamp": {
+      "_seconds": 1764492028,
+      "_nanoseconds": 275000000
+    },
+    "readAt": {
+      "_seconds": 1764563054,
+      "_nanoseconds": 341000000
+    },
+    "message": "SRA requested a Harvest Schedules report: Harbest oi"
+  },
+  "3KjxnBffyERvbfL5UwBj": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1764073187,
+      "_nanoseconds": 676000000
+    },
+    "status": "read",
+    "message": "dyn nie completed task: Transport Materials to Field",
+    "read": true,
+    "relatedEntityId": "k6WC64FbyqrFfeWvXwC4",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 470000000
+    },
+    "type": "task_completed"
+  },
+  "3NfpOagztW7Luw3S5uKl": {
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "read": true,
+    "message": "Deadline updated: First Fertilizer (0–30 DAP) at Dyn. New: 12/27/2025",
+    "type": "task_updated",
+    "relatedEntityId": "vY7yMh0VSvddrcFC48gj",
+    "readAt": {
+      "_seconds": 1765713687,
+      "_nanoseconds": 143000000
+    },
+    "timestamp": {
+      "_seconds": 1765712524,
+      "_nanoseconds": 899000000
+    }
+  },
+  "3OBLASc7taXfvcehroqM": {
+    "status": "read",
+    "read": true,
+    "message": "bnbn logged work: Transport Equipment to Field",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 675000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1764066488,
+      "_nanoseconds": 149000000
+    },
+    "type": "work_logged",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD"
+  },
+  "3UMRv57qhBw8KWGRtWeb": {
+    "read": false,
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "createdAt": {
+      "_seconds": 1769040011,
+      "_nanoseconds": 5000000
+    },
+    "relatedId": "6UrQVEXjAvMJhZMPfkfa",
+    "message": "Your field \"Panoma 1\" is 1 days overdue for harvest. Immediate action required to prevent yield loss.",
+    "relatedType": "field",
+    "title": "⚠️ Harvest Overdue!",
+    "type": "harvest_overdue"
+  },
+  "48ZP5zZsid0xslDfQtmz": {
+    "timestamp": {
+      "_seconds": 1765723259,
+      "_nanoseconds": 792000000
+    },
+    "type": "task_assigned",
+    "relatedEntityId": "RnBFZ159DBGUou16e8hX",
+    "read": false,
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "message": "New task: Basal Fertilizer (0–30 DAP) at Dyn"
+  },
+  "499rNnrYSyldS77mQDFI": {
+    "userId": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "timestamp": {
+      "_seconds": 1764189854,
+      "_nanoseconds": 751000000
+    },
+    "message": "New task: Transport Equipment to Field at Field 3",
+    "read": false,
+    "relatedEntityId": "97GRP01YZlqeor7ATr6L",
+    "type": "task_assigned"
+  },
+  "4JHxB8NdoNNc5syMDkgQ": {
+    "timestamp": {
+      "_seconds": 1764869385,
+      "_nanoseconds": 925000000
+    },
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "type": "work_logged",
+    "read": false,
+    "message": "Anxnx logged work: Main Fertilization (45–60 DAP)",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3"
+  },
+  "4JiqnlrQks1U92pvIVBf": {
+    "read": true,
+    "message": "Ma. Cora Garciano Boyboy completed task: Planting (0 DAP)",
+    "readAt": {
+      "_seconds": 1765377807,
+      "_nanoseconds": 830000000
+    },
+    "timestamp": {
+      "_seconds": 1765377779,
+      "_nanoseconds": 25000000
+    },
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "type": "task_completed",
+    "relatedEntityId": "Q1Oms6hLpR9pjIaS4zrF"
+  },
+  "4o72o3Mwi8RpWl3sMu9u": {
+    "relatedEntityId": "GGhOPPnXLZQqaY1983SF",
+    "read": false,
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "message": "New task: Planting (0 DAP) at Dyn",
+    "timestamp": {
+      "_seconds": 1765719782,
+      "_nanoseconds": 66000000
+    },
+    "type": "task_assigned"
+  },
+  "4sQi3Y7C87Wxr8k3E4gl": {
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "timestamp": {
+      "_seconds": 1764094308,
+      "_nanoseconds": 813000000
+    },
+    "title": "Field Join Approved!",
+    "status": "unread",
+    "message": "Your join request for <strong>Katubhann</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>."
+  },
+  "4w7RXhprJBBRoZo0EwEj": {
+    "createdAt": {
+      "_seconds": 1765900850,
+      "_nanoseconds": 351000000
+    },
+    "readAt": {
+      "_seconds": 1765961170,
+      "_nanoseconds": 564000000
+    },
+    "message": "A new field \"CaneMap\" has been registered in Tambulilid and requires review.",
+    "type": "field_registration",
+    "title": "New Field Registration",
+    "role": "sra",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1765900850,
+      "_nanoseconds": 351000000
+    },
+    "relatedEntityId": "oOChK4zwe7MGutk5QJcp",
+    "read": true
+  },
+  "59197714-1534-448e-9543-749828fd852e": {
+    "read": true,
+    "message": "Your drivers badge application has been reviewed by the System Admin. You can now check your dashboard <a href=\"../../frontend/Driver/Driver_Dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "userId": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "title": "Drivers Badge Approved!",
+    "status": "read",
+    "readAt": {
+      "_seconds": 1765372478,
+      "_nanoseconds": 723000000
+    },
+    "timestamp": {
+      "_seconds": 1765371904,
+      "_nanoseconds": 818000000
+    }
+  },
+  "59VdwJGL4eBWc6xofWtY": {
+    "message": "A new field \"PSR 2000-161\" has been registered in Guintigui-an and requires review.",
+    "status": "unread",
+    "read": false,
+    "createdAt": {
+      "_seconds": 1773318348,
+      "_nanoseconds": 608000000
+    },
+    "timestamp": {
+      "_seconds": 1773318348,
+      "_nanoseconds": 608000000
+    },
+    "role": "sra",
+    "title": "New Field Registration",
+    "type": "field_registration",
+    "relatedEntityId": "g4RtPSlPtjucu0EN7Ywj"
+  },
+  "5Ydq4B87tw5PXqwPMyvD": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "EgcWHJDblljxz6kmqCDR",
+    "read": true,
+    "type": "report_approved",
+    "readAt": {
+      "_seconds": 1765917728,
+      "_nanoseconds": 786000000
+    },
+    "timestamp": {
+      "_seconds": 1765909346,
+      "_nanoseconds": 530000000
+    },
+    "message": "Your Field Report report has been approved by SRA"
+  },
+  "5ee9210b-0edb-4f1e-8a1d-6a613f462765": {
+    "status": "read",
+    "title": "Drivers Badge Approved!",
+    "message": "Your drivers badge application has been reviewed by the System Admin. You can now check your dashboard <a href=\"../../frontend/Driver/Driver_Dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "userId": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "timestamp": {
+      "_seconds": 1765371906,
+      "_nanoseconds": 892000000
+    },
+    "readAt": {
+      "_seconds": 1765372478,
+      "_nanoseconds": 682000000
+    }
+  },
+  "5i2MxMdDhm6lp03J6Oul": {
+    "message": "A new field \"Kampu Tres\" has been registered in Matica-a and requires review.",
+    "createdAt": {
+      "_seconds": 1765957871,
+      "_nanoseconds": 690000000
+    },
+    "readAt": {
+      "_seconds": 1765957972,
+      "_nanoseconds": 280000000
+    },
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1765957871,
+      "_nanoseconds": 690000000
+    },
+    "relatedEntityId": "8ngXD3FTpd8I4fljNcpr",
+    "read": true,
+    "type": "field_registration",
+    "title": "New Field Registration",
+    "role": "sra"
+  },
+  "5iKmyfssCaSF3Fx4ghs0": {
+    "type": "kick",
+    "read": true,
+    "status": "read",
+    "title": "Removed From Field",
+    "timestamp": {
+      "_seconds": 1764093959,
+      "_nanoseconds": 429000000
+    },
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "readAt": {
+      "_seconds": 1764093974,
+      "_nanoseconds": 286000000
+    },
+    "message": "You have been removed from the field \"Katubhann\".",
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2"
+  },
+  "6GvUTnTPeNBzGASB49dF": {
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "timestamp": {
+      "_seconds": 1764092368,
+      "_nanoseconds": 485000000
+    },
+    "status": "unread",
+    "message": "Your join request for <strong>Katubhann</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "title": "Field Join Approved!"
+  },
+  "6MyGzWMxV05mIO5YVwmP": {
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "timestamp": {
+      "_seconds": 1764047927,
+      "_nanoseconds": 210000000
+    },
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 880000000
+    }
+  },
+  "6QCC6mLeedtORj08pcD7": {
+    "type": "field_registration",
+    "createdAt": {
+      "_seconds": 1773318654,
+      "_nanoseconds": 425000000
+    },
+    "read": false,
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1773318654,
+      "_nanoseconds": 425000000
+    },
+    "status": "unread",
+    "title": "New Field Registration",
+    "message": "A new field \"PSR 97-41\" has been registered in Concepcion and requires review.",
+    "relatedEntityId": "hZw2zu2MjxxotDxwxpSA"
+  },
+  "6zIEDMZ3us1LQz0rzbzj": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764047537,
+      "_nanoseconds": 274000000
+    },
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "read": true,
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 92000000
+    },
+    "title": "Remarks from Ormoc Mill District SRA Officer"
+  },
+  "6zivUIX5bAUymPa6CkAh": {
+    "relatedEntityId": "GGhOPPnXLZQqaY1983SF",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 766000000
+    },
+    "timestamp": {
+      "_seconds": 1765719800,
+      "_nanoseconds": 599000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "message": "Geraldyn C. Boholst completed task: Planting (0 DAP)",
+    "type": "task_completed"
+  },
+  "7LawVcR9vlL0eLmF59pd": {
+    "type": "report_requested",
+    "relatedEntityId": "crop_planting_records",
+    "status": "read",
+    "read": true,
+    "message": "SRA requested a Crop Planting Records report",
+    "readAt": {
+      "_seconds": 1765528652,
+      "_nanoseconds": 643000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765268948,
+      "_nanoseconds": 967000000
+    }
+  },
+  "7OhmMVw6swcQXV1FnKtG": {
+    "message": "A new field \"Kamarotaa\" has been registered in Matica-a and requires review.",
+    "timestamp": {
+      "_seconds": 1766005328,
+      "_nanoseconds": 905000000
+    },
+    "type": "field_registration",
+    "read": false,
+    "role": "sra",
+    "title": "New Field Registration",
+    "relatedEntityId": "1fTX9coMNEL3FEkSpJ0k",
+    "createdAt": {
+      "_seconds": 1766005328,
+      "_nanoseconds": 905000000
+    },
+    "status": "unread"
+  },
+  "7g4RD3atJ1cJvI1G9QAK": {
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 519000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN",
+    "message": "Andrew Bangalo has requested to join your field \"Mogu Mogu Farm\" (Catmon) as a driver.",
+    "title": "New Join Request",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764573897,
+      "_nanoseconds": 260000000
+    },
+    "read": true,
+    "type": "join_request"
+  },
+  "7jhtAPKE8B0EdNMWStcP": {
+    "type": "work_log_synced",
+    "readAt": {
+      "_seconds": 1764791005,
+      "_nanoseconds": 410000000
+    },
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "read": true,
+    "message": "📋 New work log synced for Maki Cane: Harrowing (completed offline)",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "timestamp": {
+      "_seconds": 1764790943,
+      "_nanoseconds": 598000000
+    },
+    "status": "read"
+  },
+  "81AxfuXf2lLtV9OkmwHr": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "message": "📋 New work log synced for Mogu Mogu Farm: Planting (0 DAP) (completed offline)",
+    "read": true,
+    "type": "work_log_synced",
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN",
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 724000000
+    },
+    "timestamp": {
+      "_seconds": 1765127099,
+      "_nanoseconds": 522000000
+    }
+  },
+  "83100ZDYyGj0w0Xo1moo": {
+    "type": "work_logged",
+    "relatedEntityId": "OoVjAFZD8UyCqF2pxIPQ",
+    "message": "Andrew Bangalo logged work: Vehicle Maintenance/Inspection",
+    "read": false,
+    "timestamp": {
+      "_seconds": 1765381116,
+      "_nanoseconds": 676000000
+    },
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83"
+  },
+  "8KMsnoGVVqJCdj7l5seo": {
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1765529916,
+      "_nanoseconds": 766000000
+    },
+    "timestamp": {
+      "_seconds": 1765269969,
+      "_nanoseconds": 821000000
+    },
+    "read": true,
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "8QsorGNBFhRw2ej2pxC9": {
+    "timestamp": {
+      "_seconds": 1765713675,
+      "_nanoseconds": 239000000
+    },
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 883000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "relatedEntityId": "NshoVpguL5ZmTmJYM0JF",
+    "type": "task_completed",
+    "message": "Almackie J. Bangalao completed task: harvesting"
+  },
+  "8St8eTSdX9Rwbbnu2iSX": {
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 146000000
+    },
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764046862,
+      "_nanoseconds": 896000000
+    }
+  },
+  "8b8FNZsQkD7yXfDRIXQq": {
+    "timestamp": {
+      "_seconds": 1773317515,
+      "_nanoseconds": 971000000
+    },
+    "status": "unread",
+    "title": "Field Registration Approved!",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "9raUgcJWRdTEcOVKwsR5": {
+    "type": "field_registration",
+    "relatedEntityId": "IrUMiXZFZI42wKu0x5Yo",
+    "title": "New Field Registration",
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1773227860,
+      "_nanoseconds": 124000000
+    },
+    "createdAt": {
+      "_seconds": 1773227860,
+      "_nanoseconds": 124000000
+    },
+    "read": false,
+    "status": "unread",
+    "message": "A new field \"PS 1 / VMC 84-947\" has been registered in Juaton and requires review."
+  },
+  "9yRgg9Z0a4sr6jN7EqE1": {
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "timestamp": {
+      "_seconds": 1764048439,
+      "_nanoseconds": 194000000
+    },
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 363000000
+    },
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read"
+  },
+  "A3WOEAwB73Ltdd732T6J": {
+    "status": "read",
+    "message": "Task cancelled: \"Transport Cane from Field to Mill\" at Mogu Mogu Farm",
+    "read": true,
+    "userId": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "type": "task_deleted",
+    "relatedEntityId": "13qVBJQRipWL7Chz7Dhm",
+    "timestamp": {
+      "_seconds": 1764690834,
+      "_nanoseconds": 464000000
+    },
+    "readAt": {
+      "_seconds": 1764863850,
+      "_nanoseconds": 878000000
+    }
+  },
+  "A5cwWHozmfirumLfuLxM": {
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "timestamp": {
+      "_seconds": 1764188242,
+      "_nanoseconds": 525000000
+    },
+    "status": "unread",
+    "message": "You have been removed from the field \"Field 3\".",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "type": "kick",
+    "title": "Removed From Field"
+  },
+  "AJ2BJLlwHd2RroHWH4l4": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "unread",
+    "title": "Field Registration Approved!",
+    "timestamp": {
+      "_seconds": 1774506434,
+      "_nanoseconds": 870000000
+    },
+    "readAt": {
+      "_seconds": 1774804011,
+      "_nanoseconds": 279000000
+    }
+  },
+  "AdPGRB5vqMUkqn7LeSrq": {
+    "timestamp": {
+      "_seconds": 1764933281,
+      "_nanoseconds": 227000000
+    },
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "message": "Your join request for <strong>Mogu Mogu Farm</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "readAt": {
+      "_seconds": 1764933305,
+      "_nanoseconds": 470000000
+    },
+    "read": true,
+    "status": "read",
+    "title": "Field Join Approved!"
+  },
+  "AtGS3o9mUzCBlZj7jl2e": {
+    "title": "Field Join Approved!",
+    "message": "Your join request for <strong>Cane A</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "timestamp": {
+      "_seconds": 1764174858,
+      "_nanoseconds": 430000000
+    },
+    "readAt": {
+      "_seconds": 1765370479,
+      "_nanoseconds": 878000000
+    },
+    "read": true,
+    "userId": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "status": "read"
+  },
+  "BUz1DGOJC7Sx0kvrPEFt": {
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 578000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "timestamp": {
+      "_seconds": 1764092242,
+      "_nanoseconds": 84000000
+    },
+    "read": true,
+    "type": "join_request",
+    "message": "Park park has requested to join your field \"Katubhann\" (Can-adieng) as a driver.",
+    "title": "New Join Request",
+    "status": "read"
+  },
+  "Br3KCKasLfXbJMSA0D00": {
+    "message": "A user has updated their field <b>kahago</b> and resubmitted it for SRA review.",
+    "read": false,
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1764046758,
+      "_nanoseconds": 767000000
+    },
+    "userId": "PUT_SRA_UID_HERE",
+    "title": "Field Updated for Review",
+    "readAt": null
+  },
+  "C13HXRDnWGDggQDUvlXw": {
+    "read": true,
+    "title": "New Join Request",
+    "status": "read",
+    "type": "join_request",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 786000000
+    },
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "timestamp": {
+      "_seconds": 1764169639,
+      "_nanoseconds": 774000000
+    },
+    "message": "Geraldyn C. Boholst has requested to join your field \"Field 3\" (Biliboy) as a worker.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "C1BSIFabFpjKU1lNkDYQ": {
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": true,
+    "status": "unread",
+    "message": "Ma. Cora Garciano Boyboy has requested to join your field \"Cane\" (Green Valley) as a worker.",
+    "readAt": {
+      "_seconds": 1765633601,
+      "_nanoseconds": 17000000
+    },
+    "timestamp": {
+      "_seconds": 1765632109,
+      "_nanoseconds": 613000000
+    },
+    "relatedEntityId": "iPR9Pz9sthDweMbKOGUq",
+    "type": "join_request",
+    "title": "New Join Request"
+  },
+  "CI8FKOINikBEljoTJU0X": {
+    "timestamp": {
+      "_seconds": 1764046657,
+      "_nanoseconds": 984000000
+    },
+    "readAt": {
+      "_seconds": 1765467043,
+      "_nanoseconds": 9000000
+    },
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "read": true
+  },
+  "COjT5u4yKue85XyhHV4B": {
+    "message": "Reyna Marie Garciano boyboy logged work: Vehicle Maintenance/Inspection",
+    "timestamp": {
+      "_seconds": 1765378777,
+      "_nanoseconds": 639000000
+    },
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": false,
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "type": "work_logged"
+  },
+  "CSbLEKgTa5IY457Hz3cT": {
+    "title": "New Field Registration",
+    "role": "sra",
+    "type": "field_registration",
+    "read": true,
+    "relatedEntityId": "ynZ54ohzHujMqPtKULn2",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1765974421,
+      "_nanoseconds": 34000000
+    },
+    "readAt": {
+      "_seconds": 1765983251,
+      "_nanoseconds": 607000000
+    },
+    "createdAt": {
+      "_seconds": 1765974421,
+      "_nanoseconds": 34000000
+    },
+    "message": "A new field \"Kamarota\" has been registered in Matica-a and requires review."
+  },
+  "CiEkxJZp0rlFb5oH6QhU": {
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "read": false,
+    "message": "Task cancelled: \"Others\" at Field8",
+    "type": "task_deleted",
+    "relatedEntityId": "0LoUifNU0cSIZ2U4P4Rt",
+    "timestamp": {
+      "_seconds": 1764689204,
+      "_nanoseconds": 813000000
+    }
+  },
+  "CxSP5UCzrMWDiftVxwAB": {
+    "type": "report_rejected",
+    "relatedEntityId": "MhYIOzO6gDEPlg8NShiV",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765908312,
+      "_nanoseconds": 285000000
+    },
+    "message": "Your Field Report report was rejected by SRA: inaccurate data",
+    "readAt": {
+      "_seconds": 1765909374,
+      "_nanoseconds": 603000000
+    },
+    "read": true
+  },
+  "DBPjPqbdV17ZoGanb6ZX": {
+    "timestamp": {
+      "_seconds": 1764094323,
+      "_nanoseconds": 719000000
+    },
+    "type": "kick",
+    "message": "You have been removed from the field \"Katubhann\".",
+    "title": "Removed From Field",
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "status": "unread",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6"
+  },
+  "DtxPgKOQ9oEpnd8vrcap": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "title": "Field Registration Approved!",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1773318942,
+      "_nanoseconds": 196000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "DzFFWFjwF4bV1YPnFfCm": {
+    "timestamp": {
+      "_seconds": 1765713929,
+      "_nanoseconds": 190000000
+    },
+    "status": "read",
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "read": true,
+    "type": "join_request",
+    "title": "New Join Request",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Geraldyn C. Boholst has requested to join your field \"Dyn\" (Matica-a) as a worker.",
+    "readAt": {
+      "_seconds": 1765916324,
+      "_nanoseconds": 42000000
+    }
+  },
+  "EP7wJ4bNYM6GTVg33SV7": {
+    "message": "Your Field Report report has been approved by SRA",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "type": "report_approved",
+    "readAt": {
+      "_seconds": 1765909381,
+      "_nanoseconds": 433000000
+    },
+    "relatedEntityId": "MxvAMC3Dd8QOji8SU8MG",
+    "timestamp": {
+      "_seconds": 1765908855,
+      "_nanoseconds": 621000000
+    }
+  },
+  "Ed0rRfYhaNo7EVlemboe": {
+    "status": "unread",
+    "read": true,
+    "readAt": {
+      "_seconds": 1765268057,
+      "_nanoseconds": 875000000
+    },
+    "message": "A new field \"ikam cane\" has been registered in Macabug and requires review.",
+    "timestamp": {
+      "_seconds": 1764875362,
+      "_nanoseconds": 386000000
+    },
+    "createdAt": {
+      "_seconds": 1764875362,
+      "_nanoseconds": 386000000
+    },
+    "role": "sra",
+    "type": "field_registration",
+    "relatedEntityId": "b4CRs94s7hpfQSCmBKVC",
+    "title": "New Field Registration"
+  },
+  "EggJRKILCOhq4PF1h1kd": {
+    "timestamp": {
+      "_seconds": 1773319034,
+      "_nanoseconds": 697000000
+    },
+    "readAt": {
+      "_seconds": 1774781023,
+      "_nanoseconds": 262000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "title": "Field Registration Approved!",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "read",
+    "read": true
+  },
+  "EmNsxRptbHlx9dlQl0ve": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "status": "unread",
+    "title": "Field Registration Approved!",
+    "timestamp": {
+      "_seconds": 1773318963,
+      "_nanoseconds": 812000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "F9OMuzqy2cm8iDSgvCbC": {
+    "title": "Removed From Field",
+    "type": "kick",
+    "message": "You have been removed from the field \"Katubhann\".",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "timestamp": {
+      "_seconds": 1764094462,
+      "_nanoseconds": 718000000
+    },
+    "status": "unread"
+  },
+  "FQ0b68IZdlQyCxaQUdjM": {
+    "readAt": {
+      "_seconds": 1765753812,
+      "_nanoseconds": 239000000
+    },
+    "relatedEntityId": "HyXHnS47h0JPskWHVojm",
+    "timestamp": {
+      "_seconds": 1765723758,
+      "_nanoseconds": 549000000
+    },
+    "message": "Geraldyn C. Boholst completed task: Planting (0 DAP)",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "type": "task_completed"
+  },
+  "FSGGWwe7oeQQ36WmchhV": {
+    "timestamp": {
+      "_seconds": 1766004942,
+      "_nanoseconds": 535000000
+    },
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "read": true,
+    "message": "Your Field Report report has been approved by SRA",
+    "readAt": {
+      "_seconds": 1774800468,
+      "_nanoseconds": 817000000
+    },
+    "type": "report_approved",
+    "relatedEntityId": "PanlyyCSohvhX8KDkj1B"
+  },
+  "Fwb1k4jvSHFC8xdCWlQa": {
+    "message": "📋 New work log synced for Mogu Mogu Farm: vehicle_maintenance (completed offline)",
+    "type": "work_log_synced",
+    "readAt": {
+      "_seconds": 1765528693,
+      "_nanoseconds": 955000000
+    },
+    "timestamp": {
+      "_seconds": 1765136887,
+      "_nanoseconds": 230000000
+    },
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN",
+    "read": true,
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "G7AKxRKURGYjYqdPInfi": {
+    "relatedEntityId": "03s1vdxMDFHNuUMkgPfg",
+    "message": "A new field \"PS 5 / VMC 95-09\" has been registered in Guintigui-an and requires review.",
+    "title": "New Field Registration",
+    "status": "unread",
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1773318182,
+      "_nanoseconds": 717000000
+    },
+    "createdAt": {
+      "_seconds": 1773318182,
+      "_nanoseconds": 717000000
+    },
+    "read": false,
+    "type": "field_registration"
+  },
+  "GDK40mZRzbdEq6VwfRax": {
+    "readAt": {
+      "_seconds": 1764067931,
+      "_nanoseconds": 687000000
+    },
+    "relatedEntity": "field",
+    "createdAt": {
+      "_seconds": 1764048268,
+      "_nanoseconds": 275000000
+    },
+    "userId": null,
+    "message": "A user has updated their field <b>kahago</b> and resubmitted it for SRA review.",
+    "type": "field_updated",
+    "role": "sra",
+    "title": "Field Updated for Review",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1764048268,
+      "_nanoseconds": 275000000
+    },
+    "relatedEntityName": "kahago",
+    "read": true
+  },
+  "GNYGyyb5N3ftGs6yAAWF": {
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "status": "unread",
+    "read": false,
+    "message": "📋 New work log synced for Cane A: fuel_refill (completed offline)",
+    "type": "work_log_synced",
+    "relatedEntityId": "OoVjAFZD8UyCqF2pxIPQ",
+    "timestamp": {
+      "_seconds": 1764869536,
+      "_nanoseconds": 863000000
+    }
+  },
+  "GU1NSh3ZPd5x5noPiM7d": {
+    "status": "unread",
+    "read": true,
+    "readAt": {
+      "_seconds": 1765969956,
+      "_nanoseconds": 703000000
+    },
+    "message": "A new field \"Cane A\" has been registered in Matica-a and requires review.",
+    "type": "field_registration",
+    "relatedEntityId": "dEum9FprQB27KMXpfdLi",
+    "title": "New Field Registration",
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1765969871,
+      "_nanoseconds": 327000000
+    },
+    "createdAt": {
+      "_seconds": 1765969871,
+      "_nanoseconds": 327000000
+    }
+  },
+  "Gg5wJ83lmPgtptVFk9wo": {
+    "timestamp": {
+      "_seconds": 1765712974,
+      "_nanoseconds": 861000000
+    },
+    "type": "kick",
+    "title": "Removed From Field",
+    "message": "You have been removed from the field \"Mogu Mogu Farm\".",
+    "userId": "nvGaCMbrVzYg5CD8icVontYxZWy2",
+    "status": "unread",
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN"
+  },
+  "HImSYl4zpTk7ZwXkGh3Z": {
+    "readAt": {
+      "_seconds": 1765528658,
+      "_nanoseconds": 80000000
+    },
+    "timestamp": {
+      "_seconds": 1765267160,
+      "_nanoseconds": 793000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "status": "read"
+  },
+  "HRYndce3lIaLfOVgVqcm": {
+    "createdAt": {
+      "_seconds": 1773318547,
+      "_nanoseconds": 583000000
+    },
+    "message": "A new field \"PSR 2000-34\" has been registered in Bayog and requires review.",
+    "type": "field_registration",
+    "title": "New Field Registration",
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1773318547,
+      "_nanoseconds": 583000000
+    },
+    "status": "unread",
+    "read": false,
+    "relatedEntityId": "0l8ckG23Y8V22zpWYoiS"
+  },
+  "IeGGMwPxVORryUW1K17v": {
+    "userId": "nvGaCMbrVzYg5CD8icVontYxZWy2",
+    "title": "Join Request Approved",
+    "read": false,
+    "message": "Your join request for Mogu Mogu Farm has been approved! You can now access the field.",
+    "type": "join_approved",
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN",
+    "createdAt": {
+      "_seconds": 1764527913,
+      "_nanoseconds": 791000000
+    }
+  },
+  "JDNQ0sRjC5jXgziYV2Jr": {
+    "type": "task_assigned",
+    "relatedEntityId": "Ofwr1KiOYcJiAtpUJWEA",
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "timestamp": {
+      "_seconds": 1765271746,
+      "_nanoseconds": 357000000
+    },
+    "read": true,
+    "readAt": {
+      "_seconds": 1765271751,
+      "_nanoseconds": 291000000
+    },
+    "message": "New task: Harvesting at Dyn"
+  },
+  "JF6nLcxaHwnzTLfpgy1Y": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "relatedEntityId": "yzLQgsNYIaBKDbnjtKY1",
+    "timestamp": {
+      "_seconds": 1765714517,
+      "_nanoseconds": 12000000
+    },
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 901000000
+    },
+    "message": "Geraldyn C. Boholst completed task: harvesting"
+  },
+  "JOKPrEEid30beUv5CyID": {
+    "timestamp": {
+      "_seconds": 1765723752,
+      "_nanoseconds": 451000000
+    },
+    "read": false,
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "type": "task_assigned",
+    "relatedEntityId": "HyXHnS47h0JPskWHVojm",
+    "message": "New task: Planting (0 DAP) at Dyn"
+  },
+  "JVjSQdulgSs7O5JPFSLs": {
+    "readAt": {
+      "_seconds": 1765467038,
+      "_nanoseconds": 31000000
+    },
+    "type": "work_logged",
+    "message": "j logged work: Transport Equipment to Field",
+    "read": true,
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "timestamp": {
+      "_seconds": 1764126215,
+      "_nanoseconds": 768000000
+    },
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "K3V5ZJX1cJhH87wjKECA": {
+    "message": "dyndyn n has requested to join your field \"Field 3\" (Biliboy) as a worker.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "title": "New Join Request",
+    "status": "read",
+    "type": "join_request",
+    "readAt": {
+      "_seconds": 1765467038,
+      "_nanoseconds": 239000000
+    },
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "timestamp": {
+      "_seconds": 1764144793,
+      "_nanoseconds": 265000000
+    }
+  },
+  "KQ4JysGYHVcxrucmdLZn": {
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "timestamp": {
+      "_seconds": 1764182998,
+      "_nanoseconds": 162000000
+    },
+    "message": "Your join request for <strong>Field 3</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "status": "unread",
+    "title": "Field Join Approved!"
+  },
+  "KQ7cdSd5irjebCXqNncC": {
+    "timestamp": {
+      "_seconds": 1765714022,
+      "_nanoseconds": 58000000
+    },
+    "type": "task_assigned",
+    "readAt": {
+      "_seconds": 1765714052,
+      "_nanoseconds": 812000000
+    },
+    "message": "New task: harvesting at Dyn",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "relatedEntityId": "JmX5AkVah7m9XApBU8Fx",
+    "read": true
+  },
+  "KtkfQcdHJgmXUcA3NYQ4": {
+    "readAt": {
+      "_seconds": 1765467038,
+      "_nanoseconds": 445000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "timestamp": {
+      "_seconds": 1764094224,
+      "_nanoseconds": 612000000
+    },
+    "read": true,
+    "type": "join_request",
+    "message": "Park park has requested to join your field \"Katubhann\" (Can-adieng) as a driver.",
+    "title": "New Join Request",
+    "status": "read"
+  },
+  "LESkwo8GLfGzMD7TmwfX": {
+    "message": "A new field \"Kampo Dos\" has been registered in Juaton and requires review.",
+    "readAt": {
+      "_seconds": 1765884287,
+      "_nanoseconds": 763000000
+    },
+    "createdAt": {
+      "_seconds": 1765851800,
+      "_nanoseconds": 305000000
+    },
+    "timestamp": {
+      "_seconds": 1765851800,
+      "_nanoseconds": 305000000
+    },
+    "status": "unread",
+    "read": true,
+    "relatedEntityId": "g8ossrok1OFzfbvxQ9D0",
+    "type": "field_registration",
+    "title": "New Field Registration",
+    "role": "sra"
+  },
+  "LaeY0xEakwFSCpisNukR": {
+    "role": "sra",
+    "message": "A new field \"PS 3 / VMC 84-524 / CADP Sc1\" has been registered in San Vicente and requires review.",
+    "relatedEntityId": "jnagYSPScvIWOspdQgGm",
+    "timestamp": {
+      "_seconds": 1773317964,
+      "_nanoseconds": 250000000
+    },
+    "createdAt": {
+      "_seconds": 1773317964,
+      "_nanoseconds": 250000000
+    },
+    "title": "New Field Registration",
+    "status": "unread",
+    "read": false,
+    "type": "field_registration"
+  },
+  "LhqTAKOSpXaI1bpaUaMr": {
+    "message": "Handler has sent a field report for \"Field8\".",
+    "readAt": {
+      "_seconds": 1765908112,
+      "_nanoseconds": 905000000
+    },
+    "status": "unread",
+    "role": "sra",
+    "relatedEntityId": "EgcWHJDblljxz6kmqCDR",
+    "fieldName": "Field8",
+    "createdAt": {
+      "_seconds": 1765908074,
+      "_nanoseconds": 947000000
+    },
+    "handlerName": "dyn dyn",
+    "read": true,
+    "reportId": "EgcWHJDblljxz6kmqCDR",
+    "title": "Field Report Received",
+    "type": "report_sent",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765908074,
+      "_nanoseconds": 947000000
+    }
+  },
+  "LrKQl3QZtK4jMpSKFLCb": {
+    "title": "New Field Registration",
+    "role": "sra",
+    "relatedEntityId": "z8nlWBPL5W5t6KV7bQfb",
+    "createdAt": {
+      "_seconds": 1765809786,
+      "_nanoseconds": 812000000
+    },
+    "status": "unread",
+    "message": "A new field \"Kampo Uno\" has been registered in Tambulilid and requires review.",
+    "timestamp": {
+      "_seconds": 1765809786,
+      "_nanoseconds": 812000000
+    },
+    "type": "field_registration",
+    "readAt": {
+      "_seconds": 1765809860,
+      "_nanoseconds": 144000000
+    },
+    "read": true
+  },
+  "M2kVgYsFsxln0ZmIz0eK": {
+    "timestamp": {
+      "_seconds": 1764219675,
+      "_nanoseconds": 499000000
+    },
+    "role": "sra",
+    "type": "field_updated",
+    "read": true,
+    "createdAt": {
+      "_seconds": 1764219675,
+      "_nanoseconds": 499000000
+    },
+    "message": "A user has updated their field <b>Katubhan Area 1</b> and resubmitted it for SRA review.",
+    "status": "unread",
+    "title": "Field Updated for Review",
+    "relatedEntity": "field",
+    "readAt": {
+      "_seconds": 1764486978,
+      "_nanoseconds": 744000000
+    },
+    "userId": null,
+    "relatedEntityName": "Katubhan Area 1"
+  },
+  "MDqSgmUH8RzWnnSvk2mL": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1765983392,
+      "_nanoseconds": 109000000
+    },
+    "title": "Field Registration Approved!",
+    "readAt": {
+      "_seconds": 1775744468,
+      "_nanoseconds": 941000000
+    }
+  },
+  "MI9DT6venHDOZQITeSby": {
+    "relatedEntityId": "k6WC64FbyqrFfeWvXwC4",
+    "timestamp": {
+      "_seconds": 1764073121,
+      "_nanoseconds": 154000000
+    },
+    "message": "New task: Transport Materials to Field at Field8",
+    "read": false,
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "type": "task_assigned"
+  },
+  "MqIa11uGrlrNFSCZghY1": {
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "status": "unread",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "timestamp": {
+      "_seconds": 1773318972,
+      "_nanoseconds": 50000000
+    }
+  },
+  "NBTdUASRikllQMlhUgA1": {
+    "timestamp": {
+      "_seconds": 1764127886,
+      "_nanoseconds": 667000000
+    },
+    "readAt": {
+      "_seconds": 1765467038,
+      "_nanoseconds": 657000000
+    },
+    "type": "work_logged",
+    "message": "jb logged work: Planting (0 DAP)",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "relatedEntityId": "gLesDOqF07mUFoEgerKA",
+    "read": true
+  },
+  "Ngz6woGauhOi74lBosgK": {
+    "relatedEntityId": "5m5dry0UlPTPB9AtjIdk",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "readAt": {
+      "_seconds": 1765467038,
+      "_nanoseconds": 867000000
+    },
+    "type": "join_request",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1764066088,
+      "_nanoseconds": 832000000
+    },
+    "status": "read",
+    "title": "New Join Request",
+    "message": "dyn nie has requested to join your field \"Field8\" (Curva) as a driver."
+  },
+  "NuNwtYHhJWydnSXdLqTu": {
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 929000000
+    },
+    "type": "task_completed",
+    "timestamp": {
+      "_seconds": 1765715233,
+      "_nanoseconds": 403000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Geraldyn C. Boholst completed task: harvesting",
+    "read": true,
+    "relatedEntityId": "CDvNjj7WTOQGFdNVpynF"
+  },
+  "OHPb5QqnWw5Y2XYAepxC": {
+    "relatedEntityId": "hQWEsdA7Awnhx8pmlqmO",
+    "timestamp": {
+      "_seconds": 1765720053,
+      "_nanoseconds": 810000000
+    },
+    "message": "New task: Basal Fertilizer (0–30 DAP) at Dyn",
+    "read": false,
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "type": "task_assigned"
+  },
+  "ONQasSt35QziewoU0e8E": {
+    "read": false,
+    "message": "New task: Transport Equipment to Field at Field8",
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "timestamp": {
+      "_seconds": 1764066334,
+      "_nanoseconds": 465000000
+    },
+    "type": "task_assigned",
+    "relatedEntityId": "wCPWKXAHGnSxc3haAPe7"
+  },
+  "OqFUi2XHkFOTFrj53NCw": {
+    "relatedEntityId": "ksSXnBfh2HaJltJdDp42",
+    "createdAt": {
+      "_seconds": 1773227296,
+      "_nanoseconds": 785000000
+    },
+    "status": "unread",
+    "title": "New Field Registration",
+    "role": "sra",
+    "read": true,
+    "message": "A new field \"K 88-65\" has been registered in Catmon and requires review.",
+    "timestamp": {
+      "_seconds": 1773227296,
+      "_nanoseconds": 785000000
+    },
+    "readAt": {
+      "_seconds": 1773227490,
+      "_nanoseconds": 367000000
+    },
+    "type": "field_registration"
+  },
+  "PAwCOquOBivCDNascpfW": {
+    "message": "Your join request for <strong>Cane B</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "status": "read",
+    "title": "Field Join Approved!",
+    "readAt": {
+      "_seconds": 1765375944,
+      "_nanoseconds": 84000000
+    },
+    "timestamp": {
+      "_seconds": 1765375720,
+      "_nanoseconds": 601000000
+    },
+    "userId": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "read": true
+  },
+  "PBCDaVmukVXlvkY24lSi": {
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "readAt": {
+      "_seconds": 1765467039,
+      "_nanoseconds": 87000000
+    },
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1765264226,
+      "_nanoseconds": 457000000
+    }
+  },
+  "PCNXEmSHoilon7bZ49rC": {
+    "timestamp": {
+      "_seconds": 1764489167,
+      "_nanoseconds": 788000000
+    },
+    "readAt": {
+      "_seconds": 1765528998,
+      "_nanoseconds": 844000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "title": "Field Registration Approved!",
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "PMiEFYR4BYqrmddGwhQK": {
+    "isSafe": true,
+    "title": "Weather Forecast / Work Advisory",
+    "type": "weather_advisory",
+    "description": "Weather conditions are safe for field work today. Conditions are acceptable for work.",
+    "timestamp": {
+      "_seconds": 1765916003,
+      "_nanoseconds": 999000000
+    },
+    "readAt": {
+      "_seconds": 1765916012,
+      "_nanoseconds": 230000000
+    },
+    "message": "Weather conditions are safe for field work today. Conditions are acceptable for work.",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "Pr51VGiSf7FESM3libDv": {
+    "message": "Deadline updated: harvesting at Dyn. New: 11/14/2025",
+    "timestamp": {
+      "_seconds": 1765537624,
+      "_nanoseconds": 190000000
+    },
+    "type": "task_updated",
+    "read": false,
+    "relatedEntityId": "NdJ4GOLG2essgvfsoQJ6",
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2"
+  },
+  "PueVCS7PZgdYU4ghqFCL": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "timestamp": {
+      "_seconds": 1773227543,
+      "_nanoseconds": 700000000
+    },
+    "status": "unread",
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "Q7lMGDc5Q3GDc9udqGIA": {
+    "title": "🌾 Harvest Reminder",
+    "type": "harvest_reminder",
+    "createdAt": {
+      "_seconds": 1768953611,
+      "_nanoseconds": 483000000
+    },
+    "message": "Your field \"Kamarotaa\" is ready for harvest in 14 days (Feb 4, 2026)",
+    "read": false,
+    "relatedId": "1fTX9coMNEL3FEkSpJ0k",
+    "relatedType": "field",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "QQKKuO7OJSqFyKeN98ID": {
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "message": "New task: Basal Fertilizer (0–30 DAP) at Field 3",
+    "read": false,
+    "type": "task_assigned",
+    "relatedEntityId": "1IKfN4ZGtoyW0AUCwcFQ",
+    "timestamp": {
+      "_seconds": 1764184605,
+      "_nanoseconds": 463000000
+    }
+  },
+  "QYmUDp1UNQ3zUeG2EkK7": {
+    "title": "Field Registration Approved!",
+    "status": "unread",
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1774780538,
+      "_nanoseconds": 738000000
+    },
+    "timestamp": {
+      "_seconds": 1773319086,
+      "_nanoseconds": 724000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "QjlaxGuQeFk54fgdGEZd": {
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "timestamp": {
+      "_seconds": 1773318994,
+      "_nanoseconds": 113000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "unread"
+  },
+  "QowcKqKSVB7IbZw3zN7Z": {
+    "relatedEntityId": "GxuvmbIPJMwywgEVmz4o",
+    "type": "task_assigned",
+    "userId": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "read": false,
+    "timestamp": {
+      "_seconds": 1764187889,
+      "_nanoseconds": 644000000
+    },
+    "message": "New task: Transport Fertilizer to Field at Field 3"
+  },
+  "Qw9X8f2iOvsEUkJeB7rI": {
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1773318935,
+      "_nanoseconds": 63000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "title": "Field Registration Approved!"
+  },
+  "RT7sMtauGq6rpAjrkkWb": {
+    "relatedEntityId": "12porKIhWROvsF3mNv1P",
+    "timestamp": {
+      "_seconds": 1765714439,
+      "_nanoseconds": 975000000
+    },
+    "message": "New task: harvesting at Dyn",
+    "read": false,
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "type": "task_assigned"
+  },
+  "RvKD8vGKbOf6ZNjvBkGy": {
+    "message": "A new Growth Updates report has been submitted and requires review.",
+    "readAt": {
+      "_seconds": 1764486904,
+      "_nanoseconds": 729000000
+    },
+    "read": true,
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764189589,
+      "_nanoseconds": 79000000
+    },
+    "timestamp": {
+      "_seconds": 1764189589,
+      "_nanoseconds": 79000000
+    },
+    "title": "New Report Submitted",
+    "relatedEntityId": "GbkDXpeBdVrSJ9PDaJg5",
+    "type": "report_submitted",
+    "role": "sra"
+  },
+  "SDDoJHaYCsj67IeDJApe": {
+    "timestamp": {
+      "_seconds": 1764092586,
+      "_nanoseconds": 876000000
+    },
+    "readAt": {
+      "_seconds": 1765467039,
+      "_nanoseconds": 504000000
+    },
+    "type": "work_logged",
+    "message": "han logged work: Transport Fertilizer to Field",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "read": true
+  },
+  "SHS7hcQVvR13CIq9ga8w": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "status": "read",
+    "title": "Field Registration Approved!",
+    "timestamp": {
+      "_seconds": 1765809882,
+      "_nanoseconds": 884000000
+    },
+    "readAt": {
+      "_seconds": 1765813550,
+      "_nanoseconds": 661000000
+    },
+    "read": true,
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2"
+  },
+  "T6kApPKGUhgLgA9S8cFT": {
+    "createdAt": {
+      "_seconds": 1774310446,
+      "_nanoseconds": 311000000
+    },
+    "type": "harvest_overdue",
+    "title": "⚠️ Harvest Overdue!",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "relatedId": "0l8ckG23Y8V22zpWYoiS",
+    "relatedType": "field",
+    "message": "Your field \"PSR 2000-34\" is 525 days overdue for harvest. Immediate action required to prevent yield loss.",
+    "read": false
+  },
+  "TQKLQ57xAoPSVSZCOpRE": {
+    "message": "Gikapoy Na has requested to join your field \"Field 3\" (Biliboy) as a driver.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "readAt": {
+      "_seconds": 1765467039,
+      "_nanoseconds": 713000000
+    },
+    "timestamp": {
+      "_seconds": 1764182713,
+      "_nanoseconds": 939000000
+    },
+    "read": true,
+    "status": "read",
+    "title": "New Join Request",
+    "type": "join_request"
+  },
+  "TZJLkN5YJeUfQxdHLVAa": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "timestamp": {
+      "_seconds": 1773227544,
+      "_nanoseconds": 255000000
+    },
+    "status": "read",
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1774781049,
+      "_nanoseconds": 819000000
+    },
+    "title": "Field Registration Approved!"
+  },
+  "To9Q68xzsXXdiMIlDNE0": {
+    "type": "join_approved",
+    "title": "Join Request Approved",
+    "message": "Your join request for Maki Cane has been approved! You can now access the field.",
+    "createdAt": {
+      "_seconds": 1764563078,
+      "_nanoseconds": 227000000
+    },
+    "userId": "Y8aMAiuZcsXipLgYlQA4ZlBQ37E3",
+    "read": false,
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9"
+  },
+  "U5Ha9hsnrR2h1bsRb9zD": {
+    "timestamp": {
+      "_seconds": 1764046740,
+      "_nanoseconds": 196000000
+    },
+    "readAt": {
+      "_seconds": 1765467039,
+      "_nanoseconds": 920000000
+    },
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "status": "read",
+    "title": "Remarks from Ormoc Mill District SRA Officer"
+  },
+  "UDLdPpBKPHvUzxJ9Y6ET": {
+    "type": "task_assigned",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "timestamp": {
+      "_seconds": 1765716742,
+      "_nanoseconds": 54000000
+    },
+    "message": "New task: harvesting at Dyn",
+    "read": false,
+    "relatedEntityId": "3WfzKfe0fqToiO9htA0u"
+  },
+  "UHlbalaMpPACDhsjl65B": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Geraldyn C. Boholst completed task: harvesting",
+    "read": true,
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 938000000
+    },
+    "relatedEntityId": "JmX5AkVah7m9XApBU8Fx",
+    "timestamp": {
+      "_seconds": 1765714059,
+      "_nanoseconds": 261000000
+    }
+  },
+  "UPum0eGJnZDbS4cPklet": {
+    "message": "Your field \"Panoma 1\" is ready for harvest in 14 days (Jan 21, 2026)",
+    "read": false,
+    "relatedId": "6UrQVEXjAvMJhZMPfkfa",
+    "createdAt": {
+      "_seconds": 1767744011,
+      "_nanoseconds": 367000000
+    },
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "title": "🌾 Harvest Reminder",
+    "type": "harvest_reminder",
+    "relatedType": "field"
+  },
+  "Uh287KumFmnRMMyIzWRu": {
+    "read": true,
+    "readAt": {
+      "_seconds": 1765375712,
+      "_nanoseconds": 208000000
+    },
+    "type": "join_request",
+    "timestamp": {
+      "_seconds": 1765372994,
+      "_nanoseconds": 170000000
+    },
+    "message": "Reyna Marie Garciano boyboy has requested to join your field \"Cane B\" (Camp Downes) as a driver.",
+    "status": "unread",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "title": "New Join Request"
+  },
+  "VDPqVnySzSns9L7SWOVJ": {
+    "relatedEntityId": "ahYtxDFL11z2Gux3KRm2",
+    "readAt": {
+      "_seconds": 1765370316,
+      "_nanoseconds": 988000000
+    },
+    "type": "report_submitted",
+    "read": true,
+    "createdAt": {
+      "_seconds": 1765269020,
+      "_nanoseconds": 642000000
+    },
+    "timestamp": {
+      "_seconds": 1765269020,
+      "_nanoseconds": 642000000
+    },
+    "role": "sra",
+    "status": "unread",
+    "title": "New Report Submitted",
+    "message": "A new Crop Planting Records report has been submitted and requires review."
+  },
+  "VVvg4EefTvxwKmhrT5gd": {
+    "relatedEntityId": "12porKIhWROvsF3mNv1P",
+    "read": true,
+    "message": "Geraldyn C. Boholst completed task: harvesting",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765714449,
+      "_nanoseconds": 807000000
+    },
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 956000000
+    }
+  },
+  "VaI23kzTpcW5vhz94tiD": {
+    "read": false,
+    "title": "New Field Registration",
+    "status": "unread",
+    "type": "field_registration",
+    "relatedEntityId": "su9taFYjLnSvEtj31JIo",
+    "createdAt": {
+      "_seconds": 1773227744,
+      "_nanoseconds": 977000000
+    },
+    "timestamp": {
+      "_seconds": 1773227744,
+      "_nanoseconds": 977000000
+    },
+    "message": "A new field \"K 88-87\" has been registered in Bantigue and requires review.",
+    "role": "sra"
+  },
+  "WOfWJDbvdT45SS3cwoC6": {
+    "type": "work_log_synced",
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "message": "📋 New work log synced for Maki Cane: Harrowing (completed offline)",
+    "readAt": {
+      "_seconds": 1764873666,
+      "_nanoseconds": 607000000
+    },
+    "status": "read",
+    "read": true,
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "timestamp": {
+      "_seconds": 1764790939,
+      "_nanoseconds": 105000000
+    }
+  },
+  "WQExzU8z236vfmIew0Y9": {
+    "relatedEntityId": "3WfzKfe0fqToiO9htA0u",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Geraldyn C. Boholst completed task: harvesting",
+    "timestamp": {
+      "_seconds": 1765716747,
+      "_nanoseconds": 353000000
+    },
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 964000000
+    }
+  },
+  "Wcxw3u3qN7MZt62aunOo": {
+    "type": "work_logged",
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765270946,
+      "_nanoseconds": 591000000
+    },
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 132000000
+    },
+    "status": "read",
+    "message": "Mackie logged work: Planting (0 DAP)"
+  },
+  "WeFvWZBBthwAodRpLxvQ": {
+    "role": "sra",
+    "title": "New Field Registration",
+    "type": "field_registration",
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765269882,
+      "_nanoseconds": 145000000
+    },
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1765269882,
+      "_nanoseconds": 145000000
+    },
+    "readAt": {
+      "_seconds": 1765370316,
+      "_nanoseconds": 933000000
+    },
+    "message": "A new field \"Dyn\" has been registered in Matica-a and requires review."
+  },
+  "Wk9OpZ0lLXZl0Gbz6ARS": {
+    "createdAt": {
+      "_seconds": 1770163210,
+      "_nanoseconds": 190000000
+    },
+    "message": "Your field \"Kamarotaa\" is ready for harvest today (Feb 4, 2026). Please schedule harvesting immediately.",
+    "relatedId": "1fTX9coMNEL3FEkSpJ0k",
+    "read": false,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "🚜 Harvest Due Today!",
+    "type": "harvest_due",
+    "relatedType": "field"
+  },
+  "Wu2lwq6g52pgrud50O4o": {
+    "status": "unread",
+    "read": true,
+    "readAt": {
+      "_seconds": 1764486906,
+      "_nanoseconds": 491000000
+    },
+    "message": "A new field \"Katubhan Area 1\" has been registered in Matica-a and requires review.",
+    "timestamp": {
+      "_seconds": 1764176810,
+      "_nanoseconds": 523000000
+    },
+    "createdAt": {
+      "_seconds": 1764176810,
+      "_nanoseconds": 523000000
+    },
+    "role": "sra",
+    "relatedEntityId": "PD83iWqvG7WfSTGhseKj",
+    "type": "field_registration",
+    "title": "New Field Registration"
+  },
+  "XFUcUqlzaHxnKtU9KSxD": {
+    "type": "work_log_synced",
+    "readAt": {
+      "_seconds": 1764873666,
+      "_nanoseconds": 721000000
+    },
+    "timestamp": {
+      "_seconds": 1764790931,
+      "_nanoseconds": 629000000
+    },
+    "message": "📋 New work log synced for Maki Cane: Furrowing (completed offline)",
+    "status": "read",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "read": true
+  },
+  "XOSarQrquLBqwYuXIZCh": {
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 344000000
+    },
+    "timestamp": {
+      "_seconds": 1765271538,
+      "_nanoseconds": 676000000
+    },
+    "type": "task_completed",
+    "relatedEntityId": "2ZFXLe0X3oOKy2dNzS0p",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "message": "Almackie J. Bangalao completed task: Harvesting",
+    "status": "read"
+  },
+  "Y5v1T5ieKrgMpPpOOPIv": {
+    "title": "Field Registration Approved!",
+    "readAt": {
+      "_seconds": 1774781025,
+      "_nanoseconds": 301000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1773317542,
+      "_nanoseconds": 95000000
+    },
+    "status": "read",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "Y9chwM9mXnFvrz1xSeu2": {
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Field Registration Approved!",
+    "status": "read",
+    "readAt": {
+      "_seconds": 1765528993,
+      "_nanoseconds": 67000000
+    },
+    "timestamp": {
+      "_seconds": 1764219216,
+      "_nanoseconds": 25000000
+    }
+  },
+  "YOnsfwZVX0fdbX2gJ70R": {
+    "message": "New task: Planting (0 DAP) at Dyn",
+    "read": false,
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "timestamp": {
+      "_seconds": 1765270313,
+      "_nanoseconds": 336000000
+    },
+    "type": "task_assigned",
+    "relatedEntityId": "cZTGFCNJyUAeHcfmroXp"
+  },
+  "ZEn9cUaWGO5ws5ExZtix": {
+    "timestamp": {
+      "_seconds": 1765268374,
+      "_nanoseconds": 92000000
+    },
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "status": "unread"
+  },
+  "ZF7nGL4RZhUzMfqPrQR3": {
+    "message": "Geraldyn C. Boholst completed task: harvesting",
+    "relatedEntityId": "enrAlezgQwIHu7JO0sH7",
+    "type": "task_completed",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765717338,
+      "_nanoseconds": 714000000
+    },
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 972000000
+    }
+  },
+  "ZIrgEPIeuL9PEWjE9Jhm": {
+    "read": true,
+    "message": "Your join request for <strong>Mogu Mogu Farm</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "userId": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "timestamp": {
+      "_seconds": 1764573939,
+      "_nanoseconds": 621000000
+    },
+    "status": "read",
+    "title": "Field Join Approved!",
+    "readAt": {
+      "_seconds": 1764577706,
+      "_nanoseconds": 213000000
+    }
+  },
+  "Zdf7zdIBsY7gQR1Uxum1": {
+    "message": "maria boyboy has requested to join your field \"Cane A\" (Catmon) as a worker.",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": true,
+    "status": "read",
+    "title": "New Join Request",
+    "type": "join_request",
+    "readAt": {
+      "_seconds": 1764425724,
+      "_nanoseconds": 941000000
+    },
+    "relatedEntityId": "OoVjAFZD8UyCqF2pxIPQ",
+    "timestamp": {
+      "_seconds": 1764174808,
+      "_nanoseconds": 832000000
+    }
+  },
+  "ZxvatJ0c5GzUF4RJ4qpZ": {
+    "timestamp": {
+      "_seconds": 1765268488,
+      "_nanoseconds": 328000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 777000000
+    },
+    "read": true,
+    "status": "read",
+    "title": "Field Registration Approved!"
+  },
+  "aEFMvtGgQQ7ShLvDBaNo": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "read",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1773317520,
+      "_nanoseconds": 16000000
+    },
+    "readAt": {
+      "_seconds": 1774781024,
+      "_nanoseconds": 511000000
+    },
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "aaOg6pIii1RoigZeyHqA": {
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "read": true,
+    "readAt": {
+      "_seconds": 1765958878,
+      "_nanoseconds": 313000000
+    },
+    "timestamp": {
+      "_seconds": 1765958004,
+      "_nanoseconds": 765000000
+    },
+    "title": "Field Registration Approved!",
+    "status": "unread",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "abKg7eCf64JYiLAjmNT9": {
+    "relatedEntityId": "1IKfN4ZGtoyW0AUCwcFQ",
+    "message": "Geraldyn C. Boholst completed task: Basal Fertilizer (0–30 DAP)",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764185703,
+      "_nanoseconds": 303000000
+    },
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 986000000
+    }
+  },
+  "b5qo7hxzeY9UZvy6zs49": {
+    "timestamp": {
+      "_seconds": 1764182906,
+      "_nanoseconds": 0
+    },
+    "status": "unread",
+    "title": "Field Join Approved!",
+    "userId": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "message": "Your join request for <strong>Field 3</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>."
+  },
+  "b77de764-838c-4d96-8548-97583e8e27bb": {
+    "title": "Drivers Badge Approved!",
+    "timestamp": {
+      "_seconds": 1764085487,
+      "_nanoseconds": 685000000
+    },
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "message": "Your drivers badge application has been reviewed by the System Admin. You can now check your dashboard <a href=\"../../frontend/Driver/Driver_Dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "status": "unread"
+  },
+  "bLmFwjY4JN5pH09WhBdp": {
+    "message": "Reyna Marie Garciano Boyboy has requested to join your field \"Maki Cane\" (Punta) as a driver.",
+    "timestamp": {
+      "_seconds": 1764562636,
+      "_nanoseconds": 6000000
+    },
+    "readAt": {
+      "_seconds": 1764563035,
+      "_nanoseconds": 818000000
+    },
+    "type": "join_request",
+    "read": true,
+    "title": "New Join Request",
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "status": "read"
+  },
+  "bcA8mHEduOfeJFNFJkji": {
+    "message": "New task: Transport Fertilizer to Field at Field8",
+    "timestamp": {
+      "_seconds": 1764066229,
+      "_nanoseconds": 121000000
+    },
+    "read": false,
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "type": "task_assigned",
+    "relatedEntityId": "4G18KsiDlKC6kq494UIn"
+  },
+  "busjsUsEphPZgmm3We5q": {
+    "message": "Your join request for Field8 has been approved! You can now access the field.",
+    "read": false,
+    "relatedEntityId": "5m5dry0UlPTPB9AtjIdk",
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "title": "Join Request Approved",
+    "type": "join_approved",
+    "createdAt": {
+      "_seconds": 1764066108,
+      "_nanoseconds": 293000000
+    }
+  },
+  "cCOPQGH3JPDbnjpxvVjD": {
+    "type": "work_log_synced",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "status": "read",
+    "read": true,
+    "message": "📋 New work log synced for Maki Cane: Furrowing (completed offline)",
+    "timestamp": {
+      "_seconds": 1764790936,
+      "_nanoseconds": 871000000
+    },
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "readAt": {
+      "_seconds": 1764873666,
+      "_nanoseconds": 652000000
+    }
+  },
+  "cI2ivxRBt40SXCK8VLIu": {
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1774780697,
+      "_nanoseconds": 561000000
+    },
+    "status": "unread",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1773319069,
+      "_nanoseconds": 682000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "title": "Field Registration Approved!"
+  },
+  "clm2rANyHzOKbw8ZsMdr": {
+    "read": true,
+    "type": "field_registration",
+    "readAt": {
+      "_seconds": 1764863517,
+      "_nanoseconds": 169000000
+    },
+    "timestamp": {
+      "_seconds": 1764774125,
+      "_nanoseconds": 375000000
+    },
+    "message": "A new field \"Caneee\" has been registered in Catmon and requires review.",
+    "status": "unread",
+    "createdAt": {
+      "_seconds": 1764774125,
+      "_nanoseconds": 375000000
+    },
+    "relatedEntityId": "eYx28oYRQOKzIVkAPMZR",
+    "title": "New Field Registration",
+    "role": "sra"
+  },
+  "cuCVDhtIhEWfSZ4sExiq": {
+    "title": "Field Report Received",
+    "status": "unread",
+    "reportId": "arORGOGrOVqmhugPnjpX",
+    "fieldName": "Katubhan",
+    "readAt": {
+      "_seconds": 1765961170,
+      "_nanoseconds": 591000000
+    },
+    "fieldId": "WzKQoyKwEr9BN7byw04m",
+    "handlerName": "dyn dyn",
+    "relatedEntityId": "arORGOGrOVqmhugPnjpX",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Handler has sent a field report for \"Katubhan\".",
+    "timestamp": {
+      "_seconds": 1765941841,
+      "_nanoseconds": 545000000
+    },
+    "role": "sra",
+    "createdAt": {
+      "_seconds": 1765941841,
+      "_nanoseconds": 545000000
+    },
+    "read": true,
+    "type": "report_sent"
+  },
+  "dJQeXgw046NxlJwIG15y": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764186040,
+      "_nanoseconds": 832000000
+    },
+    "message": "Geraldyn logged work: Basal Fertilizer (0–30 DAP)",
+    "read": true,
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 195000000
+    },
+    "type": "work_logged"
+  },
+  "da8cd2d4-2a03-4d35-8ff5-6d002707ae03": {
+    "timestamp": {
+      "_seconds": 1764180655,
+      "_nanoseconds": 652000000
+    },
+    "readAt": {
+      "_seconds": 1764181909,
+      "_nanoseconds": 684000000
+    },
+    "userId": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "title": "Drivers Badge Approved!",
+    "status": "read",
+    "read": true,
+    "message": "Your drivers badge application has been reviewed by the System Admin. You can now check your dashboard <a href=\"../../frontend/Driver/Driver_Dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "dahKExEuGBohaqlvKAZ9": {
+    "status": "read",
+    "read": true,
+    "message": "You have a new rental request for 12/2/2025",
+    "readAt": {
+      "_seconds": 1764863858,
+      "_nanoseconds": 470000000
+    },
+    "userId": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "timestamp": {
+      "_seconds": 1764569497,
+      "_nanoseconds": 528000000
+    },
+    "type": "rental_request",
+    "relatedEntityId": "IIBXAnPnOoCvy7x3pnNS"
+  },
+  "dddvAk2g84UdOBugnsq4": {
+    "title": "Field Join Approved!",
+    "message": "Your join request for <strong>Katubhann</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "timestamp": {
+      "_seconds": 1764093945,
+      "_nanoseconds": 875000000
+    },
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "status": "unread"
+  },
+  "dmHmmdQucD276cRI5lzB": {
+    "message": "Your join request for Katubhann has been approved! You can now access the field.",
+    "title": "Join Request Approved",
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "read": false,
+    "createdAt": {
+      "_seconds": 1764094454,
+      "_nanoseconds": 344000000
+    },
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "type": "join_approved"
+  },
+  "eAn0sBTz3zlIorAdUjpd": {
+    "userId": "pqUoCWgSbwc8gNBazAG1gBQbJ3X2",
+    "timestamp": {
+      "_seconds": 1764188448,
+      "_nanoseconds": 941000000
+    },
+    "relatedEntityId": "IzBeOWTGGahjSRQtsWWC",
+    "read": false,
+    "message": "You have a new rental request for 11/27/2025",
+    "type": "rental_request"
+  },
+  "eUwVWPTWw5NKGxzbLi0Z": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "title": "Field Registration Approved!",
+    "status": "read",
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1774781026,
+      "_nanoseconds": 254000000
+    },
+    "timestamp": {
+      "_seconds": 1773318914,
+      "_nanoseconds": 430000000
+    }
+  },
+  "ecM8OBXh2KAQX6iSyUyP": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1764219118,
+      "_nanoseconds": 583000000
+    },
+    "status": "read",
+    "read": true,
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "readAt": {
+      "_seconds": 1765529379,
+      "_nanoseconds": 304000000
+    },
+    "title": "Remarks from Ormoc Mill District SRA Officer"
+  },
+  "ekZ01F3rjfBzTeF4mrXn": {
+    "status": "unread",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "readAt": {
+      "_seconds": 1773141065,
+      "_nanoseconds": 170000000
+    },
+    "timestamp": {
+      "_seconds": 1773140928,
+      "_nanoseconds": 216000000
+    },
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>."
+  },
+  "f0ryhZh5cFcEogCIZovH": {
+    "readAt": {
+      "_seconds": 1765528677,
+      "_nanoseconds": 668000000
+    },
+    "timestamp": {
+      "_seconds": 1764582322,
+      "_nanoseconds": 78000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "type": "driver_status_update",
+    "relatedEntityId": "13qVBJQRipWL7Chz7Dhm",
+    "message": "Andrew Bangalo updated status: En Route to Mill - Transport Cane from Field to Mill",
+    "status": "read"
+  },
+  "f4GFtoWKUs4ZdQ81gWmt": {
+    "createdAt": {
+      "_seconds": 1764047858,
+      "_nanoseconds": 35000000
+    },
+    "relatedEntity": "field",
+    "readAt": {
+      "_seconds": 1765355750,
+      "_nanoseconds": 254000000
+    },
+    "message": "A user has updated their field <b>kahago</b> and resubmitted it for SRA review.",
+    "userId": null,
+    "title": "Field Updated for Review",
+    "role": "sra",
+    "type": "field_updated",
+    "read": true,
+    "relatedEntityName": "kahago",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1764047858,
+      "_nanoseconds": 35000000
+    }
+  },
+  "fJNttxWN3ObxYYNutfAz": {
+    "message": "A new field \"Panoma 1\" has been registered in Kadaohan and requires review.",
+    "role": "sra",
+    "type": "field_registration",
+    "status": "unread",
+    "title": "New Field Registration",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765982922,
+      "_nanoseconds": 204000000
+    },
+    "createdAt": {
+      "_seconds": 1765982922,
+      "_nanoseconds": 204000000
+    },
+    "relatedEntityId": "6UrQVEXjAvMJhZMPfkfa",
+    "readAt": {
+      "_seconds": 1765983247,
+      "_nanoseconds": 222000000
+    }
+  },
+  "ffoNN7aFmkQueKshfVLW": {
+    "message": "Your join request for Katubhann has been approved! You can now access the field.",
+    "read": false,
+    "createdAt": {
+      "_seconds": 1764092254,
+      "_nanoseconds": 457000000
+    },
+    "userId": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "title": "Join Request Approved",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "type": "join_approved"
+  },
+  "fzkJR6nxnxlu3aje7FsP": {
+    "type": "work_logged",
+    "readAt": {
+      "_seconds": 1764425724,
+      "_nanoseconds": 899000000
+    },
+    "timestamp": {
+      "_seconds": 1764174962,
+      "_nanoseconds": 65000000
+    },
+    "message": "ffff logged work: Plowing",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": true,
+    "relatedEntityId": "OoVjAFZD8UyCqF2pxIPQ"
+  },
+  "fzpfZTudj66Dx41r5vTV": {
+    "timestamp": {
+      "_seconds": 1765378640,
+      "_nanoseconds": 706000000
+    },
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "type": "work_logged",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": false,
+    "message": "gggg logged work: Fuel Refill"
+  },
+  "gJKYZIEXiQGvZFqBBsIn": {
+    "readAt": {
+      "_seconds": 1764569525,
+      "_nanoseconds": 757000000
+    },
+    "type": "report_requested",
+    "message": "SRA requested a Crop Planting Records report",
+    "read": true,
+    "relatedEntityId": "crop_planting_records",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "timestamp": {
+      "_seconds": 1764565210,
+      "_nanoseconds": 362000000
+    }
+  },
+  "gjzB9z1qe3vOjhoK9s2w": {
+    "timestamp": {
+      "_seconds": 1766005358,
+      "_nanoseconds": 212000000
+    },
+    "readAt": {
+      "_seconds": 1766850768,
+      "_nanoseconds": 980000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "unread",
+    "title": "Field Registration Approved!"
+  },
+  "h3gtSY9HsNKMSoceai4s": {
+    "type": "task_assigned",
+    "relatedEntityId": "2ZFXLe0X3oOKy2dNzS0p",
+    "timestamp": {
+      "_seconds": 1765271483,
+      "_nanoseconds": 871000000
+    },
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "message": "New task: Harvesting at Dyn",
+    "read": false
+  },
+  "hCWUO9MSONmoEaB0yQGw": {
+    "message": "New task: harvesting at Dyn",
+    "readAt": {
+      "_seconds": 1765713681,
+      "_nanoseconds": 884000000
+    },
+    "type": "task_assigned",
+    "timestamp": {
+      "_seconds": 1765713449,
+      "_nanoseconds": 303000000
+    },
+    "relatedEntityId": "NshoVpguL5ZmTmJYM0JF",
+    "read": true,
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2"
+  },
+  "hEdKvJVNoqD6go8mdnbn": {
+    "timestamp": {
+      "_seconds": 1765377735,
+      "_nanoseconds": 131000000
+    },
+    "readAt": {
+      "_seconds": 1765632335,
+      "_nanoseconds": 279000000
+    },
+    "userId": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "read": true,
+    "relatedEntityId": "Q1Oms6hLpR9pjIaS4zrF",
+    "type": "task_assigned",
+    "message": "New task: Planting (0 DAP) at Cane B"
+  },
+  "hEmVP5VGOq1DEhxCzcQw": {
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "read": false,
+    "message": "reyna marie boyboy logged work: Harrowing",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "timestamp": {
+      "_seconds": 1764516326,
+      "_nanoseconds": 23000000
+    },
+    "type": "work_logged"
+  },
+  "hI4WPNoK0eo9se4aQABq": {
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 833000000
+    },
+    "timestamp": {
+      "_seconds": 1764047652,
+      "_nanoseconds": 500000000
+    },
+    "message": "Change the document. <a href=\"../../frontend/Handler/field_form.html\" target=\"_blank\" class=\"notif-link\">Open Form</a>",
+    "read": true,
+    "title": "Remarks from Ormoc Mill District SRA Officer",
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "hNtFB3qMrFA7buO6pPcD": {
+    "role": "sra",
+    "type": "field_updated",
+    "title": "Field Updated for Review",
+    "timestamp": {
+      "_seconds": 1764047562,
+      "_nanoseconds": 49000000
+    },
+    "createdAt": {
+      "_seconds": 1764047562,
+      "_nanoseconds": 49000000
+    },
+    "relatedEntityName": "kahago",
+    "relatedEntity": "field",
+    "userId": null,
+    "status": "unread",
+    "read": true,
+    "message": "A user has updated their field <b>kahago</b> and resubmitted it for SRA review.",
+    "readAt": {
+      "_seconds": 1764528912,
+      "_nanoseconds": 107000000
+    }
+  },
+  "hcPo4hZ3HHcoVKDsR80h": {
+    "read": true,
+    "message": "A new field \"Rota\" has been registered in Donghol and requires review.",
+    "timestamp": {
+      "_seconds": 1765831732,
+      "_nanoseconds": 645000000
+    },
+    "type": "field_registration",
+    "readAt": {
+      "_seconds": 1765884292,
+      "_nanoseconds": 16000000
+    },
+    "relatedEntityId": "cxcQqXzxkkvkIsIL8FBV",
+    "createdAt": {
+      "_seconds": 1765831732,
+      "_nanoseconds": 645000000
+    },
+    "status": "unread",
+    "title": "New Field Registration",
+    "role": "sra"
+  },
+  "hfXoJEPSkgZnVIokkfUU": {
+    "relatedEntityId": "2HybS8XdIzIy5wgbIehh",
+    "type": "field_registration",
+    "createdAt": {
+      "_seconds": 1773318773,
+      "_nanoseconds": 453000000
+    },
+    "read": false,
+    "timestamp": {
+      "_seconds": 1773318773,
+      "_nanoseconds": 453000000
+    },
+    "role": "sra",
+    "status": "unread",
+    "title": "New Field Registration",
+    "message": "A new field \"PSR 97-45\" has been registered in Sabang Bao and requires review."
+  },
+  "iovGV53W4HYi9N9w146S": {
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1764774386,
+      "_nanoseconds": 180000000
+    },
+    "status": "read",
+    "title": "Field Registration Approved!",
+    "readAt": {
+      "_seconds": 1765529003,
+      "_nanoseconds": 473000000
+    }
+  },
+  "iow27EsD5tbNMrZpI2K2": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "title": "Field Registration Approved!",
+    "status": "unread",
+    "read": true,
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "readAt": {
+      "_seconds": 1774780697,
+      "_nanoseconds": 637000000
+    },
+    "timestamp": {
+      "_seconds": 1773319050,
+      "_nanoseconds": 466000000
+    }
+  },
+  "jGjMVgiR6ZWAmUAzDSMI": {
+    "message": "Your join request for <strong>Dyn</strong> has been approved! You can now access the field from your <a href=\"../../frontend/Worker/Workers.html\" target=\"_blank\" class=\"notif-link\">Worker Dashboard</a>.",
+    "readAt": {
+      "_seconds": 1765713694,
+      "_nanoseconds": 459000000
+    },
+    "read": true,
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1765270222,
+      "_nanoseconds": 507000000
+    },
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "title": "Field Join Approved!"
+  },
+  "jLQ7jm4seJiP6PV7BPCy": {
+    "message": "Andrew Bangalo approved your rental request",
+    "timestamp": {
+      "_seconds": 1764569637,
+      "_nanoseconds": 923000000
+    },
+    "type": "rental_approved",
+    "readAt": {
+      "_seconds": 1764569752,
+      "_nanoseconds": 422000000
+    },
+    "relatedEntityId": "IIBXAnPnOoCvy7x3pnNS",
+    "read": true,
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3"
+  },
+  "jV6YOwNbUq4IUs2vP95W": {
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1773318459,
+      "_nanoseconds": 958000000
+    },
+    "type": "field_registration",
+    "createdAt": {
+      "_seconds": 1773318459,
+      "_nanoseconds": 958000000
+    },
+    "read": false,
+    "message": "A new field \"PSR 2000-343\" has been registered in Concepcion and requires review.",
+    "status": "unread",
+    "title": "New Field Registration",
+    "relatedEntityId": "Dbou1pv2jP3qTQNkbcIm"
+  },
+  "juTyWniQ5Huk1B5A7WIw": {
+    "timestamp": {
+      "_seconds": 1764073233,
+      "_nanoseconds": 921000000
+    },
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "5m5dry0UlPTPB9AtjIdk",
+    "message": "Woongki logged work: Others",
+    "read": true,
+    "type": "work_logged",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 255000000
+    }
+  },
+  "kAKacdOqWx5v9ws3P7Gt": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "read": true,
+    "message": "Woongki logged work: Others",
+    "type": "work_logged",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 469000000
+    },
+    "timestamp": {
+      "_seconds": 1764076264,
+      "_nanoseconds": 472000000
+    }
+  },
+  "kn4Eequz9zKPGIPjbWxI": {
+    "relatedId": "1fTX9coMNEL3FEkSpJ0k",
+    "createdAt": {
+      "_seconds": 1770249611,
+      "_nanoseconds": 946000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Your field \"Kamarotaa\" is 1 days overdue for harvest. Immediate action required to prevent yield loss.",
+    "read": false,
+    "relatedType": "field",
+    "title": "⚠️ Harvest Overdue!",
+    "type": "harvest_overdue"
+  },
+  "lAjNRvnKsSXj9xJZ34qn": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765270619,
+      "_nanoseconds": 382000000
+    },
+    "type": "work_logged",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 681000000
+    },
+    "message": "Mackie logged work: Planting (0 DAP)"
+  },
+  "lbCVCJYeBZdMUwLD7zVp": {
+    "message": "Deadline updated: Basal Fertilizer (0–30 DAP) at Field 3. New: 12/2/2025",
+    "timestamp": {
+      "_seconds": 1764745993,
+      "_nanoseconds": 216000000
+    },
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "read": false,
+    "relatedEntityId": "1IKfN4ZGtoyW0AUCwcFQ",
+    "type": "task_updated"
+  },
+  "leaG0Bw050FReHUMd1X0": {
+    "timestamp": {
+      "_seconds": 1765347798,
+      "_nanoseconds": 476000000
+    },
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Almackie J. Bangalao completed task: harvesting",
+    "read": true,
+    "relatedEntityId": "NdJ4GOLG2essgvfsoQJ6",
+    "readAt": {
+      "_seconds": 1765529898,
+      "_nanoseconds": 526000000
+    },
+    "type": "task_completed"
+  },
+  "lppDYJWQPBLY9UQ3IeP6": {
+    "readAt": {
+      "_seconds": 1765291413,
+      "_nanoseconds": 196000000
+    },
+    "timestamp": {
+      "_seconds": 1765267039,
+      "_nanoseconds": 138000000
+    },
+    "createdAt": {
+      "_seconds": 1765267039,
+      "_nanoseconds": 138000000
+    },
+    "status": "unread",
+    "title": "Field Updated for Review",
+    "read": true,
+    "type": "field_updated",
+    "relatedEntityName": "Caneee",
+    "role": "sra",
+    "userId": null,
+    "message": "A user has updated their field <b>Caneee</b> and resubmitted it for SRA review.",
+    "relatedEntity": "field"
+  },
+  "m6GPxLdXe7NMUaiHFHG7": {
+    "timestamp": {
+      "_seconds": 1764093931,
+      "_nanoseconds": 698000000
+    },
+    "title": "New Join Request",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "type": "join_request",
+    "message": "Park park has requested to join your field \"Katubhann\" (Can-adieng) as a driver.",
+    "readAt": {
+      "_seconds": 1765467043,
+      "_nanoseconds": 116000000
+    },
+    "status": "read",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "mdiJQsaOv0cry7iZ6RJx": {
+    "read": true,
+    "timestamp": {
+      "_seconds": 1764094437,
+      "_nanoseconds": 585000000
+    },
+    "type": "join_request",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 603000000
+    },
+    "message": "Park park has requested to join your field \"Katubhann\" (Can-adieng) as a driver.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "title": "New Join Request"
+  },
+  "nVj7KeDHfGZuCOab4ikc": {
+    "read": false,
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "type": "work_logged",
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "timestamp": {
+      "_seconds": 1764535594,
+      "_nanoseconds": 712000000
+    },
+    "message": "maria boyboy logged work: Plowing"
+  },
+  "njfELKsudpjeudaqIKQc": {
+    "type": "task_completed",
+    "readAt": {
+      "_seconds": 1765467040,
+      "_nanoseconds": 791000000
+    },
+    "timestamp": {
+      "_seconds": 1765270403,
+      "_nanoseconds": 42000000
+    },
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "relatedEntityId": "cZTGFCNJyUAeHcfmroXp",
+    "message": "Almackie J. Bangalao completed task: Planting (0 DAP)",
+    "read": true
+  },
+  "nnsq2yuGD7x87iHOyrHs": {
+    "type": "join_request",
+    "title": "New Join Request",
+    "status": "read",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765270190,
+      "_nanoseconds": 181000000
+    },
+    "readAt": {
+      "_seconds": 1765528633,
+      "_nanoseconds": 249000000
+    },
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Almackie J. Bangalao has requested to join your field \"Dyn\" (Matica-a) as a worker."
+  },
+  "o4pvvpf852F3D69KOSNI": {
+    "title": "Field Updated for Review",
+    "type": "field_updated",
+    "role": "sra",
+    "relatedEntityName": "Katubhan Area 1",
+    "relatedEntity": "field",
+    "createdAt": {
+      "_seconds": 1765268436,
+      "_nanoseconds": 738000000
+    },
+    "timestamp": {
+      "_seconds": 1765268436,
+      "_nanoseconds": 738000000
+    },
+    "message": "A user has updated their field <b>Katubhan Area 1</b> and resubmitted it for SRA review.",
+    "readAt": {
+      "_seconds": 1765369803,
+      "_nanoseconds": 282000000
+    },
+    "read": true,
+    "status": "unread",
+    "userId": null
+  },
+  "oOLEC5sooAv0GvzkKnLQ": {
+    "timestamp": {
+      "_seconds": 1764533122,
+      "_nanoseconds": 382000000
+    },
+    "type": "work_logged",
+    "message": "maria boyboy logged work: Harrowing",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "read": false
+  },
+  "p5eIpLsh5FsTYLtLDau5": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "type": "task_completed",
+    "relatedEntityId": "hQWEsdA7Awnhx8pmlqmO",
+    "readAt": {
+      "_seconds": 1765791162,
+      "_nanoseconds": 990000000
+    },
+    "timestamp": {
+      "_seconds": 1765720064,
+      "_nanoseconds": 64000000
+    },
+    "message": "Geraldyn C. Boholst completed task: Basal Fertilizer (0–30 DAP)"
+  },
+  "p6xsAn9TEcHX3C8eo56t": {
+    "type": "work_log_synced",
+    "readAt": {
+      "_seconds": 1764873666,
+      "_nanoseconds": 677000000
+    },
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "message": "📋 New work log synced for Maki Cane: Plowing (completed offline)",
+    "read": true,
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "timestamp": {
+      "_seconds": 1764790934,
+      "_nanoseconds": 548000000
+    },
+    "status": "read"
+  },
+  "p74YMs4O6YDw7tsbkedh": {
+    "type": "task_completed",
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Almackie J. Bangalao completed task: Harvesting",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765271754,
+      "_nanoseconds": 379000000
+    },
+    "relatedEntityId": "Ofwr1KiOYcJiAtpUJWEA",
+    "readAt": {
+      "_seconds": 1765529402,
+      "_nanoseconds": 102000000
+    }
+  },
+  "pUnnqRH21ptCCSunKagn": {
+    "read": true,
+    "readAt": {
+      "_seconds": 1765936045,
+      "_nanoseconds": 762000000
+    },
+    "message": "Weather conditions are safe for field work today. Conditions are acceptable for work.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765916027,
+      "_nanoseconds": 928000000
+    },
+    "type": "weather_advisory",
+    "title": "Weather Forecast / Work Advisory",
+    "isSafe": true,
+    "description": "Weather conditions are safe for field work today. Conditions are acceptable for work."
+  },
+  "pgLjGKf9xeKSEx1KzbXG": {
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "message": "m logged work: Main Fertilization (45–60 DAP)",
+    "timestamp": {
+      "_seconds": 1764127982,
+      "_nanoseconds": 115000000
+    },
+    "type": "work_logged",
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 426000000
+    }
+  },
+  "pq9QIGo9fVeHu9sTdXfP": {
+    "timestamp": {
+      "_seconds": 1764219392,
+      "_nanoseconds": 551000000
+    },
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 634000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "relatedEntityId": "crop_planting_records",
+    "type": "report_requested",
+    "message": "SRA requested a Crop Planting Records report: Please send ASAP",
+    "status": "read"
+  },
+  "pyqkLmhkD70YqjlUoZ8F": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Almackie J. Bangalao has requested to join your field \"Mogu Mogu Farm\" (Catmon) as a worker.",
+    "readAt": {
+      "_seconds": 1765467041,
+      "_nanoseconds": 846000000
+    },
+    "timestamp": {
+      "_seconds": 1764933246,
+      "_nanoseconds": 254000000
+    },
+    "status": "read",
+    "read": true,
+    "relatedEntityId": "6CZeTm1d92IC6k1VhdWN",
+    "type": "join_request",
+    "title": "New Join Request"
+  },
+  "q03j4ZLcSp8Q4h7EZXrR": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "message": "j logged work: Transport Equipment to Field",
+    "read": true,
+    "type": "work_logged",
+    "relatedEntityId": "5m5dry0UlPTPB9AtjIdk",
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 51000000
+    },
+    "timestamp": {
+      "_seconds": 1764125579,
+      "_nanoseconds": 220000000
+    }
+  },
+  "qhnFkO1JmrLzmBeUYE9C": {
+    "read": false,
+    "message": "New task: harvesting at Dyn",
+    "timestamp": {
+      "_seconds": 1765714503,
+      "_nanoseconds": 689000000
+    },
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "type": "task_assigned",
+    "relatedEntityId": "yzLQgsNYIaBKDbnjtKY1"
+  },
+  "r90SofKkN8TS49gosMLq": {
+    "message": "New task: harvesting at Dyn",
+    "type": "task_assigned",
+    "timestamp": {
+      "_seconds": 1765347283,
+      "_nanoseconds": 152000000
+    },
+    "relatedEntityId": "NdJ4GOLG2essgvfsoQJ6",
+    "read": false,
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2"
+  },
+  "rUluljk46SgLSY0vaVSa": {
+    "message": "Woongki logged work: Transport Fertilizer to Field",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764066422,
+      "_nanoseconds": 114000000
+    },
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 266000000
+    },
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "type": "work_logged",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD"
+  },
+  "rbjwHkR90wQfh0k8BNeO": {
+    "createdAt": {
+      "_seconds": 1764527918,
+      "_nanoseconds": 843000000
+    },
+    "type": "join_approved",
+    "title": "Join Request Approved",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "message": "Your join request for Katubhann has been approved! You can now access the field.",
+    "read": false
+  },
+  "sIcsbGG7xxm9dyu1dDVE": {
+    "timestamp": {
+      "_seconds": 1766005019,
+      "_nanoseconds": 226000000
+    },
+    "relatedEntityId": "field_report",
+    "readAt": {
+      "_seconds": 1775626903,
+      "_nanoseconds": 418000000
+    },
+    "type": "report_requested",
+    "read": true,
+    "message": "SRA requested a Field Report for \"Panoma 1\"",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1"
+  },
+  "tIP2hTYVZbDP2qOzU5VP": {
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 480000000
+    },
+    "message": "v logged work: Transport Fertilizer to Field",
+    "read": true,
+    "status": "read",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1764126000,
+      "_nanoseconds": 229000000
+    },
+    "type": "work_logged",
+    "relatedEntityId": "5m5dry0UlPTPB9AtjIdk"
+  },
+  "tOx4vUTXxQ8fHVbBkVL2": {
+    "status": "read",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "relatedEntityId": "pNGGviX9ftbNxEsfCCn9",
+    "read": true,
+    "type": "work_log_synced",
+    "readAt": {
+      "_seconds": 1764873666,
+      "_nanoseconds": 585000000
+    },
+    "timestamp": {
+      "_seconds": 1764790941,
+      "_nanoseconds": 140000000
+    },
+    "message": "📋 New work log synced for Maki Cane: Harrowing (completed offline)"
+  },
+  "tQ70jaLMqRlPMGgICqA4": {
+    "message": "New task: Others at Field 3",
+    "timestamp": {
+      "_seconds": 1764189882,
+      "_nanoseconds": 644000000
+    },
+    "read": false,
+    "userId": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "type": "task_assigned",
+    "relatedEntityId": "viYCktFm8j6ritvr9XWf"
+  },
+  "tuNeh33ResVCEp0Qytrh": {
+    "message": "A new field \"PS 4 / VMC 95-152\" has been registered in Milagro and requires review.",
+    "createdAt": {
+      "_seconds": 1773318075,
+      "_nanoseconds": 294000000
+    },
+    "read": false,
+    "relatedEntityId": "0xGh8E1ghYXbZOtrsFgU",
+    "status": "unread",
+    "timestamp": {
+      "_seconds": 1773318075,
+      "_nanoseconds": 294000000
+    },
+    "role": "sra",
+    "title": "New Field Registration",
+    "type": "field_registration"
+  },
+  "u6L6BxjF5fIGBZKxKGAV": {
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "status": "read",
+    "title": "Field Registration Approved!",
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1765851883,
+      "_nanoseconds": 797000000
+    },
+    "readAt": {
+      "_seconds": 1765855806,
+      "_nanoseconds": 417000000
+    }
+  },
+  "uuSJ9qMnR8Ii0WecyQ7x": {
+    "title": "Join Request Approved",
+    "relatedEntityId": "bVEKomORZOLt4sT3ibiz",
+    "type": "join_approved",
+    "message": "Your join request for Dyn has been approved! You can now access the field.",
+    "read": false,
+    "createdAt": {
+      "_seconds": 1765713953,
+      "_nanoseconds": 421000000
+    },
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623"
+  },
+  "v2wBm3HL1txQtmRtdFN1": {
+    "timestamp": {
+      "_seconds": 1765715226,
+      "_nanoseconds": 385000000
+    },
+    "type": "task_assigned",
+    "message": "New task: harvesting at Dyn",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "relatedEntityId": "CDvNjj7WTOQGFdNVpynF",
+    "read": false
+  },
+  "v3U38RahOYol10vi7cdB": {
+    "message": "New task: Vehicle Maintenance/Inspection at Field8",
+    "type": "task_assigned",
+    "relatedEntityId": "H6EtJvPY53FznV0nyyzv",
+    "read": false,
+    "userId": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "timestamp": {
+      "_seconds": 1764066253,
+      "_nanoseconds": 159000000
+    }
+  },
+  "v5bePp3paCKwvY7UPjzf": {
+    "readAt": {
+      "_seconds": 1765467042,
+      "_nanoseconds": 697000000
+    },
+    "message": "Geraldyn C. Boholst has requested to join your field \"Katubhann\" (Can-adieng) as a worker.",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "New Join Request",
+    "type": "join_request",
+    "read": true,
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "status": "read",
+    "timestamp": {
+      "_seconds": 1764191489,
+      "_nanoseconds": 290000000
+    }
+  },
+  "vLXOIwdWFyeWzc2myyMQ": {
+    "timestamp": {
+      "_seconds": 1764565163,
+      "_nanoseconds": 514000000
+    },
+    "relatedEntityId": "barangay_certifications",
+    "readAt": {
+      "_seconds": 1765528682,
+      "_nanoseconds": 115000000
+    },
+    "type": "report_requested",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "read",
+    "message": "SRA requested a Barangay Certifications report: hhhh",
+    "read": true
+  },
+  "vbDgJPDNJHcqBIE5leNC": {
+    "timestamp": {
+      "_seconds": 1764092351,
+      "_nanoseconds": 694000000
+    },
+    "title": "New Join Request",
+    "type": "join_request",
+    "relatedEntityId": "RwkjiCKnmPS5pg3eEre6",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "readAt": {
+      "_seconds": 1765467043,
+      "_nanoseconds": 131000000
+    },
+    "message": "Park park has requested to join your field \"Katubhann\" (Can-adieng) as a driver.",
+    "read": true,
+    "status": "read"
+  },
+  "vmeMxji3j8KZI0lXpDJG": {
+    "relatedEntityId": "vY7yMh0VSvddrcFC48gj",
+    "read": false,
+    "userId": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "message": "New task: First Fertilizer (0–30 DAP) at Dyn",
+    "timestamp": {
+      "_seconds": 1765348039,
+      "_nanoseconds": 550000000
+    },
+    "type": "task_assigned"
+  },
+  "vzV4ZEJlEzM3imSldMD2": {
+    "createdAt": {
+      "_seconds": 1765902503,
+      "_nanoseconds": 649000000
+    },
+    "read": true,
+    "type": "report_sent",
+    "role": "sra",
+    "timestamp": {
+      "_seconds": 1765902503,
+      "_nanoseconds": 649000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "message": "Handler has sent a field report for \"kahago\".",
+    "relatedEntityId": "MxvAMC3Dd8QOji8SU8MG",
+    "readAt": {
+      "_seconds": 1765906122,
+      "_nanoseconds": 662000000
+    },
+    "fieldName": "kahago",
+    "handlerName": "dyn dyn",
+    "fieldId": "2G0gZTe1TXBTIYKJNLFr",
+    "reportId": "MxvAMC3Dd8QOji8SU8MG",
+    "title": "Field Report Received",
+    "status": "unread"
+  },
+  "xdIrswxBWuQdLbCBcsPg": {
+    "type": "task_assigned",
+    "userId": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "timestamp": {
+      "_seconds": 1765717332,
+      "_nanoseconds": 798000000
+    },
+    "relatedEntityId": "enrAlezgQwIHu7JO0sH7",
+    "read": false,
+    "message": "New task: harvesting at Dyn"
+  },
+  "y6x0hrtyINoRcwI4gjMh": {
+    "timestamp": {
+      "_seconds": 1765941725,
+      "_nanoseconds": 14000000
+    },
+    "createdAt": {
+      "_seconds": 1765941725,
+      "_nanoseconds": 14000000
+    },
+    "readAt": {
+      "_seconds": 1765961170,
+      "_nanoseconds": 623000000
+    },
+    "reportId": "4fxwU0x9ZW2xN7opC3ed",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Field Report Received",
+    "handlerName": "dyn dyn",
+    "status": "unread",
+    "role": "sra",
+    "message": "Handler has sent a field report for \"Sugarcane\".",
+    "relatedEntityId": "4fxwU0x9ZW2xN7opC3ed",
+    "type": "report_sent",
+    "fieldName": "Sugarcane",
+    "read": true,
+    "fieldId": "NFRougQtPVxDQyWVTYLL"
+  },
+  "y7WCl9utRuJyiniqcneK": {
+    "userId": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "timestamp": {
+      "_seconds": 1764689198,
+      "_nanoseconds": 14000000
+    },
+    "message": "Task cancelled: \"Harvesting\" at kahago",
+    "read": false,
+    "type": "task_deleted",
+    "relatedEntityId": "0CLGhwgpPgLF5JLpWC5Z"
+  },
+  "yE7Ro7PGxfDRPbM1SdSy": {
+    "timestamp": {
+      "_seconds": 1773318915,
+      "_nanoseconds": 352000000
+    },
+    "message": "Your field has been reviewed by the Ormoc Mill District SRA Officer. You can now check your dashboard <a href=\"../../frontend/Handler/dashboard.html\" target=\"_blank\" class=\"notif-link\">here</a>.",
+    "title": "Field Registration Approved!",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "unread"
+  },
+  "ydl3fJJJjdfVLNzxFsJQ": {
+    "message": "ffff logged work: Plowing",
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq",
+    "type": "work_logged",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "read": true,
+    "timestamp": {
+      "_seconds": 1764173885,
+      "_nanoseconds": 581000000
+    },
+    "readAt": {
+      "_seconds": 1764425724,
+      "_nanoseconds": 956000000
+    }
+  },
+  "yhvhA5XGsDgNgtszAry2": {
+    "message": "Your field \"Panoma 1\" is ready for harvest today (Jan 21, 2026). Please schedule harvesting immediately.",
+    "read": false,
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "relatedId": "6UrQVEXjAvMJhZMPfkfa",
+    "relatedType": "field",
+    "title": "🚜 Harvest Due Today!",
+    "type": "harvest_due",
+    "createdAt": {
+      "_seconds": 1768953613,
+      "_nanoseconds": 185000000
+    }
+  },
+  "ywncryN2wCWrx6kBf2Ie": {
+    "type": "work_logged",
+    "read": false,
+    "message": "maria boyboy logged work: Plowing",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "timestamp": {
+      "_seconds": 1764535543,
+      "_nanoseconds": 460000000
+    },
+    "relatedEntityId": "aaDnX3W1CQZoFzxAjSRq"
+  },
+  "yzdu0ocEye6Q0OiwT49c": {
+    "read": true,
+    "status": "read",
+    "readAt": {
+      "_seconds": 1764863851,
+      "_nanoseconds": 993000000
+    },
+    "message": "New task: Transport Cane from Field to Mill at Mogu Mogu Farm",
+    "userId": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "timestamp": {
+      "_seconds": 1764573993,
+      "_nanoseconds": 581000000
+    },
+    "type": "task_assigned",
+    "relatedEntityId": "13qVBJQRipWL7Chz7Dhm"
+  },
+  "zgiVyNq5MPKPEmPqqgdl": {
+    "message": "Park logged work: Transport Fertilizer to Field",
+    "type": "work_logged",
+    "readAt": {
+      "_seconds": 1765529912,
+      "_nanoseconds": 515000000
+    },
+    "timestamp": {
+      "_seconds": 1765527416,
+      "_nanoseconds": 875000000
+    },
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "read": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "zu1kcQHgvqpmU43KBFjL": {
+    "message": "Ramon logged work: Transport Equipment to Field",
+    "type": "work_logged",
+    "relatedEntityId": "86zsqLUO3peiVF12GKZD",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "read": true,
+    "readAt": {
+      "_seconds": 1764930765,
+      "_nanoseconds": 379000000
+    },
+    "timestamp": {
+      "_seconds": 1764867207,
+      "_nanoseconds": 182000000
+    }
+  },
+  "zw48Or5VPUHbB2cd9wzL": {
+    "readAt": {
+      "_seconds": 1765135045,
+      "_nanoseconds": 461000000
+    },
+    "createdAt": {
+      "_seconds": 1765009448,
+      "_nanoseconds": 912000000
+    },
+    "message": "A new field \"Sugarcane\" has been registered in Ipil and requires review.",
+    "role": "sra",
+    "title": "New Field Registration",
+    "type": "field_registration",
+    "read": true,
+    "relatedEntityId": "NFRougQtPVxDQyWVTYLL",
+    "timestamp": {
+      "_seconds": 1765009448,
+      "_nanoseconds": 912000000
+    },
+    "status": "unread"
+  }
+}

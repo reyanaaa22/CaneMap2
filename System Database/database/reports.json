@@ -1,0 +1,401 @@
+{
+  "4fxwU0x9ZW2xN7opC3ed": {
+    "costSummary": {
+      "totalVehicleCost": 130,
+      "grandTotal": 9212.98,
+      "totalBoughtItemsCost": 7900,
+      "totalTaskCost": 1182.98
+    },
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2FNFRougQtPVxDQyWVTYLL%2F1765941719578_report.pdf?alt=media&token=b77b9be0-8113-4a65-b5a4-bd2189fc011c",
+    "fieldId": "NFRougQtPVxDQyWVTYLL",
+    "reportStatus": "sent",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Sugarcane",
+    "createdAt": {
+      "_seconds": 1765941724,
+      "_nanoseconds": 599000000
+    },
+    "timestamp": {
+      "_seconds": 1765941724,
+      "_nanoseconds": 599000000
+    },
+    "generatedAt": {
+      "_seconds": 1765941724,
+      "_nanoseconds": 599000000
+    },
+    "recordCount": 3
+  },
+  "9cjp0ApY38XirvGQQvuf": {
+    "totalCost": 0,
+    "reportType": "growth_updates",
+    "status": "pending_review",
+    "createdAt": {
+      "_seconds": 1763984921,
+      "_nanoseconds": 954000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "data": {
+      "variety": "BZ 148",
+      "observations": "mm",
+      "DAP": 0,
+      "photos": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/report_photos%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Ftemp_1763984918195%2FScreenshot__1384_.png?alt=media&token=a4699dd1-5522-4af7-8c86-f33bbbffc24b",
+      "currentStage": "Germination"
+    },
+    "submittedDate": {
+      "_seconds": 1763984921,
+      "_nanoseconds": 954000000
+    },
+    "fieldId": "5m5dry0UlPTPB9AtjIdk"
+  },
+  "EgcWHJDblljxz6kmqCDR": {
+    "createdAt": {
+      "_seconds": 1765908074,
+      "_nanoseconds": 803000000
+    },
+    "status": "approved",
+    "generatedAt": {
+      "_seconds": 1765908074,
+      "_nanoseconds": 803000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "reviewedAt": {
+      "_seconds": 1765909346,
+      "_nanoseconds": 401000000
+    },
+    "fieldName": "Field8",
+    "timestamp": {
+      "_seconds": 1765908074,
+      "_nanoseconds": 803000000
+    },
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2F5m5dry0UlPTPB9AtjIdk%2F1765908072519_report.pdf?alt=media&token=58b1df27-eb84-4f83-8327-6798f85e67c7",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "reportStatus": "approved",
+    "recordCount": 1,
+    "costSummary": {
+      "grandTotal": 2500.01,
+      "totalTaskCost": 2500.01,
+      "totalBoughtItemsCost": 0,
+      "totalVehicleCost": 0
+    }
+  },
+  "GbkDXpeBdVrSJ9PDaJg5": {
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "totalCost": 0,
+    "submittedDate": {
+      "_seconds": 1764189588,
+      "_nanoseconds": 923000000
+    },
+    "createdAt": {
+      "_seconds": 1764189588,
+      "_nanoseconds": 923000000
+    },
+    "reportType": "growth_updates",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "data": {
+      "currentStage": "Germination",
+      "observations": "The sugarcane is showing healthy growth with consistent height development and good leaf color. No major signs of stress or pest damage were observed.",
+      "photos": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/report_photos%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Ftemp_1764189585748%2FScreenshot_2025_11_26_212300.png?alt=media&token=3abcba5d-0916-479d-932b-f8f9cf56bcc4",
+      "variety": "Phil 94-0913",
+      "DAP": 2
+    },
+    "status": "pending_review"
+  },
+  "KqlbWhnxKIIMdlEarsmT": {
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "totalCost": 0,
+    "createdAt": {
+      "_seconds": 1763964968,
+      "_nanoseconds": 832000000
+    },
+    "status": "rejected",
+    "reportType": "land_titles",
+    "data": {
+      "remarks": "k",
+      "area": "-0.16",
+      "registeredOwner": "k",
+      "titleNumber": "mn",
+      "lotNumber": "j"
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "reviewedBy": "0sKgGlqJleZrGIBpjT5CV8b6VMb2",
+    "submittedDate": {
+      "_seconds": 1763964968,
+      "_nanoseconds": 832000000
+    },
+    "remarks": "bnscbnsbc",
+    "reviewedAt": {
+      "_seconds": 1763981961,
+      "_nanoseconds": 344000000
+    }
+  },
+  "Ldt3wTkj5lBnFG49YwXF": {
+    "handlerId": "vHAPe8WVU2fFkAAcaotGTaTmceE3",
+    "status": "approved",
+    "createdAt": {
+      "_seconds": 1763532249,
+      "_nanoseconds": 769000000
+    },
+    "reportType": "crop_planting_records",
+    "totalCost": 0,
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "data": {
+      "area": "0.18",
+      "plantingDates": [
+        "2025-11-19"
+      ],
+      "notes": "",
+      "variety": "Phil 92-0577"
+    },
+    "submittedDate": {
+      "_seconds": 1763532249,
+      "_nanoseconds": 769000000
+    },
+    "reviewedAt": {
+      "_seconds": 1763739965,
+      "_nanoseconds": 273000000
+    },
+    "fieldId": "6CZeTm1d92IC6k1VhdWN"
+  },
+  "MhYIOzO6gDEPlg8NShiV": {
+    "remarks": "inaccurate data",
+    "status": "rejected",
+    "generatedAt": {
+      "_seconds": 1765902246,
+      "_nanoseconds": 225000000
+    },
+    "reviewedAt": {
+      "_seconds": 1765908312,
+      "_nanoseconds": 148000000
+    },
+    "fieldName": "Sugarcane",
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "createdAt": {
+      "_seconds": 1765902246,
+      "_nanoseconds": 225000000
+    },
+    "recordCount": 3,
+    "costSummary": {
+      "totalTaskCost": 1182.98,
+      "totalVehicleCost": 130,
+      "grandTotal": 9212.98,
+      "totalBoughtItemsCost": 7900
+    },
+    "reportStatus": "rejected",
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2FNFRougQtPVxDQyWVTYLL%2F1765902242321_report.pdf?alt=media&token=8e29394c-0429-46fa-acf9-5edeacb7be47",
+    "fieldId": "NFRougQtPVxDQyWVTYLL",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765902246,
+      "_nanoseconds": 225000000
+    }
+  },
+  "MxvAMC3Dd8QOji8SU8MG": {
+    "createdAt": {
+      "_seconds": 1765902503,
+      "_nanoseconds": 515000000
+    },
+    "status": "approved",
+    "generatedAt": {
+      "_seconds": 1765902503,
+      "_nanoseconds": 515000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "timestamp": {
+      "_seconds": 1765902503,
+      "_nanoseconds": 515000000
+    },
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "fieldName": "kahago",
+    "reviewedAt": {
+      "_seconds": 1765908855,
+      "_nanoseconds": 469000000
+    },
+    "fieldId": "2G0gZTe1TXBTIYKJNLFr",
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2F2G0gZTe1TXBTIYKJNLFr%2F1765902500700_report.pdf?alt=media&token=461294c9-fdb9-4892-bcb8-e640e37b83f2",
+    "costSummary": {
+      "totalVehicleCost": 0,
+      "totalBoughtItemsCost": 0,
+      "grandTotal": 0,
+      "totalTaskCost": 0
+    },
+    "reportStatus": "approved",
+    "recordCount": 1
+  },
+  "PanlyyCSohvhX8KDkj1B": {
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2F3ZbPVAPrj8Ze7401AY24i1GEirq1%2F6UrQVEXjAvMJhZMPfkfa%2F1766004647156_report.pdf?alt=media&token=fac5cec7-8ff6-4c4e-8cd4-b74f32dd9652",
+    "recordCount": 9,
+    "reportStatus": "approved",
+    "fieldName": "Panoma 1",
+    "costSummary": {
+      "totalTaskCost": 77200,
+      "grandTotal": 77200,
+      "totalVehicleCost": 0,
+      "totalBoughtItemsCost": 0
+    },
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "status": "approved",
+    "reviewedAt": {
+      "_seconds": 1766004942,
+      "_nanoseconds": 410000000
+    },
+    "generatedAt": {
+      "_seconds": 1766004650,
+      "_nanoseconds": 824000000
+    },
+    "handlerId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "createdAt": {
+      "_seconds": 1766004650,
+      "_nanoseconds": 824000000
+    },
+    "timestamp": {
+      "_seconds": 1766004650,
+      "_nanoseconds": 824000000
+    }
+  },
+  "Phw5pYgvY2KbEsPrj3zb": {
+    "createdAt": {
+      "_seconds": 1763964794,
+      "_nanoseconds": 903000000
+    },
+    "totalCost": 0,
+    "submittedDate": {
+      "_seconds": 1763964794,
+      "_nanoseconds": 903000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "reportType": "growth_updates",
+    "data": {
+      "observations": "a",
+      "DAP": 5,
+      "variety": "Phil 92-0577",
+      "currentStage": "Harvested",
+      "photos": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/report_photos%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Ftemp_1763964791022%2FScreenshot__1384_.png?alt=media&token=a333c13f-ef4d-4c47-b051-0e978613f91f"
+    },
+    "status": "pending_review"
+  },
+  "ahYtxDFL11z2Gux3KRm2": {
+    "reviewedAt": {
+      "_seconds": 1765269131,
+      "_nanoseconds": 749000000
+    },
+    "data": {
+      "variety": "Phil 99-1793",
+      "notes": "gi plant ni namo, ratoon ni sya na crop planting ",
+      "plantingDates": [
+        "2026-01-25"
+      ],
+      "area": "0.06"
+    },
+    "submittedDate": {
+      "_seconds": 1765269020,
+      "_nanoseconds": 367000000
+    },
+    "fieldId": "PD83iWqvG7WfSTGhseKj",
+    "status": "approved",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "remarks": "",
+    "reviewedBy": "be3QHYSn6nXwAdeUSmSmDl4neJk2",
+    "createdAt": {
+      "_seconds": 1765269020,
+      "_nanoseconds": 367000000
+    },
+    "reportType": "crop_planting_records",
+    "totalCost": 0
+  },
+  "arORGOGrOVqmhugPnjpX": {
+    "generatedAt": {
+      "_seconds": 1765941841,
+      "_nanoseconds": 113000000
+    },
+    "costSummary": {
+      "totalBoughtItemsCost": 0,
+      "totalTaskCost": 0,
+      "grandTotal": 0,
+      "totalVehicleCost": 0
+    },
+    "reportStatus": "sent",
+    "pdfUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/reports%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2FWzKQoyKwEr9BN7byw04m%2F1765941835959_report.pdf?alt=media&token=0b12c6e8-0cef-490c-a13e-4d067079569c",
+    "timestamp": {
+      "_seconds": 1765941841,
+      "_nanoseconds": 113000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765941841,
+      "_nanoseconds": 113000000
+    },
+    "recordCount": 0,
+    "fieldName": "Katubhan",
+    "fieldId": "WzKQoyKwEr9BN7byw04m"
+  },
+  "iInObKDdcg0WK308HjW4": {
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "pending_review",
+    "submittedDate": {
+      "_seconds": 1763962675,
+      "_nanoseconds": 594000000
+    },
+    "fieldId": "RwkjiCKnmPS5pg3eEre6",
+    "createdAt": {
+      "_seconds": 1763962675,
+      "_nanoseconds": 594000000
+    },
+    "totalCost": 0,
+    "data": {
+      "notes": "bjbb",
+      "plantingDates": [
+        "2025-11-24"
+      ],
+      "area": "0.03",
+      "variety": "PSR 07-195"
+    },
+    "reportType": "crop_planting_records"
+  },
+  "kbXF967SjJqo5D7EPFdO": {
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "totalCost": 0,
+    "submittedDate": {
+      "_seconds": 1763964840,
+      "_nanoseconds": 618000000
+    },
+    "createdAt": {
+      "_seconds": 1763964840,
+      "_nanoseconds": 618000000
+    },
+    "reportType": "growth_updates",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "data": {
+      "variety": "Phil 94-0913",
+      "photos": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/report_photos%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Ftemp_1763964833233%2FScreenshot__1388_.png?alt=media&token=00e91022-6167-4612-b77c-044e68a793d2",
+      "observations": "z",
+      "currentStage": "Harvested",
+      "DAP": 0
+    },
+    "status": "pending_review"
+  },
+  "pguq80kJq33djls6WX0L": {
+    "totalCost": 0,
+    "createdAt": {
+      "_seconds": 1763962702,
+      "_nanoseconds": 789000000
+    },
+    "submittedDate": {
+      "_seconds": 1763962702,
+      "_nanoseconds": 789000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "reportType": "growth_updates",
+    "data": {
+      "currentStage": "Harvested",
+      "photos": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/report_photos%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Ftemp_1763962700240%2FScreenshot__1385_.png?alt=media&token=f179f9a3-f1cd-4846-bb47-467aef13a912",
+      "DAP": 0,
+      "observations": "nbmbn",
+      "variety": "Phil 94-0913"
+    },
+    "status": "pending_review"
+  }
+}

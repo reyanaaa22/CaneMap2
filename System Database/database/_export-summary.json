@@ -1,0 +1,60 @@
+{
+  "exportedAt": "2026-05-26T01:01:51.940Z",
+  "projectId": "canemap-system",
+  "format": "Firefoo-compatible nested JSON",
+  "exportPath": "System Database/database/",
+  "collections": {
+    "admin_pins": {
+      "file": "admin_pins.json",
+      "rootDocumentCount": 1
+    },
+    "admin_security_logs": {
+      "file": "admin_security_logs.json",
+      "rootDocumentCount": 345
+    },
+    "admin_settings": {
+      "file": "admin_settings.json",
+      "rootDocumentCount": 1
+    },
+    "failed_logins": {
+      "file": "failed_logins.json",
+      "rootDocumentCount": 13
+    },
+    "feedbacks": {
+      "file": "feedbacks.json",
+      "rootDocumentCount": 1
+    },
+    "fields": {
+      "file": "fields.json",
+      "rootDocumentCount": 34
+    },
+    "harvest_notification_logs": {
+      "file": "harvest_notification_logs.json",
+      "rootDocumentCount": 7
+    },
+    "notifications": {
+      "file": "notifications.json",
+      "rootDocumentCount": 233
+    },
+    "records": {
+      "file": "records.json",
+      "rootDocumentCount": 76
+    },
+    "reports": {
+      "file": "reports.json",
+      "rootDocumentCount": 15
+    },
+    "tasks": {
+      "file": "tasks.json",
+      "rootDocumentCount": 107
+    },
+    "user_activities": {
+      "file": "user_activities.json",
+      "rootDocumentCount": 823
+    },
+    "users": {
+      "file": "users.json",
+      "rootDocumentCount": 23
+    }
+  }
+}

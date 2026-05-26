@@ -1,0 +1,2449 @@
+{
+  "03s1vdxMDFHNuUMkgPfg": {
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318191174.pdf?alt=media&token=04ceb26d-5c16-4214-bc99-2b2c596f3c0d",
+    "status": "reviewed",
+    "updatedAt": {
+      "_seconds": 1774274019,
+      "_nanoseconds": 31000000
+    },
+    "coordinates": [],
+    "currentGrowthStage": "Harvesting (Ani sa Tubo)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "street": "purok 1",
+    "longitude": 124.624164,
+    "variety": "PS 5 or VMC 95-09",
+    "reviewedAt": {
+      "_seconds": 1773319033,
+      "_nanoseconds": 685000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318191153.pdf?alt=media&token=21e4054f-ebd4-471b-9922-033ab58313ee",
+    "irrigationMethod": "Rainfed",
+    "fieldTerrain": "Gently Sloping",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318191190.png?alt=media&token=c1410123-a509-418f-8ff4-ff9a70df5538",
+    "latitude": 10.998735,
+    "barangay": "Guintigui-an",
+    "field_name": "PS 5 / VMC 95-09",
+    "previousCrop": "Sugarcane (Plant)",
+    "fieldName": "PS 5 / VMC 95-09",
+    "createdAt": {
+      "_seconds": 1773318182,
+      "_nanoseconds": 153000000
+    },
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "statusUpdatedAt": {
+      "_seconds": 1773319032,
+      "_nanoseconds": 32000000
+    },
+    "sugarcane_variety": "PS 5 or VMC 95-09",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "area": "3",
+    "field_size": "3",
+    "soilType": "Clay"
+  },
+  "0l8ckG23Y8V22zpWYoiS": {
+    "irrigationMethod": "Rainfed",
+    "isRatoon": true,
+    "previousCrop": "Sugarcane (Plant)",
+    "mainFertilizationDate": null,
+    "statusUpdatedAt": {
+      "_seconds": 1773318962,
+      "_nanoseconds": 729000000
+    },
+    "DAP": 0,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "ratoonedAt": {
+      "_seconds": 1774277544,
+      "_nanoseconds": 400000000
+    },
+    "cropType": "ratoon",
+    "longitude": 124.589282,
+    "delayDays": 0,
+    "coordinates": [],
+    "expectedHarvestDate": {
+      "_seconds": 1728993600,
+      "_nanoseconds": 0
+    },
+    "reviewedAt": {
+      "_seconds": 1773318964,
+      "_nanoseconds": 694000000
+    },
+    "plantingDate": {
+      "_seconds": 1701388800,
+      "_nanoseconds": 0
+    },
+    "growthHistory": {
+      "cycle0": {
+        "plantingDate": {
+          "_seconds": 1701388800,
+          "_nanoseconds": 0
+        },
+        "archivedAt": {
+          "_seconds": 1774277544,
+          "_nanoseconds": 400000000
+        },
+        "harvestTiming": null,
+        "cycle": 0,
+        "actualYield": null,
+        "finalDAP": null,
+        "harvestedAt": null,
+        "actualHarvestDate": null
+      }
+    },
+    "variety": "PSR 2000-34",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318555547.png?alt=media&token=93e7f829-06a8-4181-b1c2-f313fd4d4f72",
+    "createdAt": {
+      "_seconds": 1773318547,
+      "_nanoseconds": 69000000
+    },
+    "street": "purok 1",
+    "replantedAt": {
+      "_seconds": 1774276599,
+      "_nanoseconds": 660000000
+    },
+    "field_size": "1",
+    "operationOverrides": {
+      "Planting": {
+        "completedAt": {
+          "_seconds": 1774802666,
+          "_nanoseconds": 954000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completed": true
+      },
+      "Post-Planting": {
+        "completedAt": {
+          "_seconds": 1774843376,
+          "_nanoseconds": 180000000
+        },
+        "completed": true,
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+      },
+      "Pre-Planting": {
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completed": true,
+        "completedAt": {
+          "_seconds": 1774802613,
+          "_nanoseconds": 549000000
+        }
+      }
+    },
+    "soilType": "Loam",
+    "basalFertilizationDate": null,
+    "updatedAt": {
+      "_seconds": 1774277544,
+      "_nanoseconds": 400000000
+    },
+    "status": "active",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "finalDAP": null,
+    "barangay": "Bayog",
+    "cycleStartedAt": {
+      "_seconds": 1774277544,
+      "_nanoseconds": 400000000
+    },
+    "fieldName": "PSR 2000-34",
+    "harvestTimingDays": null,
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "latitude": 11.041895,
+    "fieldTerrain": "Flat",
+    "field_name": "PSR 2000-34",
+    "currentGrowthStage": "Germination",
+    "actualYield": null,
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318555556.pdf?alt=media&token=c60e1e08-cca8-4ecb-92ad-c8853dfee940",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318555567.pdf?alt=media&token=30cd857e-805b-4d74-9f29-f26b9b80f66a",
+    "harvestedAt": null,
+    "plantingCycleNumber": 2,
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "plantingHistory": {
+      "cycle0": {
+        "actualHarvestDate": null,
+        "growthHistory": {
+          "cycle0": {
+            "archivedAt": {
+              "_seconds": 1774276569,
+              "_nanoseconds": 176000000
+            },
+            "cycle": 0
+          }
+        },
+        "archivedAt": {
+          "_seconds": 1774276590,
+          "_nanoseconds": 653000000
+        },
+        "ratoonNumber": 1,
+        "plantingCycle": 0,
+        "finalDAP": null,
+        "variety": "PSR 2000-34",
+        "plantingDate": {
+          "_seconds": 1701388800,
+          "_nanoseconds": 0
+        },
+        "actualYield": null
+      },
+      "cycle1": {
+        "variety": "PSR 2000-34",
+        "plantingDate": {
+          "_seconds": 1701388800,
+          "_nanoseconds": 0
+        },
+        "actualYield": null,
+        "finalDAP": null,
+        "growthHistory": {},
+        "archivedAt": {
+          "_seconds": 1774276599,
+          "_nanoseconds": 660000000
+        },
+        "ratoonNumber": 0,
+        "plantingCycle": 1,
+        "actualHarvestDate": null
+      }
+    },
+    "area": "1",
+    "harvestTiming": null,
+    "actualHarvestDate": null,
+    "sugarcane_variety": "PSR 2000-34",
+    "ratoonNumber": 1
+  },
+  "0xGh8E1ghYXbZOtrsFgU": {
+    "fieldTerrain": "Flat",
+    "area": "4",
+    "createdAt": {
+      "_seconds": 1773318074,
+      "_nanoseconds": 584000000
+    },
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318084594.png?alt=media&token=ffde5fe5-bcd5-43c6-a152-8a1c79e564be",
+    "barangay": "Milagro",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318084596.png?alt=media&token=f3675ee7-8b75-4a3f-9822-0d8d4f102308",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "sugarcane_variety": "PS 4 or VMC 95-152",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318084586.png?alt=media&token=e632cc65-6166-4af6-931c-aaa53323d48c",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "variety": "PS 4 or VMC 95-152",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "statusUpdatedAt": {
+      "_seconds": 1773319047,
+      "_nanoseconds": 829000000
+    },
+    "operationOverrides": {
+      "Pre-Planting": {
+        "completedAt": {
+          "_seconds": 1774841813,
+          "_nanoseconds": 1000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completed": true
+      }
+    },
+    "status": "reviewed",
+    "longitude": 124.636756,
+    "field_name": "PS 4 / VMC 95-152",
+    "coordinates": [],
+    "field_size": "4",
+    "latitude": 11.025349,
+    "reviewedAt": {
+      "_seconds": 1773319049,
+      "_nanoseconds": 138000000
+    },
+    "updatedAt": {
+      "_seconds": 1773319047,
+      "_nanoseconds": 829000000
+    },
+    "previousCrop": "Sugarcane (Plant)",
+    "soilType": "Clay",
+    "irrigationMethod": "Rainfed",
+    "fieldName": "PS 4 / VMC 95-152",
+    "street": "purok 2",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82"
+  },
+  "1fTX9coMNEL3FEkSpJ0k": {
+    "plantingDate": {
+      "_seconds": 1738627200,
+      "_nanoseconds": 0
+    },
+    "field_name": "Kamarotaa",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1766005325228.pdf?alt=media&token=9677f4d9-82df-4cf6-b4b4-03af178137ed",
+    "irrigationMethod": "Sprinkler Irrigation",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1766005325215.pdf?alt=media&token=11c55fdc-0f35-4730-9e80-965465867e46",
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "latitude": 11.029905,
+    "soilType": "Loam",
+    "coordinates": [
+      {
+        "lng": 124.5589704083273,
+        "lat": 11.030189279581505
+      },
+      {
+        "lat": 11.030361408269131,
+        "lng": 124.55963436226628
+      },
+      {
+        "lat": 11.029695489087548,
+        "lng": 124.55957355959163
+      },
+      {
+        "lng": 124.55942077539217,
+        "lat": 11.029817451577612
+      },
+      {
+        "lat": 11.029752928841365,
+        "lng": 124.55926584640889
+      },
+      {
+        "lat": 11.029580609546239,
+        "lng": 124.5593104725988
+      },
+      {
+        "lat": 11.029456537483018,
+        "lng": 124.5593280116935
+      },
+      {
+        "lat": 11.029448878585008,
+        "lng": 124.55918613998526
+      }
+    ],
+    "reviewedAt": {
+      "_seconds": 1766005358,
+      "_nanoseconds": 2000000
+    },
+    "fieldName": "Kamarotaa",
+    "previousCrop": "Vegetables",
+    "fieldTerrain": "Steep",
+    "createdAt": {
+      "_seconds": 1766005328,
+      "_nanoseconds": 700000000
+    },
+    "currentGrowthStage": "Germination",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1766005325185.pdf?alt=media&token=c0c27507-9562-4fd2-8f80-0e490ebe84ac",
+    "sugarcane_variety": "K 88-87",
+    "expectedHarvestDate": {
+      "_seconds": 1770163200,
+      "_nanoseconds": 0
+    },
+    "field_size": "0.8",
+    "street": "Mahayahay",
+    "area": "0.8",
+    "barangay": "Matica-a",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "active",
+    "variety": "PS 2 or VMC 88-354",
+    "applicantName": "dyn dyn",
+    "updatedAt": {
+      "_seconds": 1766005357,
+      "_nanoseconds": 735000000
+    },
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "statusUpdatedAt": {
+      "_seconds": 1766005357,
+      "_nanoseconds": 735000000
+    },
+    "longitude": 124.559302
+  },
+  "2HybS8XdIzIy5wgbIehh": {
+    "coordinates": [],
+    "field_size": "7",
+    "latitude": 11.006343,
+    "reviewedAt": {
+      "_seconds": 1773318914,
+      "_nanoseconds": 482000000
+    },
+    "createdAt": {
+      "_seconds": 1773318772,
+      "_nanoseconds": 291000000
+    },
+    "soilType": "Clay",
+    "operationOverrides": {
+      "Post-Planting": {
+        "completed": true,
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completedAt": {
+          "_seconds": 1774843400,
+          "_nanoseconds": 766000000
+        }
+      },
+      "Planting": {
+        "completed": true,
+        "completedAt": {
+          "_seconds": 1774843391,
+          "_nanoseconds": 332000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+      }
+    },
+    "previousCrop": "Sugarcane (Plant)",
+    "barangay": "Sabang Bao",
+    "fieldTerrain": "Flat",
+    "area": "7",
+    "field_name": "PSR 97-45",
+    "variety": "PSR 97-45",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "statusUpdatedAt": {
+      "_seconds": 1773318912,
+      "_nanoseconds": 576000000
+    },
+    "longitude": 124.63813,
+    "street": "purok 1",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "sugarcane_variety": "PSR 97-45",
+    "fieldName": "PSR 97-45",
+    "status": "reviewed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318777175.pdf?alt=media&token=8dbc2d67-a4e6-46f4-aeab-223016904209",
+    "irrigationMethod": "Rainfed",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318777136.pdf?alt=media&token=c605a386-4dbb-4c48-a22a-b08e44385621",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318777126.png?alt=media&token=8d54b1d7-870b-4f24-8b70-e804a8ecb881",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "currentGrowthStage": "Harvesting (Ani sa Tubo)",
+    "updatedAt": {
+      "_seconds": 1775627164,
+      "_nanoseconds": 933000000
+    }
+  },
+  "3w8xSlUH7LuxGKkEJ0WN": {
+    "terrain_type": "Rolling",
+    "plantingDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763639408,
+      "_nanoseconds": 127000000
+    },
+    "statusUpdatedAt": {
+      "_seconds": 1763639499,
+      "_nanoseconds": 343000000
+    },
+    "sugarcane_variety": "VMC 84-524",
+    "field_size": "0.04",
+    "applicantName": "dyn dyn",
+    "area": "0.04",
+    "soilType": "Loam",
+    "latestRemarkAt": {
+      "_seconds": 1763639491,
+      "_nanoseconds": 284000000
+    },
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1763639400559.pdf?alt=media&token=fa1285c5-735e-48b7-b9e7-73e3a2bd32c4",
+    "latitude": 11.024,
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1763639403184.pdf?alt=media&token=20f82703-554d-4a68-a050-4865ec9819f8",
+    "barangay": "Can-adieng",
+    "delayDays": 0,
+    "previousCrop": "Rice",
+    "field_name": "KAPOY",
+    "fieldName": "KAPOY",
+    "longitude": 124.594,
+    "variety": "VMC 84-524",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1763639393964.pdf?alt=media&token=934b056b-1f2e-4c72-93cf-26a53cf722a1",
+    "reviewedAt": {
+      "_seconds": 1763639499,
+      "_nanoseconds": 659000000
+    },
+    "fieldTerrain": "Moderately Sloping",
+    "irrigationMethod": "Furrow Irrigation",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1763639397887.pdf?alt=media&token=8a63d67c-b8dc-4b2f-b4c4-a3927f66e0d8",
+    "status": "active",
+    "reviewedBy": "0sKgGlqJleZrGIBpjT5CV8b6VMb2",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1763639406021.pdf?alt=media&token=500cdd05-62dd-4137-874c-69a6ff39ee2b",
+    "updatedAt": {
+      "_seconds": 1763730883,
+      "_nanoseconds": 693000000
+    },
+    "coordinates": [],
+    "currentGrowthStage": "Germination",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "street": "Purok 2",
+    "latestRemark": ".",
+    "expectedHarvestDate": {
+      "_seconds": 1796083200,
+      "_nanoseconds": 0
+    },
+    "__collections__": {
+      "remarks": {
+        "s6Wa2b57E95gsxDuBeHT": {
+          "message": ".",
+          "createdAt": {
+            "_seconds": 1763639491,
+            "_nanoseconds": 153000000
+          }
+        }
+      }
+    }
+  },
+  "6CZeTm1d92IC6k1VhdWN": {
+    "latitude": 11.010949,
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FvHAPe8WVU2fFkAAcaotGTaTmceE3%2Fselfie_1763528786612.pdf?alt=media&token=8bcb8aa5-f5b6-45f0-a7be-aa9806fce0d9",
+    "harvestedAt": {
+      "_seconds": 1763555102,
+      "_nanoseconds": 496000000
+    },
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FvHAPe8WVU2fFkAAcaotGTaTmceE3%2Fbarangay_certificate_1763528789766.pdf?alt=media&token=f2326327-8bc1-4a1b-848b-13fb106b7340",
+    "barangay": "Catmon",
+    "harvestTimingDays": -354,
+    "fieldName": "Mogu Mogu Farm",
+    "delayDays": 0,
+    "previousCrop": "Sugarcane (Plant)",
+    "field_name": "Mogu Mogu Farm",
+    "plantingDate": {
+      "_seconds": 1763510400,
+      "_nanoseconds": 0
+    },
+    "terrain_type": "Flat",
+    "statusUpdatedAt": {
+      "_seconds": 1763531254,
+      "_nanoseconds": 655000000
+    },
+    "requestedBy": "vHAPe8WVU2fFkAAcaotGTaTmceE3",
+    "createdAt": {
+      "_seconds": 1763528796,
+      "_nanoseconds": 367000000
+    },
+    "sugarcane_variety": "Phil 92-0577",
+    "soilType": "Clay",
+    "field_size": "0.18",
+    "applicantName": "dyndyn",
+    "area": "0.18",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FvHAPe8WVU2fFkAAcaotGTaTmceE3%2Fland_title_1763528792564.pdf?alt=media&token=9e43c359-e07e-4312-ad82-1a32432dafae",
+    "updatedAt": {
+      "_seconds": 1767632168,
+      "_nanoseconds": 461000000
+    },
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FvHAPe8WVU2fFkAAcaotGTaTmceE3%2Fvalid_back_1763528784108.pdf?alt=media&token=961aa230-26b8-4e96-891a-9e8179799080",
+    "status": "harvested",
+    "reviewedBy": "oUdn2zy0boOUtPzqFwLKEoH9hjH2",
+    "currentGrowthStage": "Land Preparation (Before Planting)",
+    "coordinates": [
+      {
+        "lat": 11.011212290911061,
+        "lng": 124.59970235824586
+      },
+      {
+        "lat": 11.011233353542933,
+        "lng": 124.60034608840944
+      },
+      {
+        "lat": 11.010812100619347,
+        "lng": 124.6004104614258
+      },
+      {
+        "lat": 11.010664661953713,
+        "lng": 124.60004568099977
+      },
+      {
+        "lat": 11.010791037957338,
+        "lng": 124.59965944290163
+      }
+    ],
+    "mainFertilizationDate": {
+      "_seconds": 1763510400,
+      "_nanoseconds": 0
+    },
+    "basalFertilizationDate": {
+      "_seconds": 1763510400,
+      "_nanoseconds": 0
+    },
+    "actualHarvestDate": {
+      "_seconds": 1763555100,
+      "_nanoseconds": 809000000
+    },
+    "harvestTiming": "early",
+    "expectedHarvestDate": {
+      "_seconds": 1794182400,
+      "_nanoseconds": 0
+    },
+    "street": "Antonio",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "finalDAP": 0,
+    "longitude": 124.600035,
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FvHAPe8WVU2fFkAAcaotGTaTmceE3%2Fvalid_front_1763528781515.pdf?alt=media&token=0e4baa4b-30d7-4fbf-a7dc-1f503c9b791f",
+    "reviewedAt": {
+      "_seconds": 1763531254,
+      "_nanoseconds": 907000000
+    },
+    "variety": "Phil 92-0577",
+    "fieldTerrain": "Gently Sloping",
+    "irrigationMethod": "Drip Irrigation"
+  },
+  "6UrQVEXjAvMJhZMPfkfa": {
+    "variety": "PSR 2000-343",
+    "ownerName": "St. Jude CVE Agricultural Marketing Corporation",
+    "area": "1.4",
+    "sugarcane_variety": "PSR 2000-34",
+    "createdAt": {
+      "_seconds": 1765982921,
+      "_nanoseconds": 773000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2F3ZbPVAPrj8Ze7401AY24i1GEirq1%2Fvalid_front_1765982915203.pdf?alt=media&token=27c2b10b-d555-4701-8d04-8c182e97cad8",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2F3ZbPVAPrj8Ze7401AY24i1GEirq1%2Fselfie_1765982915319.pdf?alt=media&token=7affbe90-70af-43d2-a5d4-29cead7e9ec8",
+    "plantingDate": {
+      "_seconds": 1738627200,
+      "_nanoseconds": 0
+    },
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2F3ZbPVAPrj8Ze7401AY24i1GEirq1%2Fvalid_back_1765982915292.pdf?alt=media&token=877eb45d-ee54-44d0-a5f4-5ea91ea31156",
+    "currentGrowthStage": "Harvesting (Ani sa Tubo)",
+    "reviewedAt": {
+      "_seconds": 1765983391,
+      "_nanoseconds": 825000000
+    },
+    "expectedHarvestDate": {
+      "_seconds": 1768953600,
+      "_nanoseconds": 0
+    },
+    "applicantName": "Ramon Boholst Jr.",
+    "fieldName": "Panoma 1",
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "barangay": "Matica-a",
+    "statusUpdatedAt": {
+      "_seconds": 1765983391,
+      "_nanoseconds": 522000000
+    },
+    "requestedBy": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "status": "active",
+    "coordinates": [
+      {
+        "lat": 11.124021068742199,
+        "lng": 124.55730969935823
+      },
+      {
+        "lat": 11.123618161699554,
+        "lng": 124.55736991775348
+      },
+      {
+        "lat": 11.123425990020646,
+        "lng": 124.55743617667376
+      },
+      {
+        "lat": 11.123310189887693,
+        "lng": 124.55756128778137
+      },
+      {
+        "lat": 11.123234775591792,
+        "lng": 124.55761760855461
+      },
+      {
+        "lat": 11.123146060160426,
+        "lng": 124.55771306264108
+      },
+      {
+        "lat": 11.123055333566985,
+        "lng": 124.55782804138695
+      },
+      {
+        "lat": 11.122988724509153,
+        "lng": 124.55793113329746
+      },
+      {
+        "lat": 11.122927379729061,
+        "lng": 124.55805839652218
+      },
+      {
+        "lat": 11.12281980899511,
+        "lng": 124.5583064773881
+      },
+      {
+        "lat": 11.122818852259467,
+        "lng": 124.5584081578719
+      },
+      {
+        "lat": 11.122925944304875,
+        "lng": 124.55844471903279
+      },
+      {
+        "lat": 11.123000209185056,
+        "lng": 124.55847667997504
+      },
+      {
+        "lat": 11.123077535726168,
+        "lng": 124.55849675211928
+      },
+      {
+        "lat": 11.123147207727863,
+        "lng": 124.55858211625471
+      },
+      {
+        "lat": 11.123158501564646,
+        "lng": 124.55870235719512
+      },
+      {
+        "lat": 11.123182617827386,
+        "lng": 124.5588107092558
+      },
+      {
+        "lat": 11.123166731794521,
+        "lng": 124.55894498181539
+      },
+      {
+        "lat": 11.123162329787762,
+        "lng": 124.55903306571817
+      },
+      {
+        "lat": 11.123255639980021,
+        "lng": 124.5591307174768
+      },
+      {
+        "lat": 11.123345790800167,
+        "lng": 124.55919697631533
+      },
+      {
+        "lat": 11.123444747525182,
+        "lng": 124.5592780472297
+      },
+      {
+        "lat": 11.123558345640475,
+        "lng": 124.55926325329196
+      },
+      {
+        "lat": 11.123713576686301,
+        "lng": 124.55923635828528
+      },
+      {
+        "lat": 11.123836649495052,
+        "lng": 124.55921628614104
+      },
+      {
+        "lat": 11.123971972788956,
+        "lng": 124.55920186617433
+      },
+      {
+        "lat": 11.124109208840293,
+        "lng": 124.5592012800141
+      },
+      {
+        "lat": 11.124248265121674,
+        "lng": 124.55921028505513
+      },
+      {
+        "lat": 11.124344540895406,
+        "lng": 124.55917949455254
+      },
+      {
+        "lat": 11.124405600092881,
+        "lng": 124.55912278355099
+      },
+      {
+        "lat": 11.124442540550957,
+        "lng": 124.55906334536698
+      },
+      {
+        "lat": 11.124377462964567,
+        "lng": 124.55900722052567
+      },
+      {
+        "lat": 11.124268172063912,
+        "lng": 124.55905360151635
+      },
+      {
+        "lat": 11.124163663493343,
+        "lng": 124.55907581836264
+      },
+      {
+        "lat": 11.124066240096031,
+        "lng": 124.55902203243795
+      },
+      {
+        "lat": 11.124022790730722,
+        "lng": 124.55895713612755
+      },
+      {
+        "lat": 11.123971875766454,
+        "lng": 124.55889555512238
+      },
+      {
+        "lat": 11.123919239446693,
+        "lng": 124.55882832177612
+      },
+      {
+        "lat": 11.123875599869596,
+        "lng": 124.5587573849407
+      },
+      {
+        "lat": 11.123863350613474,
+        "lng": 124.558702430539
+      },
+      {
+        "lat": 11.123845931532975,
+        "lng": 124.55862019106586
+      },
+      {
+        "lat": 11.123883829436684,
+        "lng": 124.55856562488897
+      },
+      {
+        "lat": 11.123974556414717,
+        "lng": 124.55852820770113
+      },
+      {
+        "lat": 11.124053032188744,
+        "lng": 124.55848396973609
+      },
+      {
+        "lat": 11.124130934159853,
+        "lng": 124.55845317919261
+      },
+      {
+        "lat": 11.124207686619279,
+        "lng": 124.55846545621544
+      },
+      {
+        "lat": 11.124278506556285,
+        "lng": 124.55848903771596
+      },
+      {
+        "lat": 11.12431276895549,
+        "lng": 124.55854145910901
+      },
+      {
+        "lat": 11.124353727822365,
+        "lng": 124.55861863244226
+      },
+      {
+        "lat": 11.124321572291638,
+        "lng": 124.55844507766447
+      },
+      {
+        "lat": 11.124285205599698,
+        "lng": 124.55833341226119
+      },
+      {
+        "lat": 11.124251902498317,
+        "lng": 124.55821687489171
+      },
+      {
+        "lat": 11.124102606815299,
+        "lng": 124.55754377165476
+      }
+    ],
+    "field_name": "Panoma 1",
+    "longitude": 124.558294,
+    "fieldTerrain": "Flat",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "latitude": 11.123631,
+    "owner_name": "Rey Fran Evangelista",
+    "irrigationMethod": "Rainfed",
+    "street": "Purok 4 - Sitio Ramon",
+    "updatedAt": {
+      "_seconds": 1774018976,
+      "_nanoseconds": 947000000
+    },
+    "soilType": "Loam",
+    "previousCrop": "Sugarcane (Plant)",
+    "field_size": "1.25"
+  },
+  "850lsmCgPWfHTf3KsYy5": {
+    "field_name": "Mogu Mogu Farm",
+    "status": "reviewed",
+    "longitude": 124.599972,
+    "coordinates": [
+      {
+        "lat": 11.01080367568328,
+        "lng": 124.59949992583358
+      },
+      {
+        "lat": 11.011203865986456,
+        "lng": 124.59949992583358
+      },
+      {
+        "lat": 11.011203865986456,
+        "lng": 124.6004436085922
+      },
+      {
+        "lat": 11.01080367568328,
+        "lng": 124.6004436085922
+      }
+    ],
+    "field_size": "12",
+    "latitude": 11.011004,
+    "statusUpdatedAt": {
+      "_seconds": 1763905599,
+      "_nanoseconds": 212000000
+    },
+    "userId": "t8FIHQPU3oOFAHLSJiGvQo8dzxT2",
+    "variety": "VMC 84-524",
+    "applicantName": "Nikkasan Wang",
+    "street": "mogu mogu",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2Ft8FIHQPU3oOFAHLSJiGvQo8dzxT2%2Fland_title_1763905020096.png?alt=media&token=e48c7d82-26d6-4d93-907a-c7444073ead6",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2Ft8FIHQPU3oOFAHLSJiGvQo8dzxT2%2Fbarangay_certificate_1763905018211.png?alt=media&token=76c22168-2605-4f01-bc31-355fd51f4ad5",
+    "fieldName": "Mogu Mogu Farm",
+    "reviewedBy": "sH3JcQO3nERncXa55Z5i73OsYSD2",
+    "updatedAt": {
+      "_seconds": 1763905599,
+      "_nanoseconds": 212000000
+    },
+    "reviewedAt": {
+      "_seconds": 1763905599,
+      "_nanoseconds": 986000000
+    },
+    "irrigationMethod": "Drip Irrigation",
+    "soilType": "Loam",
+    "previousCrop": "Sugarcane (Ratoon)",
+    "terrain_type": "Flat",
+    "createdAt": {
+      "_seconds": 1763905023,
+      "_nanoseconds": 42000000
+    },
+    "fieldTerrain": "Moderately Sloping",
+    "area": "12",
+    "requestedBy": "t8FIHQPU3oOFAHLSJiGvQo8dzxT2",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2Ft8FIHQPU3oOFAHLSJiGvQo8dzxT2%2Fvalid_front_1763905010218.png?alt=media&token=b9416825-63e7-464a-bfeb-2fb0ff3112d9",
+    "sugarcane_variety": "VMC 84-524",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2Ft8FIHQPU3oOFAHLSJiGvQo8dzxT2%2Fvalid_back_1763905013093.png?alt=media&token=4a660a71-25a7-45c3-991d-6f829e7f94b6",
+    "barangay": "Catmon",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2Ft8FIHQPU3oOFAHLSJiGvQo8dzxT2%2Fselfie_1763905015581.png?alt=media&token=9f7013df-a8c7-4ea8-ba21-ccfd1a43372b"
+  },
+  "86zsqLUO3peiVF12GKZD": {
+    "street": "purok 4",
+    "field_size": "0.03",
+    "basalFertilizationDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "sugarcane_variety": "Phil 93-1601",
+    "expectedHarvestDate": {
+      "_seconds": 1795496324,
+      "_nanoseconds": 330000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1763953517808.pdf?alt=media&token=b933adb1-d3e6-472a-849b-025a6a7e094e",
+    "harvestTiming": null,
+    "longitude": 124.5792,
+    "finalDAP": null,
+    "isRatoon": true,
+    "harvestTimingDays": null,
+    "updatedAt": {
+      "_seconds": 1764186040,
+      "_nanoseconds": 693000000
+    },
+    "applicantName": "dyn dyn",
+    "delayDays": 0,
+    "variety": "Phil 94-0913",
+    "status": "active",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "barangay": "Biliboy",
+    "terrain_type": "Flat",
+    "area": "0.03",
+    "actualYield": null,
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1763953532215.pdf?alt=media&token=c0b76d2b-ee0d-453c-a822-a60289014f39",
+    "ratoonedAt": {
+      "_seconds": 1763965019,
+      "_nanoseconds": 631000000
+    },
+    "irrigationMethod": "Rainfed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1763953537171.pdf?alt=media&token=80e56633-7956-43d7-bee7-70cbcde28a84",
+    "ratoonNumber": 1,
+    "actualHarvestDate": null,
+    "field_name": "Field 3",
+    "plantingDate": {
+      "_seconds": 1763960324,
+      "_nanoseconds": 330000000
+    },
+    "growthHistory": {
+      "cycle0": {
+        "actualHarvestDate": {
+          "_seconds": 1763960324,
+          "_nanoseconds": 330000000
+        },
+        "harvestedAt": {
+          "_seconds": 1763960324,
+          "_nanoseconds": 618000000
+        },
+        "harvestTiming": "early",
+        "archivedAt": {
+          "_seconds": 1763965019,
+          "_nanoseconds": 631000000
+        },
+        "plantingDate": {
+          "_seconds": 1763959166,
+          "_nanoseconds": 289000000
+        },
+        "finalDAP": 0,
+        "cycle": 0
+      }
+    },
+    "currentGrowthStage": "Germination",
+    "createdAt": {
+      "_seconds": 1763953546,
+      "_nanoseconds": 171000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1763953541997.pdf?alt=media&token=04618abb-1c65-4510-a6cd-728959782319",
+    "previousCrop": "Sugarcane (Plant)",
+    "fieldTerrain": "Gently Sloping",
+    "harvestedAt": null,
+    "fieldName": "Field 3",
+    "coordinates": [],
+    "soilType": "Clay",
+    "mainFertilizationDate": null,
+    "latitude": 11.0565,
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1763953539296.pdf?alt=media&token=ee1a4ceb-756b-412c-b8d7-2f27423a5121"
+  },
+  "8ngXD3FTpd8I4fljNcpr": {
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_front_1765957867115.pdf?alt=media&token=2806dc3a-eeb3-4ad9-bf94-5cea0c935ae7",
+    "updatedAt": {
+      "_seconds": 1765958004,
+      "_nanoseconds": 71000000
+    },
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fbarangay_certificate_1765957867130.pdf?alt=media&token=33a8becd-4b9b-447c-b9da-403b4ea8e259",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fland_title_1765957867131.pdf?alt=media&token=4f43076f-c0c6-4392-b1ee-82f41480b447",
+    "fieldName": "Kampu Tres",
+    "requestedBy": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "sugarcane_variety": "K 88-87",
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "irrigationMethod": "Rainfed",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_back_1765957867123.pdf?alt=media&token=e5361c39-ef5e-49b0-9ae3-a442e6ca0f94",
+    "status": "reviewed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fselfie_1765957867124.pdf?alt=media&token=0f33106c-d420-4eb9-9cc9-2b97b089d390",
+    "field_name": "Kampu Tres",
+    "variety": "K 88-87",
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "fieldTerrain": "Flat",
+    "barangay": "Matica-a",
+    "area": "1.5",
+    "longitude": 124.564308,
+    "street": "Matica-a Road",
+    "statusUpdatedAt": {
+      "_seconds": 1765958004,
+      "_nanoseconds": 71000000
+    },
+    "coordinates": [
+      {
+        "lng": 124.56378757953645,
+        "lat": 11.035328016956592
+      },
+      {
+        "lng": 124.56403970718385,
+        "lat": 11.034301296008472
+      },
+      {
+        "lat": 11.033327224100166,
+        "lng": 124.5642650127411
+      },
+      {
+        "lat": 11.033364080933852,
+        "lng": 124.56449031829835
+      },
+      {
+        "lat": 11.034285500273553,
+        "lng": 124.56470489501955
+      },
+      {
+        "lng": 124.56482827663423,
+        "lat": 11.034822554784366
+      },
+      {
+        "lat": 11.034943655175669,
+        "lng": 124.56455469131471
+      },
+      {
+        "lat": 11.035075285979184,
+        "lng": 124.56444203853609
+      },
+      {
+        "lat": 11.035243773321625,
+        "lng": 124.56432938575746
+      },
+      {
+        "lng": 124.56393778324129,
+        "lat": 11.035396464892226
+      }
+    ],
+    "field_size": "1.5",
+    "latitude": 11.034362,
+    "reviewedAt": {
+      "_seconds": 1765958004,
+      "_nanoseconds": 509000000
+    },
+    "previousCrop": "Sugarcane (Ratoon)",
+    "soilType": "Loam",
+    "createdAt": {
+      "_seconds": 1765957871,
+      "_nanoseconds": 532000000
+    }
+  },
+  "Dbou1pv2jP3qTQNkbcIm": {
+    "barangay": "Concepcion",
+    "previousCrop": "Sugarcane (Plant)",
+    "field_name": "PSR 2000-343",
+    "fieldName": "PSR 2000-343",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318468245.pdf?alt=media&token=f654219d-9c51-42c8-8763-8e9d577bd699",
+    "latitude": 11.00911,
+    "sugarcane_variety": "PSR 2000-343",
+    "field_size": "1",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "area": "1",
+    "soilType": "Clay",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "createdAt": {
+      "_seconds": 1773318459,
+      "_nanoseconds": 30000000
+    },
+    "statusUpdatedAt": {
+      "_seconds": 1773319012,
+      "_nanoseconds": 526000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "street": "purok 2",
+    "status": "reviewed",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318468239.png?alt=media&token=7fabbe40-5698-47a0-8e0d-98f10ae126e5",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "updatedAt": {
+      "_seconds": 1773319012,
+      "_nanoseconds": 526000000
+    },
+    "coordinates": [],
+    "variety": "PSR 2000-343",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318468232.png?alt=media&token=f6f86861-b3db-4bc2-b653-6454a5fcaf49",
+    "reviewedAt": {
+      "_seconds": 1773319015,
+      "_nanoseconds": 291000000
+    },
+    "fieldTerrain": "Gently Sloping",
+    "irrigationMethod": "Rainfed",
+    "longitude": 124.61703,
+    "operationOverrides": {
+      "Pre-Planting": {
+        "completed": true,
+        "completedAt": {
+          "_seconds": 1775627042,
+          "_nanoseconds": 737000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+      }
+    }
+  },
+  "IrUMiXZFZI42wKu0x5Yo": {
+    "sugarcane_variety": "PS 1 or VMC 84-947",
+    "createdAt": {
+      "_seconds": 1773227859,
+      "_nanoseconds": 183000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773227864987.png?alt=media&token=be56d29f-ea0b-4ec3-89d6-4c1be53cc2c3",
+    "variety": "PS 1 or VMC 84-947",
+    "area": "1",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773227865147.pdf?alt=media&token=00f777c7-214e-486b-9432-963a1db1c851",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773227865007.pdf?alt=media&token=a9e87299-1352-462d-a3f5-b66851adbd40",
+    "reviewedAt": {
+      "_seconds": 1773317539,
+      "_nanoseconds": 960000000
+    },
+    "coordinates": [],
+    "field_name": "PS 1 / VMC 84-947",
+    "longitude": 124.592169,
+    "fieldTerrain": "Flat",
+    "latitude": 11.073647,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldName": "PS 1 / VMC 84-947",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "barangay": "Juaton",
+    "statusUpdatedAt": {
+      "_seconds": 1773317537,
+      "_nanoseconds": 967000000
+    },
+    "status": "reviewed",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "updatedAt": {
+      "_seconds": 1773317537,
+      "_nanoseconds": 967000000
+    },
+    "soilType": "Clay",
+    "previousCrop": "Sugarcane (Plant)",
+    "field_size": "1",
+    "street": "purok 1",
+    "irrigationMethod": "Rainfed"
+  },
+  "OKpT4ePaQam8iZvOXHos": {
+    "createdAt": {
+      "_seconds": 1773317827,
+      "_nanoseconds": 386000000
+    },
+    "area": "1",
+    "fieldTerrain": "Flat",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773317836772.png?alt=media&token=036c46b0-34a3-471f-97dd-a06d2ac3ff46",
+    "sugarcane_variety": "PS 2 or VMC 88-354",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773317836786.png?alt=media&token=1b7f6b56-8abb-4f3f-952b-a152b29a24bb",
+    "barangay": "Donghol",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773317836784.png?alt=media&token=40bc4ba3-ec68-4c85-86a9-e8b76591c1e8",
+    "latitude": 11.006378,
+    "field_size": "1",
+    "coordinates": [],
+    "status": "reviewed",
+    "longitude": 124.608428,
+    "field_name": "PS 2 / VMC 88-354",
+    "statusUpdatedAt": {
+      "_seconds": 1773319084,
+      "_nanoseconds": 116000000
+    },
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "variety": "PS 2 or VMC 88-354",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "street": "purok 2",
+    "fieldName": "PS 2 / VMC 88-354",
+    "irrigationMethod": "Rainfed",
+    "soilType": "Clay",
+    "previousCrop": "Sugarcane (Plant)",
+    "updatedAt": {
+      "_seconds": 1773319084,
+      "_nanoseconds": 116000000
+    },
+    "reviewedAt": {
+      "_seconds": 1773319085,
+      "_nanoseconds": 824000000
+    }
+  },
+  "OoVjAFZD8UyCqF2pxIPQ": {
+    "createdAt": {
+      "_seconds": 1763645921,
+      "_nanoseconds": 501000000
+    },
+    "fieldName": "Cane A",
+    "previousCrop": "Sugarcane (Plant)",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fland_title_1763645942104.png?alt=media&token=e6c4ada9-52d8-49bd-85b6-7537841104b1",
+    "fieldTerrain": "Flat",
+    "reviewedAt": {
+      "_seconds": 1763646181,
+      "_nanoseconds": 9000000
+    },
+    "soilType": "Clay",
+    "coordinates": [],
+    "latitude": 11.032257,
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fbarangay_certificate_1763645940398.png?alt=media&token=ebffdb22-5889-4173-b7e5-7d6be599db28",
+    "mainFertilizationDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_back_1763645937148.png?alt=media&token=8d6b5082-cae4-4f26-88e0-bf6fcb7ecc3f",
+    "requestedBy": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fselfie_1763645938737.png?alt=media&token=1e57f551-1cd3-45c7-92f8-18f498b9e5fd",
+    "irrigationMethod": "Rainfed",
+    "field_name": "Cane A",
+    "longitude": 124.564928,
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "statusUpdatedAt": {
+      "_seconds": 1763646179,
+      "_nanoseconds": 974000000
+    },
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "updatedAt": {
+      "_seconds": 1763722816,
+      "_nanoseconds": 768000000
+    },
+    "status": "reviewed",
+    "variety": "PSR 03-171",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "barangay": "Catmon",
+    "terrain_type": "Flat",
+    "area": "2",
+    "street": "purok 1",
+    "field_size": "2",
+    "sugarcane_variety": "PSR 03-171",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_front_1763645933993.png?alt=media&token=fdad0806-039f-4296-8344-0da5f8879f71"
+  },
+  "RwkjiCKnmPS5pg3eEre6": {
+    "plantingDate": {
+      "_seconds": 1763737181,
+      "_nanoseconds": 302000000
+    },
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "sugarcane_variety": "PSR 07-195",
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Katubhann",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1763735543974.pdf?alt=media&token=487eeca9-bbc0-4177-9aef-709d400998af",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1763735538479.pdf?alt=media&token=22801fb9-d02e-4d34-b4c3-d1f41fe30b81",
+    "status": "active",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1763735535910.pdf?alt=media&token=527e0839-ba3d-4b8a-aec2-b97dec01137d",
+    "irrigationMethod": "Rainfed",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1763735531112.pdf?alt=media&token=cc87227f-cec4-4691-b48d-bed61618159d",
+    "expectedHarvestDate": {
+      "_seconds": 1793545181,
+      "_nanoseconds": 302000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1763735541403.pdf?alt=media&token=5473bf32-e182-491a-b31e-64f6b97d654e",
+    "terrain_type": "Rolling",
+    "updatedAt": {
+      "_seconds": 1764127981,
+      "_nanoseconds": 905000000
+    },
+    "currentGrowthStage": "Germination",
+    "field_size": "0.03",
+    "latitude": 11.024,
+    "reviewedAt": {
+      "_seconds": 1763735636,
+      "_nanoseconds": 239000000
+    },
+    "coordinates": [],
+    "createdAt": {
+      "_seconds": 1763735548,
+      "_nanoseconds": 712000000
+    },
+    "soilType": "Clay",
+    "previousCrop": "Fallow",
+    "area": "0.03",
+    "barangay": "Can-adieng",
+    "fieldTerrain": "Flat",
+    "delayDays": 0,
+    "mainFertilizationDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "variety": "PSR 07-195",
+    "applicantName": "dyn dyn",
+    "field_name": "Katubhann",
+    "statusUpdatedAt": {
+      "_seconds": 1763735635,
+      "_nanoseconds": 425000000
+    },
+    "street": "purok 4",
+    "longitude": 124.594
+  },
+  "WzKQoyKwEr9BN7byw04m": {
+    "currentGrowthStage": "Germination",
+    "coordinates": [],
+    "updatedAt": {
+      "_seconds": 1763730528,
+      "_nanoseconds": 593000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1763586546055.pdf?alt=media&token=fd5c4427-f05a-44e6-9bf2-b419d1ef4c3e",
+    "reviewedBy": "0sKgGlqJleZrGIBpjT5CV8b6VMb2",
+    "status": "active",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1763586538015.pdf?alt=media&token=2e1c6845-a6de-4d2a-bce2-792087a8565c",
+    "street": "Purok 4",
+    "expectedHarvestDate": {
+      "_seconds": 1793491200,
+      "_nanoseconds": 0
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "longitude": 124.5458,
+    "irrigationMethod": "Drip Irrigation",
+    "fieldTerrain": "Moderately Sloping",
+    "reviewedAt": {
+      "_seconds": 1763586942,
+      "_nanoseconds": 998000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1763586534740.pdf?alt=media&token=c9c51f9f-f314-4f14-a2c1-006f04183d5c",
+    "variety": "Phil 92-0577",
+    "latitude": 11.0333,
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1763586540775.pdf?alt=media&token=48800e37-46a1-43e9-870a-1e80a1ab1c07",
+    "fieldName": "Katubhan",
+    "field_name": "Katubhan",
+    "delayDays": 0,
+    "previousCrop": "Fallow",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1763586543581.pdf?alt=media&token=b2f6d657-400f-44b6-9945-06e7ac80051c",
+    "barangay": "Cabaon-an",
+    "statusUpdatedAt": {
+      "_seconds": 1763586942,
+      "_nanoseconds": 716000000
+    },
+    "createdAt": {
+      "_seconds": 1763586547,
+      "_nanoseconds": 775000000
+    },
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "terrain_type": "Flat",
+    "plantingDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "soilType": "Loam",
+    "applicantName": "dyn dyn",
+    "area": "0.17",
+    "field_size": "0.17",
+    "sugarcane_variety": "PSR 03-171"
+  },
+  "Ytw2cUDGVp43850sE2FJ": {
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1774506049118.pdf?alt=media&token=113cd6e1-7cbb-410e-9c6f-6da289f170e0",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1774506049107.pdf?alt=media&token=48eb277a-22ea-44ba-98ac-1ae7a8f03ff0",
+    "currentGrowthStage": "Planting (Panahon sa Pagtanom)",
+    "reviewedAt": {
+      "_seconds": 1774506434,
+      "_nanoseconds": 462000000
+    },
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "ownerName": "evsu corporation",
+    "area": "2.8",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1774506049088.pdf?alt=media&token=0a5389db-354f-4db6-9cc9-7659aefa7b4d",
+    "sugarcane_variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "createdAt": {
+      "_seconds": 1774506177,
+      "_nanoseconds": 836000000
+    },
+    "irrigationMethod": "Rainfed",
+    "street": "don felipe",
+    "owner_name": "evsu corporation",
+    "previousCrop": "Rice",
+    "field_size": "2.8",
+    "updatedAt": {
+      "_seconds": 1774508830,
+      "_nanoseconds": 752000000
+    },
+    "soilType": "Loam",
+    "statusUpdatedAt": {
+      "_seconds": 1774506433,
+      "_nanoseconds": 951000000
+    },
+    "status": "reviewed",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldName": "markfield",
+    "reviewedBy": "CSKNdMTsacbCuLbebL5YydYwcJj2",
+    "barangay": "Dolores",
+    "fieldTerrain": "Flat",
+    "longitude": 124.615506,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "latitude": 11.064296,
+    "coordinates": [
+      {
+        "lat": 11.063190272877474,
+        "lng": 124.61557030677797
+      },
+      {
+        "lat": 11.063653568441103,
+        "lng": 124.6151626110077
+      },
+      {
+        "lat": 11.064095804432144,
+        "lng": 124.61498022079469
+      },
+      {
+        "lat": 11.064506451540465,
+        "lng": 124.61475491523744
+      },
+      {
+        "lat": 11.064869715810385,
+        "lng": 124.61449742317201
+      },
+      {
+        "lat": 11.065080303586715,
+        "lng": 124.61484074592592
+      },
+      {
+        "lat": 11.065401449654207,
+        "lng": 124.61553812026979
+      },
+      {
+        "lat": 11.065243509009273,
+        "lng": 124.61564540863039
+      },
+      {
+        "lat": 11.065043450736788,
+        "lng": 124.61585462093355
+      },
+      {
+        "lat": 11.064753892468874,
+        "lng": 124.61608529090883
+      },
+      {
+        "lat": 11.064427480987407,
+        "lng": 124.61634278297426
+      },
+      {
+        "lat": 11.064180039783333,
+        "lng": 124.61651444435121
+      },
+      {
+        "lat": 11.063901010089767,
+        "lng": 124.61617648601533
+      },
+      {
+        "lat": 11.063711480335042,
+        "lng": 124.61605310440065
+      }
+    ],
+    "field_name": "markfield"
+  },
+  "aaDnX3W1CQZoFzxAjSRq": {
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_back_1763722236339.png?alt=media&token=c5311fde-f103-44ae-ba6a-14a6a71fe7fb",
+    "barangay": "Camp Downes",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fselfie_1763722237929.png?alt=media&token=caf028d2-04fb-4b37-a7d6-80e3489daed0",
+    "requestedBy": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "sugarcane_variety": "LCP 85-384",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_front_1763722233727.png?alt=media&token=41bea612-29fd-4548-bd37-8e7de21e9346",
+    "fieldTerrain": "Gently Sloping",
+    "area": "5",
+    "terrain_type": "Rolling",
+    "createdAt": {
+      "_seconds": 1763722220,
+      "_nanoseconds": 95000000
+    },
+    "reviewedAt": {
+      "_seconds": 1763722265,
+      "_nanoseconds": 805000000
+    },
+    "updatedAt": {
+      "_seconds": 1763722264,
+      "_nanoseconds": 577000000
+    },
+    "previousCrop": "Rice",
+    "irrigationMethod": "Furrow Irrigation",
+    "soilType": "Clay",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fbarangay_certificate_1763722239908.png?alt=media&token=04f7f07d-458c-4aea-9398-1b2b538034f9",
+    "fieldName": "Cane B",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fland_title_1763722241134.png?alt=media&token=127dacbc-fd7b-4525-9ec2-7dfc96a9f728",
+    "street": "purok 1",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "variety": "LCP 85-384",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "statusUpdatedAt": {
+      "_seconds": 1763722264,
+      "_nanoseconds": 577000000
+    },
+    "field_name": "Cane B",
+    "longitude": 124.651746,
+    "status": "reviewed",
+    "field_size": "5",
+    "coordinates": [],
+    "latitude": 11.03529
+  },
+  "b4CRs94s7hpfQSCmBKVC": {
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "variety": "PSR 03-171",
+    "status": "to edit",
+    "area": "1.0",
+    "terrain_type": "Flat",
+    "barangay": "Macabug",
+    "longitude": 124.580026,
+    "updatedAt": {
+      "_seconds": 1765268373,
+      "_nanoseconds": 938000000
+    },
+    "applicantName": "Almackie Andrew J. Bangalao",
+    "sugarcane_variety": "PSR 03-171",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fvalid_front_1764875356368.pdf?alt=media&token=015525b5-bf5f-42f6-913f-3bbd689233ff",
+    "street": "salvacion",
+    "latestRemarkAt": {
+      "_seconds": 1765268373,
+      "_nanoseconds": 938000000
+    },
+    "field_size": "1.0",
+    "coordinates": [],
+    "soilType": "Silt Loam",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fbarangay_certificate_1764875356386.png?alt=media&token=352197f5-ee89-4746-bc3d-59c2ae7034aa",
+    "latitude": 11.048575,
+    "createdAt": {
+      "_seconds": 1764875362,
+      "_nanoseconds": 243000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fland_title_1764875356388.png?alt=media&token=b763a492-e517-45a6-974b-e568b1a77667",
+    "previousCrop": "Other",
+    "fieldTerrain": "Flat",
+    "fieldName": "ikam cane",
+    "latestRemark": "change the id",
+    "field_name": "ikam cane",
+    "requestedBy": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fvalid_back_1764875356377.pdf?alt=media&token=c0721ba8-1575-4087-a8d1-6f59a93709eb",
+    "irrigationMethod": "Rainfed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fselfie_1764875356382.pdf?alt=media&token=3b8d3715-518a-4a8d-a7f4-6f64f255608b",
+    "__collections__": {
+      "remarks": {
+        "bNMg57E0iCCrrDzSzDDD": {
+          "message": "change the id",
+          "createdAt": {
+            "_seconds": 1765268373,
+            "_nanoseconds": 777000000
+          }
+        }
+      }
+    }
+  },
+  "bVEKomORZOLt4sT3ibiz": {
+    "status": "active",
+    "variety": "VMC 84-524",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "barangay": "Matica-a",
+    "area": "0.07",
+    "actualYield": null,
+    "longitude": 124.559963,
+    "isRatoon": true,
+    "finalDAP": null,
+    "reviewedBy": "be3QHYSn6nXwAdeUSmSmDl4neJk2",
+    "harvestTimingDays": null,
+    "statusUpdatedAt": {
+      "_seconds": 1765269967,
+      "_nanoseconds": 326000000
+    },
+    "applicantName": "dyn dyn",
+    "delayDays": 0,
+    "updatedAt": {
+      "_seconds": 1765723758,
+      "_nanoseconds": 415000000
+    },
+    "sugarcane_variety": "BZ 148",
+    "expectedHarvestDate": {
+      "_seconds": 1797259759,
+      "_nanoseconds": 202000000
+    },
+    "plantingCycleNumber": 3,
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1765269862479.png?alt=media&token=b1dff8ea-1307-48e6-821f-05f5c15d8cd7",
+    "harvestTiming": null,
+    "street": "Purok 4",
+    "field_size": "0.07",
+    "basalFertilizationDate": {
+      "_seconds": 1765720064,
+      "_nanoseconds": 708000000
+    },
+    "soilType": "Loam",
+    "coordinates": [],
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1765269862491.png?alt=media&token=d225c766-fa27-4aea-93cd-b5dac548ce71",
+    "latitude": 11.029957,
+    "mainFertilizationDate": null,
+    "growthHistory": {
+      "cycle2": {
+        "cycle": 2,
+        "finalDAP": 0,
+        "harvestedAt": {
+          "_seconds": 1765717338,
+          "_nanoseconds": 554000000
+        },
+        "actualHarvestDate": {
+          "_seconds": 1765717339,
+          "_nanoseconds": 100000000
+        },
+        "actualYield": null,
+        "archivedAt": {
+          "_seconds": 1765717343,
+          "_nanoseconds": 373000000
+        },
+        "plantingDate": {
+          "_seconds": 1765716747,
+          "_nanoseconds": 941000000
+        },
+        "harvestTiming": "early"
+      },
+      "cycle1": {
+        "harvestTiming": "early",
+        "archivedAt": {
+          "_seconds": 1765716756,
+          "_nanoseconds": 123000000
+        },
+        "actualYield": null,
+        "plantingDate": {
+          "_seconds": 1765715233,
+          "_nanoseconds": 771000000
+        },
+        "actualHarvestDate": {
+          "_seconds": 1765716747,
+          "_nanoseconds": 941000000
+        },
+        "harvestedAt": {
+          "_seconds": 1765716747,
+          "_nanoseconds": 218000000
+        },
+        "finalDAP": 0,
+        "cycle": 1
+      },
+      "cycle0": {
+        "actualHarvestDate": {
+          "_seconds": 1765715233,
+          "_nanoseconds": 771000000
+        },
+        "harvestedAt": {
+          "_seconds": 1765715233,
+          "_nanoseconds": 259000000
+        },
+        "harvestTiming": "early",
+        "plantingDate": {
+          "_seconds": 1765714517,
+          "_nanoseconds": 464000000
+        },
+        "archivedAt": {
+          "_seconds": 1765715242,
+          "_nanoseconds": 205000000
+        },
+        "actualYield": null,
+        "finalDAP": 0,
+        "cycle": 0
+      }
+    },
+    "currentGrowthStage": "Germination",
+    "createdAt": {
+      "_seconds": 1765269881,
+      "_nanoseconds": 379000000
+    },
+    "harvestedAt": null,
+    "fieldName": "Dyn",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1765269862492.png?alt=media&token=4d4530dd-12a5-45f5-8e6b-73b3e5ad736a",
+    "previousCrop": "Sugarcane (Ratoon)",
+    "fieldTerrain": "Gently Sloping",
+    "reviewedAt": {
+      "_seconds": 1765269968,
+      "_nanoseconds": 872000000
+    },
+    "ratoonNumber": 3,
+    "replantedAt": {
+      "_seconds": 1765714521,
+      "_nanoseconds": 179000000
+    },
+    "field_name": "Dyn",
+    "actualHarvestDate": null,
+    "plantingDate": {
+      "_seconds": 1765723759,
+      "_nanoseconds": 202000000
+    },
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1765269862486.png?alt=media&token=73137d0e-4b48-4779-b287-1147f491f078",
+    "plantingHistory": {
+      "cycle0": {
+        "finalDAP": 0,
+        "growthHistory": {
+          "cycle0": {
+            "cycle": 0,
+            "finalDAP": 0,
+            "harvestedAt": {
+              "_seconds": 1765271538,
+              "_nanoseconds": 342000000
+            },
+            "actualHarvestDate": {
+              "_seconds": 1765271537,
+              "_nanoseconds": 523000000
+            },
+            "archivedAt": {
+              "_seconds": 1765271557,
+              "_nanoseconds": 224000000
+            },
+            "plantingDate": {
+              "_seconds": 1765238400,
+              "_nanoseconds": 0
+            },
+            "harvestTiming": "early"
+          }
+        },
+        "archivedAt": {
+          "_seconds": 1765271762,
+          "_nanoseconds": 319000000
+        },
+        "variety": "VMC 84-524",
+        "ratoonNumber": 1,
+        "actualYield": null,
+        "plantingDate": {
+          "_seconds": 1765271537,
+          "_nanoseconds": 523000000
+        },
+        "actualHarvestDate": {
+          "_seconds": 1765271753,
+          "_nanoseconds": 387000000
+        },
+        "plantingCycle": 0
+      },
+      "cycle1": {
+        "archivedAt": {
+          "_seconds": 1765714078,
+          "_nanoseconds": 897000000
+        },
+        "growthHistory": {
+          "cycle0": {
+            "actualYield": null,
+            "archivedAt": {
+              "_seconds": 1765347921,
+              "_nanoseconds": 573000000
+            },
+            "plantingDate": {
+              "_seconds": 1765271753,
+              "_nanoseconds": 387000000
+            },
+            "harvestTiming": "early",
+            "harvestedAt": {
+              "_seconds": 1765347797,
+              "_nanoseconds": 934000000
+            },
+            "actualHarvestDate": {
+              "_seconds": 1765347797,
+              "_nanoseconds": 355000000
+            },
+            "cycle": 0,
+            "finalDAP": 0
+          },
+          "cycle1": {
+            "harvestTiming": "early",
+            "plantingDate": {
+              "_seconds": 1765347797,
+              "_nanoseconds": 355000000
+            },
+            "actualYield": null,
+            "archivedAt": {
+              "_seconds": 1765713680,
+              "_nanoseconds": 103000000
+            },
+            "actualHarvestDate": {
+              "_seconds": 1765713674,
+              "_nanoseconds": 109000000
+            },
+            "harvestedAt": {
+              "_seconds": 1765713674,
+              "_nanoseconds": 620000000
+            },
+            "finalDAP": 4,
+            "cycle": 1
+          }
+        },
+        "finalDAP": 0,
+        "actualHarvestDate": {
+          "_seconds": 1765714059,
+          "_nanoseconds": 561000000
+        },
+        "plantingCycle": 1,
+        "actualYield": null,
+        "plantingDate": {
+          "_seconds": 1765713674,
+          "_nanoseconds": 109000000
+        },
+        "variety": "VMC 84-524",
+        "ratoonNumber": 2
+      },
+      "cycle2": {
+        "growthHistory": {
+          "cycle0": {
+            "harvestTiming": "early",
+            "plantingDate": {
+              "_seconds": 1765714059,
+              "_nanoseconds": 561000000
+            },
+            "actualYield": null,
+            "archivedAt": {
+              "_seconds": 1765714454,
+              "_nanoseconds": 518000000
+            },
+            "actualHarvestDate": {
+              "_seconds": 1765714449,
+              "_nanoseconds": 954000000
+            },
+            "harvestedAt": {
+              "_seconds": 1765714449,
+              "_nanoseconds": 565000000
+            },
+            "finalDAP": 0,
+            "cycle": 0
+          }
+        },
+        "finalDAP": 0,
+        "archivedAt": {
+          "_seconds": 1765714521,
+          "_nanoseconds": 179000000
+        },
+        "ratoonNumber": 1,
+        "variety": "VMC 84-524",
+        "plantingCycle": 2,
+        "actualHarvestDate": {
+          "_seconds": 1765714517,
+          "_nanoseconds": 464000000
+        },
+        "actualYield": null,
+        "plantingDate": {
+          "_seconds": 1765714449,
+          "_nanoseconds": 954000000
+        }
+      }
+    },
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "ratoonedAt": {
+      "_seconds": 1765717343,
+      "_nanoseconds": 373000000
+    },
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1765269862489.png?alt=media&token=9469a5a6-2ea7-4031-ac57-111d118b3917",
+    "irrigationMethod": "Drip Irrigation"
+  },
+  "dEum9FprQB27KMXpfdLi": {
+    "previousCrop": "Sugarcane (Ratoon)",
+    "createdAt": {
+      "_seconds": 1765969870,
+      "_nanoseconds": 865000000
+    },
+    "soilType": "Clay",
+    "latitude": 1239033,
+    "field_size": "0.5",
+    "coordinates": [],
+    "street": "purok 1",
+    "longitude": 124.5571085,
+    "applicantName": "dyn dyn",
+    "variety": "K 88-87",
+    "field_name": "Cane A",
+    "area": "0.5",
+    "fieldTerrain": "Gently Sloping",
+    "barangay": "Matica-a",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1765969862546.pdf?alt=media&token=33e45809-d662-47df-b8bf-a3b2946a4759",
+    "irrigationMethod": "Drip Irrigation",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1765969862559.pdf?alt=media&token=582b4f43-8b29-49ef-8ace-039be719e4a0",
+    "status": "pending",
+    "sugarcane_variety": "K 88-87",
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Cane A",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1765969862574.pdf?alt=media&token=ebee10fa-1c5a-4e99-bc21-8dc0869adea3",
+    "updatedAt": {
+      "_seconds": 1765969870,
+      "_nanoseconds": 865000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1765969862571.pdf?alt=media&token=93f8d5ef-d2cf-4a83-8169-6a64bd877fd2",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1765969862521.pdf?alt=media&token=31e735bc-6c9f-4d67-8db9-5a3ad754456c"
+  },
+  "eYx28oYRQOKzIVkAPMZR": {
+    "updatedAt": {
+      "_seconds": 1773141263,
+      "_nanoseconds": 765000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1764774124034.png?alt=media&token=429ce92e-0967-43d9-96af-1be173d86e45",
+    "status": "pending",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1764774117793.png?alt=media&token=c71d922e-5b6c-43a1-873f-57e7736aba26",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "currentGrowthStage": "Land Preparation (Before Planting)",
+    "coordinates": [],
+    "street": "purok 1",
+    "latestRemark": "kuan",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "longitude": 124.6,
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1764774114852.png?alt=media&token=4196b694-273e-4fe5-85a2-f2824d43b578",
+    "reviewedAt": {
+      "_seconds": 1764774385,
+      "_nanoseconds": 543000000
+    },
+    "city": "Ormoc City",
+    "variety": "Phil 92-0577",
+    "fieldTerrain": "Gently Sloping",
+    "irrigationMethod": "Rainfed",
+    "latitude": 11.011,
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1764774120708.png?alt=media&token=3c1d03c5-8905-4c66-956d-3a00efe1592d",
+    "latestRemarkAt": {
+      "_seconds": 1765264226,
+      "_nanoseconds": 301000000
+    },
+    "isNew": false,
+    "barangay": "Catmon",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1764774122314.png?alt=media&token=d7629cb5-b543-405f-821b-3cdcaa87f2d8",
+    "fieldName": "Caneee",
+    "previousCrop": "Sugarcane (Plant)",
+    "field_name": "Caneee",
+    "terrain_type": "Flat",
+    "statusUpdatedAt": {
+      "_seconds": 1764774384,
+      "_nanoseconds": 971000000
+    },
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1764774125,
+      "_nanoseconds": 172000000
+    },
+    "sugarcane_variety": "Phil 92-0577",
+    "soilType": "Loam",
+    "field_size": "4.98",
+    "area": "4.98",
+    "applicantName": "dyn dyn",
+    "__collections__": {
+      "remarks": {
+        "VA77SqgszGzZ9mYRvWUP": {
+          "message": "kuan",
+          "createdAt": {
+            "_seconds": 1765264226,
+            "_nanoseconds": 126000000
+          }
+        }
+      }
+    }
+  },
+  "g4RtPSlPtjucu0EN7Ywj": {
+    "longitude": 124.620885,
+    "reviewedAt": {
+      "_seconds": 1773318992,
+      "_nanoseconds": 440000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318358051.png?alt=media&token=2bff4cbf-2b33-46d0-a6f9-8eff9ba02c4d",
+    "variety": "PSR 2000-161",
+    "irrigationMethod": "Rainfed",
+    "fieldTerrain": "Flat",
+    "updatedAt": {
+      "_seconds": 1773318989,
+      "_nanoseconds": 146000000
+    },
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318358063.png?alt=media&token=49569951-11d3-410b-8595-d82c7bfd8a93",
+    "status": "reviewed",
+    "coordinates": [],
+    "street": "purok 2",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "statusUpdatedAt": {
+      "_seconds": 1773318989,
+      "_nanoseconds": 146000000
+    },
+    "createdAt": {
+      "_seconds": 1773318348,
+      "_nanoseconds": 181000000
+    },
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "sugarcane_variety": "PSR 2000-161",
+    "soilType": "Loam",
+    "area": "1",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "field_size": "1",
+    "latitude": 11.005247,
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318358065.png?alt=media&token=73e55a72-3a60-43b8-a718-af2e42319589",
+    "barangay": "Guintigui-an",
+    "fieldName": "PSR 2000-161",
+    "field_name": "PSR 2000-161",
+    "previousCrop": "Sugarcane (Plant)"
+  },
+  "g8ossrok1OFzfbvxQ9D0": {
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fselfie_1765851800144.png?alt=media&token=28ad0ea7-74c6-4dd0-87e1-c0d3d3d12e7b",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_back_1765851800142.png?alt=media&token=f70cb3c1-fb3b-43a9-a75e-90e1027a9951",
+    "reviewedAt": {
+      "_seconds": 1765851882,
+      "_nanoseconds": 985000000
+    },
+    "sugarcane_variety": "PSR 03-171",
+    "createdAt": {
+      "_seconds": 1765851799,
+      "_nanoseconds": 566000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_front_1765851800137.png?alt=media&token=cd6f7220-1631-44eb-9470-b6bd8458cda6",
+    "variety": "PSR 03-171",
+    "area": "0.5",
+    "updatedAt": {
+      "_seconds": 1765851881,
+      "_nanoseconds": 380000000
+    },
+    "soilType": "Sandy Loam",
+    "previousCrop": "Sugarcane (Ratoon)",
+    "field_size": "0.5",
+    "irrigationMethod": "Furrow Irrigation",
+    "street": "Purok 6",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fbarangay_certificate_1765851800146.png?alt=media&token=ae10b692-ae88-49dc-8d30-03e4a06c3227",
+    "coordinates": [],
+    "field_name": "Kampo Dos",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fland_title_1765851800148.png?alt=media&token=96fafe4f-4885-4adb-8b08-01225e7a72b8",
+    "longitude": 124.593257,
+    "fieldTerrain": "Moderately Sloping",
+    "latitude": 11.047375,
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "fieldName": "Kampo Dos",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "barangay": "Juaton",
+    "statusUpdatedAt": {
+      "_seconds": 1765851881,
+      "_nanoseconds": 380000000
+    },
+    "requestedBy": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "status": "reviewed"
+  },
+  "hZw2zu2MjxxotDxwxpSA": {
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773318661660.png?alt=media&token=b5f0d10a-72aa-42fd-8f4d-8cf2329e54f7",
+    "barangay": "Concepcion",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773318661657.png?alt=media&token=cb099ccc-6b2d-44dd-9bab-19c47ab94f39",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773318661636.pdf?alt=media&token=cfdcb964-19b5-4fe7-b25e-20b06fddbce5",
+    "sugarcane_variety": "PSR 97-41",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "area": "2.99",
+    "fieldTerrain": "Flat",
+    "createdAt": {
+      "_seconds": 1773318653,
+      "_nanoseconds": 899000000
+    },
+    "soilType": "Loam",
+    "irrigationMethod": "Furrow Irrigation",
+    "previousCrop": "Sugarcane (Plant)",
+    "updatedAt": {
+      "_seconds": 1774800098,
+      "_nanoseconds": 544000000
+    },
+    "reviewedAt": {
+      "_seconds": 1773318938,
+      "_nanoseconds": 966000000
+    },
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "street": "purok 1",
+    "fieldName": "PSR 97-41",
+    "operationOverrides": {
+      "Post-Planting": {
+        "completedAt": {
+          "_seconds": 1774802492,
+          "_nanoseconds": 216000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completed": true
+      }
+    },
+    "currentGrowthStage": "Ripening & Maturation",
+    "statusUpdatedAt": {
+      "_seconds": 1773318936,
+      "_nanoseconds": 190000000
+    },
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "variety": "PSR 97-41",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "latitude": 11.014195,
+    "field_size": "2.99",
+    "coordinates": [],
+    "field_name": "PSR 97-41",
+    "longitude": 124.61513,
+    "status": "reviewed"
+  },
+  "iPR9Pz9sthDweMbKOGUq": {
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fbarangay_certificate_1763655876204.png?alt=media&token=8a1f835b-e710-49ae-a68b-cb131436ce5d",
+    "latitude": 11.028551,
+    "coordinates": [],
+    "soilType": "Loam",
+    "reviewedAt": {
+      "_seconds": 1763655894,
+      "_nanoseconds": 538000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fland_title_1763655877678.png?alt=media&token=c77a1578-3383-48c7-a395-110fa2568d10",
+    "previousCrop": "Corn",
+    "fieldTerrain": "Very Steep",
+    "fieldName": "Cane",
+    "createdAt": {
+      "_seconds": 1763655857,
+      "_nanoseconds": 797000000
+    },
+    "field_name": "Cane",
+    "irrigationMethod": "Drip Irrigation",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fselfie_1763655874867.png?alt=media&token=ec5aad7c-91d5-4725-8419-17d5afb3a92d",
+    "requestedBy": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_back_1763655873633.png?alt=media&token=4b982b69-da34-48b4-a94e-f3b47327da82",
+    "area": "5",
+    "terrain_type": "Flat",
+    "barangay": "Green Valley",
+    "userId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "variety": "Phil 93-1601",
+    "status": "reviewed",
+    "updatedAt": {
+      "_seconds": 1763655893,
+      "_nanoseconds": 612000000
+    },
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "statusUpdatedAt": {
+      "_seconds": 1763655893,
+      "_nanoseconds": 612000000
+    },
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "longitude": 124.634932,
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FRyq1FhvxK4QSvWbiAFc1NNjCMT83%2Fvalid_front_1763655871513.png?alt=media&token=44bb389a-08bf-4597-9c28-10d5c9f97cc8",
+    "sugarcane_variety": "Phil 93-1601",
+    "field_size": "5",
+    "street": "purok 1"
+  },
+  "jnagYSPScvIWOspdQgGm": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "currentGrowthStage": "Planting (Panahon sa Pagtanom)",
+    "updatedAt": {
+      "_seconds": 1774803166,
+      "_nanoseconds": 13000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773317974093.png?alt=media&token=96c33076-229e-4bc9-9cdd-eaeee69488c2",
+    "status": "reviewed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773317974102.png?alt=media&token=203b0f48-b4e5-4644-9da5-5bf58a4850a8",
+    "irrigationMethod": "Rainfed",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773317974100.png?alt=media&token=bb741abd-7743-4fa5-8037-cd4f7f5b1038",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "sugarcane_variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "fieldName": "PS 3 / VMC 84-524 / CADP Sc1",
+    "statusUpdatedAt": {
+      "_seconds": 1773319065,
+      "_nanoseconds": 252000000
+    },
+    "longitude": 124.614219,
+    "street": "Purok 6",
+    "fieldTerrain": "Flat",
+    "barangay": "San Vicente",
+    "area": "4.97",
+    "field_name": "PS 3 / VMC 84-524 / CADP Sc1",
+    "variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "createdAt": {
+      "_seconds": 1773317963,
+      "_nanoseconds": 729000000
+    },
+    "soilType": "Clay",
+    "previousCrop": "Sugarcane (Plant)",
+    "operationOverrides": {
+      "Pre-Planting": {
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completedAt": {
+          "_seconds": 1774803032,
+          "_nanoseconds": 915000000
+        },
+        "completed": true
+      },
+      "Planting": {
+        "completedAt": {
+          "_seconds": 1774803320,
+          "_nanoseconds": 159000000
+        },
+        "completedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+        "completed": true
+      }
+    },
+    "coordinates": [],
+    "field_size": "4.97",
+    "latitude": 11.007973,
+    "reviewedAt": {
+      "_seconds": 1773319068,
+      "_nanoseconds": 662000000
+    }
+  },
+  "ksSXnBfh2HaJltJdDp42": {
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773227304471.png?alt=media&token=f6c1a6fb-60b5-41b6-925f-c8eef2cc1223",
+    "status": "reviewed",
+    "updatedAt": {
+      "_seconds": 1774799299,
+      "_nanoseconds": 798000000
+    },
+    "coordinates": [],
+    "currentGrowthStage": "Stem Elongation & Grand Growth",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "street": "purok 1",
+    "longitude": 124.599523,
+    "variety": "K 88-65",
+    "reviewedAt": {
+      "_seconds": 1773227543,
+      "_nanoseconds": 159000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773227304458.png?alt=media&token=e76bc12b-cd25-4ed3-b1a2-fdf720f8762b",
+    "irrigationMethod": "Rainfed",
+    "fieldTerrain": "Flat",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773227304473.png?alt=media&token=41878a76-426c-4ee1-a2e1-e01fa418aa50",
+    "latitude": 11.011041,
+    "barangay": "Catmon",
+    "field_name": "K 88-65",
+    "previousCrop": "Sugarcane (Plant)",
+    "fieldName": "K 88-65",
+    "createdAt": {
+      "_seconds": 1773227296,
+      "_nanoseconds": 263000000
+    },
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "statusUpdatedAt": {
+      "_seconds": 1773227525,
+      "_nanoseconds": 295000000
+    },
+    "sugarcane_variety": "K 88-65",
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "area": "1",
+    "field_size": "1",
+    "soilType": "Clay"
+  },
+  "oOChK4zwe7MGutk5QJcp": {
+    "applicantName": "dyn dyn",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1765900844178.png?alt=media&token=a7fdf81a-0edb-43c7-b89f-5457850c27eb",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1765900844176.png?alt=media&token=dc3ac6ca-4a81-4e44-b298-dead3b21fc8b",
+    "createdAt": {
+      "_seconds": 1765900849,
+      "_nanoseconds": 746000000
+    },
+    "sugarcane_variety": "PS 1 or VMC 84-947",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1765900844169.png?alt=media&token=c86f243a-aa8c-492e-8325-82d08444769f",
+    "variety": "PS 1 or VMC 84-947",
+    "area": "0.5",
+    "updatedAt": {
+      "_seconds": 1765900849,
+      "_nanoseconds": 746000000
+    },
+    "soilType": "Clay",
+    "previousCrop": "Sugarcane (Ratoon)",
+    "field_size": "0.5",
+    "irrigationMethod": "Rainfed",
+    "street": "purok 1",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fbarangay_certificate_1765900844181.png?alt=media&token=b0c095b1-6c05-4e5e-8dc5-cba6ddb999e1",
+    "coordinates": [],
+    "field_name": "CaneMap",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fland_title_1765900844183.png?alt=media&token=2dc8e2ef-79d9-4230-be24-bb8a91c401cc",
+    "longitude": 124.59351,
+    "fieldTerrain": "Gently Sloping",
+    "latitude": 11.049458,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "CaneMap",
+    "barangay": "Tambulilid",
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "pending"
+  },
+  "pNGGviX9ftbNxEsfCCn9": {
+    "terrain_type": "Hilly",
+    "createdAt": {
+      "_seconds": 1763741829,
+      "_nanoseconds": 699000000
+    },
+    "fieldTerrain": "Flat",
+    "area": "1.0",
+    "requestedBy": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "sugarcane_variety": "Phil 92-0577",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fvalid_front_1763741814052.pdf?alt=media&token=21fe5290-4f15-4c1b-9d71-eb5b636d5773",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fvalid_back_1763741816754.pdf?alt=media&token=854a1508-fdaa-4352-a0f8-bb2e090b8215",
+    "barangay": "Punta",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fselfie_1763741819430.pdf?alt=media&token=af8c9945-c865-430e-bfdf-66e343f87226",
+    "longitude": 124.569983,
+    "status": "reviewed",
+    "field_name": "Maki Cane",
+    "coordinates": [
+      {
+        "lat": 11.014750791927359,
+        "lng": 124.56929683685304
+      },
+      {
+        "lat": 11.015382662633147,
+        "lng": 124.56929683685304
+      },
+      {
+        "lat": 11.015382662633147,
+        "lng": 124.57067012786867
+      },
+      {
+        "lat": 11.014750791927359,
+        "lng": 124.57067012786867
+      }
+    ],
+    "field_size": "1.0",
+    "latitude": 11.015067,
+    "variety": "Phil 92-0577",
+    "userId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "applicantName": "Almackie Andrew J. Bangalao",
+    "statusUpdatedAt": {
+      "_seconds": 1763742161,
+      "_nanoseconds": 717000000
+    },
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fbarangay_certificate_1763741823079.png?alt=media&token=e4d2455c-ad03-4dd1-8cc2-6a18b5305046",
+    "fieldName": "Maki Cane",
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FEOFIAct9L8Ox5f4SJhOZ8ItHNsG3%2Fland_title_1763741824699.pdf?alt=media&token=772bd217-f2cf-4cd6-9d54-add2ddc682d4",
+    "street": "Punta",
+    "reviewedBy": "EVvK86LzfZgNtMM0c7nRlcIhIRw2",
+    "reviewedAt": {
+      "_seconds": 1763742162,
+      "_nanoseconds": 88000000
+    },
+    "updatedAt": {
+      "_seconds": 1764869385,
+      "_nanoseconds": 700000000
+    },
+    "previousCrop": "Sugarcane (Plant)",
+    "soilType": "Clay",
+    "irrigationMethod": "Rainfed",
+    "mainFertilizationDate": {
+      "_seconds": 1764806400,
+      "_nanoseconds": 0
+    }
+  },
+  "su9taFYjLnSvEtj31JIo": {
+    "longitude": 124.578876,
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "statusUpdatedAt": {
+      "_seconds": 1773317515,
+      "_nanoseconds": 903000000
+    },
+    "applicantName": "Reyna Marie Garciano boyboy",
+    "updatedAt": {
+      "_seconds": 1774271536,
+      "_nanoseconds": 426000000
+    },
+    "status": "reviewed",
+    "variety": "K 88-87",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "barangay": "Bantigue",
+    "area": "1",
+    "street": "purok 1",
+    "field_size": "1",
+    "sugarcane_variety": "K 88-87",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_front_1773227749797.png?alt=media&token=3af30d88-4fd9-4717-a3a6-c1214cf452da",
+    "currentGrowthStage": "Harvesting (Ani sa Tubo)",
+    "createdAt": {
+      "_seconds": 1773227744,
+      "_nanoseconds": 170000000
+    },
+    "fieldName": "K 88-87",
+    "previousCrop": "Sugarcane (Plant)",
+    "fieldTerrain": "Flat",
+    "reviewedAt": {
+      "_seconds": 1773317517,
+      "_nanoseconds": 857000000
+    },
+    "soilType": "Clay",
+    "coordinates": [],
+    "latitude": 11.020205,
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fvalid_back_1773227749807.pdf?alt=media&token=812a1820-01c7-44f5-b507-c35d7b2182f8",
+    "requestedBy": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FO4V5fDvI5ff4dJ13M9OSgyIZ8Pq1%2Fselfie_1773227749816.pdf?alt=media&token=ff506820-500b-45e2-bec8-943895da5643",
+    "irrigationMethod": "Rainfed",
+    "field_name": "K 88-87"
+  },
+  "ynZ54ohzHujMqPtKULn2": {
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "sugarcane_variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "requestedBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Kamarota",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_back_1765974414413.pdf?alt=media&token=4337a174-6731-4fe1-b08d-71fbdc220c82",
+    "irrigationMethod": "Furrow Irrigation",
+    "status": "reviewed",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fselfie_1765974414432.pdf?alt=media&token=5dbd7e8a-5170-4b44-b010-09d3662d0bd3",
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FUYdzMJEZ5JSnqVKFQNOK7dM1xA93%2Fvalid_front_1765974414372.pdf?alt=media&token=d15f5297-4697-43ef-90d7-fb264d348fc9",
+    "updatedAt": {
+      "_seconds": 1773140927,
+      "_nanoseconds": 580000000
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "reviewedAt": {
+      "_seconds": 1773140927,
+      "_nanoseconds": 965000000
+    },
+    "latitude": 11.1239033,
+    "field_size": "0.5",
+    "coordinates": [],
+    "previousCrop": "Sugarcane (Ratoon)",
+    "createdAt": {
+      "_seconds": 1765974420,
+      "_nanoseconds": 724000000
+    },
+    "soilType": "Clay",
+    "variety": "PS 3 or VMC 84-524 or CADP Sc1",
+    "applicantName": "dyn dyn",
+    "field_name": "Kamarota",
+    "area": "0.5",
+    "fieldTerrain": "Gently Sloping",
+    "barangay": "Matica-a",
+    "street": "Mahayahay",
+    "longitude": 124.5571085,
+    "statusUpdatedAt": {
+      "_seconds": 1773140927,
+      "_nanoseconds": 580000000
+    }
+  },
+  "z8nlWBPL5W5t6KV7bQfb": {
+    "field_name": "Kampo Uno",
+    "previousCrop": "Sugarcane (Plant)",
+    "fieldName": "Kampo Uno",
+    "barangayCertUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fbarangay_certificate_1765809787557.png?alt=media&token=e8b63dc5-2607-4bb1-8ec9-179bf982f7a9",
+    "barangay": "Tambulilid",
+    "selfieUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fselfie_1765809787555.png?alt=media&token=f1a08cf2-6e78-4311-9249-5fa237036b9b",
+    "latitude": 11.047375,
+    "applicantName": "Reyna Marie Garciano Boyboy",
+    "area": "0.5",
+    "field_size": "0.5",
+    "soilType": "Clay Loam",
+    "sugarcane_variety": "Phil 93-1601",
+    "createdAt": {
+      "_seconds": 1765809786,
+      "_nanoseconds": 423000000
+    },
+    "requestedBy": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "statusUpdatedAt": {
+      "_seconds": 1765809880,
+      "_nanoseconds": 620000000
+    },
+    "userId": "tjR34PBqOPW9fwy8DSDlLGhJH7F2",
+    "street": "Purok 6",
+    "coordinates": [],
+    "reviewedBy": "7WwPSLrZzrYiZP3BsgvYuXiw7v82",
+    "status": "reviewed",
+    "validBackUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_back_1765809787554.png?alt=media&token=be00ee76-6647-4797-b695-f364d39dc757",
+    "updatedAt": {
+      "_seconds": 1765809880,
+      "_nanoseconds": 620000000
+    },
+    "landTitleUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fland_title_1765809787558.png?alt=media&token=3c52ed02-a7d0-4e73-b686-e5be9c54c104",
+    "irrigationMethod": "Sprinkler Irrigation",
+    "fieldTerrain": "Flat",
+    "variety": "Phil 93-1601",
+    "reviewedAt": {
+      "_seconds": 1765809882,
+      "_nanoseconds": 93000000
+    },
+    "validFrontUrl": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/field_applications%2FtjR34PBqOPW9fwy8DSDlLGhJH7F2%2Fvalid_front_1765809787547.png?alt=media&token=01ed1127-363a-4330-8e2a-15be7447b852",
+    "longitude": 124.593257
+  }
+}

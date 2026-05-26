@@ -1,0 +1,3564 @@
+{
+  "03T6rcLiUEZuuCXflg32": {
+    "createdAt": {
+      "_seconds": 1764790941,
+      "_nanoseconds": 18000000
+    },
+    "description": "dacsacsa",
+    "details": "Harrowing",
+    "notes": "dacsacsa",
+    "taskType": "worker_log",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790939123_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=ac46dddf-1818-40ed-96fa-bea0f6820442",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764790941,
+      "_nanoseconds": 18000000
+    },
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "completionDate": {
+      "_seconds": 1764790940,
+      "_nanoseconds": 910000000
+    },
+    "variety": "Phil 92-0577",
+    "workerName": "Almackie J. Bangalao",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "metadata": {
+      "offline_timestamp": "2025-12-03T19:34:04.442Z",
+      "variety": "Phil 92-0577",
+      "synced_from_offline": true
+    },
+    "status": "done",
+    "title": "Harrowing",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "fieldName": "Maki Cane"
+  },
+  "12porKIhWROvsF3mNv1P": {
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "completedAt": {
+      "_seconds": 1765714448,
+      "_nanoseconds": 609000000
+    },
+    "details": ",",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765714439,
+      "_nanoseconds": 755000000
+    },
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "status": "done",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "metadata": {
+      "workers_count": 1
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "title": "harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "1IKfN4ZGtoyW0AUCwcFQ": {
+    "details": "Apply 50–75 kg NPK 20-20-20 per hectare as basal application before planting or at early establishment.",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "assign_type": "worker",
+    "metadata": {
+      "fertilizer_type": "NPK 20 20 20",
+      "amount_per_hectare": "50",
+      "workers_count": 1
+    },
+    "title": "Basal Fertilizer (0–30 DAP)",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1764184605,
+      "_nanoseconds": 337000000
+    },
+    "completedAt": {
+      "_seconds": 1764185702,
+      "_nanoseconds": 340000000
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "deadline": {
+      "_seconds": 1764633600,
+      "_nanoseconds": 0
+    }
+  },
+  "1r9G28e2Xau0CdHNEMba": {
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "completedAt": {
+      "_seconds": 1763799187,
+      "_nanoseconds": 776000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "workerName": ".",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "verified": true,
+    "taskType": "worker_log",
+    "description": ".",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Harvesting",
+    "status": "done",
+    "variety": "Phil 94-0913",
+    "details": "Harvesting",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "createdAt": {
+      "_seconds": 1763799187,
+      "_nanoseconds": 776000000
+    },
+    "notes": ".",
+    "fieldName": "kahago"
+  },
+  "2K3IyPwo6KPY4X20cz2P": {
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "variety": "PSR 07-195",
+    "taskType": "worker_log",
+    "workerName": "woongki",
+    "fieldId": "RwkjiCKnmPS5pg3eEre6",
+    "verified": true,
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FT3t8tQ4DZjfqW1OUivQapwXLCxn1_1763737169778_Screenshot%20(1384).png?alt=media&token=6240bc1e-53b5-4683-8698-7768a536a152",
+    "title": "Planting (0 DAP)",
+    "notes": ".",
+    "completionDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "fieldName": "Katubhann",
+    "description": ".",
+    "metadata": {
+      "variety": "PSR 07-195"
+    },
+    "createdAt": {
+      "_seconds": 1763737175,
+      "_nanoseconds": 813000000
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": "Planting (0 DAP)",
+    "completedAt": {
+      "_seconds": 1763737175,
+      "_nanoseconds": 813000000
+    }
+  },
+  "2Oqw27wwtuYkVcaIuuHs": {
+    "metadata": {
+      "variety": "VMC 84-524",
+      "workers_count": 1
+    },
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "title": "Planting (0 DAP)",
+    "status": "done",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1763812899,
+      "_nanoseconds": 635000000
+    },
+    "details": "b",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedAt": {
+      "_seconds": 1763812952,
+      "_nanoseconds": 332000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "assign_type": "worker"
+  },
+  "2lQu6hJz2r9PvtYYlkE4": {
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763811740,
+      "_nanoseconds": 994000000
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "assign_type": "worker",
+    "details": "bh",
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "title": "Planting (0 DAP)",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "variety": "VMC 84-524",
+      "workers_count": 1
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "completedAt": {
+      "_seconds": 1763811797,
+      "_nanoseconds": 709000000
+    }
+  },
+  "3VTeHQAa0T8HJVh8MBaA": {
+    "fieldName": "Mogu Mogu Farm",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1765127096450_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=0ddb69da-6060-46dd-a16a-c076d6413c3a",
+    "workerName": "Almackie J. Bangalao",
+    "completionDate": {
+      "_seconds": 1765127098,
+      "_nanoseconds": 619000000
+    },
+    "verified": true,
+    "description": "Nag plant kog kamatis sideline",
+    "completedAt": {
+      "_seconds": 1765127099,
+      "_nanoseconds": 382000000
+    },
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "title": "Planting (0 DAP)",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "createdAt": {
+      "_seconds": 1765127099,
+      "_nanoseconds": 382000000
+    },
+    "details": "Planting (0 DAP)",
+    "variety": "Phil 92-0577",
+    "notes": "Nag plant kog kamatis sideline",
+    "taskType": "worker_log",
+    "metadata": {
+      "offline_timestamp": "2025-12-07T17:04:47.423Z",
+      "synced_from_offline": true,
+      "variety": "Phil 92-0577"
+    }
+  },
+  "3WfzKfe0fqToiO9htA0u": {
+    "title": "harvesting",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "assign_type": "worker",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1765716746,
+      "_nanoseconds": 662000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "createdAt": {
+      "_seconds": 1765716741,
+      "_nanoseconds": 908000000
+    },
+    "metadata": {
+      "workers_count": 1
+    },
+    "details": ".",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "status": "done"
+  },
+  "4G18KsiDlKC6kq494UIn": {
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    },
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1764066228,
+      "_nanoseconds": 949000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "details": "l",
+    "completedAt": {
+      "_seconds": 1764066282,
+      "_nanoseconds": 948000000
+    },
+    "assign_type": "driver",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "title": "Transport Fertilizer to Field",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ]
+  },
+  "4bqZrf7tuKlvyp8kXER0": {
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "title": "Planting (0 DAP)",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "fieldName": "kahago",
+    "description": "nm",
+    "details": "Planting (0 DAP)",
+    "notes": "nm",
+    "createdAt": {
+      "_seconds": 1763814023,
+      "_nanoseconds": 291000000
+    },
+    "photoURL": "",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763814023,
+      "_nanoseconds": 291000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "worker_log",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "variety": "LCP 85-384",
+    "workerName": "nb",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+  },
+  "4sSZR9VxLSP42TnN7R34": {
+    "assignedTo": [
+      "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+    ],
+    "description": ".",
+    "driverName": "Park",
+    "completedAt": {
+      "_seconds": 1765527416,
+      "_nanoseconds": 559000000
+    },
+    "notes": ".",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2Flh50rAUvdbMlUUqzIRRo5vZ1qdG3_1765527411218.jpg?alt=media&token=9aa39a16-df51-4a62-8c64-14cbc4d0ae97",
+    "verified": true,
+    "details": "Transport Fertilizer to Field",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "taskType": "driver_log",
+    "createdAt": {
+      "_seconds": 1765527416,
+      "_nanoseconds": 559000000
+    },
+    "created_by": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "createdBy": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "status": "done",
+    "variety": "Phil 93-1601",
+    "title": "Transport Fertilizer to Field",
+    "fieldName": "Field 3",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completionDate": {
+      "_seconds": 1765497600,
+      "_nanoseconds": 0
+    }
+  },
+  "5HWWzw5JvmZZD4wAaQSo": {
+    "title": "Transport Equipment to Field",
+    "status": "done",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "createdAt": {
+      "_seconds": 1764066488,
+      "_nanoseconds": 17000000
+    },
+    "variety": "Phil 93-1601",
+    "details": "Transport Equipment to Field",
+    "notes": "n n",
+    "taskType": "driver_log",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "fieldName": "Field 3",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FcoUGx4HWOgXromJ1k9s0b9S6pPo1_1764066484120_Screenshot%20(1388).png?alt=media&token=e41571c0-1d83-494d-a67f-7a543fdc2343",
+    "completionDate": {
+      "_seconds": 1764028800,
+      "_nanoseconds": 0
+    },
+    "verified": true,
+    "description": "n n",
+    "driverName": "bnbn",
+    "completedAt": {
+      "_seconds": 1764066488,
+      "_nanoseconds": 17000000
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD"
+  },
+  "5VcVJL6CgeBWHvFPfYNF": {
+    "details": "Transport Equipment to Field",
+    "completionDate": {
+      "_seconds": 1764720000,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "variety": "Phil 93-1601",
+    "status": "done",
+    "notes": ".",
+    "fieldName": "Field 3",
+    "createdAt": {
+      "_seconds": 1764867206,
+      "_nanoseconds": 978000000
+    },
+    "completedAt": {
+      "_seconds": 1764867206,
+      "_nanoseconds": 978000000
+    },
+    "driverName": "Ramon",
+    "assignedTo": [
+      "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+    ],
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2Flh50rAUvdbMlUUqzIRRo5vZ1qdG3_1764867201892.jpg?alt=media&token=e0193daf-faa7-4882-b45b-6bab0ad5907b",
+    "created_by": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+    "description": ".",
+    "title": "Transport Equipment to Field",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "verified": true,
+    "taskType": "driver_log",
+    "createdBy": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+  },
+  "60ALlchuui9LycfApAZC": {
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "fieldName": "Cane B",
+    "description": "kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan ",
+    "completionDate": {
+      "_seconds": 1764460800,
+      "_nanoseconds": 0
+    },
+    "details": "Harrowing",
+    "completedAt": {
+      "_seconds": 1764516325,
+      "_nanoseconds": 801000000
+    },
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "createdAt": {
+      "_seconds": 1764516325,
+      "_nanoseconds": 801000000
+    },
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "status": "done",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "variety": "LCP 85-384",
+    "taskType": "worker_log",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "title": "Harrowing",
+    "notes": "kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan kuan ",
+    "workerName": "reyna marie boyboy",
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764516356733_worker_photo_1764516349683.jpg?alt=media&token=f6df35ea-dec9-4acd-a101-a9d28b1e813e",
+    "verified": true
+  },
+  "6anEJaZJtTGzMJh0Gn6t": {
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "fieldName": "Cane B",
+    "status": "done",
+    "title": "Plowing",
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "variety": "LCP 85-384",
+    "workerName": "maria boyboy",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "completionDate": {
+      "_seconds": 1764460800,
+      "_nanoseconds": 0
+    },
+    "taskType": "worker_log",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764535624759_worker_photo_1764535620072.jpg?alt=media&token=9408c9c5-3ce7-4240-877f-c89f42d4e663",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764535594,
+      "_nanoseconds": 496000000
+    },
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "createdAt": {
+      "_seconds": 1764535594,
+      "_nanoseconds": 496000000
+    },
+    "description": "kkkkkk",
+    "details": "Plowing",
+    "notes": "kkkkkk"
+  },
+  "6c5M8DzHS1rwUjym6b45": {
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763811000,
+      "_nanoseconds": 42000000
+    },
+    "photoURL": "",
+    "notes": ".",
+    "description": ".",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "variety": "Phil 99-1793",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "kahago",
+    "title": "Harvesting",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 99-1793"
+    },
+    "status": "done",
+    "taskType": "worker_log",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "createdAt": {
+      "_seconds": 1763811000,
+      "_nanoseconds": 42000000
+    },
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": "Harvesting"
+  },
+  "74ptrRIKs12VhDZiqJ37": {
+    "notes": "m",
+    "details": "Planting (0 DAP)",
+    "variety": "VMC 84-524",
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "taskType": "worker_log",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Planting (0 DAP)",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1763811794,
+      "_nanoseconds": 460000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completedAt": {
+      "_seconds": 1763811794,
+      "_nanoseconds": 460000000
+    },
+    "description": "m",
+    "fieldName": "kahago",
+    "workerName": "mn",
+    "photoURL": "",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+  },
+  "7MVTLrzRXKj0wbklkPpq": {
+    "photoURL": "",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "completedAt": {
+      "_seconds": 1763796786,
+      "_nanoseconds": 408000000
+    },
+    "verified": true,
+    "taskType": "worker_log",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Harvesting",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "description": ".",
+    "variety": "Phil 94-0913",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "details": "Harvesting",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1763796786,
+      "_nanoseconds": 408000000
+    },
+    "notes": ".",
+    "fieldName": "kahago",
+    "archived": true,
+    "archivedAt": {
+      "_seconds": 1763797387,
+      "_nanoseconds": 999000000
+    }
+  },
+  "7fK97WVplmSg9x84NnNS": {
+    "createdAt": {
+      "_seconds": 1763799330,
+      "_nanoseconds": 582000000
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "expected_yield": 0.02,
+      "workers_count": 1
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "details": ".",
+    "completedAt": {
+      "_seconds": 1763799423,
+      "_nanoseconds": 782000000
+    },
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "assign_type": "worker",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Harvesting",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ]
+  },
+  "7zfoyIti9jsMuJixOe55": {
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "variety": "BZ 148",
+    "details": "Transport Fertilizer to Field",
+    "notes": "nb",
+    "description": "nb",
+    "createdAt": {
+      "_seconds": 1764126000,
+      "_nanoseconds": 63000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FcoUGx4HWOgXromJ1k9s0b9S6pPo1_1764125998588.jpg?alt=media&token=060ec371-60d0-4153-9674-3c09f1002cd8",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764126000,
+      "_nanoseconds": 63000000
+    },
+    "taskType": "driver_log",
+    "fieldName": "Field8",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "driverName": "v",
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "title": "Transport Fertilizer to Field",
+    "status": "done"
+  },
+  "8JBpN8hNbGGWanHJhvo8": {
+    "description": ".",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763805351,
+      "_nanoseconds": 342000000
+    },
+    "notes": ".",
+    "photoURL": "",
+    "taskType": "worker_log",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "createdAt": {
+      "_seconds": 1763805351,
+      "_nanoseconds": 342000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": "Planting (0 DAP)",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "kahago",
+    "title": "Planting (0 DAP)",
+    "variety": "BZ 148",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "status": "done"
+  },
+  "97GRP01YZlqeor7ATr6L": {
+    "createdAt": {
+      "_seconds": 1764189854,
+      "_nanoseconds": 609000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "title": "Transport Equipment to Field",
+    "status": "pending",
+    "assignedTo": [
+      "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+    ],
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "metadata": {
+      "driver": {
+        "fullname": "Gikapoy Na",
+        "id": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+      }
+    },
+    "assign_type": "driver",
+    "details": "."
+  },
+  "Ak9hRtzn9wemi0QVy1Fu": {
+    "title": "Harvesting",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "assign_type": "worker",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1763811333,
+      "_nanoseconds": 564000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "createdAt": {
+      "_seconds": 1763811250,
+      "_nanoseconds": 265000000
+    },
+    "metadata": {
+      "expected_yield": 0.01,
+      "workers_count": 1
+    },
+    "details": "b",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done"
+  },
+  "B0iiKujQbfY3U8OrBBGQ": {
+    "description": "dc",
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "fieldName": "Field 3",
+    "completionDate": {
+      "_seconds": 1764028800,
+      "_nanoseconds": 0
+    },
+    "details": "Transport Fertilizer to Field",
+    "completedAt": {
+      "_seconds": 1764066421,
+      "_nanoseconds": 983000000
+    },
+    "createdAt": {
+      "_seconds": 1764066421,
+      "_nanoseconds": 983000000
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "taskType": "driver_log",
+    "driverName": "Woongki",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "variety": "Phil 93-1601",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "notes": "dc",
+    "title": "Transport Fertilizer to Field",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "verified": true,
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FcoUGx4HWOgXromJ1k9s0b9S6pPo1_1764066416677_Screenshot%20(1388).png?alt=media&token=6df9b475-21dc-410f-bd25-c9abfd7894dd"
+  },
+  "CBVD0IcwM3nYXETXOkbJ": {
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "status": "done",
+    "title": "Harrowing",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "fieldName": "Cane B",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764533151722_worker_photo_1764533128835.jpg?alt=media&token=f0c85033-899c-48f6-8718-420c0e51c7ac",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "completedAt": {
+      "_seconds": 1764533122,
+      "_nanoseconds": 105000000
+    },
+    "verified": true,
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "taskType": "worker_log",
+    "description": "hhhh",
+    "notes": "hhhh",
+    "details": "Harrowing",
+    "createdAt": {
+      "_seconds": 1764533122,
+      "_nanoseconds": 105000000
+    },
+    "variety": "LCP 85-384",
+    "workerName": "maria boyboy",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "completionDate": {
+      "_seconds": 1764460800,
+      "_nanoseconds": 0
+    }
+  },
+  "CDvNjj7WTOQGFdNVpynF": {
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "completedAt": {
+      "_seconds": 1765715232,
+      "_nanoseconds": 495000000
+    },
+    "details": ".",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765715226,
+      "_nanoseconds": 253000000
+    },
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "status": "done",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "metadata": {
+      "workers_count": 1
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "title": "harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "CIzP29y0XrYytJ507HNa": {
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "completedAt": {
+      "_seconds": 1763960272,
+      "_nanoseconds": 629000000
+    },
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "assign_type": "driver",
+    "details": ".",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "metadata": {
+      "driver": {
+        "fullname": "dyn nie",
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+      }
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "title": "Irrigation",
+    "createdAt": {
+      "_seconds": 1763960266,
+      "_nanoseconds": 369000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "CvMCDUS2oHwtmkIoU5i7": {
+    "description": "/",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "title": "Furrowing",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "verified": true,
+    "taskType": "driver_log",
+    "completedAt": {
+      "_seconds": 1763959028,
+      "_nanoseconds": 767000000
+    },
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "driverName": "Dyn",
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "photoURL": "",
+    "fieldName": "Field 3",
+    "notes": "/",
+    "createdAt": {
+      "_seconds": 1763959028,
+      "_nanoseconds": 767000000
+    },
+    "details": "Furrowing",
+    "completionDate": {
+      "_seconds": 1763942400,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "status": "done",
+    "variety": "Phil 94-0913"
+  },
+  "D141qC4TslO3lsAFM6cw": {
+    "notes": ".",
+    "title": "Harvesting",
+    "photoURL": "",
+    "verified": true,
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "workerName": ".",
+    "taskType": "worker_log",
+    "variety": "Phil 94-0913",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "details": "Harvesting",
+    "completedAt": {
+      "_seconds": 1763797162,
+      "_nanoseconds": 153000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1763797162,
+      "_nanoseconds": 153000000
+    },
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "description": ".",
+    "fieldName": "kahago",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "archivedAt": {
+      "_seconds": 1763797388,
+      "_nanoseconds": 372000000
+    },
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "archived": true
+  },
+  "EE9BJPg5o6W6NTFoHUdp": {
+    "completionDate": {
+      "_seconds": 1765324800,
+      "_nanoseconds": 0
+    },
+    "createdBy": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "variety": "PSR 03-171",
+    "createdAt": {
+      "_seconds": 1765381116,
+      "_nanoseconds": 217000000
+    },
+    "notes": "kkkk",
+    "details": "Vehicle Maintenance/Inspection",
+    "description": "kkkk",
+    "taskType": "driver_log",
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FF7o7WGEzvLQffCfY94A9HSkiMBl2_1765381110959.jpg?alt=media&token=46934eeb-5166-4a51-97ad-bf326f7f539f",
+    "assignedTo": [
+      "F7o7WGEzvLQffCfY94A9HSkiMBl2"
+    ],
+    "completedAt": {
+      "_seconds": 1765381116,
+      "_nanoseconds": 217000000
+    },
+    "verified": true,
+    "fieldName": "Cane A",
+    "driverName": "Andrew Bangalo",
+    "fieldId": "OoVjAFZD8UyCqF2pxIPQ",
+    "metadata": {
+      "variety": "PSR 03-171"
+    },
+    "title": "Vehicle Maintenance/Inspection",
+    "status": "done",
+    "created_by": "F7o7WGEzvLQffCfY94A9HSkiMBl2"
+  },
+  "ENFpgjRvQgU1jxiB75YA": {
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "completedAt": {
+      "_seconds": 1763965134,
+      "_nanoseconds": 661000000
+    },
+    "details": "b",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763965128,
+      "_nanoseconds": 860000000
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "assign_type": "driver",
+    "status": "done",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    },
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "title": "Irrigation",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "Fma98hV1vywrZOZ0Hbp4": {
+    "fieldName": "Mogu Mogu Farm",
+    "workerName": "Andrew Bangalo",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1765136884024_F7o7WGEzvLQffCfY94A9HSkiMBl2.jpg?alt=media&token=ba524880-83fa-493f-81e5-4c66ea8d9f32",
+    "createdBy": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1765136886,
+      "_nanoseconds": 135000000
+    },
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "completedAt": {
+      "_seconds": 1765136887,
+      "_nanoseconds": 92000000
+    },
+    "description": "Na guba ang ligid ako ipa evaluate ",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "vehicle_maintenance",
+    "assignedTo": [
+      "F7o7WGEzvLQffCfY94A9HSkiMBl2"
+    ],
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1765136887,
+      "_nanoseconds": 92000000
+    },
+    "created_by": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "notes": "Na guba ang ligid ako ipa evaluate ",
+    "variety": "Phil 92-0577",
+    "details": "vehicle_maintenance",
+    "metadata": {
+      "variety": "Phil 92-0577",
+      "offline_timestamp": "2025-12-07T19:47:55.354Z",
+      "synced_from_offline": true
+    },
+    "taskType": "worker_log"
+  },
+  "FuEsbsjqKsgDhGCRjDev": {
+    "metadata": {
+      "expected_yield": -0.01,
+      "workers_count": 1
+    },
+    "details": "m",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1763811759,
+      "_nanoseconds": 702000000
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1763812026,
+      "_nanoseconds": 970000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "title": "Harvesting",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "assign_type": "worker",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "GGhOPPnXLZQqaY1983SF": {
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1765719781,
+      "_nanoseconds": 460000000
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "workers_count": 1,
+      "variety": "Phil 94-0913"
+    },
+    "details": ".",
+    "completedAt": {
+      "_seconds": 1765719799,
+      "_nanoseconds": 502000000
+    },
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "assign_type": "worker",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "title": "Planting (0 DAP)",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ]
+  },
+  "GpY3Oa0uiWw5uDI4ALdv": {
+    "fieldName": "kahago",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "title": "Planting (0 DAP)",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 99-1793"
+    },
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "variety": "Phil 99-1793",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763810978,
+      "_nanoseconds": 687000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "photoURL": "",
+    "taskType": "worker_log",
+    "notes": ".",
+    "details": "Planting (0 DAP)",
+    "description": ".",
+    "createdAt": {
+      "_seconds": 1763810978,
+      "_nanoseconds": 687000000
+    }
+  },
+  "GxuvmbIPJMwywgEVmz4o": {
+    "metadata": {
+      "driver": {
+        "id": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3",
+        "fullname": "Gikapoy Na"
+      }
+    },
+    "status": "pending",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Transport Fertilizer to Field",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "assignedTo": [
+      "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+    ],
+    "details": "aria lang sa amo",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "assign_type": "driver",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1764187889,
+      "_nanoseconds": 516000000
+    }
+  },
+  "H6EtJvPY53FznV0nyyzv": {
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1764066278,
+      "_nanoseconds": 52000000
+    },
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "title": "Vehicle Maintenance/Inspection",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1764066252,
+      "_nanoseconds": 981000000
+    },
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "details": "nj",
+    "assign_type": "driver",
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    }
+  },
+  "HHuf172aDvbzeji0vlBe": {
+    "status": "done",
+    "variety": "Phil 94-0913",
+    "details": "Harvesting",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "createdAt": {
+      "_seconds": 1763797370,
+      "_nanoseconds": 845000000
+    },
+    "archivedAt": {
+      "_seconds": 1763797388,
+      "_nanoseconds": 715000000
+    },
+    "archived": true,
+    "notes": ".",
+    "fieldName": "kahago",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "completedAt": {
+      "_seconds": 1763797370,
+      "_nanoseconds": 845000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "workerName": ".",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "taskType": "worker_log",
+    "verified": true,
+    "description": ".",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Harvesting"
+  },
+  "HyXHnS47h0JPskWHVojm": {
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "title": "Planting (0 DAP)",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assign_type": "worker",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "details": ",",
+    "completedAt": {
+      "_seconds": 1765723757,
+      "_nanoseconds": 949000000
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "BZ 148",
+      "workers_count": 1
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765723752,
+      "_nanoseconds": 301000000
+    }
+  },
+  "J4FS3LcbDlyK372eX4kQ": {
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "completedAt": {
+      "_seconds": 1763968667,
+      "_nanoseconds": 731000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ",",
+    "createdAt": {
+      "_seconds": 1763968659,
+      "_nanoseconds": 201000000
+    },
+    "assign_type": "driver",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "title": "Planting (0 DAP)",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "metadata": {
+      "variety": "BZ 148",
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie (Rented)"
+      }
+    },
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "fieldId": "5m5dry0UlPTPB9AtjIdk"
+  },
+  "JmX5AkVah7m9XApBU8Fx": {
+    "completedAt": {
+      "_seconds": 1765714058,
+      "_nanoseconds": 280000000
+    },
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "status": "done",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "metadata": {
+      "workers_count": 1
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "title": "harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ".",
+    "createdAt": {
+      "_seconds": 1765714021,
+      "_nanoseconds": 916000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "assign_type": "worker"
+  },
+  "KTInHkOfqBgXEAGnExNr": {
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completedAt": {
+      "_seconds": 1763811284,
+      "_nanoseconds": 512000000
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "assign_type": "worker",
+    "details": ",",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "variety": "BZ 148",
+      "workers_count": 1
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "title": "Planting (0 DAP)",
+    "createdAt": {
+      "_seconds": 1763811224,
+      "_nanoseconds": 925000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "MBGwHzFnIMh3oWODHZ5N": {
+    "completedAt": {
+      "_seconds": 1764790934,
+      "_nanoseconds": 415000000
+    },
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790931688_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=30e8e82e-0aa5-4ff8-81f2-7a07804739b6",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "title": "Plowing",
+    "description": "nag plowing kos cane sir",
+    "workerName": "Almackie J. Bangalao",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "verified": true,
+    "taskType": "worker_log",
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "metadata": {
+      "variety": "Phil 92-0577",
+      "synced_from_offline": true,
+      "offline_timestamp": "2025-12-03T19:12:20.590Z"
+    },
+    "details": "Plowing",
+    "completionDate": {
+      "_seconds": 1764790934,
+      "_nanoseconds": 301000000
+    },
+    "status": "done",
+    "variety": "Phil 92-0577",
+    "notes": "nag plowing kos cane sir",
+    "fieldName": "Maki Cane",
+    "createdAt": {
+      "_seconds": 1764790934,
+      "_nanoseconds": 415000000
+    }
+  },
+  "Md2LAu5ZypvIjY2e62Lf": {
+    "completedAt": {
+      "_seconds": 1764127885,
+      "_nanoseconds": 923000000
+    },
+    "details": "Planting (0 DAP)",
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1764127885,
+      "_nanoseconds": 923000000
+    },
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "description": "j",
+    "fieldName": "kahago",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "notes": "j",
+    "title": "Planting (0 DAP)",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FT3t8tQ4DZjfqW1OUivQapwXLCxn1_1764127883809_worker_photo_1764127859598.jpg?alt=media&token=6980659a-4592-4590-a6ba-11bb6a187688",
+    "verified": true,
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "workerName": "jb",
+    "taskType": "worker_log",
+    "variety": "LCP 85-384",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ]
+  },
+  "MdN5MDLmD12iNasrvEQE": {
+    "notes": "nb",
+    "details": "Main Fertilization (45–60 DAP)",
+    "description": "nb",
+    "createdAt": {
+      "_seconds": 1764127981,
+      "_nanoseconds": 226000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764127981,
+      "_nanoseconds": 226000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FT3t8tQ4DZjfqW1OUivQapwXLCxn1_1764127979796_worker_photo_1764127966102.jpg?alt=media&token=d6b9d0fb-3474-4bd7-a4e3-afc7fae2f674",
+    "taskType": "worker_log",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": "m",
+    "variety": "PSR 07-195",
+    "metadata": {
+      "variety": "PSR 07-195"
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "title": "Main Fertilization (45–60 DAP)",
+    "status": "done",
+    "fieldName": "Katubhann",
+    "fieldId": "RwkjiCKnmPS5pg3eEre6"
+  },
+  "MvicySdf8NIl6habziPl": {
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763960311,
+      "_nanoseconds": 172000000
+    },
+    "assign_type": "driver",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "details": "n",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "title": "harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    },
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "completedAt": {
+      "_seconds": 1763960324,
+      "_nanoseconds": 166000000
+    }
+  },
+  "NdJ4GOLG2essgvfsoQJ6": {
+    "deadline": {
+      "_seconds": 1763078400,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1765347797,
+      "_nanoseconds": 365000000
+    },
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "title": "harvesting",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765347283,
+      "_nanoseconds": 23000000
+    },
+    "completedBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "details": ".",
+    "assign_type": "worker",
+    "metadata": {
+      "workers_count": 1
+    }
+  },
+  "NshoVpguL5ZmTmJYM0JF": {
+    "completedBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "status": "done",
+    "metadata": {
+      "workers_count": 1
+    },
+    "details": ",",
+    "createdAt": {
+      "_seconds": 1765713449,
+      "_nanoseconds": 174000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1765713674,
+      "_nanoseconds": 28000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "harvesting",
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz"
+  },
+  "NuOKSBPUnwSSOWJ5t6R5": {
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FPxVmglJmEtayzRShMj35fZmaNDy2_1765270586698_worker_photo_1765270579704.jpg?alt=media&token=9333a4a7-d52b-4553-9050-6539b14c4be2",
+    "verified": true,
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "workerName": "Mackie",
+    "notes": ".",
+    "title": "Planting (0 DAP)",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "taskType": "worker_log",
+    "variety": "VMC 84-524",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765270617,
+      "_nanoseconds": 397000000
+    },
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "completedAt": {
+      "_seconds": 1765270617,
+      "_nanoseconds": 397000000
+    },
+    "details": "Planting (0 DAP)",
+    "completionDate": {
+      "_seconds": 1765238400,
+      "_nanoseconds": 0
+    },
+    "description": ".",
+    "fieldName": "Dyn",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2"
+  },
+  "Nun4eWtT1C85FkWAdv48": {
+    "assign_type": "driver",
+    "details": ".",
+    "createdAt": {
+      "_seconds": 1763958853,
+      "_nanoseconds": 783000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "completedAt": {
+      "_seconds": 1763959039,
+      "_nanoseconds": 617000000
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "metadata": {
+      "driver": {
+        "fullname": "dyn nie",
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+      }
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Furrowing",
+    "status": "done"
+  },
+  "OBOWAY6Wn20kQ3pe0BIP": {
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763811673,
+      "_nanoseconds": 636000000
+    },
+    "notes": "s",
+    "photoURL": "",
+    "description": "s",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "variety": "BZ 148",
+    "fieldName": "kahago",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Harvesting",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "status": "done",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "taskType": "worker_log",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "createdAt": {
+      "_seconds": 1763811673,
+      "_nanoseconds": 636000000
+    },
+    "workerName": "s",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": "Harvesting"
+  },
+  "OdNpn8pVSJ1rugxpvMub": {
+    "createdAt": {
+      "_seconds": 1765378777,
+      "_nanoseconds": 267000000
+    },
+    "created_by": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "assignedTo": [
+      "xJWVsb3tREgSnZVn2uHr19Wn5M93"
+    ],
+    "status": "done",
+    "title": "Vehicle Maintenance/Inspection",
+    "taskType": "driver_log",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "notes": "kk",
+    "variety": "LCP 85-384",
+    "details": "Vehicle Maintenance/Inspection",
+    "createdBy": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FxJWVsb3tREgSnZVn2uHr19Wn5M93_1765378772777.jpg?alt=media&token=919c430e-7eca-454d-bb76-f1036a50d4e0",
+    "fieldName": "Cane B",
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "description": "kk",
+    "driverName": "Reyna Marie Garciano boyboy",
+    "completedAt": {
+      "_seconds": 1765378777,
+      "_nanoseconds": 267000000
+    },
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1765324800,
+      "_nanoseconds": 0
+    }
+  },
+  "Ofwr1KiOYcJiAtpUJWEA": {
+    "completedAt": {
+      "_seconds": 1765271753,
+      "_nanoseconds": 701000000
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Harvesting",
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ".",
+    "metadata": {
+      "workers_count": 1
+    },
+    "completedBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1765271746,
+      "_nanoseconds": 169000000
+    }
+  },
+  "Q1Oms6hLpR9pjIaS4zrF": {
+    "details": "kk",
+    "completedAt": {
+      "_seconds": 1765377778,
+      "_nanoseconds": 665000000
+    },
+    "createdAt": {
+      "_seconds": 1765377734,
+      "_nanoseconds": 740000000
+    },
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "status": "done",
+    "metadata": {
+      "workers_count": 1,
+      "variety": ""
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "completedBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "assign_type": "worker",
+    "created_by": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "title": "Planting (0 DAP)",
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ]
+  },
+  "Q8X4vsV6lToFEKPBCJID": {
+    "completionDate": {
+      "_seconds": 1765238400,
+      "_nanoseconds": 0
+    },
+    "variety": "VMC 84-524",
+    "workerName": "Mackie",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "description": ".",
+    "details": "Planting (0 DAP)",
+    "notes": ".",
+    "createdAt": {
+      "_seconds": 1765270945,
+      "_nanoseconds": 884000000
+    },
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FPxVmglJmEtayzRShMj35fZmaNDy2_1765270942055_worker_photo_1765270932024.jpg?alt=media&token=3c3238d2-9c5c-4f98-98f2-cf168d3cb914",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1765270945,
+      "_nanoseconds": 884000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "worker_log",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "fieldName": "Dyn",
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "status": "done",
+    "title": "Planting (0 DAP)"
+  },
+  "QOFch1syYRyRPLidoRZd": {
+    "taskType": "worker_log",
+    "fieldId": "RwkjiCKnmPS5pg3eEre6",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": "woongki",
+    "createdAt": {
+      "_seconds": 1763737006,
+      "_nanoseconds": 937000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": "Harrowing",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Katubhann",
+    "title": "Harrowing",
+    "variety": "PSR 07-195",
+    "completionDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "PSR 07-195"
+    },
+    "status": "done",
+    "description": ",",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763737006,
+      "_nanoseconds": 937000000
+    },
+    "notes": ",",
+    "photoURL": ""
+  },
+  "QidYyUR56JHlMwxNYwRd": {
+    "notes": "nbn",
+    "variety": "BZ 148",
+    "details": "Harvesting",
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Harvesting",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1763811329,
+      "_nanoseconds": 797000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "description": "nbn",
+    "completedAt": {
+      "_seconds": 1763811329,
+      "_nanoseconds": 797000000
+    },
+    "fieldName": "kahago",
+    "workerName": "mn",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": ""
+  },
+  "RnBFZ159DBGUou16e8hX": {
+    "title": "Basal Fertilizer (0–30 DAP)",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "assign_type": "worker",
+    "createdAt": {
+      "_seconds": 1765723259,
+      "_nanoseconds": 520000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ".",
+    "metadata": {
+      "workers_count": 2,
+      "amount_per_hectare": "0",
+      "fertilizer_type": "14"
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623",
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "status": "pending",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "Tac4NmXYRYm1YHgbaJ1k": {
+    "description": ",",
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "fieldName": "Field 3",
+    "completionDate": {
+      "_seconds": 1763942400,
+      "_nanoseconds": 0
+    },
+    "details": "Spraying",
+    "completedAt": {
+      "_seconds": 1763960210,
+      "_nanoseconds": 47000000
+    },
+    "createdAt": {
+      "_seconds": 1763960210,
+      "_nanoseconds": 47000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "taskType": "driver_log",
+    "driverName": "Dyn",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "variety": "Phil 93-1601",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "notes": ",",
+    "title": "Spraying",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "photoURL": "",
+    "verified": true
+  },
+  "U5bLKJNjceUfi2ScMLBs": {
+    "archivedAt": {
+      "_seconds": 1763797390,
+      "_nanoseconds": 332000000
+    },
+    "workerName": ".",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "variety": "Phil 94-0913",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763797090,
+      "_nanoseconds": 973000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "photoURL": "",
+    "taskType": "worker_log",
+    "details": "Planting (0 DAP)",
+    "notes": "/",
+    "description": "/",
+    "createdAt": {
+      "_seconds": 1763797090,
+      "_nanoseconds": 973000000
+    },
+    "fieldName": "kahago",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "archived": true,
+    "title": "Planting (0 DAP)",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 94-0913"
+    }
+  },
+  "U7SBXQlc7mSMypWlLE6P": {
+    "completedAt": {
+      "_seconds": 1763960133,
+      "_nanoseconds": 221000000
+    },
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "title": "Spraying",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "status": "done",
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      },
+      "spray_type": "m"
+    },
+    "createdAt": {
+      "_seconds": 1763960108,
+      "_nanoseconds": 580000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "assign_type": "driver",
+    "details": ","
+  },
+  "VOduhkirokqYVKb263Rx": {
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "title": "Planting (0 DAP)",
+    "createdAt": {
+      "_seconds": 1763805313,
+      "_nanoseconds": 689000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assign_type": "worker",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": ".",
+    "metadata": {
+      "variety": "BZ 148",
+      "workers_count": 1
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completedAt": {
+      "_seconds": 1763805354,
+      "_nanoseconds": 688000000
+    }
+  },
+  "WRbD0V4rDCW26oD7Uv6O": {
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "driverName": "Woongki",
+    "photoURL": "",
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "completedAt": {
+      "_seconds": 1764076264,
+      "_nanoseconds": 336000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "driver_log",
+    "verified": true,
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "description": "nangguna",
+    "title": "Others",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "variety": "Phil 93-1601",
+    "status": "done",
+    "completionDate": {
+      "_seconds": 1764028800,
+      "_nanoseconds": 0
+    },
+    "details": "Others",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "createdAt": {
+      "_seconds": 1764076264,
+      "_nanoseconds": 336000000
+    },
+    "notes": "nangguna",
+    "fieldName": "Field 3"
+  },
+  "Wuwt5ODjWjfTmA92HEQc": {
+    "workerName": "Almackie J. Bangalao",
+    "verified": true,
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790936920_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=9d50fbde-edd9-4d25-853b-d637c4284ce2",
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "title": "Harrowing",
+    "notes": "ascxsac",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "variety": "Phil 92-0577",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "Phil 92-0577",
+      "offline_timestamp": "2025-12-03T19:24:34.653Z",
+      "synced_from_offline": true
+    },
+    "status": "done",
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "createdAt": {
+      "_seconds": 1764790938,
+      "_nanoseconds": 977000000
+    },
+    "details": "Harrowing",
+    "completedAt": {
+      "_seconds": 1764790938,
+      "_nanoseconds": 977000000
+    },
+    "completionDate": {
+      "_seconds": 1764790938,
+      "_nanoseconds": 856000000
+    },
+    "fieldName": "Maki Cane",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "description": "ascxsac"
+  },
+  "YNCWU8DkgWS4MWvtd4sB": {
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "title": "Planting (0 DAP)",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "variety": "Phil 94-0913",
+      "workers_count": 1
+    },
+    "assign_type": "worker",
+    "completedAt": {
+      "_seconds": 1763799375,
+      "_nanoseconds": 848000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ".",
+    "createdAt": {
+      "_seconds": 1763799280,
+      "_nanoseconds": 654000000
+    }
+  },
+  "Yc4XjnykTLihE2Nvwr7n": {
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "completedAt": {
+      "_seconds": 1763811008,
+      "_nanoseconds": 324000000
+    },
+    "details": ".",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "assign_type": "worker",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763810921,
+      "_nanoseconds": 150000000
+    },
+    "metadata": {
+      "variety": "Phil 99-1793",
+      "workers_count": 1
+    },
+    "status": "done",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Planting (0 DAP)",
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    }
+  },
+  "Yjn0o7a3MpAgP4SHRUbE": {
+    "description": ".",
+    "completedAt": {
+      "_seconds": 1763799420,
+      "_nanoseconds": 337000000
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "verified": true,
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "workerName": ".",
+    "fieldName": "kahago",
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "details": "Harvesting",
+    "variety": "Phil 94-0913",
+    "notes": ".",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "createdAt": {
+      "_seconds": 1763799420,
+      "_nanoseconds": 337000000
+    },
+    "title": "Harvesting",
+    "status": "done",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "Z8egFssZsUJD167TCrHb": {
+    "createdAt": {
+      "_seconds": 1763810943,
+      "_nanoseconds": 765000000
+    },
+    "details": ".",
+    "metadata": {
+      "expected_yield": -0.02,
+      "workers_count": 1
+    },
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "title": "Harvesting",
+    "assign_type": "worker",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedAt": {
+      "_seconds": 1763811004,
+      "_nanoseconds": 80000000
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "cZTGFCNJyUAeHcfmroXp": {
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assign_type": "worker",
+    "completedBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "details": "planting",
+    "completedAt": {
+      "_seconds": 1765270402,
+      "_nanoseconds": 241000000
+    },
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "VMC 84-524",
+      "workers_count": 1
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765270313,
+      "_nanoseconds": 180000000
+    },
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "title": "Planting (0 DAP)",
+    "fieldId": "bVEKomORZOLt4sT3ibiz"
+  },
+  "dwCFlijqwx3x9r05wCp6": {
+    "assign_type": "worker",
+    "completedAt": {
+      "_seconds": 1763802379,
+      "_nanoseconds": 212000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": "'.",
+    "createdAt": {
+      "_seconds": 1763801099,
+      "_nanoseconds": 658000000
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "title": "Main Fertilization (45–60 DAP)",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "workers_count": 1,
+      "amount_per_hectare": "-2"
+    }
+  },
+  "efNFyheFQdzQifhbqAeY": {
+    "description": "adsvcasc",
+    "assignedTo": [
+      "F7o7WGEzvLQffCfY94A9HSkiMBl2"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764869536,
+      "_nanoseconds": 724000000
+    },
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764869530950_F7o7WGEzvLQffCfY94A9HSkiMBl2.jpg?alt=media&token=41ab62bd-c777-4cd2-9c49-6306c40d2560",
+    "notes": "adsvcasc",
+    "taskType": "worker_log",
+    "fieldId": "OoVjAFZD8UyCqF2pxIPQ",
+    "created_by": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "workerName": "Andrew Bangalo",
+    "createdAt": {
+      "_seconds": 1764869536,
+      "_nanoseconds": 724000000
+    },
+    "createdBy": "F7o7WGEzvLQffCfY94A9HSkiMBl2",
+    "details": "fuel_refill",
+    "variety": "PSR 03-171",
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "fieldName": "Cane A",
+    "title": "fuel_refill",
+    "completionDate": {
+      "_seconds": 1764869535,
+      "_nanoseconds": 737000000
+    },
+    "metadata": {
+      "synced_from_offline": true,
+      "variety": "PSR 03-171",
+      "offline_timestamp": "2025-12-04T17:31:54.955Z"
+    },
+    "status": "done"
+  },
+  "enrAlezgQwIHu7JO0sH7": {
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1765717337,
+      "_nanoseconds": 796000000
+    },
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765717332,
+      "_nanoseconds": 524000000
+    },
+    "title": "harvesting",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "workers_count": 1
+    },
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "details": ".",
+    "assign_type": "worker"
+  },
+  "fXxcBCPKVdNbXp3XwxvC": {
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedAt": {
+      "_seconds": 1763812113,
+      "_nanoseconds": 102000000
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Planting (0 DAP)",
+    "assign_type": "worker",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "details": "bn",
+    "metadata": {
+      "workers_count": 1,
+      "variety": "VMC 84-524"
+    },
+    "createdAt": {
+      "_seconds": 1763812077,
+      "_nanoseconds": 992000000
+    }
+  },
+  "fowPPpF3B8mrxopOl45R": {
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "fieldName": "Cane B",
+    "description": "kk",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "details": "Plowing",
+    "completedAt": {
+      "_seconds": 1764173885,
+      "_nanoseconds": 199000000
+    },
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "createdAt": {
+      "_seconds": 1764173885,
+      "_nanoseconds": 199000000
+    },
+    "status": "done",
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "variety": "LCP 85-384",
+    "taskType": "worker_log",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "title": "Plowing",
+    "notes": "kk",
+    "workerName": "ffff",
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "verified": true,
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764173911798_worker_photo_1764173904221.jpg?alt=media&token=6b70ffab-d1d6-4e4a-9201-0594e963a78f"
+  },
+  "g3OGaooVItVkly6BKu7U": {
+    "fieldName": "kahago",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "title": "Planting (0 DAP)",
+    "status": "done",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "variety": "Phil 94-0913",
+    "notes": ".",
+    "details": "Planting (0 DAP)",
+    "description": ".",
+    "createdAt": {
+      "_seconds": 1763799362,
+      "_nanoseconds": 56000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763799362,
+      "_nanoseconds": 56000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "photoURL": "",
+    "taskType": "worker_log"
+  },
+  "hQWEsdA7Awnhx8pmlqmO": {
+    "metadata": {
+      "workers_count": 1,
+      "amount_per_hectare": "-3",
+      "fertilizer_type": "14"
+    },
+    "status": "done",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "title": "Basal Fertilizer (0–30 DAP)",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "details": ".",
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "createdAt": {
+      "_seconds": 1765720053,
+      "_nanoseconds": 687000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completedAt": {
+      "_seconds": 1765720063,
+      "_nanoseconds": 448000000
+    },
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ]
+  },
+  "i5clJSbqkSqlJ9yZ3bdg": {
+    "fieldName": "Katubhann",
+    "createdBy": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "photoURL": "",
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1762732800,
+      "_nanoseconds": 0
+    },
+    "fieldId": "RwkjiCKnmPS5pg3eEre6",
+    "description": "hj",
+    "driverName": "han",
+    "completedAt": {
+      "_seconds": 1764092586,
+      "_nanoseconds": 743000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "title": "Transport Fertilizer to Field",
+    "status": "done",
+    "assignedTo": [
+      "Od7r3gaUXdM4Ju2za9UMUUHp8nE2"
+    ],
+    "createdAt": {
+      "_seconds": 1764092586,
+      "_nanoseconds": 743000000
+    },
+    "created_by": "Od7r3gaUXdM4Ju2za9UMUUHp8nE2",
+    "notes": "hj",
+    "details": "Transport Fertilizer to Field",
+    "variety": "PSR 07-195",
+    "taskType": "driver_log",
+    "metadata": {
+      "variety": "PSR 07-195"
+    }
+  },
+  "iAaZzxuWZa5Od9ZEkR1r": {
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1763811677,
+      "_nanoseconds": 45000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "assign_type": "worker",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "workers_count": 1
+    },
+    "details": ".",
+    "status": "done",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "createdAt": {
+      "_seconds": 1763811645,
+      "_nanoseconds": 325000000
+    }
+  },
+  "igpvPhFHtWqMBeq28VuD": {
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "verified": true,
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790934587_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=e9b06c59-78bc-4e5e-8857-f4c2d31314ad",
+    "workerName": "Almackie J. Bangalao",
+    "notes": "ascdascasc",
+    "title": "Furrowing",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "taskType": "worker_log",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "variety": "Phil 92-0577",
+    "createdAt": {
+      "_seconds": 1764790936,
+      "_nanoseconds": 669000000
+    },
+    "status": "done",
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "metadata": {
+      "offline_timestamp": "2025-12-03T19:15:59.282Z",
+      "variety": "Phil 92-0577",
+      "synced_from_offline": true
+    },
+    "completedAt": {
+      "_seconds": 1764790936,
+      "_nanoseconds": 669000000
+    },
+    "details": "Furrowing",
+    "completionDate": {
+      "_seconds": 1764790936,
+      "_nanoseconds": 436000000
+    },
+    "description": "ascdascasc",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "fieldName": "Maki Cane"
+  },
+  "irx5Gt0sDtuTIa29yvWW": {
+    "createdAt": {
+      "_seconds": 1763736571,
+      "_nanoseconds": 370000000
+    },
+    "description": ".",
+    "details": "Plowing",
+    "notes": ".",
+    "taskType": "worker_log",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FT3t8tQ4DZjfqW1OUivQapwXLCxn1_1763736568172_Screenshot%202025-11-19%20215112.png?alt=media&token=d749ba70-72c4-4fa6-8a78-3a781cee3395",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763736571,
+      "_nanoseconds": 370000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completionDate": {
+      "_seconds": 1763683200,
+      "_nanoseconds": 0
+    },
+    "variety": "PSR 07-195",
+    "workerName": "woongki",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "variety": "PSR 07-195"
+    },
+    "status": "done",
+    "title": "Plowing",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "fieldId": "RwkjiCKnmPS5pg3eEre6",
+    "fieldName": "Katubhann"
+  },
+  "jOTEWB6z5tQ3hrZFIeSp": {
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "variety": "Phil 93-1601",
+    "title": "Transport Equipment to Field",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Field 3",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    },
+    "createdAt": {
+      "_seconds": 1764126215,
+      "_nanoseconds": 623000000
+    },
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "taskType": "driver_log",
+    "details": "Transport Equipment to Field",
+    "verified": true,
+    "notes": "bj",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FcoUGx4HWOgXromJ1k9s0b9S6pPo1_1764126214072.jpg?alt=media&token=e93716a0-1af3-4ad4-a66d-21a17b51289e",
+    "completedAt": {
+      "_seconds": 1764126215,
+      "_nanoseconds": 623000000
+    },
+    "driverName": "j",
+    "description": "bj",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ]
+  },
+  "jwa0glanc7hBTVlk6Udb": {
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "archived": true,
+    "archivedAt": {
+      "_seconds": 1763797391,
+      "_nanoseconds": 168000000
+    },
+    "completedAt": {
+      "_seconds": 1763796735,
+      "_nanoseconds": 82000000
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Planting (0 DAP)",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1763796686,
+      "_nanoseconds": 378000000
+    },
+    "details": ".",
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "assign_type": "worker",
+    "metadata": {
+      "variety": "Phil 94-0913",
+      "workers_count": 1
+    }
+  },
+  "k6WC64FbyqrFfeWvXwC4": {
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1764073187,
+      "_nanoseconds": 468000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "title": "Transport Materials to Field",
+    "assign_type": "driver",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    },
+    "details": "b",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1764073121,
+      "_nanoseconds": 6000000
+    }
+  },
+  "k82lLWvV4dR2Hn43EdQT": {
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "variety": "VMC 84-524",
+    "taskType": "worker_log",
+    "workerName": "b",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "photoURL": "",
+    "verified": true,
+    "title": "Planting (0 DAP)",
+    "notes": "n",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "fieldName": "kahago",
+    "description": "n",
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "createdAt": {
+      "_seconds": 1763812934,
+      "_nanoseconds": 358000000
+    },
+    "status": "done",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": "Planting (0 DAP)",
+    "completedAt": {
+      "_seconds": 1763812934,
+      "_nanoseconds": 358000000
+    }
+  },
+  "kBEFUmztJBDj5cjLzM58": {
+    "description": "k",
+    "details": "Planting (0 DAP)",
+    "notes": "k",
+    "createdAt": {
+      "_seconds": 1763812109,
+      "_nanoseconds": 186000000
+    },
+    "photoURL": "",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "completedAt": {
+      "_seconds": 1763812109,
+      "_nanoseconds": 186000000
+    },
+    "verified": true,
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "worker_log",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "variety": "VMC 84-524",
+    "workerName": "m",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "title": "Planting (0 DAP)",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "fieldName": "kahago"
+  },
+  "kQ88ByBQZoqh0RBwKeNY": {
+    "taskType": "driver_log",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "createdAt": {
+      "_seconds": 1764125579,
+      "_nanoseconds": 22000000
+    },
+    "created_by": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "createdBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "details": "Transport Equipment to Field",
+    "variety": "BZ 148",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldName": "Field8",
+    "title": "Transport Equipment to Field",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "status": "done",
+    "driverName": "j",
+    "description": "bn",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764125579,
+      "_nanoseconds": 22000000
+    },
+    "notes": "bn",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FcoUGx4HWOgXromJ1k9s0b9S6pPo1_1764125577909.jpg?alt=media&token=0426b6e6-f382-4f3f-997e-b339e62cb43b"
+  },
+  "kzPIP2PoO6HTJFpWpb1Q": {
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "workerName": "bn",
+    "fieldName": "kahago",
+    "description": "j",
+    "completedAt": {
+      "_seconds": 1763812020,
+      "_nanoseconds": 340000000
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "verified": true,
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "createdAt": {
+      "_seconds": 1763812020,
+      "_nanoseconds": 340000000
+    },
+    "title": "Harvesting",
+    "status": "done",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "VMC 84-524"
+    },
+    "details": "Harvesting",
+    "variety": "VMC 84-524",
+    "notes": "j"
+  },
+  "nWAwzpRD2WgYYMSJAbpQ": {
+    "description": ".",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Main Fertilization (45–60 DAP)",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "workerName": ".",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "taskType": "worker_log",
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763802375,
+      "_nanoseconds": 406000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "notes": ".",
+    "fieldName": "kahago",
+    "createdAt": {
+      "_seconds": 1763802375,
+      "_nanoseconds": 406000000
+    },
+    "details": "Main Fertilization (45–60 DAP)",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "Phil 94-0913"
+    },
+    "status": "done",
+    "variety": "Phil 94-0913"
+  },
+  "nr8weWuHDAJMXFxI9nGV": {
+    "title": "Planting (0 DAP)",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "details": "n",
+    "completedAt": {
+      "_seconds": 1763814028,
+      "_nanoseconds": 79000000
+    },
+    "createdAt": {
+      "_seconds": 1763813986,
+      "_nanoseconds": 58000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "metadata": {
+      "workers_count": 1,
+      "variety": "LCP 85-384"
+    },
+    "deadline": {
+      "_seconds": 1763913540,
+      "_nanoseconds": 0
+    },
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assign_type": "worker"
+  },
+  "pQvY1jiT0pebn2mVIwbJ": {
+    "variety": "Phil 93-1601",
+    "workerName": "Geraldyn",
+    "createdBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FrdWgcB2Es0cu0PMMqTa6CPrci623_1764186037442_worker_photo_1764185972287.jpg?alt=media&token=dd24411b-c006-46f0-9844-fbb3d2955499",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "completedAt": {
+      "_seconds": 1764186040,
+      "_nanoseconds": 176000000
+    },
+    "verified": true,
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "taskType": "worker_log",
+    "description": "Done, boss",
+    "details": "Basal Fertilizer (0–30 DAP)",
+    "notes": "Done, boss",
+    "createdAt": {
+      "_seconds": 1764186040,
+      "_nanoseconds": 176000000
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "fieldName": "Field 3",
+    "created_by": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "status": "done",
+    "title": "Basal Fertilizer (0–30 DAP)",
+    "metadata": {
+      "variety": "Phil 93-1601"
+    }
+  },
+  "qRC23DVCGCGu6YEBevpp": {
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1763811279,
+      "_nanoseconds": 753000000
+    },
+    "notes": "bn",
+    "photoURL": "",
+    "description": "bn",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "variety": "BZ 148",
+    "title": "Planting (0 DAP)",
+    "fieldName": "kahago",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "variety": "BZ 148"
+    },
+    "status": "done",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "taskType": "worker_log",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "createdAt": {
+      "_seconds": 1763811279,
+      "_nanoseconds": 753000000
+    },
+    "workerName": "mn",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "details": "Planting (0 DAP)"
+  },
+  "s8Mo2QEknFJRuciGwxc6": {
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "title": "Plowing",
+    "status": "done",
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "createdAt": {
+      "_seconds": 1764535543,
+      "_nanoseconds": 247000000
+    },
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "notes": "jjjj",
+    "details": "Plowing",
+    "variety": "LCP 85-384",
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "fieldName": "Cane B",
+    "workerName": "maria boyboy",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764535573185_worker_photo_1764535567215.jpg?alt=media&token=f621266e-26da-44d5-9e3a-cd9493f8477b",
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1764460800,
+      "_nanoseconds": 0
+    },
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "description": "jjjj",
+    "completedAt": {
+      "_seconds": 1764535543,
+      "_nanoseconds": 247000000
+    }
+  },
+  "sFazGvNPjHxrpqTU45kZ": {
+    "status": "done",
+    "generatedAt": {
+      "_seconds": 1763796740,
+      "_nanoseconds": 199000000
+    },
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "field_id": "gLesDOqF07mUFoEgerKA",
+    "autoGenerated": true,
+    "createdAt": {
+      "_seconds": 1763796740,
+      "_nanoseconds": 199000000
+    },
+    "archivedAt": {
+      "_seconds": 1763797392,
+      "_nanoseconds": 227000000
+    },
+    "updatedAt": {
+      "_seconds": 1763796740,
+      "_nanoseconds": 199000000
+    },
+    "archived": true,
+    "notes": "Optimal harvest: 365 DAP for Phil 94-0913. Deliver to mill within 24-48 hours of cutting for best sucrose recovery.",
+    "growthStage": "Harvest",
+    "dapWindow": "355-375",
+    "assignedTo": [
+      "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assigned_to": [
+      "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "completedAt": {
+      "_seconds": 1763796793,
+      "_nanoseconds": 37000000
+    },
+    "deadline": {
+      "_seconds": 1795332735,
+      "_nanoseconds": 983000000
+    },
+    "createdBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "isRatoonTask": false,
+    "taskType": "harvesting",
+    "description": "Harvest sugarcane at optimal maturity. Coordinate with mill schedule for fresh delivery.",
+    "priority": "critical",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "title": "Harvesting"
+  },
+  "srPwLTbv2iwhMHR4FiM6": {
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "assign_type": "driver",
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "details": ".",
+    "completedAt": {
+      "_seconds": 1763986602,
+      "_nanoseconds": 321000000
+    },
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1763986229,
+      "_nanoseconds": 579000000
+    },
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie (Rented)"
+      }
+    },
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "title": "transport_fertilizer",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk"
+  },
+  "tFd1t1bQjSE6OFc7WlV4": {
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "variety": "LCP 85-384",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "archivedAt": {
+      "_seconds": 1763797392,
+      "_nanoseconds": 412000000
+    },
+    "createdAt": {
+      "_seconds": 1763796731,
+      "_nanoseconds": 734000000
+    },
+    "description": ".",
+    "details": "Planting (0 DAP)",
+    "notes": ".",
+    "taskType": "worker_log",
+    "completedAt": {
+      "_seconds": 1763796731,
+      "_nanoseconds": 734000000
+    },
+    "verified": true,
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "photoURL": "",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "fieldName": "kahago",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "status": "done",
+    "title": "Planting (0 DAP)",
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "archived": true
+  },
+  "uVex7tE6yoUVkGX4umTy": {
+    "dapWindow": "335-355",
+    "completedAt": {
+      "_seconds": 1763794864,
+      "_nanoseconds": 701000000
+    },
+    "notes": "Optimal harvest: 345 DAP for PSR 07-195. Deliver to mill within 24-48 hours of cutting for best sucrose recovery.",
+    "priority": "critical",
+    "growthStage": "Harvest",
+    "field_id": "gLesDOqF07mUFoEgerKA",
+    "description": "Harvest sugarcane at optimal maturity. Coordinate with mill schedule for fresh delivery.",
+    "assignedTo": [
+      "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "isRatoonTask": true,
+    "assigned_to": [
+      "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "updatedAt": {
+      "_seconds": 1763794317,
+      "_nanoseconds": 918000000
+    },
+    "archived": true,
+    "archivedAt": {
+      "_seconds": 1763797392,
+      "_nanoseconds": 713000000
+    },
+    "autoGenerated": true,
+    "completedBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "status": "done",
+    "title": "Harvesting",
+    "generatedAt": {
+      "_seconds": 1763794317,
+      "_nanoseconds": 918000000
+    },
+    "deadline": {
+      "_seconds": 1796169600,
+      "_nanoseconds": 0
+    },
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "taskType": "harvesting",
+    "createdAt": {
+      "_seconds": 1763794317,
+      "_nanoseconds": 918000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdBy": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "viYCktFm8j6ritvr9XWf": {
+    "assign_type": "driver",
+    "details": "Harvesting",
+    "metadata": {
+      "driver": {
+        "fullname": "Gikapoy Na",
+        "id": "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+      }
+    },
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "lh50rAUvdbMlUUqzIRRo5vZ1qdG3"
+    ],
+    "status": "pending",
+    "title": "Others",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1764189882,
+      "_nanoseconds": 502000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "wCPWKXAHGnSxc3haAPe7": {
+    "title": "Transport Equipment to Field",
+    "fieldId": "5m5dry0UlPTPB9AtjIdk",
+    "assign_type": "driver",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "deadline": {
+      "_seconds": 1764518340,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1764066349,
+      "_nanoseconds": 747000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "coUGx4HWOgXromJ1k9s0b9S6pPo1"
+    ],
+    "createdAt": {
+      "_seconds": 1764066334,
+      "_nanoseconds": 310000000
+    },
+    "metadata": {
+      "driver": {
+        "id": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+        "fullname": "dyn nie"
+      }
+    },
+    "details": ",m,",
+    "completedBy": "coUGx4HWOgXromJ1k9s0b9S6pPo1",
+    "status": "done"
+  },
+  "wiblNMxiOZA14ovvtchH": {
+    "variety": "Phil 92-0577",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "taskType": "worker_log",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "title": "Main Fertilization (45–60 DAP)",
+    "notes": "Wara",
+    "workerName": "Anxnx",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FPxVmglJmEtayzRShMj35fZmaNDy2_1764869381263_worker_photo_1764869363386.jpg?alt=media&token=438f595b-89f8-47d6-8900-3221d75e6dd4",
+    "verified": true,
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "fieldName": "Maki Cane",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "description": "Wara",
+    "completionDate": {
+      "_seconds": 1764806400,
+      "_nanoseconds": 0
+    },
+    "details": "Main Fertilization (45–60 DAP)",
+    "completedAt": {
+      "_seconds": 1764869385,
+      "_nanoseconds": 67000000
+    },
+    "metadata": {
+      "variety": "Phil 92-0577"
+    },
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "status": "done",
+    "createdAt": {
+      "_seconds": 1764869385,
+      "_nanoseconds": 67000000
+    }
+  },
+  "x179BwRQuVXwrWLoK1Vc": {
+    "fieldId": "OoVjAFZD8UyCqF2pxIPQ",
+    "fieldName": "Cane A",
+    "created_by": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "status": "done",
+    "title": "Plowing",
+    "metadata": {
+      "variety": "PSR 03-171"
+    },
+    "variety": "PSR 03-171",
+    "createdBy": "LedBYRyxyTfpDAMwsogCD6p8i4p1",
+    "workerName": "ffff",
+    "completionDate": {
+      "_seconds": 1764115200,
+      "_nanoseconds": 0
+    },
+    "verified": true,
+    "completedAt": {
+      "_seconds": 1764174961,
+      "_nanoseconds": 589000000
+    },
+    "assignedTo": [
+      "LedBYRyxyTfpDAMwsogCD6p8i4p1"
+    ],
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/worker_logs%2FLedBYRyxyTfpDAMwsogCD6p8i4p1_1764174987535_worker_photo_1764174974841.jpg?alt=media&token=b4f758a5-413c-4a74-8455-d7c94ec5192e",
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "taskType": "worker_log",
+    "description": "kk",
+    "notes": "kk",
+    "details": "Plowing",
+    "createdAt": {
+      "_seconds": 1764174961,
+      "_nanoseconds": 589000000
+    }
+  },
+  "y1dbzyYkU7js0AvvJcvQ": {
+    "archived": true,
+    "archivedAt": {
+      "_seconds": 1763797392,
+      "_nanoseconds": 980000000
+    },
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "description": "/",
+    "verified": true,
+    "notes": "/",
+    "photoURL": "",
+    "completedAt": {
+      "_seconds": 1763797327,
+      "_nanoseconds": 102000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "workerName": ".",
+    "createdAt": {
+      "_seconds": 1763797327,
+      "_nanoseconds": 102000000
+    },
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "taskType": "worker_log",
+    "details": "Planting (0 DAP)",
+    "completionDate": {
+      "_seconds": 1763769600,
+      "_nanoseconds": 0
+    },
+    "variety": "Phil 94-0913",
+    "title": "Planting (0 DAP)",
+    "fieldName": "kahago",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "metadata": {
+      "variety": "Phil 94-0913"
+    }
+  },
+  "yDLY44WeujThTBDKWExU": {
+    "taskType": "worker_log",
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "notes": "m",
+    "details": "Planting (0 DAP)",
+    "variety": "LCP 85-384",
+    "createdAt": {
+      "_seconds": 1763986996,
+      "_nanoseconds": 675000000
+    },
+    "created_by": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "status": "done",
+    "assignedTo": [
+      "T3t8tQ4DZjfqW1OUivQapwXLCxn1"
+    ],
+    "title": "Planting (0 DAP)",
+    "fieldId": "gLesDOqF07mUFoEgerKA",
+    "description": "m",
+    "completedAt": {
+      "_seconds": 1763986996,
+      "_nanoseconds": 675000000
+    },
+    "verified": true,
+    "completionDate": {
+      "_seconds": 1763942400,
+      "_nanoseconds": 0
+    },
+    "workerName": "m",
+    "createdBy": "T3t8tQ4DZjfqW1OUivQapwXLCxn1",
+    "photoURL": "",
+    "fieldName": "kahago"
+  },
+  "yzLQgsNYIaBKDbnjtKY1": {
+    "deadline": {
+      "_seconds": 1765727940,
+      "_nanoseconds": 0
+    },
+    "completedAt": {
+      "_seconds": 1765714515,
+      "_nanoseconds": 980000000
+    },
+    "created_by": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "assignedTo": [
+      "rdWgcB2Es0cu0PMMqTa6CPrci623"
+    ],
+    "assign_type": "worker",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "title": "harvesting",
+    "handlerId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "metadata": {
+      "workers_count": 1
+    },
+    "details": ".",
+    "status": "done",
+    "completedBy": "rdWgcB2Es0cu0PMMqTa6CPrci623",
+    "createdAt": {
+      "_seconds": 1765714503,
+      "_nanoseconds": 487000000
+    }
+  },
+  "z3YLLDym9pVFDcmwYnP2": {
+    "notes": "harrowing",
+    "title": "Harrowing",
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790941163_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=db5cb228-15ac-4c04-80cd-5e28a92e7156",
+    "verified": true,
+    "workerName": "Almackie J. Bangalao",
+    "taskType": "worker_log",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "variety": "Phil 92-0577",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "details": "Harrowing",
+    "completedAt": {
+      "_seconds": 1764790943,
+      "_nanoseconds": 478000000
+    },
+    "createdAt": {
+      "_seconds": 1764790943,
+      "_nanoseconds": 478000000
+    },
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "status": "done",
+    "metadata": {
+      "offline_timestamp": "2025-12-03T19:41:45.702Z",
+      "variety": "Phil 92-0577",
+      "synced_from_offline": true
+    },
+    "description": "harrowing",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "fieldName": "Maki Cane",
+    "completionDate": {
+      "_seconds": 1764790943,
+      "_nanoseconds": 367000000
+    }
+  },
+  "z9643vs7BEn5RQzPXuNQ": {
+    "metadata": {
+      "variety": "LCP 85-384"
+    },
+    "created_by": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "title": "Fuel Refill",
+    "status": "done",
+    "fieldName": "Cane B",
+    "driverName": "gggg",
+    "fieldId": "aaDnX3W1CQZoFzxAjSRq",
+    "details": "Fuel Refill",
+    "notes": "hhhh",
+    "description": "hhhh",
+    "createdAt": {
+      "_seconds": 1765378640,
+      "_nanoseconds": 326000000
+    },
+    "handlerId": "Ryq1FhvxK4QSvWbiAFc1NNjCMT83",
+    "completedAt": {
+      "_seconds": 1765378640,
+      "_nanoseconds": 326000000
+    },
+    "verified": true,
+    "assignedTo": [
+      "xJWVsb3tREgSnZVn2uHr19Wn5M93"
+    ],
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/driver_logs%2FxJWVsb3tREgSnZVn2uHr19Wn5M93_1765378635987.jpg?alt=media&token=9601bbd0-609c-4c48-bde7-c0a6beead884",
+    "taskType": "driver_log",
+    "completionDate": {
+      "_seconds": 1765324800,
+      "_nanoseconds": 0
+    },
+    "createdBy": "xJWVsb3tREgSnZVn2uHr19Wn5M93",
+    "variety": "LCP 85-384"
+  },
+  "zKb6TJQsYX7aqCxa6R9L": {
+    "description": "nag furrowing ko sir",
+    "assignedTo": [
+      "PxVmglJmEtayzRShMj35fZmaNDy2"
+    ],
+    "completedAt": {
+      "_seconds": 1764790931,
+      "_nanoseconds": 475000000
+    },
+    "photoURL": "https://firebasestorage.googleapis.com/v0/b/canemap-system.firebasestorage.app/o/task_photos%2Ftask_photo_1764790927721_PxVmglJmEtayzRShMj35fZmaNDy2.jpg?alt=media&token=794d9d6b-18af-4dab-96aa-d42bf71a6a35",
+    "notes": "nag furrowing ko sir",
+    "verified": true,
+    "details": "Furrowing",
+    "taskType": "worker_log",
+    "fieldId": "pNGGviX9ftbNxEsfCCn9",
+    "createdBy": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "created_by": "PxVmglJmEtayzRShMj35fZmaNDy2",
+    "workerName": "Almackie J. Bangalao",
+    "createdAt": {
+      "_seconds": 1764790931,
+      "_nanoseconds": 475000000
+    },
+    "metadata": {
+      "synced_from_offline": true,
+      "variety": "Phil 92-0577",
+      "offline_timestamp": "2025-12-03T19:10:33.378Z"
+    },
+    "status": "done",
+    "handlerId": "EOFIAct9L8Ox5f4SJhOZ8ItHNsG3",
+    "fieldName": "Maki Cane",
+    "title": "Furrowing",
+    "variety": "Phil 92-0577",
+    "completionDate": {
+      "_seconds": 1764790930,
+      "_nanoseconds": 693000000
+    }
+  }
+}

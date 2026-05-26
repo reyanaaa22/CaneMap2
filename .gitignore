@@ -100,10 +100,13 @@ functions/admin-users.json
 **/service-account-*.json
 **/firebase-adminsdk-*.json
 
-# Full database turnover export (ignore data dumps; keep schema documents)
-System Database/*
+# System Database turnover: allow README, schema docs, and database/*.json exports
+System Database/**
+!System Database/README.md
 !System Database/*.txt
 !System Database/database-schema.json
+!System Database/database/
+!System Database/database/**
 
 # MD files
 REQUIREMENTS.md

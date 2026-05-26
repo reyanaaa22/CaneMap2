@@ -1,0 +1,2744 @@
+{
+  "0OowJlVsrHfQy1wnC5Hh": {
+    "data": {
+      "laborWorkers": 2,
+      "laborRatePerDay": 175,
+      "harvestOtherWorkRatePerDay": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "startDate": "2026-03-30",
+      "truckRented": "No",
+      "laborCost": 700,
+      "laborWorkingDays": 2,
+      "passes": 2,
+      "harvestOtherWorkWorkers": 0,
+      "endDate": "2026-03-31",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "equipment": "Animal-Drawn",
+      "totalCost": 700,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkTask": ""
+    },
+    "status": "Land Preparation (Before Planting)",
+    "taskType": "Harrowing (Suyod)",
+    "operation": "Pre-Planting",
+    "createdAt": {
+      "_seconds": 1774508080,
+      "_nanoseconds": 459000000
+    },
+    "recordDate": {
+      "_seconds": 1774828800,
+      "_nanoseconds": 0
+    },
+    "fieldId": "Ytw2cUDGVp43850sE2FJ",
+    "recordStatus": "Done",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "_isDone": true,
+    "growthStage": "Land Preparation (Before Planting)"
+  },
+  "0TlHA7qeZJH4slHK1vnW": {
+    "data": {
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "numberOfSetts": 0,
+      "totalCaneRequired": 0,
+      "variety": "K 88-87",
+      "laborWorkers": 0,
+      "laborCost": 0,
+      "startDate": "2026-03-12",
+      "expectedHarvestDate": "May 12, 2027 – May 19, 2027",
+      "seedRate": 40000,
+      "endDate": "2026-03-12",
+      "fuelCost": 0,
+      "laborWorkingDays": 1
+    },
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "fieldId": "su9taFYjLnSvEtj31JIo",
+    "createdAt": {
+      "_seconds": 1773319192,
+      "_nanoseconds": 17000000
+    },
+    "recordDate": {
+      "_seconds": 1773273600,
+      "_nanoseconds": 0
+    },
+    "operation": "Planting",
+    "recordStatus": "Done",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "_isDone": true
+  },
+  "2XNJm0gOKKUAXP4C7LBv": {
+    "status": "Land Preparation (Before Planting)",
+    "createdAt": {
+      "_seconds": 1774799746,
+      "_nanoseconds": 843000000
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "operation": "Pre-Planting",
+    "data": {
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "fuelCost": 0,
+      "laborWorkers": 0,
+      "endDate": "2026-03-31",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-03-29"
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "taskType": "Furrowing / Trenching (Paghimo ug tudling)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    }
+  },
+  "2aDj3JdapTOirt6yNkDC": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1775433600,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774270779,
+      "_nanoseconds": 252000000
+    },
+    "data": {
+      "laborWorkers": 0,
+      "endDate": "2026-04-09",
+      "harvestOtherWorkTask": "",
+      "expectedHarvestDate": "Feb 6, 2027 – Apr 6, 2027",
+      "laborWorkingDays": 4,
+      "fuelCost": 0,
+      "numberOfSetts": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 4,
+      "startDate": "2026-04-06",
+      "harvestOtherWorkWorkers": 0,
+      "variety": "PS 5",
+      "seedRate": 120000,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborCost": 0,
+      "totalCaneRequired": 0
+    },
+    "taskType": "Replanting Operation (Pag-usab og tanom)",
+    "recordStatus": "Done",
+    "operation": "Planting",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg"
+  },
+  "2qyO2tgkV5JSBvb5WG3f": {
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "_isDone": true,
+    "growthStage": "Land Preparation (Before Planting)",
+    "data": {
+      "totalCost": 0,
+      "laborWorkers": 0,
+      "laborWorkingDays": 2,
+      "laborCost": 0,
+      "method": "Manual",
+      "endDate": "2026-03-21",
+      "laborRatePerDay": 0,
+      "startDate": "2026-03-20"
+    },
+    "recordDate": {
+      "_seconds": 1773964800,
+      "_nanoseconds": 0
+    },
+    "operation": "Pre-Planting",
+    "recordStatus": "Done",
+    "status": "Land Preparation (Before Planting)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "createdAt": {
+      "_seconds": 1773991749,
+      "_nanoseconds": 883000000
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg"
+  },
+  "3Oo1iXhOtdfWcTd6p1uM": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "_isDone": true,
+    "recordStatus": "Done",
+    "fieldId": "2HybS8XdIzIy5wgbIehh",
+    "recordDate": {
+      "_seconds": 1775088000,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774797064,
+      "_nanoseconds": 788000000
+    },
+    "operation": "Planting",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "data": {
+      "fuelCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCaneRequired": 0,
+      "laborRatePerDay": 0,
+      "numberOfSetts": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkingDays": 2,
+      "totalCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "endDate": "2026-04-04",
+      "seedRate": 280000,
+      "harvestOtherWorkWorkers": 0,
+      "expectedHarvestDate": "",
+      "laborWorkingDays": 2,
+      "startDate": "2026-04-02",
+      "laborCost": 0,
+      "harvestOtherWorkLaborCost": 0
+    }
+  },
+  "4YbVtnvywVVF6AOIlEgd": {
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "recordStatus": "Done",
+    "operation": "Pre-Planting",
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774794859,
+      "_nanoseconds": 557000000
+    },
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Land Preparation (Before Planting)",
+    "growthStage": "Land Preparation (Before Planting)",
+    "data": {
+      "laborCost": 0,
+      "startDate": "2026-03-29",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 1,
+      "laborWorkingDays": 1,
+      "endDate": "2026-03-30",
+      "laborRatePerDay": 0,
+      "totalCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborWorkers": 0
+    }
+  },
+  "4lkTvaoCAnX4IR9G4PDS": {
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Gap Filling / Replanting (Pagpuli sa wala miturok)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1776038400,
+      "_nanoseconds": 0
+    },
+    "data": {
+      "totalCost": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "laborWorkers": 0,
+      "endDate": "2026-04-14",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "seedRate": 120000,
+      "startDate": "2026-04-13",
+      "totalCaneRequired": 0,
+      "variety": "PS 5",
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "expectedHarvestDate": "Feb 13, 2027 – Apr 13, 2027",
+      "laborWorkingDays": 2,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0,
+      "numberOfSetts": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Germination & Early Growth",
+    "createdAt": {
+      "_seconds": 1774271060,
+      "_nanoseconds": 166000000
+    },
+    "operation": "Post-Planting",
+    "_isDone": true,
+    "status": "Germination & Early Growth"
+  },
+  "6dMVmYVxjhc2sdYYv8xY": {
+    "status": "Germination",
+    "taskType": "Plowing",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "data": {
+      "operators": 4,
+      "startDate": "2025-12-18",
+      "endDate": "2025-12-18",
+      "laborCost": "278",
+      "fuelCost": 1000,
+      "equipment": "Manual",
+      "totalCost": 1278
+    },
+    "createdAt": {
+      "_seconds": 1765912493,
+      "_nanoseconds": 958000000
+    },
+    "recordDate": {
+      "_seconds": 1766016000,
+      "_nanoseconds": 0
+    },
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "operation": "Pre-Planting",
+    "__collections__": {
+      "bought_items": {
+        "3etUxOi5btras6I208bU": {
+          "price": 360,
+          "supplier": "1",
+          "notes": "palit lang",
+          "quantity": 2,
+          "unit": "pcs",
+          "createdAt": {
+            "_seconds": 1765912494,
+            "_nanoseconds": 122000000
+          },
+          "total": 720,
+          "itemName": "pala"
+        }
+      }
+    }
+  },
+  "6kVQqM9EQBh4Mq36SN4d": {
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1776729600,
+      "_nanoseconds": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Stem Elongation & Grand Growth",
+    "operation": "Post-Planting",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "growthStage": "Stem Elongation & Grand Growth",
+    "data": {
+      "fertilizerPricePerSack": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborCost": 0,
+      "fertilizerCost": "0.00",
+      "fertilizerType": "Urea (46-0-0)",
+      "fertilizerQuantity": 0,
+      "totalFertilizerCost": 0,
+      "harvestOtherWorkWorkingDays": 4,
+      "startDate": "2026-04-21",
+      "harvestOtherWorkWorkers": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborWorkingDays": 4,
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 0,
+      "endDate": "2026-04-25"
+    },
+    "createdAt": {
+      "_seconds": 1774272665,
+      "_nanoseconds": 666000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Second Dose Fertilization (Ikaduhang Abono)"
+  },
+  "6lfweU5kS1dI5VtUulRQ": {
+    "operation": "Pre-Planting",
+    "recordDate": {
+      "_seconds": 1765929600,
+      "_nanoseconds": 0
+    },
+    "taskType": "Plowing",
+    "data": {
+      "date": "2025-12-17",
+      "equipment": "Mechanical",
+      "laborCost": "721",
+      "depth": 1,
+      "operators": 2,
+      "fuelCost": 10,
+      "totalCost": 721
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "bVEKomORZOLt4sT3ibiz",
+    "createdAt": {
+      "_seconds": 1765836504,
+      "_nanoseconds": 574000000
+    },
+    "status": "Germination"
+  },
+  "7EmZxrntjsS2KKcGmRuF": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Tillering Stage",
+    "_isDone": true,
+    "recordStatus": "Done",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "recordDate": {
+      "_seconds": 1776038400,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774272581,
+      "_nanoseconds": 582000000
+    },
+    "operation": "Post-Planting",
+    "status": "Tillering Stage",
+    "taskType": "First Dose Fertilization – After Emergence (Unang Abono)",
+    "data": {
+      "totalCost": 0,
+      "fertilizerCost": "0.00",
+      "harvestOtherWorkWorkingDays": 3,
+      "harvestOtherWorkTask": "",
+      "endDate": "2026-04-15",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 3,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "startDate": "2026-04-13",
+      "fertilizerPricePerSack": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalFertilizerCost": 0,
+      "laborRatePerDay": 0,
+      "fertilizerType": "Urea (46-0-0)",
+      "fertilizerQuantity": 0,
+      "laborWorkers": 0
+    }
+  },
+  "7LwzLgIf6Ty0yKUzSw0K": {
+    "data": {
+      "notes": "",
+      "herbicide": "2,4-D",
+      "endDate": "2025-03-11",
+      "areaCovered": 1.25,
+      "laborWorkingDays": 3,
+      "dosageUnit": "Liter",
+      "toolsUsed": "Knapsack sprayer / tank",
+      "laborCost": 900,
+      "startDate": "2025-03-07",
+      "method": "Chemical Weeding",
+      "totalChemicalCost": 7249.9,
+      "chemicalCost": "7249.90",
+      "dosage": "5",
+      "laborWorkers": 1,
+      "totalCost": 8149.9,
+      "laborRatePerDay": 300
+    },
+    "growthStage": "Tillering Stage",
+    "status": "Tillering Stage",
+    "_isDone": true,
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "recordDate": {
+      "_seconds": 1741305600,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1773996018,
+      "_nanoseconds": 843000000
+    },
+    "recordStatus": "Done",
+    "operation": "Post-Planting",
+    "updatedAt": {
+      "_seconds": 1773997005,
+      "_nanoseconds": 429000000
+    },
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "taskType": "Weeding (Pagpananom / Paglimpyo sa sagbot)"
+  },
+  "AehdyetrxJZDFK44z0pV": {
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "recordDate": {
+      "_seconds": 1768780800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "data": {
+      "totalCost": 3000,
+      "laborWorkers": 10,
+      "equipment": "matsiti",
+      "endDate": "2026-01-19",
+      "laborRatePerDay": 300,
+      "method": "Manual",
+      "laborWorkingDays": 1,
+      "startDate": "2026-01-19",
+      "laborCost": 3000,
+      "notes": "Nag Limpyo mis kuan"
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1767631579,
+      "_nanoseconds": 973000000
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "operation": "Pre-Planting",
+    "status": "Land Preparation (Before Planting)"
+  },
+  "CaXclfQOGAKHSPdod32O": {
+    "data": {
+      "fertilizerCost": "24005.00",
+      "notes": "",
+      "fertilizerType": "MOP (0-0-60)",
+      "fertilizerQuantity": 0,
+      "fertilizerPricePerSack": 0,
+      "totalCost": 26755,
+      "laborCost": 2750,
+      "totalFertilizerCost": 24005,
+      "startDate": "2025-03-27",
+      "laborRatePerDay": 275,
+      "laborWorkers": 10,
+      "endDate": "2025-03-27",
+      "laborWorkingDays": 1
+    },
+    "createdAt": {
+      "_seconds": 1773996868,
+      "_nanoseconds": 670000000
+    },
+    "recordStatus": "Done",
+    "taskType": "First Dose Fertilization – After Emergence (Unang Abono)",
+    "operation": "Post-Planting",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "growthStage": "Tillering Stage",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "status": "Tillering Stage",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1743033600,
+      "_nanoseconds": 0
+    }
+  },
+  "EcjPrxm6SZLizQ1c7EFn": {
+    "recordStatus": "Done",
+    "operation": "Planting",
+    "recordDate": {
+      "_seconds": 1779926400,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774508829,
+      "_nanoseconds": 196000000
+    },
+    "fieldId": "Ytw2cUDGVp43850sE2FJ",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "taskType": "First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)",
+    "_isDone": true,
+    "data": {
+      "startDate": "2026-05-28",
+      "harvestOtherWorkWorkers": 0,
+      "totalCost": 16700,
+      "laborRatePerDay": 175,
+      "laborWorkers": 10,
+      "harvestOtherWorkTask": "",
+      "fertilizerType": "DAP (18-46-0), Urea (46-0-0)",
+      "laborWorkingDays": 1,
+      "endDate": "2026-05-28",
+      "harvestOtherWorkRatePerDay": 0,
+      "totalFertilizerCost": 14950,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 1750,
+      "fertilizerCost": "14950.00",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "fertilizerQuantity": 5,
+      "harvestOtherWorkWorkingDays": 1,
+      "fertilizerPricePerSack": 2000
+    },
+    "growthStage": "Planting (Panahon sa Pagtanom)"
+  },
+  "H4gXPpN46nGASO7ui19g": {
+    "recordDate": {
+      "_seconds": 1766016000,
+      "_nanoseconds": 0
+    },
+    "data": {
+      "cost": 700,
+      "workers": 4,
+      "method": "Mechanical",
+      "startDate": "2025-12-18",
+      "truckRented": "Yes",
+      "endDate": "2025-12-18"
+    },
+    "taskType": "Furrow Making",
+    "status": "Germination",
+    "fieldId": "86zsqLUO3peiVF12GKZD",
+    "operation": "Pre-Planting",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_seconds": 1765922872,
+      "_nanoseconds": 209000000
+    },
+    "__collections__": {
+      "bought_items": {
+        "TXPEZZeyYm93ngbp3wpf": {
+          "itemName": "daro",
+          "quantity": 3,
+          "createdAt": {
+            "_seconds": 1765922872,
+            "_nanoseconds": 358000000
+          },
+          "notes": "palit lang mi",
+          "total": 1050,
+          "supplier": "2",
+          "unit": "pcs",
+          "price": 350
+        }
+      },
+      "vehicle_updates": {
+        "TlqEJ7ra5K4z9TKmhWx6": {
+          "vehicleType": "Truck",
+          "laborCost": 500,
+          "fuelCost": 400,
+          "route": "Baybay",
+          "createdAt": {
+            "_seconds": 1765922872,
+            "_nanoseconds": 498000000
+          },
+          "tripsBoxes": 0,
+          "totalCost": 900
+        }
+      }
+    }
+  },
+  "HfsskiHbCloouqllnwOK": {
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "_isDone": true,
+    "data": {
+      "plantingMethod": "Manual",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 20,
+      "expectedHarvestDate": "Feb 1, 2027 – Mar 1, 2027",
+      "harvestOtherWorkRatePerDay": 2,
+      "endDate": "2026-04-28",
+      "variety": "PS 3",
+      "equipment": "Manual Tools",
+      "fuelCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "numberOfSetts": 3,
+      "laborCost": 52500,
+      "laborRatePerDay": 175,
+      "seedRate": 112000,
+      "laborWorkers": 15,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 20,
+      "startDate": "2026-04-01",
+      "harvestOtherWorkWorkers": 0,
+      "totalCaneRequired": 336000,
+      "totalCost": 52500
+    },
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "recordStatus": "Done",
+    "operation": "Planting",
+    "recordDate": {
+      "_seconds": 1775001600,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774508575,
+      "_nanoseconds": 64000000
+    },
+    "fieldId": "Ytw2cUDGVp43850sE2FJ",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "__collections__": {
+      "vehicle_updates": {
+        "wdtxwaWrteRJpeYjoAcx": {
+          "vehicleType": "",
+          "laborCost": 700,
+          "createdAt": {
+            "_seconds": 1774508575,
+            "_nanoseconds": 273000000
+          },
+          "route": "",
+          "fuelCost": 700,
+          "tripsBoxes": 2,
+          "totalCost": 0
+        }
+      }
+    }
+  },
+  "ICjeQ1ffktHlTKZFkVxn": {
+    "_isDone": true,
+    "taskType": "Hilling-up / Off-barring (Pagtabon sa gamot)",
+    "data": {
+      "startDate": "2025-03-27",
+      "rowCoverage": 0,
+      "endDate": "2025-03-31",
+      "truckRented": "No",
+      "totalCost": 825,
+      "fuelCost": 0,
+      "depth": 0,
+      "laborCost": 825,
+      "laborRatePerDay": 275,
+      "laborWorkingDays": 3,
+      "laborWorkers": 1,
+      "method": "Animal-Drawn"
+    },
+    "growthStage": "Tillering Stage",
+    "recordDate": {
+      "_seconds": 1743033600,
+      "_nanoseconds": 0
+    },
+    "operation": "Post-Planting",
+    "recordStatus": "Done",
+    "status": "Tillering Stage",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "createdAt": {
+      "_seconds": 1773997741,
+      "_nanoseconds": 87000000
+    }
+  },
+  "J2q61CEvGxyKOarlnJWT": {
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "1fTX9coMNEL3FEkSpJ0k",
+    "recordStatus": "Not Done Yet",
+    "recordDate": {
+      "_seconds": 1766016000,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1766026376,
+      "_nanoseconds": 518000000
+    },
+    "operation": "Pre-Planting",
+    "status": "Germination",
+    "taskType": "Land Clearing",
+    "updatedAt": {
+      "_seconds": 1767636885,
+      "_nanoseconds": 442000000
+    },
+    "data": {}
+  },
+  "J6ehNxP4X5rMHWGpEVjT": {
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Brushing / Light Detrashing (Pagpanitan – magaan)",
+    "createdAt": {
+      "_seconds": 1774272883,
+      "_nanoseconds": 608000000
+    },
+    "recordDate": {
+      "_seconds": 1777593600,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "operation": "Post-Planting",
+    "data": {
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "laborRatePerDay": 0,
+      "totalCost": 0,
+      "chemicalCost": 0,
+      "laborWorkers": 0,
+      "dosage": 0,
+      "cleaningMethod": "Manual",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-05-01",
+      "laborCost": 0,
+      "endDate": "2026-05-02",
+      "areaCovered": 3,
+      "laborWorkingDays": 1,
+      "harvestOtherWorkWorkingDays": 1
+    },
+    "growthStage": "Stem Elongation & Grand Growth",
+    "status": "Stem Elongation & Grand Growth"
+  },
+  "JhirFIx7zld6yFSRHcJC": {
+    "growthStage": "Land Preparation (Before Planting)",
+    "createdAt": {
+      "_seconds": 1767631818,
+      "_nanoseconds": 842000000
+    },
+    "operation": "Pre-Planting",
+    "_isDone": true,
+    "status": "Land Preparation (Before Planting)",
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "taskType": "Plowing (Arado / Araro)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1768867200,
+      "_nanoseconds": 0
+    },
+    "data": {
+      "totalCost": 1600,
+      "fuelCost": 0,
+      "laborWorkers": 2,
+      "equipment": "Animal-Drawn",
+      "laborRatePerDay": 400,
+      "endDate": "2026-01-21",
+      "laborWorkingDays": 2,
+      "startDate": "2026-01-20",
+      "notes": "nag araro ra kami",
+      "laborCost": 1600,
+      "operators": 1
+    },
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93"
+  },
+  "KGUkgREfW0OXvxSZOlae": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1775001600,
+      "_nanoseconds": 0
+    },
+    "data": {
+      "startDate": "2026-04-01",
+      "harvestOtherWorkWorkingDays": 3,
+      "harvestOtherWorkWorkers": 0,
+      "variety": "PS 5",
+      "seedRate": 120000,
+      "plantingMethod": "Manual",
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborCost": 0,
+      "totalCaneRequired": 0,
+      "endDate": "2026-04-04",
+      "laborWorkers": 0,
+      "expectedHarvestDate": "Feb 1, 2027 – Apr 1, 2027",
+      "laborWorkingDays": 3,
+      "harvestOtherWorkTask": "",
+      "fuelCost": 0,
+      "numberOfSetts": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkLaborCost": 0
+    },
+    "createdAt": {
+      "_seconds": 1774270657,
+      "_nanoseconds": 348000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "operation": "Planting",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "growthStage": "Planting (Panahon sa Pagtanom)"
+  },
+  "LLwQDOqgyKSoaelmmcta": {
+    "recordDate": {
+      "_seconds": 1738627200,
+      "_nanoseconds": 0
+    },
+    "operation": "Planting",
+    "taskType": "Planting Operation",
+    "data": {
+      "totalCost": 0,
+      "totalCaneRequired": 96000,
+      "workers": 15,
+      "numberOfSetts": 3,
+      "variety": "K 88-87",
+      "startDate": "2025-02-04",
+      "endDate": "2025-02-05",
+      "expectedHarvestDate": "04/02/2026 – 04/04/2026",
+      "plantingMethod": "Manual",
+      "seedRate": 32000
+    },
+    "status": "Germination",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "1fTX9coMNEL3FEkSpJ0k",
+    "createdAt": {
+      "_seconds": 1766027213,
+      "_nanoseconds": 745000000
+    }
+  },
+  "MXHIlui4rnrqdUzgPGdy": {
+    "data": {
+      "quantity": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "laborRatePerDay": 0,
+      "seedAge": 0,
+      "laborWorkers": 0,
+      "variety": "PHIL 92-0577",
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "materialCost": 0,
+      "endDate": "2026-03-31",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "startDate": "2026-03-29",
+      "laborCost": 0
+    },
+    "taskType": "Seed Cane Preparation (Pag-andam sa binhi sa tubo)",
+    "status": "Land Preparation (Before Planting)",
+    "operation": "Pre-Planting",
+    "createdAt": {
+      "_seconds": 1774797206,
+      "_nanoseconds": 818000000
+    },
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "recordStatus": "Done",
+    "_isDone": true,
+    "growthStage": "Land Preparation (Before Planting)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "N6VFmmbQmftSk0sci2MS": {
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "taskType": "Germination Monitoring (Pagmonitor sa pagturok)",
+    "fieldId": "su9taFYjLnSvEtj31JIo",
+    "recordDate": {
+      "_seconds": 1774396800,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774271391,
+      "_nanoseconds": 727000000
+    },
+    "recordStatus": "Done",
+    "operation": "Post-Planting",
+    "data": {
+      "laborWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "laborRatePerDay": 0,
+      "totalCost": 0,
+      "endDate": "2026-03-28",
+      "cropAge": 0,
+      "laborWorkingDays": 3,
+      "germinationRate": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "startDate": "2026-03-25",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborCost": 0
+    },
+    "growthStage": "Germination & Early Growth",
+    "status": "Germination & Early Growth"
+  },
+  "O8ixkRukCXabgoD4cR3Q": {
+    "taskType": "Seed Cane Preparation (Pag-andam sa binhi sa tubo)",
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "data": {
+      "materialCost": 0,
+      "harvestOtherWorkWorkers": 0,
+      "seedAge": 0,
+      "startDate": "2026-03-29",
+      "endDate": "2026-04-01",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "totalCost": 0,
+      "laborWorkers": 0,
+      "laborCost": 0,
+      "quantity": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborWorkingDays": 3,
+      "harvestOtherWorkTask": "",
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "createdAt": {
+      "_seconds": 1774799815,
+      "_nanoseconds": 772000000
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "operation": "Pre-Planting",
+    "status": "Land Preparation (Before Planting)"
+  },
+  "ONZbEpWNequQSbDeAMYq": {
+    "status": "Planting (Panahon sa Pagtanom)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "recordDate": {
+      "_seconds": 1775606400,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "recordStatus": "Done",
+    "taskType": "Ratooning (Pagpatubo pag-usab gikan sa tuod)",
+    "data": {
+      "ratoonOperation": "Trash Clearing",
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "areaCovered": 3,
+      "workers": 0,
+      "endDate": "2026-04-11",
+      "laborWorkers": 0,
+      "fuelCost": 0,
+      "laborWorkingDays": 3,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0,
+      "totalCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-04-08",
+      "harvestOtherWorkWorkingDays": 3
+    },
+    "createdAt": {
+      "_seconds": 1774270849,
+      "_nanoseconds": 859000000
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "operation": "Planting"
+  },
+  "PPVllB7b1PyexfE5u9C2": {
+    "_isDone": true,
+    "taskType": "Second Dose Fertilization (Ikaduhang Abono)",
+    "data": {
+      "laborRatePerDay": 275,
+      "fertilizerType": "MOP (0-0-60)",
+      "laborWorkers": 10,
+      "fertilizerQuantity": 2,
+      "laborWorkingDays": 1,
+      "fertilizerPricePerSack": 1850,
+      "endDate": "2025-05-05",
+      "startDate": "2025-05-05",
+      "totalFertilizerCost": 24004.85,
+      "totalCost": 26754.85,
+      "fertilizerCost": "24004.85",
+      "laborCost": 2750
+    },
+    "growthStage": "Stem Elongation & Grand Growth",
+    "recordDate": {
+      "_seconds": 1746403200,
+      "_nanoseconds": 0
+    },
+    "operation": "Post-Planting",
+    "recordStatus": "Done",
+    "status": "Stem Elongation & Grand Growth",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "createdAt": {
+      "_seconds": 1773998054,
+      "_nanoseconds": 698000000
+    }
+  },
+  "PvMTV0MwkPyXedpgVzNF": {
+    "recordDate": {
+      "_seconds": 1774224000,
+      "_nanoseconds": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "recordStatus": "Done",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Cleaning/Cutting (Paglimpyo ug Pagputol sa tubo)",
+    "status": "Land Preparation (Before Planting)",
+    "data": {
+      "laborWorkingDays": 2,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "startDate": "2026-03-23",
+      "totalCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkingDays": 2,
+      "endDate": "2026-03-24",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "method": "Manual"
+    },
+    "createdAt": {
+      "_seconds": 1774270187,
+      "_nanoseconds": 793000000
+    },
+    "operation": "Pre-Planting"
+  },
+  "Q9foh3UyD3wUyWdz6Dkp": {
+    "data": {
+      "startDate": "2026-04-16",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborCost": 0,
+      "endDate": "2026-04-18",
+      "fuelCost": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "depth": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "method": "Manual",
+      "rowCoverage": 0,
+      "laborWorkers": 0
+    },
+    "growthStage": "Tillering Stage",
+    "status": "Tillering Stage",
+    "taskType": "Hilling-up / Off-barring (Pagtabon sa gamot)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "recordDate": {
+      "_seconds": 1776297600,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774272626,
+      "_nanoseconds": 52000000
+    },
+    "recordStatus": "Done",
+    "operation": "Post-Planting",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "QLP1M5OhehVb0uVDv3st": {
+    "status": "Ripening & Maturation",
+    "createdAt": {
+      "_seconds": 1774800097,
+      "_nanoseconds": 640000000
+    },
+    "growthStage": "Ripening & Maturation",
+    "_isDone": true,
+    "operation": "Post-Planting",
+    "data": {
+      "harvestOtherWorkTask": "",
+      "height": 0,
+      "laborWorkingDays": 10,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "tillersPerHill": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "cropAge": 0,
+      "startDate": "2026-03-30",
+      "harvestOtherWorkWorkers": 0,
+      "laborWorkers": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 10,
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-04-11"
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "taskType": "Crop Monitoring (Pagbantay sa kahamtong)",
+    "recordDate": {
+      "_seconds": 1774828800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done"
+  },
+  "Qr7M62ehy7XlLsz0mtxk": {
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "status": "Planting (Panahon sa Pagtanom)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "operation": "Planting",
+    "taskType": "First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)",
+    "recordStatus": "Done",
+    "createdAt": {
+      "_seconds": 1774797564,
+      "_nanoseconds": 617000000
+    },
+    "data": {
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborWorkingDays": 4,
+      "harvestOtherWorkTask": "",
+      "endDate": "2026-04-02",
+      "laborWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "fertilizerPricePerSack": 0,
+      "laborCost": 0,
+      "fertilizerCost": "0.00",
+      "fertilizerQuantity": 0,
+      "startDate": "2026-03-29",
+      "harvestOtherWorkWorkingDays": 4,
+      "harvestOtherWorkWorkers": 0
+    }
+  },
+  "RdMXoYOIyW4Tk1pkNB0T": {
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1776211200,
+      "_nanoseconds": 0
+    },
+    "operation": "Post-Planting",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "createdAt": {
+      "_seconds": 1774271145,
+      "_nanoseconds": 34000000
+    },
+    "status": "Tillering Stage",
+    "taskType": "Weeding (Pagpananom / Paglimpyo sa sagbot)",
+    "_isDone": true,
+    "data": {
+      "endDate": "2026-04-17",
+      "harvestOtherWorkRatePerDay": 0,
+      "laborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "chemicalCost": "0.00",
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-04-15",
+      "totalCost": 0,
+      "areaCovered": 3,
+      "laborRatePerDay": 0,
+      "method": "Chemical Weeding",
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 0,
+      "laborWorkingDays": 3
+    },
+    "growthStage": "Tillering Stage"
+  },
+  "RuKhtGozxnAiBhAbJ7B4": {
+    "operation": "Pre-Planting",
+    "createdAt": {
+      "_seconds": 1767632166,
+      "_nanoseconds": 659000000
+    },
+    "data": {
+      "equipment": "Manual",
+      "fuelCost": 0,
+      "totalCost": 0,
+      "notes": "nag dugmok ramis mga dako nga soil na gi bungkag gikan sa tractor",
+      "passes": 15,
+      "endDate": "2026-01-22",
+      "startDate": "2026-01-22",
+      "operator": 7
+    },
+    "status": "Land Preparation (Before Planting)",
+    "taskType": "Harrowing (Suyod)",
+    "recordStatus": "Done",
+    "fieldId": "6CZeTm1d92IC6k1VhdWN",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1769040000,
+      "_nanoseconds": 0
+    },
+    "__collections__": {
+      "vehicle_updates": {
+        "3BEiGzUuN5TvHRnh5j4F": {
+          "route": "",
+          "tripsBoxes": 0,
+          "vehicleType": "",
+          "totalCost": 0,
+          "fuelCost": 1,
+          "laborCost": 400,
+          "createdAt": {
+            "_seconds": 1767632166,
+            "_nanoseconds": 857000000
+          }
+        }
+      }
+    }
+  },
+  "RzQn5jleBaCAYaVB73XS": {
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "recordStatus": "Done",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "_isDone": true,
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "recordDate": {
+      "_seconds": 1775088000,
+      "_nanoseconds": 0
+    },
+    "operation": "Planting",
+    "createdAt": {
+      "_seconds": 1774797263,
+      "_nanoseconds": 912000000
+    },
+    "data": {
+      "laborWorkingDays": 2,
+      "expectedHarvestDate": "Apr 2, 2027 – Jun 2, 2027",
+      "seedRate": 40000,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "startDate": "2026-04-02",
+      "totalCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkingDays": 2,
+      "endDate": "2026-04-04",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "totalCaneRequired": 0,
+      "numberOfSetts": 0,
+      "variety": "K 88-65",
+      "laborWorkers": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkRatePerDay": 0
+    },
+    "status": "Planting (Panahon sa Pagtanom)",
+    "taskType": "Planting Operation (Pagtanom sa tubo)"
+  },
+  "TwBbMuxIN8g7fxJuyztJ": {
+    "recordDate": {
+      "_seconds": 1775606400,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1775627153,
+      "_nanoseconds": 646000000
+    },
+    "operation": "Harvesting",
+    "recordStatus": "In Progress",
+    "taskType": "Harvesting (Ani sa Tubo)",
+    "fieldId": "2HybS8XdIzIy5wgbIehh",
+    "_isDone": false,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "transportCost": 0,
+      "averageWeightPerTruck": 0,
+      "totalValue": 0,
+      "laborCost": 0,
+      "startDate": "2026-04-08",
+      "rentCost": 0,
+      "laborWorkers": 0,
+      "harvestCost": 0,
+      "totalSugarcaneHarvested": 0,
+      "priceOfSugarcane": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "numberOfTruckTrips": 0
+    },
+    "status": "Harvesting (Ani sa Tubo)",
+    "growthStage": "Harvesting (Ani sa Tubo)"
+  },
+  "U4zoQpVQfQDM6zaHjx0h": {
+    "status": "Harvesting (Ani sa Tubo)",
+    "operation": "Harvesting",
+    "_isDone": true,
+    "growthStage": "Harvesting (Ani sa Tubo)",
+    "createdAt": {
+      "_seconds": 1774274017,
+      "_nanoseconds": 902000000
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "laborWorkingDays": 3,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0,
+      "harvestMethod": "Manual",
+      "numberOfTruckTrips": 0,
+      "transportCost": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "averageWeightPerTruck": 0,
+      "totalSugarcaneHarvested": 0,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2027-04-08",
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "laborWorkers": 0,
+      "totalValue": 0,
+      "priceOfSugarcane": 0,
+      "endDate": "2027-04-12",
+      "harvestCost": 0,
+      "rentCost": 0,
+      "harvestOtherWorkRatePerDay": 0
+    },
+    "recordDate": {
+      "_seconds": 1807142400,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Harvesting (Ani sa Tubo)"
+  },
+  "Uw1Oq5jecnyT9PO1FdQd": {
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "status": "Planting (Panahon sa Pagtanom)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "operation": "Planting",
+    "taskType": "Ratooning (Pagpatubo pag-usab gikan sa tuod)",
+    "recordStatus": "Done",
+    "createdAt": {
+      "_seconds": 1774799916,
+      "_nanoseconds": 294000000
+    },
+    "data": {
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "startDate": "2026-03-29",
+      "laborCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborWorkers": 0,
+      "endDate": "2026-04-01",
+      "fuelCost": 0,
+      "laborWorkingDays": 3,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "areaCovered": 2.99,
+      "laborRatePerDay": 0,
+      "workers": 0
+    }
+  },
+  "VTJcumQVobkMPTZ69O1j": {
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774483200,
+      "_nanoseconds": 0
+    },
+    "operation": "Pre-Planting",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "Ytw2cUDGVp43850sE2FJ",
+    "createdAt": {
+      "_seconds": 1774507644,
+      "_nanoseconds": 676000000
+    },
+    "status": "Land Preparation (Before Planting)",
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "_isDone": true,
+    "growthStage": "Land Preparation (Before Planting)",
+    "data": {
+      "laborRatePerDay": 175,
+      "method": "Manual",
+      "laborWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 5,
+      "startDate": "2026-03-26",
+      "harvestOtherWorkWorkers": 0,
+      "totalCost": 1750,
+      "notes": "",
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "equipment": "machete",
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-03-27",
+      "laborCost": 1750,
+      "harvestOtherWorkLaborCost": 0
+    }
+  },
+  "WQiepnO3JUnUsV02zvbv": {
+    "operation": "Harvesting",
+    "createdAt": {
+      "_seconds": 1775627164,
+      "_nanoseconds": 297000000
+    },
+    "data": {
+      "transportCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "averageWeightPerTruck": 0,
+      "laborRatePerDay": 0,
+      "totalSugarcaneHarvested": 0,
+      "priceOfSugarcane": 0,
+      "laborWorkers": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 7,
+      "harvestOtherWorkTask": "",
+      "rentCost": 0,
+      "endDate": "2026-04-16",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 7,
+      "harvestCost": 0,
+      "harvestOtherWorkWorkers": 0,
+      "totalValue": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "numberOfTruckTrips": 0,
+      "laborCost": 0,
+      "startDate": "2026-04-08"
+    },
+    "status": "Harvesting (Ani sa Tubo)",
+    "taskType": "Harvesting (Ani sa Tubo)",
+    "fieldId": "2HybS8XdIzIy5wgbIehh",
+    "recordStatus": "Done",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "_isDone": true,
+    "growthStage": "Harvesting (Ani sa Tubo)",
+    "recordDate": {
+      "_seconds": 1775606400,
+      "_nanoseconds": 0
+    }
+  },
+  "WZZtBUnxzeDjiIVB6ALa": {
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "fieldId": "eYx28oYRQOKzIVkAPMZR",
+    "createdAt": {
+      "_seconds": 1773141263,
+      "_nanoseconds": 434000000
+    },
+    "recordDate": {
+      "_seconds": 1773100800,
+      "_nanoseconds": 0
+    },
+    "operation": "Pre-Planting",
+    "recordStatus": "Done",
+    "_isDone": true,
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "data": {
+      "method": "Manual",
+      "endDate": "2026-03-13",
+      "laborCost": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "laborWorkingDays": 4,
+      "startDate": "2026-03-10",
+      "laborWorkers": 0
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "status": "Land Preparation (Before Planting)"
+  },
+  "X4RMHIqU95dkxstCSWwj": {
+    "data": {
+      "tillersPerHill": 6,
+      "growthStage": "Maturing / Ripening",
+      "height": 6,
+      "startDate": "2025-12-19",
+      "endDate": "2025-12-26",
+      "cropAge": 316,
+      "notes": ".",
+      "workers": 0
+    },
+    "status": "Maturing / Ripening",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "fieldId": "3w8xSlUH7LuxGKkEJ0WN",
+    "taskType": "Growth Monitoring",
+    "createdAt": {
+      "_methodName": "serverTimestamp"
+    },
+    "operation": "Post-Planting",
+    "recordDate": {
+      "nanoseconds": 0,
+      "seconds": 1766102400,
+      "_type": "Timestamp"
+    }
+  },
+  "a2NBETlD55kJFXqvhPBT": {
+    "operation": "Planting",
+    "fieldId": "0l8ckG23Y8V22zpWYoiS",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "data": {
+      "variety": "PSR 2000-34",
+      "seedRate": 40000,
+      "startDate": "2022-01-01",
+      "harvestOtherWorkWorkingDays": 1,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "totalCaneRequired": 0,
+      "laborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 1,
+      "expectedHarvestDate": "Nov 1, 2022 – Dec 1, 2022",
+      "fuelCost": 0,
+      "numberOfSetts": 0,
+      "endDate": "2022-01-03",
+      "laborWorkers": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkLaborCost": 0
+    },
+    "createdAt": {
+      "_seconds": 1774274681,
+      "_nanoseconds": 349000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1640995200,
+      "_nanoseconds": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Planting (Panahon sa Pagtanom)"
+  },
+  "aF79SkrnozBPYRuHSAER": {
+    "operation": "Planting",
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "createdAt": {
+      "_seconds": 1774797590,
+      "_nanoseconds": 19000000
+    },
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "taskType": "Replanting Operation (Pag-usab og tanom)",
+    "_isDone": true,
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "data": {
+      "seedRate": 40000,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 0,
+      "laborWorkingDays": 5,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-03-29",
+      "totalCaneRequired": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 5,
+      "expectedHarvestDate": "",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "endDate": "2026-04-04",
+      "harvestOtherWorkRatePerDay": 0,
+      "laborCost": 0,
+      "numberOfSetts": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkLaborCost": 0
+    }
+  },
+  "aSVFWRR3YF4M8OofMqKd": {
+    "operation": "Post-Planting",
+    "fieldId": "3w8xSlUH7LuxGKkEJ0WN",
+    "userId": "UYdzMJEZ5JSnqVKFQNOK7dM1xA93",
+    "createdAt": {
+      "_methodName": "serverTimestamp"
+    },
+    "data": {
+      "startDate": "2025-12-19",
+      "cropAge": 316,
+      "endDate": "2025-12-26",
+      "growthStage": "Maturing / Ripening",
+      "notes": ".",
+      "workers": 0,
+      "tillersPerHill": 6,
+      "height": 6
+    },
+    "recordDate": {
+      "nanoseconds": 0,
+      "seconds": 1766102400,
+      "_type": "Timestamp"
+    },
+    "status": "Maturing / Ripening",
+    "taskType": "Growth Monitoring"
+  },
+  "biWVZsx5VJrpJ5bptdNU": {
+    "createdAt": {
+      "_seconds": 1774271534,
+      "_nanoseconds": 136000000
+    },
+    "recordDate": {
+      "_seconds": 1775001600,
+      "_nanoseconds": 0
+    },
+    "operation": "Harvesting",
+    "recordStatus": "Done",
+    "taskType": "Harvesting (Ani sa Tubo)",
+    "fieldId": "su9taFYjLnSvEtj31JIo",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "rentCost": 0,
+      "harvestCost": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkers": 0,
+      "harvestMethod": "Manual",
+      "totalSugarcaneHarvested": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "priceOfSugarcane": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "numberOfTruckTrips": 0,
+      "endDate": "2026-04-04",
+      "transportCost": 0,
+      "averageWeightPerTruck": 0,
+      "totalValue": 0,
+      "caneType": "Plant Cane",
+      "harvestOtherWorkWorkingDays": 3,
+      "laborWorkingDays": 3,
+      "laborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-04-01"
+    },
+    "growthStage": "Harvesting (Ani sa Tubo)",
+    "status": "Harvesting (Ani sa Tubo)"
+  },
+  "cM8jHnV3wlg9Je1HAh8c": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "laborWorkers": 0,
+      "totalCost": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-03-24",
+      "startDate": "2026-03-23",
+      "harvestOtherWorkWorkers": 0,
+      "passes": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 2,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0
+    },
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774224000,
+      "_nanoseconds": 0
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Harrowing (Suyod)",
+    "status": "Land Preparation (Before Planting)",
+    "operation": "Pre-Planting",
+    "_isDone": true,
+    "growthStage": "Land Preparation (Before Planting)",
+    "createdAt": {
+      "_seconds": 1774270400,
+      "_nanoseconds": 121000000
+    }
+  },
+  "dJnwUT8Za1FfUOkHsBOP": {
+    "recordDate": {
+      "_seconds": 1774915200,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "status": "Land Preparation (Before Planting)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Land Preparation (Before Planting)",
+    "fieldId": "2HybS8XdIzIy5wgbIehh",
+    "operation": "Pre-Planting",
+    "taskType": "Seed Cane Preparation (Pag-andam sa binhi sa tubo)",
+    "recordStatus": "Done",
+    "createdAt": {
+      "_seconds": 1774794926,
+      "_nanoseconds": 508000000
+    },
+    "data": {
+      "harvestOtherWorkWorkingDays": 3,
+      "startDate": "2026-03-31",
+      "harvestOtherWorkWorkers": 0,
+      "seedAge": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 3,
+      "quantity": 0,
+      "laborWorkers": 0,
+      "endDate": "2026-04-02",
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "materialCost": 0,
+      "harvestOtherWorkLaborCost": 0
+    }
+  },
+  "dLJ2BesGkYaf8Ew6M9Jr": {
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "createdAt": {
+      "_seconds": 1774270067,
+      "_nanoseconds": 126000000
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "status": "Land Preparation (Before Planting)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774224000,
+      "_nanoseconds": 0
+    },
+    "operation": "Pre-Planting",
+    "data": {
+      "laborRatePerDay": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 0,
+      "method": "Manual",
+      "startDate": "2026-03-23",
+      "harvestOtherWorkWorkers": 0,
+      "totalCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "endDate": "2026-03-24",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "taskType": "Cleaning/Cutting (Paglimpyo ug Pagputol sa tubo)",
+    "_isDone": true
+  },
+  "dLjSFWarih4SIr4GtW0e": {
+    "createdAt": {
+      "_seconds": 1773998460,
+      "_nanoseconds": 611000000
+    },
+    "operation": "Post-Planting",
+    "status": "Ripening & Maturation",
+    "taskType": "Spray Selection / Weed Control (Pagpili sa Spray / Weed Control)",
+    "data": {
+      "dosage": "3",
+      "laborRatePerDay": 300,
+      "laborWorkers": 1,
+      "method": "Chemical Weeding",
+      "dosageUnit": "Liter",
+      "chemicalCost": "4350.00",
+      "laborWorkingDays": 5,
+      "toolsUsed": "Knapsack sprayer / tank",
+      "startDate": "2025-05-25",
+      "laborCost": 1500,
+      "herbicide": "2,4-D",
+      "totalCost": 5850,
+      "totalChemicalCost": 4350,
+      "endDate": "2025-05-30",
+      "areaCovered": 1.25
+    },
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "growthStage": "Ripening & Maturation",
+    "_isDone": true,
+    "recordStatus": "Done",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "recordDate": {
+      "_seconds": 1748131200,
+      "_nanoseconds": 0
+    }
+  },
+  "dU4lsZMcbBRVnFiRWYPn": {
+    "taskType": "Seed Cane Preparation (Pag-andam sa binhi sa tubo)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "recordDate": {
+      "_seconds": 1774483200,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774270580,
+      "_nanoseconds": 426000000
+    },
+    "recordStatus": "Done",
+    "operation": "Pre-Planting",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "materialCost": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkLaborCost": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "endDate": "2026-03-30",
+      "harvestOtherWorkWorkingDays": 3,
+      "laborWorkingDays": 3,
+      "quantity": 0,
+      "laborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-03-26",
+      "seedAge": 0
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "status": "Land Preparation (Before Planting)"
+  },
+  "dlnREvad2rLr5oGSy3RG": {
+    "createdAt": {
+      "_seconds": 1774270354,
+      "_nanoseconds": 317000000
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "operation": "Pre-Planting",
+    "status": "Land Preparation (Before Planting)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Plowing (Arado / Araro)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774224000,
+      "_nanoseconds": 0
+    },
+    "data": {
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-03-25",
+      "laborWorkers": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "fuelCost": 0,
+      "totalCost": 0,
+      "startDate": "2026-03-23",
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "equipment": "Animal-Drawn",
+      "laborCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkLaborCost": 0,
+      "laborWorkingDays": 3
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "gZiCPo8TpWhofAAOPjTz": {
+    "recordDate": {
+      "_seconds": 1775692800,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "status": "Germination & Early Growth",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Germination & Early Growth",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "operation": "Post-Planting",
+    "taskType": "Germination Monitoring (Pagmonitor sa pagturok)",
+    "recordStatus": "Done",
+    "createdAt": {
+      "_seconds": 1774270967,
+      "_nanoseconds": 314000000
+    },
+    "data": {
+      "germinationRate": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "endDate": "2026-04-11",
+      "laborWorkers": 0,
+      "cropAge": 0,
+      "totalCost": 0,
+      "harvestOtherWorkRatePerDay": 3,
+      "laborCost": 0,
+      "startDate": "2026-04-09",
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkWorkers": 0
+    },
+    "__collections__": {
+      "vehicle_updates": {
+        "mF3jbWSidYGtyoq6PzgA": {
+          "vehicleType": "",
+          "laborCost": 0,
+          "tripsBoxes": 3,
+          "createdAt": {
+            "_seconds": 1774270968,
+            "_nanoseconds": 247000000
+          },
+          "fuelCost": 0,
+          "totalCost": 0,
+          "route": ""
+        }
+      }
+    }
+  },
+  "hbMFxsBJla8e6OlleKvr": {
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "operation": "Planting",
+    "recordStatus": "Done",
+    "taskType": "Ratooning (Pagpatubo pag-usab gikan sa tuod)",
+    "data": {
+      "laborCost": 0,
+      "totalCost": 0,
+      "harvestOtherWorkRatePerDay": 40000,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-03-29",
+      "harvestOtherWorkWorkingDays": 4,
+      "workers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "areaCovered": 1,
+      "fuelCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 4,
+      "endDate": "2026-04-02",
+      "laborWorkers": 0
+    },
+    "createdAt": {
+      "_seconds": 1774797497,
+      "_nanoseconds": 339000000
+    },
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "_isDone": true,
+    "status": "Planting (Panahon sa Pagtanom)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "__collections__": {
+      "vehicle_updates": {
+        "9Eiyr7U8Nwvx7HGqtjIG": {
+          "totalCost": 0,
+          "route": "Apr 2, 2027 – Jun 2, 2027",
+          "tripsBoxes": 0,
+          "createdAt": {
+            "_seconds": 1774797498,
+            "_nanoseconds": 4000000
+          },
+          "fuelCost": 0,
+          "vehicleType": "",
+          "laborCost": 2
+        }
+      }
+    }
+  },
+  "iNSgn9d2ayOAfubpGyAg": {
+    "data": {
+      "fuelCost": 0,
+      "laborWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "laborWorkers": 1,
+      "endDate": "2026-03-30",
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "truckRented": "No",
+      "laborRatePerDay": 175,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "startDate": "2026-03-27",
+      "laborCost": 350,
+      "equipment": "Animal-Drawn",
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 350
+    },
+    "createdAt": {
+      "_seconds": 1774507880,
+      "_nanoseconds": 291000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Plowing (Arado / Araro)",
+    "operation": "Pre-Planting",
+    "fieldId": "Ytw2cUDGVp43850sE2FJ",
+    "growthStage": "Land Preparation (Before Planting)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1774569600,
+      "_nanoseconds": 0
+    }
+  },
+  "jajuV3qmhgxeatXpEkTe": {
+    "status": "Ripening & Maturation",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "createdAt": {
+      "_seconds": 1774273331,
+      "_nanoseconds": 43000000
+    },
+    "recordDate": {
+      "_seconds": 1778544000,
+      "_nanoseconds": 0
+    },
+    "operation": "Post-Planting",
+    "recordStatus": "Done",
+    "data": {
+      "laborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "endDate": "2026-05-26",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkingDays": 11,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "tillersPerHill": 0,
+      "totalCost": 0,
+      "startDate": "2026-05-12",
+      "harvestOtherWorkWorkers": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 11,
+      "height": 0,
+      "laborRatePerDay": 0,
+      "cropAge": 0
+    },
+    "growthStage": "Ripening & Maturation",
+    "_isDone": true,
+    "taskType": "Crop Monitoring (Pagbantay sa kahamtong)"
+  },
+  "juLIyN2iHoSTixeBbdoU": {
+    "_isDone": true,
+    "growthStage": "Harvesting (Ani sa Tubo)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "fieldId": "0l8ckG23Y8V22zpWYoiS",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1701388800,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774274735,
+      "_nanoseconds": 553000000
+    },
+    "operation": "Harvesting",
+    "taskType": "Harvesting (Ani sa Tubo)",
+    "status": "Harvesting (Ani sa Tubo)",
+    "data": {
+      "numberOfTruckTrips": 0,
+      "startDate": "2023-12-01",
+      "laborCost": 0,
+      "totalValue": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkers": 0,
+      "laborWorkingDays": 2,
+      "harvestCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestMethod": "Manual",
+      "endDate": "2023-12-04",
+      "rentCost": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkWorkingDays": 2,
+      "totalCost": 0,
+      "priceOfSugarcane": 0,
+      "laborWorkers": 0,
+      "totalSugarcaneHarvested": 0,
+      "laborRatePerDay": 0,
+      "averageWeightPerTruck": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "transportCost": 0
+    }
+  },
+  "kykhL2qdDkpbu2pKqbch": {
+    "recordStatus": "Done",
+    "operation": "Post-Planting",
+    "createdAt": {
+      "_seconds": 1774272992,
+      "_nanoseconds": 616000000
+    },
+    "recordDate": {
+      "_seconds": 1777593600,
+      "_nanoseconds": 0
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Brushing / Light Detrashing (Pagpanitan – magaan)",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Stem Elongation & Grand Growth",
+    "status": "Stem Elongation & Grand Growth",
+    "data": {
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-05-01",
+      "laborCost": 0,
+      "endDate": "2026-05-02",
+      "areaCovered": 3,
+      "laborWorkingDays": 1,
+      "harvestOtherWorkWorkingDays": 1,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkRatePerDay": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "chemicalCost": 0,
+      "dosage": 0,
+      "laborWorkers": 0,
+      "cleaningMethod": "Manual"
+    }
+  },
+  "mGC4kbNyAwBjsdPWDT4l": {
+    "recordDate": {
+      "_seconds": 1774396800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "taskType": "Detrashing / Brushing (Pagpanitan sa uga nga dahon)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "laborWorkers": 0,
+      "areaCovered": 3,
+      "endDate": "2026-03-28",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-03-25",
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 3,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0
+    },
+    "_isDone": true,
+    "operation": "Post-Planting",
+    "createdAt": {
+      "_seconds": 1774271186,
+      "_nanoseconds": 65000000
+    },
+    "growthStage": "Stem Elongation & Grand Growth",
+    "status": "Stem Elongation & Grand Growth"
+  },
+  "opaN4f9AFQ12aHL6cpVi": {
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1776988800,
+      "_nanoseconds": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "status": "Stem Elongation & Grand Growth",
+    "operation": "Post-Planting",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "growthStage": "Stem Elongation & Grand Growth",
+    "data": {
+      "totalCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "laborCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "startDate": "2026-04-24",
+      "harvestOtherWorkWorkers": 0,
+      "workers": 0,
+      "laborRatePerDay": 0,
+      "materialCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "irrigationMethod": "Flooding",
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 2,
+      "laborWorkers": 0,
+      "waterSource": "Canal",
+      "endDate": "2026-04-27"
+    },
+    "createdAt": {
+      "_seconds": 1774272843,
+      "_nanoseconds": 519000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Irrigation / Watering (Pagpatubig)"
+  },
+  "qQxwJB4GQ1KBvkCIb5wH": {
+    "operation": "Detrashing",
+    "recordDate": {
+      "_seconds": 1743033600,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "status": "Detrashing Stage",
+    "createdAt": {
+      "_seconds": 1773997877,
+      "_nanoseconds": 84000000
+    },
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "taskType": "Detrashing / Brushing (Pagpanitan sa uga nga dahon)",
+    "_isDone": true,
+    "data": {
+      "laborRatePerDay": 275,
+      "laborWorkingDays": 7,
+      "laborWorkers": 10,
+      "method": "Manual (Manu-mano)",
+      "equipmentUsed": "Machete",
+      "startDate": "2025-03-27",
+      "endDate": "2025-04-05",
+      "totalCost": 19250,
+      "areaCovered": 1.25,
+      "laborCost": 19250
+    },
+    "growthStage": "Detrashing Stage"
+  },
+  "qcjBWxrIP827n93pFbKb": {
+    "data": {
+      "harvestOtherWorkWorkers": 0,
+      "laborWorkingDays": 4,
+      "laborCost": 0,
+      "startDate": "2026-03-29",
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 4,
+      "harvestOtherWorkTask": "",
+      "totalCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "endDate": "2026-04-02",
+      "areaCovered": 1,
+      "laborRatePerDay": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0
+    },
+    "taskType": "Detrashing / Brushing (Pagpanitan sa uga nga dahon)",
+    "status": "Stem Elongation & Grand Growth",
+    "operation": "Post-Planting",
+    "createdAt": {
+      "_seconds": 1774799298,
+      "_nanoseconds": 617000000
+    },
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "fieldId": "ksSXnBfh2HaJltJdDp42",
+    "recordStatus": "Done",
+    "_isDone": true,
+    "growthStage": "Stem Elongation & Grand Growth",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "qzKDKbANLqYESoBLB27G": {
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "taskType": "Field Leveling (Pagpatag sa uma)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "operation": "Pre-Planting",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774224000,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774270456,
+      "_nanoseconds": 305000000
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "status": "Land Preparation (Before Planting)",
+    "data": {
+      "laborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-03-23",
+      "endDate": "2026-03-26",
+      "harvestOtherWorkWorkingDays": 4,
+      "fuelCost": 0,
+      "laborWorkingDays": 4,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "totalCost": 0,
+      "laborRatePerDay": 0,
+      "method": "Manual",
+      "laborWorkers": 0
+    }
+  },
+  "qzME4RdK2Cwhk0Wx7FXQ": {
+    "recordDate": {
+      "_seconds": 1739577600,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "taskType": "Replanting Operation (Pag-usab og tanom)",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "data": {
+      "laborRatePerDay": 275,
+      "expectedHarvestDate": "Jan 15, 2026 – Jan 22, 2026",
+      "laborWorkingDays": 7,
+      "numberOfSetts": 0,
+      "laborCost": 15400,
+      "fuelCost": 0,
+      "totalCost": 15400,
+      "laborWorkers": 8,
+      "endDate": "2025-02-25",
+      "seedRate": 50000,
+      "startDate": "2025-02-15",
+      "variety": "PS 3",
+      "totalCaneRequired": 0
+    },
+    "_isDone": true,
+    "operation": "Planting",
+    "createdAt": {
+      "_seconds": 1773992514,
+      "_nanoseconds": 279000000
+    },
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "status": "Planting (Panahon sa Pagtanom)"
+  },
+  "rOVDHwynQsYXz907gTWJ": {
+    "taskType": "Cleaning/Cutting (Paglimpyo ug Pagputol sa tubo)",
+    "recordStatus": "Done",
+    "createdAt": {
+      "_seconds": 1773989271,
+      "_nanoseconds": 150000000
+    },
+    "data": {
+      "notes": "Gi sundan dayun ang pag limpyo sa uma og pag limpyo sa nahabilin na tubo",
+      "laborRatePerDay": 275,
+      "equipment": "Matchete",
+      "totalCost": 37125,
+      "laborCost": 37125,
+      "laborWorkers": 15,
+      "endDate": "2025-02-20",
+      "startDate": "2025-02-10",
+      "laborWorkingDays": 9,
+      "method": "Manual"
+    },
+    "growthStage": "Land Preparation (Before Planting)",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "operation": "Pre-Planting",
+    "status": "Land Preparation (Before Planting)",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "recordDate": {
+      "_seconds": 1739145600,
+      "_nanoseconds": 0
+    },
+    "_isDone": true
+  },
+  "rdiwXH9JVYmn01d8N8c0": {
+    "operation": "Post-Planting",
+    "recordDate": {
+      "_seconds": 1777852800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "status": "Ripening & Maturation",
+    "createdAt": {
+      "_seconds": 1774273042,
+      "_nanoseconds": 596000000
+    },
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "taskType": "Spray Selection / Weed Control (Pagpili sa Spray / Weed Control)",
+    "_isDone": true,
+    "data": {
+      "method": "Manual Weeding",
+      "laborWorkingDays": 2,
+      "laborWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "laborRatePerDay": 0,
+      "totalCost": 0,
+      "areaCovered": 3,
+      "startDate": "2026-05-04",
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "chemicalCost": "0.00",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-05-05"
+    },
+    "growthStage": "Ripening & Maturation"
+  },
+  "s0ptgYkiXuQK0rVqciQM": {
+    "recordDate": {
+      "_seconds": 1774396800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "laborWorkers": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "method": "Animal-Drawn",
+      "fuelCost": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "startDate": "2026-03-25",
+      "laborWorkingDays": 3,
+      "harvestOtherWorkWorkers": 0,
+      "endDate": "2026-03-27",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 3,
+      "harvestOtherWorkTask": ""
+    },
+    "taskType": "Furrowing / Trenching (Paghimo ug tudling)",
+    "status": "Land Preparation (Before Planting)",
+    "operation": "Pre-Planting",
+    "createdAt": {
+      "_seconds": 1774270540,
+      "_nanoseconds": 656000000
+    }
+  },
+  "tWZHgCCTcLLvDz5cb6rs": {
+    "taskType": "First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)",
+    "fieldId": "hZw2zu2MjxxotDxwxpSA",
+    "recordStatus": "Done",
+    "operation": "Planting",
+    "recordDate": {
+      "_seconds": 1774742400,
+      "_nanoseconds": 0
+    },
+    "createdAt": {
+      "_seconds": 1774799848,
+      "_nanoseconds": 470000000
+    },
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "data": {
+      "laborWorkers": 0,
+      "fertilizerQuantity": 0,
+      "laborRatePerDay": 0,
+      "totalCost": 0,
+      "harvestOtherWorkRatePerDay": 0,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 5,
+      "fertilizerCost": "0.00",
+      "laborWorkingDays": 5,
+      "endDate": "2026-04-04",
+      "fertilizerPricePerSack": 0,
+      "laborCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "startDate": "2026-03-29"
+    }
+  },
+  "tzVZltd8oxmWSe6G5XXV": {
+    "createdAt": {
+      "_seconds": 1774270732,
+      "_nanoseconds": 958000000
+    },
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "_isDone": true,
+    "operation": "Planting",
+    "status": "Planting (Panahon sa Pagtanom)",
+    "taskType": "First Dose Fertilization – Furrow Application (Unang Abono – sa tudling)",
+    "fieldId": "03s1vdxMDFHNuUMkgPfg",
+    "recordDate": {
+      "_seconds": 1775174400,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "data": {
+      "fertilizerQuantity": 0,
+      "laborRatePerDay": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborWorkingDays": 1,
+      "harvestOtherWorkLaborCost": 0,
+      "harvestOtherWorkTask": "",
+      "laborCost": 0,
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 1,
+      "laborWorkers": 0,
+      "totalFertilizerCost": 0,
+      "endDate": "2026-04-04",
+      "fertilizerType": "Urea (46-0-0)",
+      "fertilizerCost": "0.00",
+      "harvestOtherWorkRatePerDay": 0,
+      "fertilizerPricePerSack": 0,
+      "harvestOtherWorkWorkers": 0,
+      "startDate": "2026-04-03"
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1"
+  },
+  "uAJeg1zyuq0HqgyKuP9q": {
+    "operation": "Pre-Planting",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "growthStage": "Land Preparation (Before Planting)",
+    "data": {
+      "method": "Manual",
+      "laborWorkingDays": 9,
+      "laborWorkers": 10,
+      "endDate": "2025-02-20",
+      "startDate": "2025-02-10",
+      "laborCost": 24750,
+      "equipment": "Matchete",
+      "totalCost": 24750,
+      "notes": "Nag Gahit o nag taguptop sa tuod sa tubo",
+      "laborRatePerDay": 275
+    },
+    "createdAt": {
+      "_seconds": 1773988142,
+      "_nanoseconds": 257000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1739145600,
+      "_nanoseconds": 0
+    },
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "status": "Land Preparation (Before Planting)"
+  },
+  "vGizEQzRvcXXNblHUGoq": {
+    "growthStage": "Land Preparation (Before Planting)",
+    "data": {
+      "laborRatePerDay": 0,
+      "laborWorkingDays": 2,
+      "laborWorkers": 0,
+      "harvestOtherWorkTask": "",
+      "startDate": "2026-03-30",
+      "harvestOtherWorkWorkers": 0,
+      "totalCost": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-03-31",
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0
+    },
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "_isDone": true,
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "createdAt": {
+      "_seconds": 1774802993,
+      "_nanoseconds": 658000000
+    },
+    "fieldId": "jnagYSPScvIWOspdQgGm",
+    "status": "Land Preparation (Before Planting)",
+    "recordStatus": "Done",
+    "recordDate": {
+      "_seconds": 1774828800,
+      "_nanoseconds": 0
+    },
+    "operation": "Pre-Planting"
+  },
+  "vQr8gqy75bTpZMzPgAic": {
+    "taskType": "Clearing (Paglimpyo sa uma)",
+    "status": "Land Preparation (Before Planting)",
+    "data": {
+      "laborWorkingDays": 2,
+      "harvestOtherWorkWorkers": 0,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "startDate": "2026-03-30",
+      "totalCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkTask": "",
+      "endDate": "2026-03-31",
+      "harvestOtherWorkTotalLaborCost": 0,
+      "laborRatePerDay": 0,
+      "laborWorkers": 0,
+      "harvestOtherWorkRatePerDay": 0
+    },
+    "createdAt": {
+      "_seconds": 1774802848,
+      "_nanoseconds": 761000000
+    },
+    "operation": "Pre-Planting",
+    "recordDate": {
+      "_seconds": 1774828800,
+      "_nanoseconds": 0
+    },
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "growthStage": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "recordStatus": "Done",
+    "fieldId": "jnagYSPScvIWOspdQgGm"
+  },
+  "x2H197NIqxOY46UFgcDg": {
+    "status": "Harvesting (Ani sa Tubo)",
+    "growthStage": "Harvesting (Ani sa Tubo)",
+    "data": {
+      "endDate": "2026-01-26",
+      "transportCost": 0,
+      "notes": "",
+      "startDate": "2026-01-06",
+      "rentCost": 0,
+      "harvestCost": 0,
+      "harvestOtherWorkLaborCost": 11250,
+      "priceOfSugarcane": 400,
+      "harvestOtherWorkWorkers": 1,
+      "harvestOtherWorkTask": "Punit sa pusak nga tubo (sacks) & ganso sa derrick (loose cane)",
+      "truckRented": "No",
+      "totalSugarcaneHarvested": 108.7,
+      "totalCost": 93750,
+      "laborRatePerDay": 275,
+      "laborWorkingDays": 15,
+      "averageWeightPerTruck": 3.882,
+      "totalValue": 43478.4,
+      "caneType": "Replant Cane",
+      "harvestOtherWorkWorkingDays": 15,
+      "toolsUsed": "Machete",
+      "harvestOtherWorkTotalLaborCost": 11250,
+      "transportUsed": "Truck",
+      "laborCost": 82500,
+      "laborWorkers": 20,
+      "harvestOtherWorkRatePerDay": 750,
+      "harvestMethod": "Manual",
+      "numberOfTruckTrips": 28
+    },
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "taskType": "Harvesting (Ani sa Tubo)",
+    "recordStatus": "Done",
+    "operation": "Harvesting",
+    "createdAt": {
+      "_seconds": 1774013533,
+      "_nanoseconds": 769000000
+    },
+    "recordDate": {
+      "_seconds": 1767657600,
+      "_nanoseconds": 0
+    },
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "_isDone": true
+  },
+  "yS4sEYfBOGTWu255yyRJ": {
+    "recordDate": {
+      "_seconds": 1774828800,
+      "_nanoseconds": 0
+    },
+    "recordStatus": "Done",
+    "fieldId": "jnagYSPScvIWOspdQgGm",
+    "taskType": "Planting Operation (Pagtanom sa tubo)",
+    "userId": "O4V5fDvI5ff4dJ13M9OSgyIZ8Pq1",
+    "data": {
+      "harvestOtherWorkTask": "",
+      "laborWorkingDays": 2,
+      "harvestOtherWorkLaborCost": 0,
+      "laborCost": 0,
+      "numberOfSetts": 0,
+      "harvestOtherWorkTotalLaborCost": 0,
+      "expectedHarvestDate": "",
+      "laborRatePerDay": 0,
+      "startDate": "2026-03-30",
+      "seedRate": 198800,
+      "harvestOtherWorkWorkers": 0,
+      "totalCaneRequired": 0,
+      "laborWorkers": 0,
+      "totalCost": 0,
+      "fuelCost": 0,
+      "harvestOtherWorkWorkingDays": 2,
+      "harvestOtherWorkRatePerDay": 0,
+      "endDate": "2026-03-31"
+    },
+    "operation": "Planting",
+    "_isDone": true,
+    "growthStage": "Planting (Panahon sa Pagtanom)",
+    "createdAt": {
+      "_seconds": 1774803164,
+      "_nanoseconds": 903000000
+    },
+    "status": "Planting (Panahon sa Pagtanom)"
+  },
+  "yWIqQREsczIDv60pLi3Q": {
+    "data": {
+      "equipment": "Animal-Drawn",
+      "totalCost": 1200,
+      "laborCost": 1200,
+      "notes": "nag daro og kabaw para pag abli sa tabla o yuta",
+      "laborRatePerDay": 300,
+      "truckRented": "No",
+      "laborWorkingDays": 4,
+      "fuelCost": 0,
+      "laborWorkers": 1,
+      "startDate": "2025-02-15",
+      "endDate": "2025-02-20"
+    },
+    "createdAt": {
+      "_seconds": 1773990110,
+      "_nanoseconds": 345000000
+    },
+    "recordStatus": "Done",
+    "taskType": "Plowing (Arado / Araro)",
+    "operation": "Pre-Planting",
+    "fieldId": "6UrQVEXjAvMJhZMPfkfa",
+    "growthStage": "Land Preparation (Before Planting)",
+    "userId": "3ZbPVAPrj8Ze7401AY24i1GEirq1",
+    "status": "Land Preparation (Before Planting)",
+    "_isDone": true,
+    "recordDate": {
+      "_seconds": 1739577600,
+      "_nanoseconds": 0
+    }
+  }
+}
