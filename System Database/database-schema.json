@@ -1,0 +1,764 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canemap-system.web.app/schemas/database-schema.json",
+  "title": "CaneMap System Database Schema",
+  "description": "Full JSON schema of the CaneMap Firebase Cloud Firestore database and related storage. Prepared for capstone system turnover.",
+  "version": "1.0.0",
+  "generatedAt": "2026-05-19",
+  "system": {
+    "name": "CaneMap",
+    "description": "Sugarcane field management platform for farmers, handlers, drivers, and SRA officers"
+  },
+  "apiProvider": {
+    "vendor": "Google Firebase (Google Cloud Platform)",
+    "primaryDatabase": "Cloud Firestore",
+    "authentication": "Firebase Authentication",
+    "fileStorage": "Firebase Cloud Storage",
+    "serverless": "Firebase Cloud Functions",
+    "hosting": "Firebase Hosting",
+    "projectId": "canemap-system",
+    "authDomain": "canemap-system.firebaseapp.com",
+    "hostingUrl": "https://canemap-system.web.app",
+    "storageBucket": "canemap-system.firebasestorage.app",
+    "firestoreRegion": "asia-southeast1",
+    "clientSdk": "Firebase JavaScript SDK 12.1.0",
+    "serverSdk": "firebase-admin (Node.js)",
+    "configFile": "public/backend/Common/firebase-config.js",
+    "securityRules": {
+      "firestore": "firestore.rules",
+      "storage": "storage.rules",
+      "realtimeDatabase": "database.rules.json"
+    },
+    "indexesFile": "firestore.indexes.json",
+    "databaseType": "document-oriented (NoSQL)",
+    "note": "Firebase Realtime Database is disabled; all application data is in Firestore."
+  },
+  "firestore": {
+    "databaseId": "(default)",
+    "collections": {
+      "users": {
+        "path": "/users/{userId}",
+        "documentId": "Firebase Auth UID (same as users/{uid})",
+        "description": "User profiles linked to Firebase Authentication",
+        "references": ["Firebase Auth uid"],
+        "referencedBy": ["fields.userId", "records.userId", "tasks.handlerId", "reports.handlerId"],
+        "schema": { "$ref": "#/$defs/usersDocument" },
+        "subcollections": {}
+      },
+      "fields": {
+        "path": "/fields/{fieldId}",
+        "documentId": "Auto-generated",
+        "description": "Registered sugarcane fields with location, variety, and growth tracking",
+        "references": ["users/{userId}"],
+        "referencedBy": ["records.fieldId", "tasks.fieldId", "reports.fieldId", "field_joins.fieldId"],
+        "schema": { "$ref": "#/$defs/fieldsDocument" },
+        "subcollections": {
+          "remarks": {
+            "path": "/fields/{fieldId}/remarks/{remarkId}",
+            "description": "SRA/admin review remarks",
+            "schema": { "$ref": "#/$defs/fieldRemarksDocument" }
+          }
+        }
+      },
+      "records": {
+        "path": "/records/{recordId}",
+        "documentId": "Auto-generated",
+        "description": "Handler/farmer input records (operations, costs, activities)",
+        "references": ["users/{userId}", "fields/{fieldId}"],
+        "schema": { "$ref": "#/$defs/recordsDocument" },
+        "subcollections": {
+          "bought_items": {
+            "path": "/records/{recordId}/bought_items/{itemId}",
+            "description": "Purchased items for an input record",
+            "schema": { "$ref": "#/$defs/boughtItemsDocument" }
+          },
+          "vehicle_updates": {
+            "path": "/records/{recordId}/vehicle_updates/{updateId}",
+            "description": "Vehicle usage logs for an input record",
+            "schema": { "$ref": "#/$defs/vehicleUpdatesDocument" }
+          }
+        }
+      },
+      "tasks": {
+        "path": "/tasks/{taskId}",
+        "documentId": "Auto-generated",
+        "description": "Field tasks assigned to workers; may be auto-generated from growth tracker",
+        "references": ["fields/{fieldId}", "users/{handlerId}", "users/{assignedTo}"],
+        "schema": { "$ref": "#/$defs/tasksDocument" },
+        "subcollections": {}
+      },
+      "reports": {
+        "path": "/reports/{reportId}",
+        "documentId": "Auto-generated",
+        "description": "Field reports submitted by handlers to SRA for review",
+        "references": ["users/{handlerId}", "fields/{fieldId}", "users/{sraOfficerId}"],
+        "schema": { "$ref": "#/$defs/reportsDocument" },
+        "subcollections": {}
+      },
+      "notifications": {
+        "path": "/notifications/{notificationId}",
+        "documentId": "Auto-generated",
+        "description": "Personal or role-based in-app notifications",
+        "references": ["users/{userId}", "fields/{fieldId}"],
+        "schema": { "$ref": "#/$defs/notificationsDocument" },
+        "subcollections": {}
+      },
+      "field_joins": {
+        "path": "/field_joins/{joinId}",
+        "documentId": "Auto-generated (top-level) or {userId} (legacy nested root)",
+        "description": "Driver join requests to handler fields",
+        "references": ["users/{userId}", "users/{handlerId}", "fields/{fieldId}"],
+        "schema": { "$ref": "#/$defs/fieldJoinsDocument" },
+        "subcollections": {
+          "join_fields": {
+            "path": "/field_joins/{userId}/join_fields/{fieldId}",
+            "description": "Legacy per-user join requests (collection group queries supported)",
+            "schema": { "$ref": "#/$defs/joinFieldsDocument" }
+          }
+        }
+      },
+      "field_workers": {
+        "path": "/field_workers/{requestId}",
+        "documentId": "{userId}_{fieldId} (legacy pattern)",
+        "description": "Legacy field worker join requests",
+        "references": ["users/{user_uid}", "fields/{field_id}"],
+        "schema": { "$ref": "#/$defs/fieldWorkersDocument" },
+        "subcollections": {}
+      },
+      "driver_rentals": {
+        "path": "/driver_rentals/{rentalId}",
+        "documentId": "Auto-generated",
+        "description": "Handler requests to rent driver services",
+        "references": ["users/{handlerId}", "users/{driverId}"],
+        "schema": { "$ref": "#/$defs/driverRentalsDocument" },
+        "subcollections": {}
+      },
+      "Drivers_Badge": {
+        "path": "/Drivers_Badge/{docId}",
+        "documentId": "Usually same as driver Firebase Auth UID",
+        "description": "Driver badge/license applications",
+        "references": ["users/{requestedBy}"],
+        "schema": { "$ref": "#/$defs/driversBadgeDocument" },
+        "subcollections": {}
+      },
+      "task_logs": {
+        "path": "/task_logs/{logId}",
+        "documentId": "Auto-generated",
+        "description": "Worker task completion logs",
+        "references": ["users/{user_uid}", "fields/{field_id}"],
+        "schema": { "$ref": "#/$defs/taskLogsDocument" },
+        "subcollections": {}
+      },
+      "user_activities": {
+        "path": "/user_activities/{activityId}",
+        "documentId": "Auto-generated",
+        "description": "User activity audit log for profile and system events",
+        "references": ["users/{userId}"],
+        "schema": { "$ref": "#/$defs/userActivitiesDocument" },
+        "subcollections": {}
+      },
+      "feedbacks": {
+        "path": "/feedbacks/{feedbackId}",
+        "documentId": "Auto-generated",
+        "description": "Public user feedback submissions",
+        "schema": { "$ref": "#/$defs/feedbacksDocument" },
+        "subcollections": {}
+      },
+      "admin_pins": {
+        "path": "/admin_pins/{pinId}",
+        "documentId": "Auto-generated or admin UID",
+        "description": "System Admin PIN-based login credentials",
+        "schema": { "$ref": "#/$defs/adminPinsDocument" },
+        "subcollections": {}
+      },
+      "admin_security_logs": {
+        "path": "/admin_security_logs/{logId}",
+        "documentId": "Auto-generated",
+        "description": "System admin login and security events",
+        "schema": { "$ref": "#/$defs/adminSecurityLogsDocument" },
+        "subcollections": {}
+      },
+      "failed_logins": {
+        "path": "/failed_logins/{attemptId}",
+        "documentId": "Auto-generated",
+        "description": "Failed login attempts for emails not yet registered",
+        "schema": { "$ref": "#/$defs/failedLoginsDocument" },
+        "subcollections": {}
+      },
+      "admin_settings": {
+        "path": "/admin_settings/{docId}",
+        "documentId": "Config key or auto-generated",
+        "description": "System-wide admin configuration",
+        "schema": { "$ref": "#/$defs/adminSettingsDocument" },
+        "subcollections": {}
+      },
+      "harvest_notification_logs": {
+        "path": "/harvest_notification_logs/{logId}",
+        "documentId": "Auto-generated",
+        "description": "Prevents duplicate harvest reminder notifications (cron job)",
+        "references": ["users/{handlerId}", "fields/{fieldId}"],
+        "schema": { "$ref": "#/$defs/harvestNotificationLogsDocument" },
+        "subcollections": {}
+      },
+      "email_queue": {
+        "path": "/email_queue/{emailId}",
+        "documentId": "Auto-generated",
+        "description": "Outbound email job queue",
+        "schema": { "$ref": "#/$defs/emailQueueDocument" },
+        "subcollections": {}
+      },
+      "system_backups": {
+        "path": "/system_backups/{backupId}",
+        "documentId": "Auto-generated",
+        "description": "Admin maintenance backup job metadata (not full DB dump)",
+        "schema": { "$ref": "#/$defs/systemBackupsDocument" },
+        "subcollections": {}
+      },
+      "cleanup_history": {
+        "path": "/cleanup_history/{id}",
+        "documentId": "Auto-generated",
+        "description": "System cleanup operation history",
+        "schema": { "$ref": "#/$defs/cleanupHistoryDocument" },
+        "subcollections": {}
+      },
+      "system_errors": {
+        "path": "/system_errors/{id}",
+        "documentId": "Auto-generated",
+        "description": "System error logs for admin dashboard",
+        "schema": { "$ref": "#/$defs/systemErrorsDocument" },
+        "subcollections": {}
+      },
+      "scheduled_maintenance": {
+        "path": "/scheduled_maintenance/{id}",
+        "documentId": "Auto-generated",
+        "description": "Scheduled maintenance windows",
+        "schema": { "$ref": "#/$defs/scheduledMaintenanceDocument" },
+        "subcollections": {}
+      },
+      "maintenance_history": {
+        "path": "/maintenance_history/{id}",
+        "documentId": "Auto-generated",
+        "description": "Completed maintenance run history",
+        "schema": { "$ref": "#/$defs/maintenanceHistoryDocument" },
+        "subcollections": {}
+      },
+      "maintenance_mode": {
+        "path": "/maintenance_mode/{id}",
+        "documentId": "Auto-generated",
+        "description": "System-wide maintenance mode flag",
+        "schema": { "$ref": "#/$defs/maintenanceModeDocument" },
+        "subcollections": {}
+      },
+      "update_history": {
+        "path": "/update_history/{id}",
+        "documentId": "Auto-generated",
+        "description": "System update installation history",
+        "schema": { "$ref": "#/$defs/updateHistoryDocument" },
+        "subcollections": {}
+      }
+    }
+  },
+  "firebaseStorage": {
+    "bucket": "canemap-system.firebasestorage.app",
+    "paths": [
+      {
+        "pattern": "field_applications/{userId}/**",
+        "description": "Barangay certificate, land title, valid ID images"
+      },
+      {
+        "pattern": "Drivers_Badge/{userId}/**",
+        "description": "Driver license and badge document uploads"
+      },
+      {
+        "pattern": "profilePhotos/{userId}/**",
+        "description": "User profile photo uploads"
+      }
+    ],
+    "note": "Download URLs are stored as string fields in Firestore documents (e.g. fields.validFrontUrl)."
+  },
+  "firebaseAuthentication": {
+    "description": "Separate from Firestore; password hashes are not exportable",
+    "userRecord": {
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Primary key; matches Firestore users/{uid}" },
+        "email": { "type": "string", "format": "email" },
+        "emailVerified": { "type": "boolean" },
+        "displayName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "disabled": { "type": "boolean" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "creationTime": { "type": "string" },
+            "lastSignInTime": { "type": "string" }
+          }
+        }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "relationships": [
+    { "from": "Firebase Auth.uid", "to": "users/{userId}", "type": "one-to-one" },
+    { "from": "users/{userId}", "to": "fields/{fieldId}", "via": "fields.userId", "type": "one-to-many" },
+    { "from": "fields/{fieldId}", "to": "records/{recordId}", "via": "records.fieldId", "type": "one-to-many" },
+    { "from": "records/{recordId}", "to": "records/{recordId}/bought_items/{itemId}", "type": "one-to-many" },
+    { "from": "records/{recordId}", "to": "records/{recordId}/vehicle_updates/{updateId}", "type": "one-to-many" },
+    { "from": "fields/{fieldId}", "to": "tasks/{taskId}", "via": "tasks.fieldId", "type": "one-to-many" },
+    { "from": "fields/{fieldId}", "to": "reports/{reportId}", "via": "reports.fieldId", "type": "one-to-many" },
+    { "from": "users/{handlerId}", "to": "reports/{reportId}", "via": "reports.handlerId", "type": "one-to-many" },
+    { "from": "users/{userId}", "to": "field_joins/{joinId}", "via": "field_joins.userId", "type": "one-to-many" },
+    { "from": "users/{userId}", "to": "user_activities/{activityId}", "via": "user_activities.userId", "type": "one-to-many" }
+  ],
+  "enumerations": {
+    "userRole": ["farmer", "handler", "driver", "sra", "admin", "system_admin", "super_admin", "security_admin"],
+    "userStatus": ["pending", "verified"],
+    "fieldStatus": ["pending", "reviewed", "active", "harvested", "rejected"],
+    "recordStatus": ["Done", "In Progress", "Pending Sync"],
+    "joinStatus": ["pending", "approved", "rejected", "cancelled"],
+    "taskPriority": ["low", "medium", "high", "critical"],
+    "notificationReadStatus": ["read", "unread"],
+    "errorLevel": ["critical", "error", "warning", "info"]
+  },
+  "sourceFiles": [
+    "firestore.rules",
+    "firestore.indexes.json",
+    "storage.rules",
+    "firebase.json",
+    "public/backend/Common/firebase-config.js",
+    "functions/index.js",
+    "System Database/A-System-Database-Schema.txt"
+  ],
+  "$defs": {
+    "firestoreTimestamp": {
+      "type": "object",
+      "description": "Firestore Timestamp (seconds + nanoseconds since epoch)",
+      "properties": {
+        "_seconds": { "type": "integer" },
+        "_nanoseconds": { "type": "integer" }
+      }
+    },
+    "coordinatePoint": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "required": ["lat", "lng"]
+    },
+    "usersDocument": {
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "fullname": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": {
+          "type": "string",
+          "enum": ["farmer", "handler", "driver", "sra", "admin", "system_admin", "super_admin", "security_admin"]
+        },
+        "status": { "type": "string" },
+        "emailVerified": { "type": "boolean" },
+        "phone": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "lastLogin": { "$ref": "#/$defs/firestoreTimestamp" },
+        "verifiedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "failedLoginAttempts": { "type": "integer", "minimum": 0 },
+        "lastFailedLogin": { "$ref": "#/$defs/firestoreTimestamp" },
+        "roleUpdatedAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["email", "role"]
+    },
+    "fieldsDocument": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner/handler Firebase UID" },
+        "landowner_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "registered_by": { "type": "string" },
+        "field_name": { "type": "string" },
+        "fieldName": { "type": "string" },
+        "field_size": { "type": "number", "description": "Hectares" },
+        "area": { "type": "number" },
+        "barangay": { "type": "string" },
+        "municipality": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "coordinates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/coordinatePoint" }
+        },
+        "sugarcane_variety": { "type": "string" },
+        "variety": { "type": "string" },
+        "soilType": { "type": "string" },
+        "irrigationMethod": { "type": "string" },
+        "fieldTerrain": { "type": "string" },
+        "previousCrop": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "reviewed", "active", "harvested", "rejected"]
+        },
+        "plantingDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "expectedHarvestDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "expectedHarvestDAP": { "type": "integer" },
+        "currentGrowthStage": { "type": "string" },
+        "delayDays": { "type": "number" },
+        "basalFertilizationDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "mainFertilizationDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "actualHarvestDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "finalDAP": { "type": "number" },
+        "actualYield": { "type": "number" },
+        "harvestTiming": { "type": "string" },
+        "harvestTimingDays": { "type": "number" },
+        "harvestedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "operationOverrides": { "type": "object", "additionalProperties": true },
+        "validFrontUrl": { "type": "string", "format": "uri" },
+        "validBackUrl": { "type": "string", "format": "uri" },
+        "selfieUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "registeredAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "submittedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "updatedAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["userId", "status"]
+    },
+    "fieldRemarksDocument": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string" },
+        "authorId": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      }
+    },
+    "recordsDocument": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "growthStage": { "type": "string" },
+        "operation": {
+          "type": "string",
+          "description": "Pre-Planting | Planting | Post-Planting | Harvesting | Detrashing | Replanting"
+        },
+        "taskType": { "type": "string" },
+        "data": {
+          "type": "object",
+          "description": "Dynamic form payload (costs, dates, labor, inputs)",
+          "additionalProperties": true
+        },
+        "recordDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "recordStatus": {
+          "type": "string",
+          "enum": ["Done", "In Progress", "Pending Sync"]
+        },
+        "status": { "type": "string", "description": "Legacy; mirrors growthStage" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "updatedAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["userId", "fieldId", "operation", "taskType", "data"]
+    },
+    "boughtItemsDocument": {
+      "type": "object",
+      "properties": {
+        "itemName": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string" },
+        "cost": { "type": "number" },
+        "supplier": { "type": "string" }
+      }
+    },
+    "vehicleUpdatesDocument": {
+      "type": "object",
+      "properties": {
+        "vehicleType": { "type": "string" },
+        "fuel": { "type": "number" },
+        "hours": { "type": "number" },
+        "cost": { "type": "number" }
+      }
+    },
+    "tasksDocument": {
+      "type": "object",
+      "properties": {
+        "fieldId": { "type": "string" },
+        "handlerId": { "type": "string" },
+        "created_by": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "assignedTo": { "type": "array", "items": { "type": "string" } },
+        "assigned_to": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string" },
+        "taskType": { "type": "string" },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "autoGenerated": { "type": "boolean" },
+        "generatedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "dapWindow": { "type": "string" },
+        "growthStage": { "type": "string" },
+        "completed_at": { "$ref": "#/$defs/firestoreTimestamp" },
+        "completedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "archived": { "type": "boolean" },
+        "metadata": { "type": "object", "additionalProperties": true },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["fieldId"]
+    },
+    "reportsDocument": {
+      "type": "object",
+      "properties": {
+        "handlerId": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "sraOfficerId": { "type": "string" },
+        "reportStatus": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" },
+        "submittedDate": { "$ref": "#/$defs/firestoreTimestamp" },
+        "reviewedBy": { "type": "string" },
+        "reviewedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "remarks": { "type": "string" }
+      },
+      "required": ["handlerId", "fieldId", "reportStatus"]
+    },
+    "notificationsDocument": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "role": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" },
+        "status": { "type": "string", "enum": ["read", "unread"] },
+        "read": { "type": "boolean" },
+        "handlerId": { "type": "string" },
+        "fieldId": { "type": "string" }
+      },
+      "required": ["timestamp"]
+    },
+    "fieldJoinsDocument": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "handlerId": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "assignedAs": { "type": "string", "enum": ["driver"] },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected", "cancelled"]
+        },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["userId", "handlerId", "assignedAs", "status"]
+    },
+    "joinFieldsDocument": {
+      "type": "object",
+      "properties": {
+        "user_uid": { "type": "string" },
+        "userId": { "type": "string" },
+        "user_id": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "role": { "type": "string" },
+        "status": { "type": "string" }
+      }
+    },
+    "fieldWorkersDocument": {
+      "type": "object",
+      "properties": {
+        "user_uid": { "type": "string" },
+        "userId": { "type": "string" },
+        "user_id": { "type": "string" },
+        "field_id": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["field_id", "status"]
+    },
+    "driverRentalsDocument": {
+      "type": "object",
+      "properties": {
+        "handlerId": { "type": "string" },
+        "driverId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "requestDate": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["handlerId", "driverId", "status"]
+    },
+    "driversBadgeDocument": {
+      "type": "object",
+      "properties": {
+        "requestedBy": { "type": "string" },
+        "fullname": { "type": "string" },
+        "open_for_rental": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "lastEdit": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["requestedBy", "status"]
+    },
+    "taskLogsDocument": {
+      "type": "object",
+      "properties": {
+        "user_uid": { "type": "string" },
+        "field_id": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "logged_at": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["user_uid"]
+    },
+    "userActivitiesDocument": {
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" },
+        "details": { "type": "object", "additionalProperties": true }
+      },
+      "required": ["userId", "type", "title", "timestamp"]
+    },
+    "feedbacksDocument": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "rating": { "type": "number" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      }
+    },
+    "adminPinsDocument": {
+      "type": "object",
+      "properties": {
+        "pin": { "type": "string" },
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["super_admin", "system_admin"] }
+      },
+      "required": ["pin"]
+    },
+    "adminSecurityLogsDocument": {
+      "type": "object",
+      "properties": {
+        "eventType": { "type": "string" },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" },
+        "details": { "type": "object", "additionalProperties": true }
+      },
+      "required": ["eventType", "timestamp"]
+    },
+    "failedLoginsDocument": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "attemptCount": { "type": "integer", "minimum": 0 },
+        "lastAttempt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "ipAddress": { "type": "string" }
+      },
+      "required": ["email", "attemptCount"]
+    },
+    "adminSettingsDocument": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Key-value admin configuration"
+    },
+    "harvestNotificationLogsDocument": {
+      "type": "object",
+      "properties": {
+        "handlerId": { "type": "string" },
+        "fieldId": { "type": "string" },
+        "type": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["handlerId"]
+    },
+    "emailQueueDocument": {
+      "type": "object",
+      "properties": {
+        "to": { "type": "string", "format": "email" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "sent"] },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["to", "subject"]
+    },
+    "systemBackupsDocument": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string", "enum": ["in-progress", "completed", "failed"] },
+        "size": { "type": "string" },
+        "options": { "type": "object", "additionalProperties": true },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["name", "status", "createdAt"]
+    },
+    "cleanupHistoryDocument": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "status": { "type": "string", "enum": ["completed", "failed", "in-progress"] },
+        "filesRemoved": { "type": "integer" },
+        "spaceFreed": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      }
+    },
+    "systemErrorsDocument": {
+      "type": "object",
+      "properties": {
+        "level": { "type": "string", "enum": ["critical", "error", "warning", "info"] },
+        "message": { "type": "string" },
+        "details": { "type": "string" },
+        "source": { "type": "string" },
+        "timestamp": { "$ref": "#/$defs/firestoreTimestamp" }
+      },
+      "required": ["level", "message", "timestamp"]
+    },
+    "scheduledMaintenanceDocument": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "scheduledAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "duration": { "type": "integer", "description": "Minutes" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["scheduled", "in-progress"] },
+        "notifyUsers": { "type": "boolean" },
+        "createdAt": { "$ref": "#/$defs/firestoreTimestamp" }
+      }
+    },
+    "maintenanceHistoryDocument": {
+      "type": "object",
+      "properties": {
+        "startedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "completedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["completed", "failed", "in-progress"] }
+      }
+    },
+    "maintenanceModeDocument": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "enabledAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "message": { "type": "string" }
+      },
+      "required": ["enabled", "message"]
+    },
+    "updateHistoryDocument": {
+      "type": "object",
+      "properties": {
+        "updateId": { "type": "string" },
+        "status": { "type": "string", "enum": ["installing", "done"] },
+        "startedAt": { "$ref": "#/$defs/firestoreTimestamp" },
+        "installedBy": { "type": "string" }
+      }
+    }
+  }
+}

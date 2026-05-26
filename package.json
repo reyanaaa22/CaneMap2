@@ -20,7 +20,8 @@
     "rebuild:android": "npm run clean:android && npm run build:android",
     "sync:android": "npm run build && npx cap sync android && npm run copy:apk",
     "setup:android": "bash setup-android-sdk.sh",
-    "setup:android:manual": "echo 'To set up Android SDK manually, run: bash setup-android-sdk.sh'"
+    "setup:android:manual": "echo 'To set up Android SDK manually, run: bash setup-android-sdk.sh'",
+    "export:system-database": "node scripts/export-system-database.js"
   },
   "repository": {
     "type": "git",

@@ -534,8 +534,7 @@ This file handles ALL functionalities described in the PDF:
   <div id="manualCompleteWrap" class="hidden">
     <div class="flex flex-col gap-3 bg-amber-50 border border-amber-200 rounded-lg p-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="text-xs text-amber-900 min-w-0 flex-1">
-        <div class="font-semibold">Missing tasks for this field?</div>
-        <div class="text-amber-800">You can manually mark the current operation as complete to unlock the next operation.</div>
+        <div class="text-amber-800">Are you done with this operation? You can mark this as complete to unlock the next field operation.</div>
       </div>
       <button type="button" id="markOperationCompleteBtn" class="w-full sm:w-auto shrink-0 px-4 py-2.5 text-sm font-semibold rounded bg-green-600 text-white hover:bg-green-700 cursor-pointer relative z-10">
         Mark Operation Complete
@@ -976,15 +975,45 @@ const LEGACY_FIELD_OPERATION_LABELS = {
   Ratooning: 'Ratooning (legacy record — pilia ang Planting o Post-Planting kon parehas nga buhaton)'
 };
 
+/** Main crop sequence (strict one-at-a-time unlock). Same order as FIELD_OPERATION_OPTIONS. */
+const MAIN_FIELD_OPERATION_SEQUENCE = FIELD_OPERATION_OPTIONS.map((o) => o.value);
+
 function buildFieldOperationSelectHtml(legacyOperation, progress = null) {
   let html = '<option value="">Select</option>';
-  const lockedOps = progress?.locked || [];
-  
+
+  // Edit / legacy load: no progress → all standard operations stay selectable
+  if (!progress) {
+    for (const { value, label } of FIELD_OPERATION_OPTIONS) {
+      html += `<option value="${value}">${label}</option>`;
+    }
+    if (legacyOperation && LEGACY_FIELD_OPERATION_LABELS[legacyOperation]) {
+      html += `<option value="${legacyOperation}">${LEGACY_FIELD_OPERATION_LABELS[legacyOperation]}</option>`;
+    }
+    return html;
+  }
+
+  const completedOps = progress.completed || [];
+  const lockedOps = progress.locked || [];
+  const currentStep = progress.currentStep;
+
   for (const { value, label } of FIELD_OPERATION_OPTIONS) {
-    const isLocked = lockedOps.includes(value);
-    const lockIndicator = isLocked ? ' 🔒' : '';
-    const disabledAttr = isLocked ? ' disabled' : '';
-    html += `<option value="${value}"${disabledAttr}>${label}${lockIndicator}</option>`;
+    let suffix = '';
+    let disabledAttr = '';
+
+    if (completedOps.includes(value)) {
+      disabledAttr = ' disabled';
+      suffix = ' ✓';
+    } else if (lockedOps.includes(value)) {
+      disabledAttr = ' disabled';
+      suffix = ' 🔒';
+    } else if (currentStep && currentStep === value) {
+      // Only the current sequential step is selectable
+    } else {
+      disabledAttr = ' disabled';
+      suffix = ' 🔒';
+    }
+
+    html += `<option value="${value}"${disabledAttr}>${label}${suffix}</option>`;
   }
   if (legacyOperation && LEGACY_FIELD_OPERATION_LABELS[legacyOperation]) {
     html += `<option value="${legacyOperation}">${LEGACY_FIELD_OPERATION_LABELS[legacyOperation]}</option>`;
@@ -3391,39 +3420,48 @@ function getEffectiveSequentialDoneTasks(allTasks, doneTasks) {
 }
 
 /**
- * Get the current operation progress for a field
- * Returns which operations are unlocked based on sequential completion
- * Order: Pre-Planting → Planting → Post-Planting → Harvesting
+ * Get the current operation progress for a field (strict sequence).
+ * Completed operations are a prefix of the main order; only the first incomplete
+ * operation is the active step; all later operations stay locked until reached.
  * @param {string} fieldId - Field ID
- * @returns {Promise<Object>} Object with operation statuses and next unlocked operation
+ * @returns {Promise<Object>} { completed, locked, currentStep, nextUnlocked }
+ */
+/**
+ * Strict sequential progress: walk the main sequence in order. Only a completed prefix
+ * exists; the first incomplete operation is the sole “current” step; everything after
+ * stays locked until the current step is completed.
  */
 async function getOperationProgress(fieldId) {
-  const operationOrder = ['Pre-Planting', 'Planting', 'Post-Planting', 'Harvesting'];
+  const operationOrder = MAIN_FIELD_OPERATION_SEQUENCE;
   const progress = {
     completed: [],
-    unlocked: [],
     locked: [],
+    currentStep: null,
     nextUnlocked: null
   };
-  
+
   for (let i = 0; i < operationOrder.length; i++) {
     const operation = operationOrder[i];
     const isCompleted = await isOperationCompleted(fieldId, operation);
-    
+
     if (isCompleted) {
       progress.completed.push(operation);
-      progress.unlocked.push(operation);
-    } else if (i === 0 || progress.completed.includes(operationOrder[i - 1])) {
-      // First operation is always unlocked, or previous operation is completed
-      progress.unlocked.push(operation);
-      if (!progress.nextUnlocked) {
-        progress.nextUnlocked = operation;
-      }
-    } else {
-      progress.locked.push(operation);
+      continue;
     }
+
+    progress.currentStep = operation;
+    progress.nextUnlocked = operation;
+    for (let j = i + 1; j < operationOrder.length; j++) {
+      progress.locked.push(operationOrder[j]);
+    }
+    break;
   }
-  
+
+  if (progress.completed.length === operationOrder.length) {
+    progress.currentStep = null;
+    progress.nextUnlocked = null;
+  }
+
   return progress;
 }
 
@@ -3453,10 +3491,12 @@ function clearOperationProgressCache() {
 function autoSelectAndProgress(selectElement, selectId, nextElement = null) {
   if (!selectElement) return false;
   
-  // Get all options excluding the empty "Select" option
-  const options = Array.from(selectElement.options).filter(opt => opt.value !== '');
-  
-  // If only one option exists, auto-select it
+  // Enabled options only (sequential ops may disable completed / future steps)
+  const options = Array.from(selectElement.options).filter(
+    (opt) => opt.value !== '' && !opt.disabled
+  );
+
+  // If only one enabled option exists, auto-select it
   if (options.length === 1) {
     selectElement.value = options[0].value;
     
@@ -3561,13 +3601,20 @@ async function showOperations() {
   }
   
   operationSelect.innerHTML = buildFieldOperationSelectHtml(null, progress);
-  
+
+  if (progress && progress.currentStep) {
+    operationSelect.value = progress.currentStep;
+  } else if (progress && progress.completed.length === MAIN_FIELD_OPERATION_SEQUENCE.length) {
+    operationSelect.value = MAIN_FIELD_OPERATION_SEQUENCE[MAIN_FIELD_OPERATION_SEQUENCE.length - 1];
+  }
+
   // Re-initialize custom select after updating options
   const operationSelectInstance = customSelectInstances.get('operationSelect');
   if (operationSelectInstance) {
     operationSelectInstance.renderOptions();
+    operationSelectInstance.updateSelectedLabel();
   }
-  
+
   operationWrap.classList.remove('hidden');
   taskTypeWrap.classList.add('hidden');
   dynamicForm.classList.add('hidden');
@@ -3576,9 +3623,12 @@ async function showOperations() {
   boughtItemsSection.classList.add('hidden');
   vehicleUpdatesSection.classList.add('hidden');
   
-  // Auto-select operation if only one option exists
+  // Auto-select when only one enabled step exists, or fire change when value was set programmatically
   setTimeout(() => {
-    autoSelectAndProgress(operationSelect, 'operationSelect', taskType);
+    const didAuto = autoSelectAndProgress(operationSelect, 'operationSelect', taskType);
+    if (fieldId && !isEditMode && operationSelect.value && !didAuto) {
+      operationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   }, 50);
 }
 
