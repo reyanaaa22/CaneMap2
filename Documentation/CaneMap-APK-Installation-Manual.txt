@@ -1,0 +1,224 @@
+================================================================================
+CaneMap — Android APK Installation Manual
+================================================================================
+System:          CaneMap (Sugar Cane Field Management System)
+Document version: 1.0
+Date:            May 26, 2026
+APK file:        CaneMap-v2.2.2.apk
+App version:     2.2.2 (versionCode 5)
+Package name:    com.canemap.app
+================================================================================
+
+
+--------------------------------------------------------------------------------
+1. OVERVIEW
+--------------------------------------------------------------------------------
+
+CaneMap is available as an Android application (APK) for field handlers,
+farmers, drivers, and related users who prefer a mobile app instead of the web
+browser.
+
+This manual explains how to install the APK on an Android phone or tablet.
+The app requires an internet connection to sync with the Firebase backend
+(project: canemap-system).
+
+
+--------------------------------------------------------------------------------
+2. APK FILE LOCATION (TURNOVER PACKAGE)
+--------------------------------------------------------------------------------
+
+The latest release APK is included in this Documentation folder:
+
+    Documentation/CaneMap-v2.2.2.apk
+
+A copy may also be hosted at:
+
+    https://canemap-system.web.app/downloads/CaneMap.apk
+
+(Use the file in Documentation for offline turnover submission.)
+
+
+--------------------------------------------------------------------------------
+3. SYSTEM REQUIREMENTS
+--------------------------------------------------------------------------------
+
+| Requirement        | Minimum / details                          |
+|--------------------|--------------------------------------------|
+| Operating system   | Android 6.0 (Marshmallow) or higher        |
+| API level          | Android API 23+ (minSdkVersion 23)         |
+| Storage space      | At least 150 MB free (APK ~65 MB + data)   |
+| Network            | Wi‑Fi or mobile data (required for login)    |
+| Google Play        | NOT required (sideload install)              |
+| Account            | Valid CaneMap user account (email + password)|
+
+Recommended:
+  - Android 10 or newer for best permission handling
+  - GPS enabled for field registration and map features
+  - Camera permission if uploading ID or field photos
+
+
+--------------------------------------------------------------------------------
+4. PERMISSIONS USED BY THE APP
+--------------------------------------------------------------------------------
+
+During or after installation, Android may request:
+
+  - Internet          — Connect to CaneMap servers and Firebase
+  - Camera            — Capture valid ID, selfies, field photos
+  - Photos / Media    — Select or save images (Android 13+: READ_MEDIA_IMAGES)
+  - Storage (legacy)  — Older Android versions only (API 32 and below)
+
+Grant permissions when prompted so registration and input records work correctly.
+
+
+--------------------------------------------------------------------------------
+5. INSTALLATION STEPS (SIDELOAD / DIRECT APK)
+--------------------------------------------------------------------------------
+
+Because CaneMap is distributed as an APK file (not via Google Play Store), you
+must allow installation from unknown sources on your device.
+
+--- Step 1: Transfer the APK to the device ---
+
+Choose one method:
+
+  A) USB cable
+     - Connect phone to computer
+     - Copy CaneMap-v2.2.2.apk to Downloads or Documents on the phone
+
+  B) Email / cloud
+     - Email the APK to yourself or upload to Google Drive
+     - Open the attachment or file on the Android device and download it
+
+  C) Shared link
+     - Download from project hosting or shared turnover package
+
+--- Step 2: Enable “Install unknown apps” ---
+
+Android 8.0 and newer:
+  1. Open Settings
+  2. Go to Apps (or Apps & notifications)
+  3. Tap Special app access (or Install unknown apps)
+  4. Select the app you use to open the APK (Files, Chrome, Gmail, etc.)
+  5. Turn ON “Allow from this source”
+
+Older Android:
+  1. Settings → Security
+  2. Enable “Unknown sources” (wording may vary by manufacturer)
+
+--- Step 3: Open and install the APK ---
+
+  1. Open Files / My Files / Downloads on the device
+  2. Tap CaneMap-v2.2.2.apk
+  3. Tap Install
+  4. Wait until installation completes
+  5. Tap Open or find “CaneMap” on the home screen / app drawer
+
+--- Step 4: First launch ---
+
+  1. Open CaneMap
+  2. Allow requested permissions (Internet, Camera, Photos if asked)
+  3. Log in with your registered email and password
+     - Farmers / handlers: use Farmers Login screen
+     - SRA officers: use SRA login
+     - System admin: use System Admin login (if applicable)
+  4. If you do not have an account, register via Sign Up (farmer/handler) or
+     contact your administrator for SRA/admin access
+
+--- Step 5: Verify installation ---
+
+  - App name on device: CaneMap
+  - Version (if shown in app settings): 2.2.2
+  - You can open the dashboard after successful login
+  - Map and field features load when internet is available
+
+
+--------------------------------------------------------------------------------
+6. UPDATING TO A NEWER APK
+--------------------------------------------------------------------------------
+
+  1. Download or copy the new APK (e.g. CaneMap-v2.2.3.apk)
+  2. Install over the existing app (do not uninstall first unless instructed)
+  3. Your login session may require signing in again after a major update
+
+If installation fails with “App not installed”:
+  - Uninstall the old CaneMap only if your instructor or admin allows it
+  - Ensure the new APK is signed with the same key (use official project APK only)
+  - Free at least 200 MB storage and retry
+
+
+--------------------------------------------------------------------------------
+7. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+
+Problem: “App not installed” or “Package appears to be corrupt”
+  - Re-download the APK; file may be incomplete
+  - Use the official CaneMap-v2.2.2.apk from Documentation folder only
+  - Disable Play Protect temporarily: Play Store → Profile → Play Protect → Settings
+
+Problem: “Install blocked” / security warning
+  - Complete Step 2 (Allow unknown apps) for the correct app (Chrome, Files, etc.)
+
+Problem: Cannot log in
+  - Check internet connection
+  - Verify email and password on the web app: https://canemap-system.web.app
+  - Confirm account is verified (check email for verification link)
+
+Problem: Camera or photos not working
+  - Settings → Apps → CaneMap → Permissions → allow Camera and Photos
+
+Problem: Map or fields not loading
+  - Enable location/GPS if prompted
+  - Use stable Wi‑Fi or mobile data
+  - Clear app cache: Settings → Apps → CaneMap → Storage → Clear cache (not Clear data)
+
+Problem: App closes immediately
+  - Update Android OS if possible
+  - Reinstall APK after uninstall (you may need to log in again)
+
+
+--------------------------------------------------------------------------------
+8. UNINSTALLATION
+--------------------------------------------------------------------------------
+
+  1. Settings → Apps → CaneMap
+  2. Tap Uninstall
+  3. Confirm
+
+Note: Uninstalling removes the app from the device but does NOT delete your
+account or field data on the server (Firebase). Data remains in the system
+database until removed by an administrator.
+
+
+--------------------------------------------------------------------------------
+9. WEB VERSION (ALTERNATIVE)
+--------------------------------------------------------------------------------
+
+If APK installation is not possible, use the web application in Chrome or
+Edge on mobile or desktop:
+
+    https://canemap-system.web.app
+
+Same accounts and data apply; no APK installation required.
+
+
+--------------------------------------------------------------------------------
+10. SUPPORT & TURNOVER CONTACT
+--------------------------------------------------------------------------------
+
+For capstone turnover, submit with this package:
+
+  - Documentation/CaneMap-v2.2.2.apk          (this APK)
+  - Documentation/CaneMap-APK-Installation-Manual.txt (this file)
+  - Documentation/CaneMap System - User Manual (Updated).pdf
+  - Documentation/CaneMap Prototype.pdf
+  - System Database/ (JSON database export)
+
+Technical stack:
+  - Mobile: Capacitor Android wrapper (com.canemap.app)
+  - Backend: Google Firebase (canemap-system)
+
+
+================================================================================
+END OF INSTALLATION MANUAL
+================================================================================

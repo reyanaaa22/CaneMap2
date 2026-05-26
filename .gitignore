@@ -124,3 +124,6 @@ android/app/release/
 # APK downloads (deployed via Firebase, not Git)
 public/downloads/*.apk
 !public/downloads/.gitkeep
+
+# Allow turnover APK in Documentation (capstone submission)
+!Documentation/*.apk
